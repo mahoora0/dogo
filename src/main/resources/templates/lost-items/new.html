@@ -22,13 +22,17 @@
 
 	<form action="/lost-items" method="post" enctype="multipart/form-data" class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
 		<div class="grid gap-5 md:grid-cols-2">
+			<label class="block md:col-span-2">
+				<span class="text-sm font-semibold">제목</span>
+				<input name="title" required placeholder="예: 검정 카드지갑을 찾습니다" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
+			</label>
 			<label class="block">
 				<span class="text-sm font-semibold">물품명</span>
-				<input name="name" required class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
+				<input name="itemName" required placeholder="예: 카드지갑" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
 			</label>
 			<label class="block">
 				<span class="text-sm font-semibold">카테고리</span>
-				<select name="category" required class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
+				<select name="categoryMain" required class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
 					<option value="">선택</option>
 					<option>지갑</option>
 					<option>가방</option>
@@ -39,17 +43,21 @@
 			</label>
 			<label class="block">
 				<span class="text-sm font-semibold">분실 지역</span>
-				<input name="area" placeholder="예: 서울 강남구" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
+				<input name="lostArea" placeholder="예: 서울 강남구" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
 			</label>
 			<label class="block">
 				<span class="text-sm font-semibold">분실 장소</span>
-				<input name="place" placeholder="예: 강남역 11번 출구" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
+				<input name="lostPlace" required placeholder="예: 강남역 11번 출구" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
 			</label>
 			<label class="block">
 				<span class="text-sm font-semibold">분실 일시</span>
-				<input type="date" name="lostDate" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
+				<input type="datetime-local" name="lostAt" required class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
 			</label>
 			<label class="block">
+				<span class="text-sm font-semibold">연락처</span>
+				<input name="contact" placeholder="예: 010-1234-5678" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
+			</label>
+			<label class="block md:col-span-2">
 				<span class="text-sm font-semibold">사진</span>
 				<input type="file" name="image" accept="image/*" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-white">
 			</label>
@@ -57,7 +65,7 @@
 
 		<label class="mt-5 block">
 			<span class="text-sm font-semibold">상세 설명</span>
-			<textarea name="description" rows="6" placeholder="색상, 브랜드, 특징, 안에 들어있던 물건 등을 적어주세요." class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"></textarea>
+			<textarea name="content" rows="6" placeholder="색상, 브랜드, 특징, 안에 들어있던 물건 등을 적어주세요." class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"></textarea>
 		</label>
 
 		<div class="mt-6 flex justify-end gap-2">

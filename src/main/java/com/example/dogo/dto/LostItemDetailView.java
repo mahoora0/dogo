@@ -1,8 +1,9 @@
 package com.example.dogo.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-public record LostItemView(
+public record LostItemDetailView(
 		Long id,
 		String title,
 		String name,
@@ -14,6 +15,6 @@ public record LostItemView(
 		String statusLabel,
 		String description,
 		String contact,
-		String imageUrl
+		List<String> imageUrls
 ) {
 }
