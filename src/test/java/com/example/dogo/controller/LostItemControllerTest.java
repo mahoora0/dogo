@@ -1,0 +1,123 @@
+package com.example.dogo.controller;
+
+import com.example.dogo.dto.LostItemCreateRequest;
+import com.example.dogo.dto.LostItemDetailView;
+import com.example.dogo.dto.LostItemView;
+import com.example.dogo.service.LostItemService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+class LostItemControllerTest {
+
+	private LostItemService lostItemService;
+	private MockMvc mockMvc;
+
+	@BeforeEach
+	void setUp() {
+		lostItemService = mock(LostItemService.class);
+		mockMvc = MockMvcBuilders.standaloneSetup(new LostItemController(lostItemService)).build();
+	}
+
+	@Test
+	void homeRedirectsToLostItems() throws Exception {
+		mockMvc.perform(get("/"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/lost-items"));
+	}
+
+	@Test
+	void listAddsSearchResultAndFiltersToModel() throws Exception {
+		LostItemView view = new LostItemView(
+				1L,
+				"검정 지갑을 찾습니다",
+				"검정 지갑",
+				"지갑",
+				"서울",
+				"강남역",
+				LocalDateTime.of(2026, 5, 8, 12, 0),
+				"WAITING",
+				"대기중",
+				"카드가 들어있습니다",
+				"010-1234-5678",
+				"/uploads/lost-items/wallet.jpg"
+		);
+		when(lostItemService.search("지갑", "지갑", "강남", "WAITING")).thenReturn(List.of(view));
+
+		mockMvc.perform(get("/lost-items")
+						.param("keyword", "지갑")
+						.param("category", "지갑")
+						.param("area", "강남")
+						.param("status", "WAITING"))
+				.andExpect(status().isOk())
+				.andExpect(view().name("lost-items/list"))
+				.andExpect(model().attribute("lostItems", hasSize(1)))
+				.andExpect(model().attribute("keyword", "지갑"))
+				.andExpect(model().attribute("category", "지갑"))
+				.andExpect(model().attribute("area", "강남"))
+				.andExpect(model().attribute("status", "WAITING"));
+
+		verify(lostItemService).search("지갑", "지갑", "강남", "WAITING");
+	}
+
+	@Test
+	void createRedirectsToCreatedLostItemDetail() throws Exception {
+		when(lostItemService.create(any(LostItemCreateRequest.class))).thenReturn(7L);
+
+		mockMvc.perform(post("/lost-items")
+						.param("title", "검정 지갑을 찾습니다")
+						.param("itemName", "검정 지갑")
+						.param("categoryMain", "지갑")
+						.param("lostAt", "2026-05-08T12:00")
+						.param("lostArea", "서울")
+						.param("lostPlace", "강남역")
+						.param("contact", "010-1234-5678")
+						.param("content", "카드가 들어있습니다"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/lost-items/7"));
+
+		verify(lostItemService).create(any(LostItemCreateRequest.class));
+	}
+
+	@Test
+	void detailAddsLostItemToModel() throws Exception {
+		LostItemDetailView detail = new LostItemDetailView(
+				7L,
+				"검정 지갑을 찾습니다",
+				"검정 지갑",
+				"지갑",
+				"서울",
+				"강남역",
+				LocalDateTime.of(2026, 5, 8, 12, 0),
+				"WAITING",
+				"대기중",
+				"카드가 들어있습니다",
+				"010-1234-5678",
+				List.of("/uploads/lost-items/wallet.jpg")
+		);
+		when(lostItemService.getDetail(7L)).thenReturn(detail);
+
+		mockMvc.perform(get("/lost-items/7"))
+				.andExpect(status().isOk())
+				.andExpect(view().name("lost-items/detail"))
+				.andExpect(model().attribute("lostItem", detail));
+
+		verify(lostItemService).getDetail(7L);
+	}
+}
