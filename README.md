@@ -19,4 +19,4 @@ COLLATE utf8mb4_unicode_ci;
 ```env
 DB_USERNAME=root
 DB_PASSWORD=본인_mysql_비밀번호
-```
+```..
