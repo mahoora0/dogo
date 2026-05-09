@@ -9,11 +9,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "LOST_ITEM")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class LostItem {
 
 	@Id
@@ -64,9 +71,6 @@ public class LostItem {
 	@Column(name = "IS_DELETED", nullable = false)
 	private boolean deleted;
 
-	protected LostItem() {
-	}
-
 	public LostItem(
 			User user,
 			String title,
@@ -89,53 +93,5 @@ public class LostItem {
 		this.lostArea = lostArea;
 		this.lostPlace = lostPlace;
 		this.contact = contact;
-	}
-
-	public Long getLostId() {
-		return lostId;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public String getContent() {
-		return content;
-	}
-
-	public String getItemName() {
-		return itemName;
-	}
-
-	public String getCategoryMain() {
-		return categoryMain;
-	}
-
-	public String getCategorySub() {
-		return categorySub;
-	}
-
-	public LocalDateTime getLostAt() {
-		return lostAt;
-	}
-
-	public String getLostArea() {
-		return lostArea;
-	}
-
-	public String getLostPlace() {
-		return lostPlace;
-	}
-
-	public String getContact() {
-		return contact;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public boolean isDeleted() {
-		return deleted;
 	}
 }

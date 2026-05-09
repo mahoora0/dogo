@@ -3,6 +3,7 @@ package com.example.dogo.controller;
 import com.example.dogo.dto.LostItemCreateRequest;
 import com.example.dogo.service.CategoryService;
 import com.example.dogo.service.LostItemService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -20,17 +21,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class LostItemController {
 
 	private static final int MAX_PAGE_SIZE = 30;
 
 	private final CategoryService categoryService;
 	private final LostItemService lostItemService;
-
-	public LostItemController(CategoryService categoryService, LostItemService lostItemService) {
-		this.categoryService = categoryService;
-		this.lostItemService = lostItemService;
-	}
 
 	@ModelAttribute("categories")
 	public List<String> categories() {

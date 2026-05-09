@@ -9,9 +9,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "LOST_ITEM_IMAGE")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LostItemImage {
 
 	@Id
@@ -41,9 +46,6 @@ public class LostItemImage {
 	@Column(name = "SORT_ORDER", nullable = false)
 	private int sortOrder;
 
-	protected LostItemImage() {
-	}
-
 	public LostItemImage(
 			LostItem lostItem,
 			String originalName,
@@ -60,9 +62,5 @@ public class LostItemImage {
 		this.contentType = contentType;
 		this.fileSize = fileSize;
 		this.sortOrder = sortOrder;
-	}
-
-	public String getImageUrl() {
-		return imageUrl;
 	}
 }

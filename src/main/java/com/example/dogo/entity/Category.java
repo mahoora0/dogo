@@ -6,9 +6,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "CATEGORY")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Category {
 
 	@Id
@@ -33,35 +38,4 @@ public class Category {
 
 	@Column(name = "IS_ACTIVE", nullable = false)
 	private boolean active;
-
-	protected Category() {
-	}
-
-	public Long getCategoryId() {
-		return categoryId;
-	}
-
-	public String getCategoryName() {
-		return categoryName;
-	}
-
-	public String getCategoryCode() {
-		return categoryCode;
-	}
-
-	public Long getParentCategoryId() {
-		return parentCategoryId;
-	}
-
-	public int getCategoryLevel() {
-		return categoryLevel;
-	}
-
-	public int getSortOrder() {
-		return sortOrder;
-	}
-
-	public boolean isActive() {
-		return active;
-	}
 }
