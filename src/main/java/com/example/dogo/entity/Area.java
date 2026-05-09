@@ -17,7 +17,7 @@ public class Area {
   @Column(name = "AREA_ID")
   private Long areaId; // 지역 번호 PK
 
-  @Column(name = "AREA_NAME")
+  @Column(name = "AREA_NAME", nullable = false)
   private String areaName; // 지역명
 
   @Column(name = "AREA_CODE")
@@ -30,7 +30,7 @@ public class Area {
   private int sortOrder; // 정렬 순서
 
   @Column(name = "IS_ACTIVE")
-  private boolean isActive = true;; // 활성 여부
+  private boolean isActive = true; // 활성 여부
 
   @Column(name = "LATITUDE")
   private Double latitude; // 위도
@@ -39,5 +39,5 @@ public class Area {
   private Double longitude; // 경도
 
   @Column(name = "DEFAULT_LEVEL")
-  private Integer defaultLevel;
+  private Integer defaultLevel; // 기본 확대 레벨
 }
