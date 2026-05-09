@@ -92,6 +92,9 @@ public class LostItemController {
 		} catch (IllegalArgumentException exception) {
 			model.addAttribute("errorMessage", exception.getMessage());
 			return "lost-items/new";
+		} catch (Exception exception) {
+			model.addAttribute("errorMessage", "등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+			return "lost-items/new";
 		}
 	}
 
