@@ -18,6 +18,9 @@
 	<section class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
 		<div>
 			<img th:src="${lostItem.imageUrls[0]}" alt="" class="h-80 w-full rounded-lg object-cover shadow-sm lg:h-[480px]">
+			<div th:if="${#lists.size(lostItem.imageUrls) > 1}" class="mt-3 grid grid-cols-4 gap-3">
+				<img th:each="imageUrl : ${lostItem.imageUrls}" th:src="${imageUrl}" alt="" class="h-24 w-full rounded-md border border-slate-200 object-cover">
+			</div>
 		</div>
 
 		<div>

@@ -4,6 +4,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LostItemCreateRequest {
 
@@ -20,6 +22,7 @@ public class LostItemCreateRequest {
 	private String contact;
 	private String content;
 	private MultipartFile image;
+	private List<MultipartFile> images = new ArrayList<>();
 
 	public String getTitle() {
 		return title;
@@ -99,5 +102,26 @@ public class LostItemCreateRequest {
 
 	public void setImage(MultipartFile image) {
 		this.image = image;
+	}
+
+	public List<MultipartFile> getImages() {
+		return images;
+	}
+
+	public void setImages(List<MultipartFile> images) {
+		this.images = images;
+	}
+
+	public List<MultipartFile> getUploadImages() {
+		List<MultipartFile> uploadImages = new ArrayList<>();
+		if (image != null && !image.isEmpty()) {
+			uploadImages.add(image);
+		}
+		if (images != null) {
+			uploadImages.addAll(images.stream()
+					.filter(candidate -> candidate != null && !candidate.isEmpty())
+					.toList());
+		}
+		return uploadImages;
 	}
 }

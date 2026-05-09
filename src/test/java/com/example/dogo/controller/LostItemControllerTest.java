@@ -3,9 +3,12 @@ package com.example.dogo.controller;
 import com.example.dogo.dto.LostItemCreateRequest;
 import com.example.dogo.dto.LostItemDetailView;
 import com.example.dogo.dto.LostItemView;
+import com.example.dogo.service.CategoryService;
 import com.example.dogo.service.LostItemService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -14,6 +17,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,12 +31,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LostItemControllerTest {
 
 	private LostItemService lostItemService;
+	private CategoryService categoryService;
 	private MockMvc mockMvc;
 
 	@BeforeEach
 	void setUp() {
 		lostItemService = mock(LostItemService.class);
-		mockMvc = MockMvcBuilders.standaloneSetup(new LostItemController(lostItemService)).build();
+		categoryService = mock(CategoryService.class);
+		when(categoryService.getActiveCategoryNames()).thenReturn(List.of("지갑", "가방", "전자기기", "의류", "기타"));
+		when(lostItemService.getSearchCategoryNames()).thenReturn(List.of("가방", "전자기기"));
+		mockMvc = MockMvcBuilders.standaloneSetup(new LostItemController(categoryService, lostItemService)).build();
 	}
 
 	@Test
@@ -58,7 +66,8 @@ class LostItemControllerTest {
 				"010-1234-5678",
 				"/uploads/lost-items/wallet.jpg"
 		);
-		when(lostItemService.search("지갑", "지갑", "강남", "WAITING")).thenReturn(List.of(view));
+		when(lostItemService.search(eq("지갑"), eq("지갑"), eq("강남"), eq("WAITING"), any(Pageable.class)))
+				.thenReturn(new PageImpl<>(List.of(view)));
 
 		mockMvc.perform(get("/lost-items")
 						.param("keyword", "지갑")
@@ -71,9 +80,12 @@ class LostItemControllerTest {
 				.andExpect(model().attribute("keyword", "지갑"))
 				.andExpect(model().attribute("category", "지갑"))
 				.andExpect(model().attribute("area", "강남"))
-				.andExpect(model().attribute("status", "WAITING"));
+				.andExpect(model().attribute("status", "WAITING"))
+				.andExpect(model().attribute("categories", List.of("지갑", "가방", "전자기기", "의류", "기타")))
+				.andExpect(model().attribute("searchCategories", List.of("가방", "전자기기")));
 
-		verify(lostItemService).search("지갑", "지갑", "강남", "WAITING");
+		verify(lostItemService).search(eq("지갑"), eq("지갑"), eq("강남"), eq("WAITING"), any(Pageable.class));
+		verify(lostItemService).getSearchCategoryNames();
 	}
 
 	@Test
