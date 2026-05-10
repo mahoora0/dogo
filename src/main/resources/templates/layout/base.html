@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="setContent(content)">
+  <head>
+    <meta charset="UTF-8">
+    <title>분실물센터</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/area-list.css}">
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+  <header class="navbar border-b border-slate-200 bg-white">
+    <div class="header-container mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+      <div class="logo">
+        <a th:href="@{/}" style="text-decoration: none; color: inherit;" class="text-xl font-bold tracking-tight">
+          <img id="logoImg" th:src="@{/images/logo.png}" alt="분실물센터 로고"
+               style="height: 40px;" onerror="hideLogo()">
+          <span id="logoText" style="display: none;">📦 DOGO</span>
+        </a>
+      </div>
+      <div class="nav-links flex items-center gap-2 text-sm font-medium">
+        <a th:href="@{/lost-items}" class="rounded-md bg-slate-900 px-3 py-2 text-white">내가 찾아요</a>
+        <button class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-layout mx-auto max-w-6xl">
+    <aside class="sidebar">
+      <h2>주인페이지</h2>
+      <nav>
+        <div class="category">
+          <h3>분실물</h3>
+          <ul>
+            <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}">
+              <a th:href="@{/lost-items}">분실물 검색</a>
+            </li>
+            <li>분실물 찾기</li>
+            <li>습득물 등록</li>
+          </ul>
+        </div>
+        <div class="category">
+          <h3>습득물</h3>
+          <ul>
+            <li>분실물 검색</li>
+            <li>습득물 검색</li>
+            <li>분실물 등록</li>
+          </ul>
+        </div>
+        <div class="category">
+          <h3>내 주변 보관소</h3>
+          <ul>
+            <li th:classappend="${currentUri == '/areas/list' ? 'active' : ''}">
+              <a th:href="@{/areas/list}">서비스센터 찾기</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="content px-5 py-8">
+      <th:block th:replace="${content}"></th:block>
+    </main>
+  </div>
+
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KEY"></script>
+  <script th:src="@{/js/common.js}"></script>
+  </body>
+</th:block>
+</html>
