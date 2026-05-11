@@ -5,8 +5,6 @@ import com.example.dogo.dto.PoliceLostItemDetailResponse;
 import com.example.dogo.dto.PoliceLostItemResponse;
 import com.example.dogo.dto.PoliceLostItemSyncResult;
 import com.example.dogo.entity.LostItem;
-import com.example.dogo.entity.LostItemImage;
-import com.example.dogo.repository.LostItemImageRepository;
 import com.example.dogo.repository.LostItemRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +13,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -28,45 +24,56 @@ public class PoliceLostItemSyncService {
 	private final PoliceLostItemClient client;
 	private final PoliceLostItemMapper mapper;
 	private final LostItemRepository lostItemRepository;
-	private final LostItemImageRepository lostItemImageRepository;
+	private final PoliceLostItemImageService imageService;
 	private final int numOfRows;
 	private final int incrementalEmptyPageLimit;
+	private final int backfillLookbackDays;
+	private final int incrementalLookbackDays;
 
 	public PoliceLostItemSyncService(
 			PoliceLostItemClient client,
 			PoliceLostItemMapper mapper,
 			LostItemRepository lostItemRepository,
-			LostItemImageRepository lostItemImageRepository,
+			PoliceLostItemImageService imageService,
 			@Value("${police.lost-item.num-of-rows:100}") int numOfRows,
-			@Value("${police.lost-item.incremental-empty-page-limit:2}") int incrementalEmptyPageLimit
+			@Value("${police.lost-item.incremental-empty-page-limit:2}") int incrementalEmptyPageLimit,
+			@Value("${police.lost-item.backfill-lookback-days:1}") int backfillLookbackDays,
+			@Value("${police.lost-item.incremental-lookback-days:30}") int incrementalLookbackDays
 	) {
 		this.client = client;
 		this.mapper = mapper;
 		this.lostItemRepository = lostItemRepository;
-		this.lostItemImageRepository = lostItemImageRepository;
+		this.imageService = imageService;
 		this.numOfRows = numOfRows;
 		this.incrementalEmptyPageLimit = incrementalEmptyPageLimit;
+		this.backfillLookbackDays = Math.max(backfillLookbackDays, 1);
+		this.incrementalLookbackDays = Math.max(incrementalLookbackDays, 1);
 	}
 
 	public PoliceLostItemSyncResult syncBackfillLastMonth() {
 		LocalDate endDate = LocalDate.now();
-		return syncBackfill(endDate.minusMonths(1), endDate);
+		return syncBackfill(endDate.minusDays(backfillLookbackDays), endDate);
 	}
 
 	public PoliceLostItemSyncResult syncIncrementalLastMonth() {
 		LocalDate endDate = LocalDate.now();
-		return syncIncremental(endDate.minusMonths(1), endDate);
+		return syncIncremental(endDate.minusDays(incrementalLookbackDays), endDate);
 	}
 
 	PoliceLostItemSyncResult syncBackfill(LocalDate startDate, LocalDate endDate) {
-		return sync(startDate, endDate, false);
+		return sync(startDate, endDate, false, false);
 	}
 
 	PoliceLostItemSyncResult syncIncremental(LocalDate startDate, LocalDate endDate) {
-		return sync(startDate, endDate, true);
+		return sync(startDate, endDate, true, true);
 	}
 
-	private PoliceLostItemSyncResult sync(LocalDate startDate, LocalDate endDate, boolean stopAfterDuplicatePages) {
+	private PoliceLostItemSyncResult sync(
+			LocalDate startDate,
+			LocalDate endDate,
+			boolean stopAfterDuplicatePages,
+			boolean includeDetail
+	) {
 		int pageNo = 1;
 		int emptyNewPageCount = 0;
 		int fetchedCount = 0;
@@ -85,7 +92,7 @@ public class PoliceLostItemSyncService {
 			int newCount = 0;
 			for (PoliceLostItemResponse response : page.items()) {
 				fetchedCount++;
-				if (saveIfNew(response)) {
+				if (saveIfNew(response, includeDetail)) {
 					savedCount++;
 					newCount++;
 				} else {
@@ -111,7 +118,7 @@ public class PoliceLostItemSyncService {
 		return new PoliceLostItemSyncResult(fetchedCount, savedCount, skippedCount, pageCount);
 	}
 
-	private boolean saveIfNew(PoliceLostItemResponse response) {
+	private boolean saveIfNew(PoliceLostItemResponse response, boolean includeDetail) {
 		if (response == null || !StringUtils.hasText(response.atcId())) {
 			return false;
 		}
@@ -122,10 +129,10 @@ public class PoliceLostItemSyncService {
 		}
 
 		try {
-			Optional<PoliceLostItemDetailResponse> detail = fetchDetail(atcId);
+			Optional<PoliceLostItemDetailResponse> detail = includeDetail ? fetchDetail(atcId) : Optional.empty();
 			LostItem lostItem = mapper.toLostItem(response, detail.orElse(null));
 			LostItem savedItem = lostItemRepository.save(lostItem);
-			detail.ifPresent(detailResponse -> saveImageIfPresent(savedItem, detailResponse));
+			detail.ifPresent(detailResponse -> imageService.saveImageIfPresent(savedItem, detailResponse));
 			return true;
 		} catch (DataIntegrityViolationException exception) {
 			log.debug("이미 저장된 경찰청 분실물입니다. atcId={}", atcId, exception);
@@ -143,48 +150,5 @@ public class PoliceLostItemSyncService {
 			log.warn("경찰청 분실물 상세 조회에 실패했습니다. 목록 정보만 저장합니다. atcId={}", atcId, exception);
 			return Optional.empty();
 		}
-	}
-
-	private void saveImageIfPresent(LostItem lostItem, PoliceLostItemDetailResponse detail) {
-		String imageUrl = detail.lstFilePathImg();
-		if (!isActualImageUrl(imageUrl)) {
-			return;
-		}
-
-		lostItemImageRepository.save(new LostItemImage(
-				lostItem,
-				originalName(imageUrl),
-				lostItem.getAtcId(),
-				imageUrl.trim(),
-				"image/external",
-				null,
-				0
-		));
-	}
-
-	private boolean isActualImageUrl(String imageUrl) {
-		if (!StringUtils.hasText(imageUrl)) {
-			return false;
-		}
-
-		String normalized = imageUrl.trim().toLowerCase();
-		return normalized.startsWith("http")
-				&& !normalized.contains("no_img")
-				&& !normalized.contains("noimage");
-	}
-
-	private String originalName(String imageUrl) {
-		try {
-			String path = new URI(imageUrl.trim()).getPath();
-			if (StringUtils.hasText(path) && path.contains("/")) {
-				String filename = path.substring(path.lastIndexOf('/') + 1);
-				if (StringUtils.hasText(filename)) {
-					return filename;
-				}
-			}
-		} catch (URISyntaxException ignored) {
-			return "police-image";
-		}
-		return "police-image";
 	}
 }

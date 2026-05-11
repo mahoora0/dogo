@@ -5,8 +5,6 @@ import com.example.dogo.dto.PoliceLostItemDetailResponse;
 import com.example.dogo.dto.PoliceLostItemResponse;
 import com.example.dogo.dto.PoliceLostItemSyncResult;
 import com.example.dogo.entity.LostItem;
-import com.example.dogo.entity.LostItemImage;
-import com.example.dogo.repository.LostItemImageRepository;
 import com.example.dogo.repository.LostItemRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,22 +25,24 @@ class PoliceLostItemSyncServiceTest {
 
 	private PoliceLostItemClient client;
 	private LostItemRepository lostItemRepository;
-	private LostItemImageRepository lostItemImageRepository;
+	private PoliceLostItemImageService imageService;
 	private PoliceLostItemSyncService syncService;
 
 	@BeforeEach
 	void setUp() {
 		client = mock(PoliceLostItemClient.class);
 		lostItemRepository = mock(LostItemRepository.class);
-		lostItemImageRepository = mock(LostItemImageRepository.class);
+		imageService = mock(PoliceLostItemImageService.class);
 		when(lostItemRepository.save(any(LostItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 		syncService = new PoliceLostItemSyncService(
 				client,
 				new PoliceLostItemMapper(),
 				lostItemRepository,
-				lostItemImageRepository,
+				imageService,
 				100,
-				2
+				2,
+				1,
+				30
 		);
 	}
 
@@ -78,10 +78,10 @@ class PoliceLostItemSyncServiceTest {
 		assertThat(captor.getValue().getLostArea()).isEqualTo("대전광역시");
 		assertThat(captor.getValue().getContact()).isEqualTo("대전역지구대 / 042-271-0112");
 
-		ArgumentCaptor<LostItemImage> imageCaptor = ArgumentCaptor.forClass(LostItemImage.class);
-		verify(lostItemImageRepository).save(imageCaptor.capture());
-		assertThat(imageCaptor.getValue().getImageUrl()).isEqualTo("https://example.com/lost/wallet.jpg");
-		assertThat(imageCaptor.getValue().getStoredName()).isEqualTo("L202605090000001");
+		verify(imageService).saveImageIfPresent(captor.getValue(), detail(
+				"L202605090000001",
+				"https://example.com/lost/wallet.jpg"
+		));
 	}
 
 	@Test
@@ -105,7 +105,18 @@ class PoliceLostItemSyncServiceTest {
 		assertThat(result.savedCount()).isEqualTo(1);
 		assertThat(result.skippedCount()).isEqualTo(1);
 		assertThat(result.pageCount()).isEqualTo(3);
-		verify(lostItemImageRepository, never()).save(any());
+		verify(client, never()).fetchLostItemDetail("L202605090000001");
+		verify(imageService, never()).saveImageIfPresent(any(), any());
+	}
+
+	@Test
+	void configuredBackfillLookbackUsesOneDayByDefaultForDevelopment() {
+		LocalDate today = LocalDate.now();
+		when(client.fetchLostItems(today.minusDays(1), today, 1, 100)).thenReturn(page());
+
+		syncService.syncBackfillLastMonth();
+
+		verify(client).fetchLostItems(today.minusDays(1), today, 1, 100);
 	}
 
 	private PoliceLostItemPage page(PoliceLostItemResponse... items) {

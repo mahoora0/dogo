@@ -122,4 +122,26 @@ public class LostItem {
 		lostItem.status = "WAITING";
 		return lostItem;
 	}
+
+	public void updatePoliceDetail(
+			String title,
+			String content,
+			String itemName,
+			String categoryMain,
+			String categorySub,
+			LocalDateTime lostAt,
+			String lostArea,
+			String lostPlace,
+			String contact
+	) {
+		this.title = title;
+		this.content = content;
+		this.itemName = itemName;
+		this.categoryMain = categoryMain;
+		this.categorySub = categorySub;
+		this.lostAt = lostAt;
+		this.lostArea = lostArea;
+		this.lostPlace = lostPlace;
+		this.contact = contact;
+	}
 }

@@ -35,17 +35,20 @@ public class LostItemService {
 	private final LostItemRepository lostItemRepository;
 	private final LostItemImageRepository lostItemImageRepository;
 	private final UserRepository userRepository;
+	private final PoliceLostItemDetailEnrichmentService policeLostItemDetailEnrichmentService;
 	private final Path lostItemUploadPath;
 
 	public LostItemService(
 			LostItemRepository lostItemRepository,
 			LostItemImageRepository lostItemImageRepository,
 			UserRepository userRepository,
+			PoliceLostItemDetailEnrichmentService policeLostItemDetailEnrichmentService,
 			@Value("${file.upload-dir}") String uploadDir
 	) {
 		this.lostItemRepository = lostItemRepository;
 		this.lostItemImageRepository = lostItemImageRepository;
 		this.userRepository = userRepository;
+		this.policeLostItemDetailEnrichmentService = policeLostItemDetailEnrichmentService;
 		this.lostItemUploadPath = Path.of(uploadDir, "lost-items").toAbsolutePath().normalize();
 	}
 
@@ -67,11 +70,13 @@ public class LostItemService {
 		return lostItemRepository.findActiveCategoryNames();
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional
 	public LostItemDetailView getDetail(Long id) {
 		LostItem lostItem = lostItemRepository.findById(id)
 				.filter(item -> !item.isDeleted())
 				.orElseThrow(() -> new IllegalArgumentException("분실물 게시글을 찾을 수 없습니다."));
+
+		policeLostItemDetailEnrichmentService.enrichIfNeeded(lostItem);
 
 		List<String> imageUrls = lostItemImageRepository.findByLostItemOrderBySortOrderAscImageIdAsc(lostItem).stream()
 				.map(LostItemImage::getImageUrl)
