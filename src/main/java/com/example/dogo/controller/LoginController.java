@@ -8,6 +8,11 @@ public class LoginController {
 
   @GetMapping("/login")
   public String loginPage() {
-    return "login"; // templates/login.html을 찾아감
+    return "user/login"; // templates/user/login.html을 찾아감
+  }
+
+  @GetMapping("/join")
+  public String joinPage() {
+    return "user/join"; // templates/user/join.html을 찾아감
   }
 }

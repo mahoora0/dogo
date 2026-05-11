@@ -1,68 +1,72 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="setContent(content)">
+
   <head>
     <meta charset="UTF-8">
     <title>분실물센터</title>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2b25620b9f4f16cf99df871475b41e4&libraries=services&autoload=false"></script>
+    <script type="text/javascript"
+      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2b25620b9f4f16cf99df871475b41e4&libraries=services&autoload=false"></script>
     <script th:src="@{/js/common.js}"></script>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/areaList.css}">
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
+
   <body class="bg-slate-50 text-slate-900">
-  <header class="navbar border-b border-slate-200 bg-white">
-    <div class="header-container mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-      <div class="logo">
-        <a th:href="@{/}" style="text-decoration: none; color: inherit;" class="text-xl font-bold tracking-tight">
-          <img id="logoImg" th:src="@{/images/logo.png}" alt="분실물센터 로고"
-               style="height: 40px;" onerror="hideLogo()">
-          <span id="logoText" style="display: none;">📦 DOGO</span>
-        </a>
+    <header class="navbar border-b border-slate-200 bg-white">
+      <div class="header-container mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+        <div class="logo">
+          <a th:href="@{/}" style="text-decoration: none; color: inherit;" class="text-xl font-bold tracking-tight">
+            <img id="logoImg" th:src="@{/images/logo.png}" alt="분실물센터 로고" style="height: 40px;" onerror="hideLogo()">
+            <span id="logoText" style="display: none;">📦 DOGO</span>
+          </a>
+        </div>
+        <div class="nav-links flex items-center gap-2 text-sm font-medium">
+          <a th:href="@{/lost-items}" class="rounded-md bg-slate-900 px-3 py-2 text-white">내가 찾아요</a>
+          <a th:href="@{/login}" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</a>
+          <a th:href="@{/join}" class="btn-join rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">회원가입</a>
+        </div>
       </div>
-      <div class="nav-links flex items-center gap-2 text-sm font-medium">
-        <a th:href="@{/lost-items}" class="rounded-md bg-slate-900 px-3 py-2 text-white">내가 찾아요</a>
-        <a th:href="@{/login}" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</a>
-      </div>
+    </header>
+
+    <div class="main-layout mx-auto max-w-6xl">
+      <aside class="sidebar">
+        <nav>
+          <div class="category">
+            <h3>분실물</h3>
+            <ul>
+              <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}">
+                <a th:href="@{/lost-items}">분실물 검색</a>
+              </li>
+            </ul>
+          </div>
+          <div class="category">
+            <h3>습득물</h3>
+            <ul>
+              <li>습득물 등록</li>
+              <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
+                <a th:href="@{/areas/list}">서비스센터 찾기</a>
+              </li>
+            </ul>
+          </div>
+          <div class="category">
+            <h3>고객지원</h3>
+            <ul>
+              <li>FAQ</li>
+              <li>문의하기</li>
+              <li>공지사항</li>
+              <li>이용가이드</li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <main class="content px-5 py-8">
+        <th:block th:replace="${content}"></th:block>
+      </main>
     </div>
-  </header>
-
-  <div class="main-layout mx-auto max-w-6xl">
-    <aside class="sidebar">
-      <nav>
-        <div class="category">
-          <h3>분실물</h3>
-          <ul>
-            <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}">
-              <a th:href="@{/lost-items}">분실물 검색</a>
-            </li>
-          </ul>
-        </div>
-        <div class="category">
-          <h3>습득물</h3>
-          <ul>
-            <li>습득물 등록</li>
-            <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
-              <a th:href="@{/areas/list}">서비스센터 찾기</a>
-            </li>
-          </ul>
-        </div>
-        <div class="category">
-          <h3>고객지원</h3>
-          <ul>
-            <li>FAQ</li>
-            <li>문의하기</li>
-            <li>공지사항</li>
-            <li>이용가이드</li>
-          </ul>
-        </div>
-      </nav>
-    </aside>
-
-    <main class="content px-5 py-8">
-      <th:block th:replace="${content}"></th:block>
-    </main>
-  </div>
   </body>
 </th:block>
+
 </html>
