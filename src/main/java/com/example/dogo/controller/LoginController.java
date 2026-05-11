@@ -15,4 +15,9 @@ public class LoginController {
   public String joinPage() {
     return "user/join"; // templates/user/join.html을 찾아감
   }
+
+  @GetMapping("/userpage")
+  public String userPage() {
+    return "user/userpage"; // templates/user/userpage.html을 찾아감
+  }
 }

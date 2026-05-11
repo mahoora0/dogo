@@ -24,8 +24,20 @@
         </div>
         <div class="nav-links flex items-center gap-2 text-sm font-medium">
           <a th:href="@{/lost-items}" class="rounded-md bg-slate-900 px-3 py-2 text-white">내가 찾아요</a>
-          <a th:href="@{/login}" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</a>
-          <a th:href="@{/join}" class="btn-join rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">회원가입</a>
+          
+          <!-- 로그인 안 된 상태 (익명 사용자) -->
+          <th:block sec:authorize="isAnonymous()">
+            <a th:href="@{/login}" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</a>
+            <a th:href="@{/join}" class="btn-join rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">회원가입</a>
+          </th:block>
+
+          <!-- 로그인 된 상태 -->
+          <th:block sec:authorize="isAuthenticated()">
+            <a th:href="@{/userpage}" class="text-slate-700 font-bold mr-2 hover:underline hover:text-blue-600 transition-colors" sec:authentication="principal.user.nickname">닉네임</a>
+            <form th:action="@{/logout}" method="post" style="margin:0; padding:0; display:inline;">
+              <button type="submit" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그아웃</button>
+            </form>
+          </th:block>
         </div>
       </div>
     </header>
