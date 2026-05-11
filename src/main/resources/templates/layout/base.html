@@ -4,8 +4,10 @@
   <head>
     <meta charset="UTF-8">
     <title>분실물센터</title>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2b25620b9f4f16cf99df871475b41e4&libraries=services&autoload=false"></script>
+    <script th:src="@{/js/common.js}"></script>
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/area-list.css}">
+    <link rel="stylesheet" th:href="@{/css/areaList.css}">
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-slate-50 text-slate-900">
@@ -50,7 +52,7 @@
         <div class="category">
           <h3>내 주변 보관소</h3>
           <ul>
-            <li th:classappend="${currentUri == '/areas/list' ? 'active' : ''}">
+            <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
               <a th:href="@{/areas/list}">서비스센터 찾기</a>
             </li>
           </ul>
@@ -62,9 +64,6 @@
       <th:block th:replace="${content}"></th:block>
     </main>
   </div>
-
-  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KEY"></script>
-  <script th:src="@{/js/common.js}"></script>
   </body>
 </th:block>
 </html>
