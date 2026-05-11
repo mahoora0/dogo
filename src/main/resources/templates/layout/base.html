@@ -25,8 +25,14 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
           <span class="text-sm font-medium">채팅방</span>
         </a>
-        <a th:href="@{/login}" class="rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</a>
-        <a th:href="@{/signup}" class="rounded-md bg-slate-900 px-3 py-2 text-white">회원가입</a>
+        <th:block th:if="${session.loginUser == null}">
+          <a th:href="@{/login}" class="rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</a>
+          <a th:href="@{/signup}" class="rounded-md bg-slate-900 px-3 py-2 text-white">회원가입</a>
+        </th:block>
+        <th:block th:if="${session.loginUser != null}">
+          <a th:href="@{/my-page}" class="rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">마이페이지</a>
+          <a th:href="@{/logout}" class="rounded-md border border-slate-200 px-3 py-2 text-slate-600 hover:bg-slate-100">로그아웃</a>
+        </th:block>
       </div>
     </div>
   </header>

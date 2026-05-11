@@ -18,6 +18,29 @@
         </div>
       </div>
     </div>
+ 
+    <form action="/lost-items" method="get" class="mb-10 grid gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-slate-500 ml-1">물품명</label>
+        <input name="keyword" placeholder="어떤 물건을 찾으시나요?" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:bg-white transition-all">
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-slate-500 ml-1">카테고리</label>
+        <select name="category" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:bg-white transition-all">
+          <option value="">전체 카테고리</option>
+          <option th:each="categoryOption : ${searchCategories}" th:value="${categoryOption}" th:text="${categoryOption}">지갑</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-slate-500 ml-1">분실 지역</label>
+        <input name="area" placeholder="장소 또는 지역명" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:bg-white transition-all">
+      </div>
+      <div class="flex items-end">
+        <button type="submit" class="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-bold text-white hover:bg-slate-800 transition-colors shadow-sm">
+          검색하기
+        </button>
+      </div>
+    </form>
 
     <div class="feed-section">
       <h4 class="section-title">최근 등록된 물품</h4>
