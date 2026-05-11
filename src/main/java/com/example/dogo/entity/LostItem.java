@@ -94,4 +94,32 @@ public class LostItem {
 		this.lostPlace = lostPlace;
 		this.contact = contact;
 	}
+
+	public static LostItem fromPolice(
+			String atcId,
+			String title,
+			String content,
+			String itemName,
+			String categoryMain,
+			String categorySub,
+			LocalDateTime lostAt,
+			String lostArea,
+			String lostPlace,
+			String contact
+	) {
+		LostItem lostItem = new LostItem();
+		lostItem.sourceType = "POLICE";
+		lostItem.atcId = atcId;
+		lostItem.title = title;
+		lostItem.content = content;
+		lostItem.itemName = itemName;
+		lostItem.categoryMain = categoryMain;
+		lostItem.categorySub = categorySub;
+		lostItem.lostAt = lostAt;
+		lostItem.lostArea = lostArea;
+		lostItem.lostPlace = lostPlace;
+		lostItem.contact = contact;
+		lostItem.status = "WAITING";
+		return lostItem;
+	}
 }

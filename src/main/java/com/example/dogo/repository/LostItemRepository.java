@@ -11,6 +11,10 @@ import java.util.List;
 
 public interface LostItemRepository extends JpaRepository<LostItem, Long> {
 
+	boolean existsByAtcId(String atcId);
+
+	boolean existsBySourceType(String sourceType);
+
 	@Query("""
 			SELECT item
 			FROM LostItem item
