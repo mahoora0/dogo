@@ -29,7 +29,6 @@
 
   <div class="main-layout mx-auto max-w-6xl">
     <aside class="sidebar">
-      <h2>주인페이지</h2>
       <nav>
         <div class="category">
           <h3>분실물</h3>
@@ -37,24 +36,24 @@
             <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}">
               <a th:href="@{/lost-items}">분실물 검색</a>
             </li>
-            <li>분실물 찾기</li>
-            <li>습득물 등록</li>
           </ul>
         </div>
         <div class="category">
           <h3>습득물</h3>
           <ul>
-            <li>분실물 검색</li>
-            <li>습득물 검색</li>
-            <li>분실물 등록</li>
-          </ul>
-        </div>
-        <div class="category">
-          <h3>내 주변 보관소</h3>
-          <ul>
+            <li>습득물 등록</li>
             <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
               <a th:href="@{/areas/list}">서비스센터 찾기</a>
             </li>
+          </ul>
+        </div>
+        <div class="category">
+          <h3>고객지원</h3>
+          <ul>
+            <li>FAQ</li>
+            <li>문의하기</li>
+            <li>공지사항</li>
+            <li>이용가이드</li>
           </ul>
         </div>
       </nav>
