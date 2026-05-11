@@ -12,17 +12,21 @@
   </head>
   <body class="bg-slate-50 text-slate-900">
   <header class="navbar border-b border-slate-200 bg-white">
-    <div class="header-container mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-      <div class="logo">
-        <a th:href="@{/}" style="text-decoration: none; color: inherit;" class="text-xl font-bold tracking-tight">
+    <div class="header-container mx-auto flex max-w-[1200px] items-center justify-between py-2">
+      <div class="logo flex items-center justify-center w-[250px]">
+        <a th:href="@{/}" style="text-decoration: none; color: inherit;" class="flex items-center justify-center w-full text-xl font-bold tracking-tight">
           <img id="logoImg" th:src="@{/images/logo.png}" alt="분실물센터 로고"
-               style="height: 40px;" onerror="hideLogo()">
+               onerror="hideLogo()">
           <span id="logoText" style="display: none;">📦 DOGO</span>
         </a>
       </div>
-      <div class="nav-links flex items-center gap-2 text-sm font-medium">
-        <a th:href="@{/lost-items}" class="rounded-md bg-slate-900 px-3 py-2 text-white">내가 찾아요</a>
-        <button class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</button>
+      <div class="nav-links flex items-center gap-2 text-sm font-medium pr-5">
+        <a th:if="${session.loginUser != null}" th:href="@{/chat}" class="flex items-center gap-2 rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+          <span class="text-sm font-medium">채팅방</span>
+        </a>
+        <a th:href="@{/login}" class="rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</a>
+        <a th:href="@{/signup}" class="rounded-md bg-slate-900 px-3 py-2 text-white">회원가입</a>
       </div>
     </div>
   </header>
@@ -33,15 +37,19 @@
         <div class="category">
           <h3>분실물</h3>
           <ul>
-            <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}">
+            <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}" onclick="location.href='/lost-items'">
               <a th:href="@{/lost-items}">분실물 검색</a>
             </li>
+            <li>분실 신고</li>
           </ul>
         </div>
         <div class="category">
           <h3>습득물</h3>
           <ul>
-            <li>습득물 등록</li>
+            <li>습득물 검색</li>
+            <li th:classappend="${currentUri == '/lost-items/new' ? 'active' : ''}" onclick="location.href='/lost-items/new'">
+              <a th:href="@{/lost-items/new}">습득물 등록</a>
+            </li>
             <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
               <a th:href="@{/areas/list}">서비스센터 찾기</a>
             </li>
@@ -50,10 +58,10 @@
         <div class="category">
           <h3>고객지원</h3>
           <ul>
-            <li>FAQ</li>
-            <li>문의하기</li>
             <li>공지사항</li>
-            <li>이용가이드</li>
+            <li>자주 묻는 질문</li>
+            <li>문의하기</li>
+            <li>이용 가이드</li>
           </ul>
         </div>
       </nav>
