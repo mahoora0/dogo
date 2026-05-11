@@ -14,6 +14,7 @@ import sys
 import time
 import urllib.parse
 import urllib.request
+from urllib.error import HTTPError, URLError
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import date, datetime, time as dt_time, timedelta
@@ -93,6 +94,8 @@ def main() -> int:
             max_pages=args.max_pages,
             update_existing=args.update_existing,
             duplicate_page_limit=args.duplicate_page_limit,
+            retry_count=args.retry_count,
+            retry_sleep=args.retry_sleep,
         )
     finally:
         conn.close()
@@ -114,8 +117,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-rows", type=int, default=int(os.getenv("SEED_NUM_ROWS", "100")))
     parser.add_argument("--sleep", type=float, default=float(os.getenv("SEED_API_SLEEP_SECONDS", "0.05")))
     parser.add_argument("--max-pages", type=int, default=None)
-    parser.add_argument("--duplicate-page-limit", type=int, default=int(os.getenv("SEED_DUPLICATE_PAGE_LIMIT", "2")),
+    parser.add_argument("--duplicate-page-limit", type=int, default=int(os.getenv("SEED_DUPLICATE_PAGE_LIMIT", "0")),
                         help="Stop after N consecutive pages with no new items (ignored with --update-existing).")
+    parser.add_argument("--retry-count", type=int, default=int(os.getenv("SEED_API_RETRY_COUNT", "5")))
+    parser.add_argument("--retry-sleep", type=float, default=float(os.getenv("SEED_API_RETRY_SLEEP_SECONDS", "2")))
     parser.add_argument("--schema", default="src/main/resources/schema.sql")
     parser.add_argument("--init-schema", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--reset-police", action="store_true", help="Delete existing POLICE seed rows before collecting.")
@@ -226,6 +231,8 @@ def collect(
     max_pages: Optional[int],
     update_existing: bool,
     duplicate_page_limit: int = 2,
+    retry_count: int = 5,
+    retry_sleep: float = 2,
 ) -> None:
     page_no = 1
     fetched = 0
@@ -242,7 +249,11 @@ def collect(
         if max_pages is not None and page_no > max_pages:
             break
 
-        page = fetch_list_page(service_key, start_date, end_date, page_no, num_rows)
+        try:
+            page = fetch_list_page(service_key, start_date, end_date, page_no, num_rows, retry_count, retry_sleep)
+        except Exception as exc:
+            print(f"List page failed pageNo={page_no}: {exc}", file=sys.stderr)
+            break
         items = page["items"]
         total_count = page["total_count"]
         progress = progress_line(fetched, total_count, start_time)
@@ -267,7 +278,7 @@ def collect(
                 if not existing_id:
                     new_candidate_count += 1
 
-                detail = fetch_detail_or_none(service_key, atc_id)
+                detail = fetch_detail_or_none(service_key, atc_id, retry_count, retry_sleep)
                 if sleep_seconds > 0:
                     time.sleep(sleep_seconds)
 
@@ -304,7 +315,15 @@ def collect(
     print(f"Done. fetched={fetched} saved={saved} skipped={skipped} updated={updated} elapsed={elapsed}s")
 
 
-def fetch_list_page(service_key: str, start_date: date, end_date: date, page_no: int, num_rows: int) -> dict:
+def fetch_list_page(
+    service_key: str,
+    start_date: date,
+    end_date: date,
+    page_no: int,
+    num_rows: int,
+    retry_count: int,
+    retry_sleep: float,
+) -> dict:
     params = {
         "serviceKey": service_key,
         "START_YMD": start_date.strftime("%Y%m%d"),
@@ -312,7 +331,7 @@ def fetch_list_page(service_key: str, start_date: date, end_date: date, page_no:
         "pageNo": str(page_no),
         "numOfRows": str(num_rows),
     }
-    root = request_xml(LIST_URL, params)
+    root = request_xml(LIST_URL, params, retry_count, retry_sleep)
     ensure_success(root)
     return {
         "total_count": parse_int(text(root, "totalCount")),
@@ -330,8 +349,8 @@ def fetch_list_page(service_key: str, start_date: date, end_date: date, page_no:
     }
 
 
-def fetch_detail(service_key: str, atc_id: str) -> Optional[DetailItem]:
-    root = request_xml(DETAIL_URL, {"serviceKey": service_key, "ATC_ID": atc_id})
+def fetch_detail(service_key: str, atc_id: str, retry_count: int, retry_sleep: float) -> Optional[DetailItem]:
+    root = request_xml(DETAIL_URL, {"serviceKey": service_key, "ATC_ID": atc_id}, retry_count, retry_sleep)
     ensure_success(root)
     item = root.find(".//item")
     if item is None:
@@ -352,20 +371,32 @@ def fetch_detail(service_key: str, atc_id: str) -> Optional[DetailItem]:
     )
 
 
-def fetch_detail_or_none(service_key: str, atc_id: str) -> Optional[DetailItem]:
+def fetch_detail_or_none(service_key: str, atc_id: str, retry_count: int, retry_sleep: float) -> Optional[DetailItem]:
     try:
-        return fetch_detail(service_key, atc_id)
+        return fetch_detail(service_key, atc_id, retry_count, retry_sleep)
     except Exception as exc:
         print(f"  detail failed atcId={atc_id}: {exc}", file=sys.stderr)
         return None
 
 
-def request_xml(url: str, params: Dict[str, str]) -> ET.Element:
+def request_xml(url: str, params: Dict[str, str], retry_count: int, retry_sleep: float) -> ET.Element:
     query = urllib.parse.urlencode(params, safe="%")
     request = urllib.request.Request(f"{url}?{query}", headers={"Accept": "application/xml"})
-    with urllib.request.urlopen(request, timeout=30) as response:
-        body = response.read().decode("utf-8", errors="replace")
-    return ET.fromstring(body)
+    last_error: Optional[Exception] = None
+    attempts = max(retry_count, 0) + 1
+    for attempt in range(1, attempts + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                body = response.read().decode("utf-8", errors="replace")
+            return ET.fromstring(body)
+        except (HTTPError, URLError, TimeoutError, ET.ParseError) as exc:
+            last_error = exc
+            if attempt >= attempts:
+                break
+            wait_seconds = retry_sleep * attempt
+            print(f"  request failed ({attempt}/{attempts}) {exc}; retrying in {wait_seconds:.1f}s", file=sys.stderr)
+            time.sleep(wait_seconds)
+    raise last_error if last_error else RuntimeError("request failed")
 
 
 def ensure_success(root: ET.Element) -> None:

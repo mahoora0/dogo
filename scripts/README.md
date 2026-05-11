@@ -41,16 +41,28 @@ python scripts/police_seed_collector.py \
 
 중간에 끊겼으면 같은 명령을 다시 실행하면 됩니다. 이미 들어간 `ATC_ID`는 스킵합니다.
 
-이미 저장된 페이지를 만나면 기본적으로 연속 2페이지까지 확인한 뒤 조기 종료합니다. 이 값을 바꾸려면:
+공공 API가 가끔 `502 Bad Gateway` 같은 일시 오류를 줄 수 있어서 요청은 기본 5회 재시도합니다. 값을 바꾸려면:
+
+```bash
+python scripts/police_seed_collector.py \
+  --database dogo_seed \
+  --days 30 \
+  --retry-count 10 \
+  --retry-sleep 3
+```
+
+대량 백필은 기본적으로 조기 종료하지 않습니다. 공공 API의 페이지 기준이 수집 중 바뀔 수 있어서, 중간에 이미 저장된 페이지가 보여도 뒤쪽에 신규 데이터가 남아 있을 수 있습니다.
+
+짧은 일일 갱신에서 이미 저장된 페이지를 만나면 멈추고 싶을 때만 값을 지정합니다.
 
 ```bash
 python scripts/police_seed_collector.py \
   --database dogo_seed \
   --days 1 \
-  --duplicate-page-limit 1
+  --duplicate-page-limit 2
 ```
 
-조기 종료를 끄려면:
+조기 종료를 명시적으로 끄려면:
 
 ```bash
 python scripts/police_seed_collector.py \
@@ -81,6 +93,12 @@ export DEV_DB_PASSWORD='mysql_password'
 scripts/import_seed_to_dev.sh seed/dogo_seed_YYYYMMDD.sql.gz
 ```
 
+개발 DB를 비우고 seed 기준으로 새로 만들려면:
+
+```bash
+scripts/import_seed_to_dev.sh seed/dogo_seed_YYYYMMDD.sql.gz --reset-db
+```
+
 개발 DB 이름을 바꾸려면:
 
 ```bash
@@ -99,7 +117,9 @@ SEED_DB_PASSWORD              seed DB 비밀번호
 SEED_LOOKBACK_DAYS            기본 30
 SEED_NUM_ROWS                 기본 100
 SEED_API_SLEEP_SECONDS        기본 0.05
-SEED_DUPLICATE_PAGE_LIMIT     기본 2, 0이면 조기 종료 끔
+SEED_API_RETRY_COUNT          기본 5
+SEED_API_RETRY_SLEEP_SECONDS  기본 2
+SEED_DUPLICATE_PAGE_LIMIT     기본 0, 0이면 조기 종료 끔
 DEV_DB_NAME                   import 대상 개발 DB, 기본 dogo
 DEV_DB_PASSWORD               개발 DB 비밀번호
 ```
