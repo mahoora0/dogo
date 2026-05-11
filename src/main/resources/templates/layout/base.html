@@ -60,15 +60,19 @@
           <div class="category">
             <h3>분실물</h3>
             <ul>
-              <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}">
+              <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}" onclick="location.href='/lost-items'">
                 <a th:href="@{/lost-items}">분실물 검색</a>
               </li>
+              <li>분실 신고</li>
             </ul>
           </div>
           <div class="category">
             <h3>습득물</h3>
             <ul>
-              <li>습득물 등록</li>
+              <li>습득물 검색</li>
+              <li th:classappend="${currentUri == '/lost-items/new' ? 'active' : ''}" onclick="location.href='/lost-items/new'">
+                <a th:href="@{/lost-items/new}">습득물 등록</a>
+              </li>
               <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
                 <a th:href="@{/areas/list}">서비스센터 찾기</a>
               </li>
@@ -77,10 +81,10 @@
           <div class="category">
             <h3>고객지원</h3>
             <ul>
-              <li>FAQ</li>
-              <li>문의하기</li>
               <li>공지사항</li>
-              <li>이용가이드</li>
+              <li>자주 묻는 질문</li>
+              <li>문의하기</li>
+              <li>이용 가이드</li>
             </ul>
           </div>
         </nav>
