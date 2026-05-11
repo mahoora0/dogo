@@ -10,6 +10,7 @@
                   th:value="${area.areaId}"
                   th:data-lat="${area.latitude}"
                   th:data-lng="${area.longitude}"
+                  th:data-level="${area.defaultLevel}"
                   th:text="${area.areaName}"></option>
         </select>
         <div class="divider"></div>
@@ -26,6 +27,8 @@
         <div id="map"></div>
       </div>
     </div>
+
+    <script th:src="@{/js/area.js}"></script>
   </th:block>
 </th:block>
 </html>
