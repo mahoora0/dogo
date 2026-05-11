@@ -1,63 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>분실물센터 메인</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-
-<!-- 헤더 영역 -->
-<header class="navbar">
-  <div class="header-container">
-    <div class="logo">📦 분실물센터</div>
-    <div class="search-box">
-      <input type="text" placeholder="분실물 검색">
-      <button>🔍</button>
-    </div>
-    <div class="nav-links">
-      <span>💬 채팅</span>
-      <button class="btn-login">로그인</button>
-      <button class="btn-join">회원가입</button>
-    </div>
-  </div>
-</header>
-
-<div class="main-layout">
-  <!-- 왼쪽 사이드바 -->
-  <aside class="sidebar">
-    <h2>주인페이지</h2>
-    <nav>
-      <div class="category">
-        <h3>분실물</h3>
-        <ul>
-          <li class="active">분실물 검색</li>
-          <li>분실물 찾기</li>
-          <li>습득물 등록</li>
-        </ul>
-      </div>
-      <div class="category">
-        <h3>습득물</h3>
-        <ul>
-          <li>분실물 검색</li>
-          <li>습득물 검색</li>
-          <li>분실물 등록</li>
-        </ul>
-      </div>
-      <div class="category">
-        <h3>내 주변 보관소</h3>
-        <ul>
-          <li>서비스센터 찾기</li>
-        </ul>
-      </div>
-    </nav>
-  </aside>
-
-  <!-- 오른쪽 메인 콘텐츠 -->
-  <main class="content">
-    <!-- 퀵 액션 버튼 -->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{layout/base :: setContent(~{this::content})}">
+  <th:block th:fragment="content">
     <div class="quick-actions">
-      <div class="action-card lost">
+      <div class="action-card lost" onclick="location.href='/lost-items'">
         <div class="icon">🔍</div>
         <div class="text">
           <p>물건을 잃어버리셨나요?</p>
@@ -73,41 +19,29 @@
       </div>
     </div>
 
-    <!-- 상세 검색 바 -->
-    <div class="filter-bar">
-      <div class="filter-group">
-        <label>물품명</label>
-        <input type="text" placeholder="물품명 입력">
-      </div>
-      <div class="filter-group">
-        <label>장소</label>
-        <select>
-          <option>장소 / 잃어버린 장소</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>날짜</label>
-        <input type="date">
-      </div>
-      <button class="btn-search">검색</button>
-    </div>
-
-    <!-- 피드 리스트 (Grid) -->
-    <div class="feed-grid">
-      <!-- 아이템 반복 구간 -->
-      <div class="feed-item">
-        <div class="item-img">이미지</div>
-        <div class="item-info">
-          <h4>AirPods Pro 2nd Gen</h4>
-          <p class="status lost">[분실]</p>
-          <p class="date">2026.05.09(토)</p>
-          <p class="loc">장소: 서면역 2번 출구</p>
+    <div class="feed-section">
+      <h4 class="section-title">최근 등록된 물품</h4>
+      <div class="feed-grid">
+        <div class="feed-item">
+          <div class="item-img">이미지</div>
+          <div class="item-info">
+            <h4>AirPods Pro 2nd Gen</h4>
+            <p class="status-lost">[분실]</p>
+            <p class="date">2026.05.09(토)</p>
+            <p class="loc">장소: 서면역 2번 출구</p>
+          </div>
+        </div>
+        <div class="feed-item">
+          <div class="item-img">이미지</div>
+          <div class="item-info">
+            <h4>검정색 가죽 지갑</h4>
+            <p class="status-found">[습득]</p>
+            <p class="date">2026.05.10(일)</p>
+            <p class="loc">장소: 정관읍 주민센터</p>
+          </div>
         </div>
       </div>
-      <!-- 추가 아이템들... -->
     </div>
-  </main>
-</div>
-
-</body>
+  </th:block>
+</th:block>
 </html>
