@@ -33,7 +33,19 @@
 
           <!-- 로그인 된 상태 -->
           <th:block sec:authorize="isAuthenticated()">
-            <a th:href="@{/userpage}" class="text-slate-700 font-bold mr-2 hover:underline hover:text-blue-600 transition-colors" sec:authentication="principal.user.nickname">닉네임</a>
+            <a th:href="@{/userpage}" class="flex items-center gap-2 text-slate-700 font-bold mr-2 hover:text-blue-600 transition-colors group">
+              <!-- 프로필 이미지 (있으면 표시, 없으면 기본 아이콘) -->
+              <img th:if="${#authentication.principal.user.profileImageUrl != null}" 
+                   th:src="${#authentication.principal.user.profileImageUrl}" 
+                   class="w-8 h-8 rounded-full object-cover border border-gray-200" alt="프로필">
+              <div th:unless="${#authentication.principal.user.profileImageUrl != null}" 
+                   class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <span class="group-hover:underline" sec:authentication="principal.user.nickname">닉네임</span>
+            </a>
             <form th:action="@{/logout}" method="post" style="margin:0; padding:0; display:inline;">
               <button type="submit" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그아웃</button>
             </form>

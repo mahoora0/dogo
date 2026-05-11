@@ -41,7 +41,7 @@
         <div class="w-full text-left">
           <label class="block text-sm font-bold text-gray-900 ml-1">프로필</label>
         </div>
-        <div class="w-24 h-24 bg-[#D9D9D9] rounded-full flex items-center justify-center text-gray-500 mt-2 mb-2 overflow-hidden relative">
+        <div id="profilePreview" class="w-24 h-24 bg-[#D9D9D9] rounded-full flex items-center justify-center text-gray-500 mt-2 mb-2 overflow-hidden relative">
           <!-- 기본 카메라 아이콘 -->
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
@@ -49,7 +49,7 @@
         </div>
         <label class="cursor-pointer border border-gray-300 text-gray-700 px-4 py-1.5 rounded-custom text-sm hover:bg-gray-50 transition-all font-semibold">
           프로필 사진 업로드
-          <input type="file" name="profileImage" class="hidden" accept="image/*">
+          <input type="file" name="profileImage" class="hidden" accept="image/*" onchange="previewImage(event)">
         </label>
       </div>
 
@@ -133,5 +133,17 @@
   </div>
 </div>
 
+<script>
+  function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function() {
+      const output = document.getElementById('profilePreview');
+      output.innerHTML = `<img src="${reader.result}" class="w-full h-full object-cover">`;
+    };
+    if (event.target.files[0]) {
+      reader.readAsDataURL(event.target.files[0]);
+    }
+  }
+</script>
 </body>
 </html>

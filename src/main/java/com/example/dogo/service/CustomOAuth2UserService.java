@@ -70,6 +70,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             UserSocialAccount socialAccount = socialAccountOpt.get();
             socialAccount.updateProfile(nickname, profileImageUrl);
             user = socialAccount.getUser();
+            
+            // 기존 가입된 유저의 프로필 이미지가 null인 경우 (또는 소셜 프로필로 덮어쓰고 싶은 경우)
+            if (profileImageUrl != null) {
+                user.updateProfileImage(profileImageUrl);
+            }
         } else {
             // 신규 가입
             // 이메일로 기존 일반 유저가 있는지 확인
@@ -82,8 +87,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             }
 
             if (finalUser == null) {
-                // 완전히 새로운 유저
-                finalUser = new User(email, nickname, null);
+                // 완전히 새로운 유저 (loginId, password, phone은 null)
+                finalUser = new com.example.dogo.entity.User(null, null, email, nickname, null, profileImageUrl);
                 userRepository.save(finalUser);
             }
             user = finalUser;
