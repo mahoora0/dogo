@@ -10,6 +10,8 @@ import com.example.dogo.repository.LostItemImageRepository;
 import com.example.dogo.repository.LostItemRepository;
 import com.example.dogo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -55,6 +57,17 @@ public class LostItemService {
 	}
 
 	@Transactional(readOnly = true)
+	public Page<LostItemView> search(String keyword, String category, String area, String status, Pageable pageable) {
+		return lostItemRepository.search(keyword, category, area, status, pageable)
+				.map(this::toListView);
+	}
+
+	@Transactional(readOnly = true)
+	public List<String> getSearchCategoryNames() {
+		return lostItemRepository.findActiveCategoryNames();
+	}
+
+	@Transactional(readOnly = true)
 	public LostItemDetailView getDetail(Long id) {
 		LostItem lostItem = lostItemRepository.findById(id)
 				.filter(item -> !item.isDeleted())
@@ -86,6 +99,8 @@ public class LostItemService {
 
 	@Transactional
 	public Long create(LostItemCreateRequest request) {
+		validateCreateRequest(request);
+
 		User user = getOrCreateDevUser();
 		LostItem lostItem = new LostItem(
 				user,
@@ -101,7 +116,7 @@ public class LostItemService {
 		);
 
 		LostItem savedItem = lostItemRepository.save(lostItem);
-		saveImageIfPresent(savedItem, request.getImage());
+		saveImages(savedItem, request.getUploadImages());
 		return savedItem.getLostId();
 	}
 
@@ -126,7 +141,13 @@ public class LostItemService {
 		);
 	}
 
-	private void saveImageIfPresent(LostItem lostItem, MultipartFile image) {
+	private void saveImages(LostItem lostItem, List<MultipartFile> images) {
+		for (int index = 0; index < images.size(); index++) {
+			saveImageIfPresent(lostItem, images.get(index), index);
+		}
+	}
+
+	private void saveImageIfPresent(LostItem lostItem, MultipartFile image, int sortOrder) {
 		if (image == null || image.isEmpty()) {
 			return;
 		}
@@ -138,6 +159,9 @@ public class LostItemService {
 			String extension = extractExtension(originalName);
 			String storedName = UUID.randomUUID() + extension;
 			Path targetPath = lostItemUploadPath.resolve(storedName).normalize();
+			if (!targetPath.startsWith(lostItemUploadPath)) {
+				throw new IllegalArgumentException("올바르지 않은 이미지 파일명입니다.");
+			}
 
 			image.transferTo(targetPath);
 
@@ -148,10 +172,25 @@ public class LostItemService {
 					"/uploads/lost-items/" + storedName,
 					image.getContentType(),
 					image.getSize(),
-					0
+					sortOrder
 			));
 		} catch (IOException exception) {
 			throw new UncheckedIOException("이미지 저장에 실패했습니다.", exception);
+		}
+	}
+
+	private void validateCreateRequest(LostItemCreateRequest request) {
+		if (request == null) {
+			throw new IllegalArgumentException("분실물 정보를 입력해주세요.");
+		}
+		if (!StringUtils.hasText(request.getItemName())) {
+			throw new IllegalArgumentException("물품명을 입력해주세요.");
+		}
+		if (!StringUtils.hasText(request.getCategoryMain())) {
+			throw new IllegalArgumentException("카테고리를 선택해주세요.");
+		}
+		if (!StringUtils.hasText(request.getLostPlace())) {
+			throw new IllegalArgumentException("분실 장소를 입력해주세요.");
 		}
 	}
 

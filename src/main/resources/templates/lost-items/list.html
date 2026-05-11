@@ -33,11 +33,7 @@
 		<input name="keyword" th:value="${keyword}" placeholder="물품명, 제목, 설명" class="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
 		<select name="category" class="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
 			<option value="">전체 카테고리</option>
-			<option value="지갑" th:selected="${category == '지갑'}">지갑</option>
-			<option value="가방" th:selected="${category == '가방'}">가방</option>
-			<option value="전자기기" th:selected="${category == '전자기기'}">전자기기</option>
-			<option value="의류" th:selected="${category == '의류'}">의류</option>
-			<option value="기타" th:selected="${category == '기타'}">기타</option>
+			<option th:each="categoryOption : ${searchCategories}" th:value="${categoryOption}" th:text="${categoryOption}" th:selected="${category == categoryOption}">지갑</option>
 		</select>
 		<input name="area" th:value="${area}" placeholder="지역 또는 장소" class="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
 		<select name="status" class="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
@@ -68,6 +64,20 @@
 	<p th:if="${#lists.isEmpty(lostItems)}" class="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-10 text-center text-slate-500">
 		검색 결과가 없습니다.
 	</p>
+
+	<nav th:if="${lostItemPage.totalPages > 1}" class="mt-8 flex items-center justify-between gap-3 text-sm">
+		<a th:classappend="${lostItemPage.first} ? ' pointer-events-none opacity-40'"
+		   th:href="@{/lost-items(keyword=${keyword}, category=${category}, area=${area}, status=${status}, page=${page - 1}, size=${size})}"
+		   class="rounded-md border border-slate-300 bg-white px-3 py-2 font-semibold text-slate-700 hover:bg-slate-100">이전</a>
+		<span class="text-slate-500">
+			<span th:text="${page + 1}">1</span>
+			/
+			<span th:text="${lostItemPage.totalPages}">1</span>
+		</span>
+		<a th:classappend="${lostItemPage.last} ? ' pointer-events-none opacity-40'"
+		   th:href="@{/lost-items(keyword=${keyword}, category=${category}, area=${area}, status=${status}, page=${page + 1}, size=${size})}"
+		   class="rounded-md border border-slate-300 bg-white px-3 py-2 font-semibold text-slate-700 hover:bg-slate-100">다음</a>
+	</nav>
 </main>
 </body>
 </html>

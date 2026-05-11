@@ -6,9 +6,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "USERS")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
 	@Id
@@ -31,28 +36,9 @@ public class User {
 	@Column(name = "STATUS", nullable = false)
 	private String status = "ACTIVE";
 
-	protected User() {
-	}
-
 	public User(String email, String nickname, String phone) {
 		this.email = email;
 		this.nickname = nickname;
 		this.phone = phone;
-	}
-
-	public Long getUserNo() {
-		return userNo;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public String getNickname() {
-		return nickname;
-	}
-
-	public String getPhone() {
-		return phone;
 	}
 }
