@@ -50,8 +50,12 @@
         <div class="category">
           <h3>고객지원</h3>
           <ul>
-            <li>FAQ</li>
-            <li>문의하기</li>
+            <li th:classappend="${currentUri == '/faq' ? 'active' : ''}">
+              <a th:href="@{/faq}">FAQ</a>
+            </li>
+            <li th:classappend="${currentUri == '/inquiry' ? 'active' : ''}">
+              <a th:href="@{/inquiry}">문의하기</a>
+            </li>
             <li>공지사항</li>
             <li>이용가이드</li>
           </ul>
