@@ -47,6 +47,9 @@ class FoundItemServiceTest {
 	@Mock
 	private UserRepository userRepository;
 
+	@Mock
+	private PoliceFoundItemDetailEnrichmentService policeFoundItemDetailEnrichmentService;
+
 	@TempDir
 	private Path uploadDir;
 
@@ -58,6 +61,7 @@ class FoundItemServiceTest {
 				foundItemRepository,
 				foundItemImageRepository,
 				userRepository,
+				policeFoundItemDetailEnrichmentService,
 				uploadDir.toString()
 		);
 	}
@@ -165,7 +169,8 @@ class FoundItemServiceTest {
 				"강남역",
 				"강남경찰서",
 				"검정",
-				content
+				content,
+				"02-0000-0000"
 		);
 		ReflectionTestUtils.setField(foundItem, "foundId", id);
 		return foundItem;

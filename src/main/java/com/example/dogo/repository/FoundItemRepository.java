@@ -11,13 +11,18 @@ import java.util.List;
 
 public interface FoundItemRepository extends JpaRepository<FoundItem, Long> {
 
+	boolean existsByAtcIdAndFdSn(String atcId, Integer fdSn);
+
+	boolean existsBySourceType(String sourceType);
+
 	@Query("""
 			SELECT item
 			FROM FoundItem item
 			WHERE item.deleted = false
 				AND (:keyword IS NULL OR :keyword = ''
 					OR LOWER(item.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-					OR LOWER(item.itemName) LIKE LOWER(CONCAT('%', :keyword, '%')))
+					OR LOWER(item.itemName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+					OR LOWER(item.content) LIKE LOWER(CONCAT('%', :keyword, '%')))
 				AND (:category IS NULL OR :category = '' OR item.categoryMain = :category)
 				AND (:area IS NULL OR :area = ''
 					OR LOWER(item.foundArea) LIKE LOWER(CONCAT('%', :area, '%'))

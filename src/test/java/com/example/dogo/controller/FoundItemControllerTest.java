@@ -137,6 +137,7 @@ class FoundItemControllerTest {
 				"KEEPING",
 				"보관중",
 				"카드가 들어 있습니다",
+				"서울역(한국철도공사) / 02-3149-2531",
 				"검정",
 				List.of("/uploads/found-items/wallet.jpg")
 		);

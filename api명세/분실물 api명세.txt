@@ -1,0 +1,84 @@
+﻿분실한 물품에 대한 분류, 지역, 기간 정보를 조회 할 수 있다.
+활용승인 절차 개발단계 : 심의승인 / 운영단계 : 자동승인
+신청가능 트래픽 개발계정 : 100,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능
+요청주소 http://apis.data.go.kr/1320000/LostGoodsInfoInqireService/getLostGoodsInfoAccToClAreaPd
+서비스URL http://apis.data.go.kr/1320000/LostGoodsInfoInqireService
+ 활용신청
+요청변수(Request Parameter)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+분실물 등록날짜	START_YMD	8	옵션	20170801	분실물 등록날짜
+분실물 등록날짜	END_YMD	8	옵션	20171130	분실물 등록날짜
+상위물품코드	PRDT_CL_CD_01	6	옵션	PRA000	상위물품코드
+하위물품코드	PRDT_CL_CD_02	6	옵션	PRA300	하위물품코드
+분실지역코드	LST_LCT_CD	100	옵션	LCA000	분실지역코드
+페이지 번호	pageNo	100	옵션	1	페이지 번호
+목록 건수	numOfRows	100	옵션	10	목록 건수
+출력결과(Response Element)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+결과코드	resultCode	2	필수	00	00:성공
+결과메시지	resultMag	10	필수	NORMAL SERVICE	결과메시지
+관리ID	atcId	17	옵션	L2017120100000687	관리ID
+분실지역명	lstPlace	100	옵션	사당초등학교버스정류장옆,우림교회앞	분실지역명
+분실물명	lstPrdtNm	500	옵션	초등학생가방	분실물명
+게시제목	lstSbjt	300	옵션	초등학생 가방	게시제목
+분실일자	lstYmd	10	옵션	2017-11-28	분실일자
+물품분류명	prdtClNm	100	옵션	가방 > 기타가방	물품분류명
+일련번호	rnum	10	옵션	1	일련번호
+
+
+
+분실한 물품의 명칭, 보관 장소별 습득물 정보를 조회 할 수 있다.
+활용승인 절차 개발단계 : 심의승인 / 운영단계 : 자동승인
+신청가능 트래픽 개발계정 : 100,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능
+요청주소 http://apis.data.go.kr/1320000/LostGoodsInfoInqireService/getLostGoodsInfoAccTpNmCstdyPlace
+서비스URL http://apis.data.go.kr/1320000/LostGoodsInfoInqireService
+ 활용신청
+요청변수(Request Parameter)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+분실지역명	LST_PLACE	100	옵션	역	분실지역명
+분실물명	LST_PRDT_NM	500	옵션	가방	분실물명
+페이지 번호	pageNo	100	옵션	1	페이지 번호
+목록 건수	numOfRows	100	옵션	10	목록 건수
+출력결과(Response Element)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+결과코드	resultCode	2	필수	00	00:성공
+결과메시지	resultMag	10	옵션	NORMAL SERVICE	결과메시지
+관리ID	atcId	17	옵션	L2019010600000684	관리ID
+분실지역명	lstPlace	100	옵션	금정역 1호선 하행선 플랫폼	분실지역명
+분실물명	lstPrdtNm	500	옵션	상호 불상의 검정색 백팩 가방 1개	분실물명
+게시제목	lstSbjt	300	옵션	상호 불상의 검정색 백팩 가방 1개(블랙(검정)색)을 분실하였습니다	게시제목
+분실일자	lstYmd	10	옵션	2019-01-06	분실일자
+물품분류명	prdtClNm	100	옵션	가방 > 남성용가방	물품분류명
+일련번호	rnum	10	옵션	1	일련번호
+
+
+분실한 물품의 상세한 정보를 조회 할 수 있다.
+활용승인 절차 개발단계 : 심의승인 / 운영단계 : 자동승인
+신청가능 트래픽 개발계정 : 100,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능
+요청주소 http://apis.data.go.kr/1320000/LostGoodsInfoInqireService/getLostGoodsDetailInfo
+서비스URL http://apis.data.go.kr/1320000/LostGoodsInfoInqireService
+ 활용신청
+요청변수(Request Parameter)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+관리ID	ATC_ID	17	필수	L2018120100000706	관리ID
+출력결과(Response Element)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+결과코드	resultCode	2	필수	00	00:성공
+결과메시지	resultMag	10	필수	NORMAL SERVICE	결과메세지
+물품명	lstPrdtNm	200	옵션		물품명
+관리ID	atcId	17	옵션		관리ID
+분실일자	lstYmd	8	옵션		분실일자
+분실시간	lstHor	20	옵션		분실시간
+분실장소	lstPlace	100	옵션		분실장소
+물품분류명	prdtClNm	200	옵션		물품분류명
+분실물 상태명	lstSteNm	100	옵션		분실물 상태명
+특이사항	uniq	4000	옵션		특이사항
+분실지역명	lstLctNm	200	옵션		분실지역명
+게시제목	lstSbjt	500	옵션		게시제목
+기관ID	orgId	8	옵션		기관ID
+기관명	orgNm	100	옵션		기관명
+기관전화번호	tel	15	옵션		기관전화번호
+분실장소구분명	lstPlaceSeNm	100	옵션		분실장소구분명
+분실물이미지명	lstFilePathImg	300	옵션		분실물이미지명
+
+

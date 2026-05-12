@@ -71,6 +71,9 @@ public class FoundItem {
 	@Column(name = "KEEP_PLACE")
 	private String keepPlace;
 
+	@Column(name = "CONTACT")
+	private String contact;
+
 	@Column(name = "CUSTODY_STATUS")
 	private String custodyStatus;
 
@@ -109,7 +112,8 @@ public class FoundItem {
 			String foundPlace,
 			String keepPlace,
 			String colorName,
-			String content
+			String content,
+			String contact
 	) {
 		this.user = user;
 		this.title = title;
@@ -122,5 +126,77 @@ public class FoundItem {
 		this.foundPlace = foundPlace;
 		this.keepPlace = keepPlace;
 		this.colorName = colorName;
+		this.contact = contact;
+	}
+
+	public static FoundItem fromPolice(
+			String atcId,
+			Integer fdSn,
+			String title,
+			String content,
+			String itemName,
+			String categoryMain,
+			String categorySub,
+			String colorName,
+			LocalDateTime foundAt,
+			String foundArea,
+			String foundPlace,
+			String keepPlace,
+			String contact,
+			String custodyStatus,
+			String receiveType,
+			String status
+	) {
+		FoundItem foundItem = new FoundItem();
+		foundItem.sourceType = "POLICE";
+		foundItem.atcId = atcId;
+		foundItem.fdSn = fdSn;
+		foundItem.title = title;
+		foundItem.content = content;
+		foundItem.itemName = itemName;
+		foundItem.categoryMain = categoryMain;
+		foundItem.categorySub = categorySub;
+		foundItem.colorName = colorName;
+		foundItem.foundAt = foundAt;
+		foundItem.foundArea = foundArea;
+		foundItem.foundPlace = foundPlace;
+		foundItem.keepPlace = keepPlace;
+		foundItem.contact = contact;
+		foundItem.custodyStatus = custodyStatus;
+		foundItem.receiveType = receiveType;
+		foundItem.status = status;
+		return foundItem;
+	}
+
+	public void updatePoliceDetail(
+			String title,
+			String content,
+			String itemName,
+			String categoryMain,
+			String categorySub,
+			String colorName,
+			LocalDateTime foundAt,
+			String foundArea,
+			String foundPlace,
+			String keepPlace,
+			String contact,
+			String custodyStatus,
+			String receiveType,
+			String status
+	) {
+		this.title = title;
+		this.content = content;
+		this.itemName = itemName;
+		this.categoryMain = categoryMain;
+		this.categorySub = categorySub;
+		this.colorName = colorName;
+		this.foundAt = foundAt;
+		this.foundArea = foundArea;
+		this.foundPlace = foundPlace;
+		this.keepPlace = keepPlace;
+		this.contact = contact;
+		this.custodyStatus = custodyStatus;
+		this.receiveType = receiveType;
+		this.status = status;
 	}
 }

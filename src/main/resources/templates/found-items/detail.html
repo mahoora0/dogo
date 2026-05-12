@@ -59,6 +59,10 @@
             <dd th:text="${foundItem.keepPlace ?: '-'}" class="text-sm font-medium text-slate-800">-</dd>
           </div>
           <div class="flex gap-4 px-4 py-3.5">
+            <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">연락처</dt>
+            <dd th:text="${foundItem.contact ?: '-'}" class="text-sm font-medium text-slate-800">02-0000-0000</dd>
+          </div>
+          <div class="flex gap-4 px-4 py-3.5">
             <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">습득 일시</dt>
             <dd th:text="${#temporals.format(foundItem.foundAt, 'yyyy.MM.dd HH:mm')}" class="text-sm font-medium text-slate-800">2026.05.02 14:30</dd>
           </div>

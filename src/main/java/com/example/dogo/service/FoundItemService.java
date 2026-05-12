@@ -35,17 +35,20 @@ public class FoundItemService {
 	private final FoundItemRepository foundItemRepository;
 	private final FoundItemImageRepository foundItemImageRepository;
 	private final UserRepository userRepository;
+	private final PoliceFoundItemDetailEnrichmentService policeFoundItemDetailEnrichmentService;
 	private final Path foundItemUploadPath;
 
 	public FoundItemService(
 			FoundItemRepository foundItemRepository,
 			FoundItemImageRepository foundItemImageRepository,
 			UserRepository userRepository,
+			PoliceFoundItemDetailEnrichmentService policeFoundItemDetailEnrichmentService,
 			@Value("${file.upload-dir}") String uploadDir
 	) {
 		this.foundItemRepository = foundItemRepository;
 		this.foundItemImageRepository = foundItemImageRepository;
 		this.userRepository = userRepository;
+		this.policeFoundItemDetailEnrichmentService = policeFoundItemDetailEnrichmentService;
 		this.foundItemUploadPath = Path.of(uploadDir, "found-items").toAbsolutePath().normalize();
 	}
 
@@ -65,6 +68,8 @@ public class FoundItemService {
 		FoundItem foundItem = foundItemRepository.findById(id)
 				.filter(item -> !item.isDeleted())
 				.orElseThrow(() -> new IllegalArgumentException("습득물 게시글을 찾을 수 없습니다."));
+
+		policeFoundItemDetailEnrichmentService.enrichIfNeeded(foundItem);
 
 		List<String> imageUrls = foundItemImageRepository.findByFoundItemOrderBySortOrderAscImageIdAsc(foundItem).stream()
 				.map(FoundItemImage::getImageUrl)
@@ -86,6 +91,7 @@ public class FoundItemService {
 				foundItem.getStatus(),
 				statusLabel(foundItem.getStatus()),
 				foundItem.getContent(),
+				foundItem.getContact(),
 				foundItem.getColorName(),
 				imageUrls
 		);
@@ -107,7 +113,8 @@ public class FoundItemService {
 				blankToNull(request.getFoundPlace()),
 				blankToNull(request.getKeepPlace()),
 				blankToNull(request.getColorName()),
-				blankToNull(request.getContent())
+				blankToNull(request.getContent()),
+				null
 		);
 
 		FoundItem savedItem = foundItemRepository.save(foundItem);
