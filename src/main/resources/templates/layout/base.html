@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <title>분실물센터</title>
     <script type="text/javascript"
-      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2b25620b9f4f16cf99df871475b41e4&libraries=services&autoload=false"></script>
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2b25620b9f4f16cf99df871475b41e4&libraries=services&autoload=false"></script>
     <script th:src="@{/js/common.js}"></script>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/areaList.css}">
@@ -33,7 +33,14 @@
 
           <!-- 로그인 된 상태 -->
           <th:block sec:authorize="isAuthenticated()">
-            <a th:href="@{/userpage}" class="flex items-center gap-2 text-slate-700 font-bold mr-2 hover:text-blue-600 transition-colors group">
+            <a th:href="@{/chat}" class="chat-button" title="채팅하기">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
+              </svg>
+              <span class="chat-text">채팅</span>
+            </a>
+            <a th:href="@{/userpage}"
+               class="flex items-center gap-2 text-slate-700 font-bold mr-2 hover:text-blue-600 transition-colors group">
               <!-- 프로필 이미지 (있으면 표시, 없으면 기본 아이콘) -->
               <img th:if="${#authentication.principal.user.profileImageUrl != null}"
                    th:src="${#authentication.principal.user.profileImageUrl}"
@@ -41,7 +48,7 @@
               <div th:unless="${#authentication.principal.user.profileImageUrl != null}"
                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                 </svg>
               </div>
               <span class="group-hover:underline" sec:authentication="principal.user.nickname">닉네임</span>
@@ -63,7 +70,9 @@
               <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}" onclick="location.href='/lost-items'">
                 <a th:href="@{/lost-items}">분실물 검색</a>
               </li>
-              <li>분실 신고</li>
+              <li th:classappend="${currentUri == '/lost-items/new' ? 'active' : ''}" onclick="location.href='/lost-items/new'">
+                <a th:href="@{/lost-items/new}">분실물 등록</a>
+              </li>
             </ul>
           </div>
           <div class="category">
@@ -75,7 +84,7 @@
               <li th:classappend="${currentUri == '/found-items/new' ? 'active' : ''}" onclick="location.href='/found-items/new'">
                 <a th:href="@{/found-items/new}">습득물 등록</a>
               </li>
-              <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
+              <li th:classappend="${currentUri == '/areas/list' ? 'active' : ''}">
                 <a th:href="@{/areas/list}">서비스센터 찾기</a>
               </li>
             </ul>
