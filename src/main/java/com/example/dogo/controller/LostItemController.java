@@ -34,11 +34,6 @@ public class LostItemController {
 		return categoryService.getActiveCategoryNames();
 	}
 
-/*	@GetMapping("/")
-	public String home() {
-		return "redirect:/lost-items";
-	}*/
-
 	@GetMapping("/lost-items")
 	public String list(
 			@RequestParam(required = false) String keyword,
