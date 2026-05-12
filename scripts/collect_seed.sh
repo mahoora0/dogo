@@ -8,7 +8,15 @@ if [[ -f .env ]]; then
   set +a
 fi
 
-if [[ ! -x .venv-seed/bin/python ]]; then
+export UV_CACHE_DIR="${UV_CACHE_DIR:-.tmp/uv-cache}"
+mkdir -p "$UV_CACHE_DIR"
+
+if command -v uv >/dev/null 2>&1; then
+  if [[ ! -x .venv-seed/bin/python ]]; then
+    uv venv .venv-seed
+  fi
+  uv pip install --python .venv-seed/bin/python -r scripts/requirements-seed.txt
+elif [[ ! -x .venv-seed/bin/python ]]; then
   python3 -m venv .venv-seed
   .venv-seed/bin/python -m pip install -r scripts/requirements-seed.txt
 fi
