@@ -11,26 +11,16 @@ body {
 }
 
 .navbar .logo img {
-    width: 230px;       /* 원하는 가로 크기 */
-    height: auto;        /* 가로 비율에 맞춰 높이를 자동 계산 */
+    height: 50px;
+    width: auto;
     display: block;
-    object-fit: contain; /* 이미지가 잘리거나 왜곡되지 않게 컨테이너 안에 맞춤 */
-}
-
-/* 로고가 커짐에 따라 헤더 높이가 너무 답답해 보인다면 padding을 조절하세요 */
-.navbar {
-    background: #fff;
-    border-bottom: 1px solid #ddd;
-    padding: 15px 20px; /* 위아래 패딩을 살짝 늘려주면 여유로워 보입니다 */
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    object-fit: contain;
 }
 
 .navbar {
     background: #fff;
-    border-bottom: 1px solid #ddd;
-    padding: 10px 20px;
+    border-bottom: 1px solid #eee;
+    padding: 0 20px;
     position: sticky;
     top: 0;
     z-index: 100;

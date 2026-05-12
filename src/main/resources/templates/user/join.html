@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원가입 - 두고내림</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+      /* 소셜 브랜드 컬러 및 이미지 스타일링 */
+      .brand-naver { background-color: #03C75A; color: white; }
+      .brand-kakao { background-color: #FEE500; color: #3C1E1E; }
+      .brand-google { background-color: #ffffff; color: #1f2937; border: 1px solid #e5e7eb; }
+
+      /* 이미지 느낌의 둥근 모서리 */
+      .rounded-custom { border-radius: 12px; }
+  </style>
+</head>
+<body class="bg-[#F8F9FA] flex items-center justify-center min-h-screen p-4">
+
+<div class="w-full max-w-[550px]">
+
+  <!-- 로고 영역 (로그인 페이지와 동일한 구조) -->
+  <div class="bg-white w-full py-6 mb-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center">
+    <a th:href="@{/}" class="flex items-center">
+      <img th:src="@{/images/logo.png}" class="w-10 h-10 object-contain" alt="로고">
+    </a>
+  </div>
+
+  <div class="bg-white p-8 sm:p-12 rounded-[24px] shadow-sm border border-gray-100">
+
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-900 mb-2">회원가입</h1>
+      <p class="text-gray-500 text-sm">분실물 센터 계정을 만들어보세요</p>
+    </div>
+
+    <!-- 회원가입 폼 -->
+    <form action="#" th:action="@{/join}" method="post" enctype="multipart/form-data" class="space-y-5">
+
+      <!-- 프로필 -->
+      <div class="space-y-3 flex flex-col items-center">
+        <div class="w-full text-left">
+          <label class="block text-sm font-bold text-gray-900 ml-1">프로필</label>
+        </div>
+        <div id="profilePreview" class="w-24 h-24 bg-[#D9D9D9] rounded-full flex items-center justify-center text-gray-500 mt-2 mb-2 overflow-hidden relative">
+          <!-- 기본 카메라 아이콘 -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <label class="cursor-pointer border border-gray-300 text-gray-700 px-4 py-1.5 rounded-custom text-sm hover:bg-gray-50 transition-all font-semibold">
+          프로필 사진 업로드
+          <input type="file" name="profileImage" class="hidden" accept="image/*" onchange="previewImage(event)">
+        </label>
+      </div>
+
+      <!-- 아이디 / 비밀번호 -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-2">
+          <label class="block text-sm font-bold text-gray-900 ml-1">아이디</label>
+          <input type="text" name="username" placeholder="아이디 입력"
+                 class="w-full px-4 py-3 bg-[#E9ECEF] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-500 text-sm">
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-bold text-gray-900 ml-1">비밀번호</label>
+          <input type="password" name="password" placeholder="••••••••"
+                 class="w-full px-4 py-3 bg-[#E9ECEF] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-500 text-sm">
+        </div>
+      </div>
+
+      <!-- 비밀번호 확인 -->
+      <div class="space-y-2">
+        <label class="block text-sm font-bold text-gray-900 ml-1">비밀번호 확인</label>
+        <input type="password" name="passwordConfirm" placeholder="비밀번호 재입력"
+               class="w-full px-4 py-3 bg-[#E9ECEF] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-500 text-sm">
+      </div>
+
+      <!-- 이메일 -->
+      <div class="space-y-2">
+        <label class="block text-sm font-bold text-gray-900 ml-1">이메일</label>
+        <div class="flex gap-2">
+          <input type="email" name="email" placeholder="이메일 입력"
+                 class="flex-1 px-4 py-3 bg-[#E9ECEF] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-500 text-sm">
+          <button type="button" class="bg-[#868E96] hover:bg-[#495057] text-white px-5 py-3 rounded-custom text-sm font-semibold transition-all whitespace-nowrap">
+            인증 요청
+          </button>
+        </div>
+      </div>
+
+      <!-- 연락처 -->
+      <div class="space-y-2">
+        <label class="block text-sm font-bold text-gray-900 ml-1">연락처</label>
+        <div class="flex gap-2">
+          <input type="text" name="phone" placeholder="연락처 입력"
+                 class="flex-1 px-4 py-3 bg-[#E9ECEF] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-500 text-sm">
+          <button type="button" class="bg-[#868E96] hover:bg-[#495057] text-white px-5 py-3 rounded-custom text-sm font-semibold transition-all whitespace-nowrap">
+            인증 요청
+          </button>
+        </div>
+      </div>
+
+      <!-- 회원가입 완료 버튼 -->
+      <button type="submit" class="w-full bg-[#343A40] text-white py-4 rounded-custom font-bold text-md hover:bg-black transition-all mt-6">
+        회원가입 완료
+      </button>
+
+      <!-- 로그인 안내 -->
+      <div class="text-center mt-4">
+        <span class="text-sm text-gray-600">이미 계정이 있으신가요?</span>
+        <a th:href="@{/login}" class="text-sm font-bold text-gray-900 ml-1">로그인하기</a>
+      </div>
+    </form>
+
+    <div class="relative my-8">
+      <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
+      <div class="relative flex justify-center text-[12px] font-bold text-gray-500 tracking-tight">
+        <span class="bg-white px-4">또는 SNS 계정으로 회원가입</span>
+      </div>
+    </div>
+
+    <!-- SNS 로그인/가입 -->
+    <div class="space-y-3">
+      <a th:href="@{/oauth2/authorization/google}" class="brand-google flex items-center justify-center w-full py-3.5 rounded-custom hover:bg-gray-50 transition-all border border-gray-300">
+        <span class="font-bold flex items-center gap-2"><span class="text-blue-500 text-lg font-extrabold">G</span> 구글 로그인</span>
+      </a>
+      <a th:href="@{/oauth2/authorization/naver}" class="brand-naver flex items-center justify-center w-full py-3.5 rounded-custom hover:opacity-90 transition-all">
+        <span class="font-bold">N 네이버 로그인</span>
+      </a>
+      <a th:href="@{/oauth2/authorization/kakao}" class="brand-kakao flex items-center justify-center w-full py-3.5 rounded-custom hover:opacity-90 transition-all">
+        <span class="font-bold">K 카카오 로그인</span>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function() {
+      const output = document.getElementById('profilePreview');
+      output.innerHTML = `<img src="${reader.result}" class="w-full h-full object-cover">`;
+    };
+    if (event.target.files[0]) {
+      reader.readAsDataURL(event.target.files[0]);
+    }
+  }
+</script>
+</body>
+</html>
