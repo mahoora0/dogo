@@ -1,0 +1,31 @@
+package com.example.dogo.service;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Component;
+
+@Component
+public class PoliceItemStartupBackfillRunner {
+
+	private final PoliceLostItemSyncRunner lostItemSyncRunner;
+	private final PoliceFoundItemSyncRunner foundItemSyncRunner;
+	private final TaskExecutor backfillExecutor;
+
+	public PoliceItemStartupBackfillRunner(
+			PoliceLostItemSyncRunner lostItemSyncRunner,
+			PoliceFoundItemSyncRunner foundItemSyncRunner,
+			@Qualifier("policeStartupBackfillExecutor") TaskExecutor backfillExecutor
+	) {
+		this.lostItemSyncRunner = lostItemSyncRunner;
+		this.foundItemSyncRunner = foundItemSyncRunner;
+		this.backfillExecutor = backfillExecutor;
+	}
+
+	@EventListener(ApplicationReadyEvent.class)
+	public void backfillOnStartupIfEmpty() {
+		backfillExecutor.execute(lostItemSyncRunner::backfillOnStartupIfEmpty);
+		backfillExecutor.execute(foundItemSyncRunner::backfillOnStartupIfEmpty);
+	}
+}

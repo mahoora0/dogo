@@ -61,7 +61,7 @@ public class PoliceLostItemSyncService {
 	}
 
 	PoliceLostItemSyncResult syncBackfill(LocalDate startDate, LocalDate endDate) {
-		return sync(startDate, endDate, false, false);
+		return sync(startDate, endDate, false, true);
 	}
 
 	PoliceLostItemSyncResult syncIncremental(LocalDate startDate, LocalDate endDate) {

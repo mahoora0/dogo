@@ -60,9 +60,13 @@ class DetailItem:
 
 def main() -> int:
     args = parse_args()
-    service_key = args.service_key or os.getenv("POLICE_LOST_ITEM_SERVICE_KEY")
+    service_key = (
+        args.service_key
+        or os.getenv("POLICE_SERVICE_KEY")
+        or os.getenv("POLICE_LOST_ITEM_SERVICE_KEY")
+    )
     if not service_key:
-        print("POLICE_LOST_ITEM_SERVICE_KEY is required.", file=sys.stderr)
+        print("POLICE_SERVICE_KEY is required.", file=sys.stderr)
         return 2
 
     start_date = parse_date(args.start_date) if args.start_date else date.today() - timedelta(days=args.days)
