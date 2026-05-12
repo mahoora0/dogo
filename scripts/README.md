@@ -7,13 +7,13 @@
 Windows PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/setup_seed_env.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\setup_seed_env.ps1
 ```
 
 `uv`가 아직 없으면 설치까지 같이 실행할 수 있습니다:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/setup_seed_env.ps1 -InstallUv
+powershell -ExecutionPolicy Bypass -File .\scripts\setup_seed_env.ps1 -InstallUv
 ```
 
 macOS/Linux:
@@ -105,19 +105,19 @@ seed/dogo_seed_YYYYMMDD.sql.gz
 Windows PowerShell에서는 덤프 파일을 생략하면 `seed/*.sql.gz` 중 최신 파일을 Python/PyMySQL로 import합니다:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/import_seed_to_dev.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\import_seed_to_dev.ps1
 ```
 
 개발 DB를 비우고 seed 기준으로 새로 만들려면:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/import_seed_to_dev.ps1 -ResetDb
+powershell -ExecutionPolicy Bypass -File .\scripts\import_seed_to_dev.ps1 -ResetDb
 ```
 
 특정 덤프 파일을 지정하려면:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/import_seed_to_dev.ps1 -DumpFile seed/dogo_seed_YYYYMMDD.sql.gz
+powershell -ExecutionPolicy Bypass -File .\scripts\import_seed_to_dev.ps1 -DumpFile seed/dogo_seed_YYYYMMDD.sql.gz
 ```
 
 macOS/Linux:
