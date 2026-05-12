@@ -74,11 +74,13 @@ public class LostItemController {
 		model.addAttribute("status", status);
 		model.addAttribute("page", safePage);
 		model.addAttribute("size", safeSize);
+		model.addAttribute("currentUri", "/lost-items");
 		return "lost-items/list";
 	}
 
 	@GetMapping("/lost-items/new")
-	public String createForm() {
+	public String createForm(Model model) {
+		model.addAttribute("currentUri", "/lost-items/new");
 		return "lost-items/new";
 	}
 
