@@ -90,7 +90,7 @@ public class LostItemService {
 				lostItem.getLostId(),
 				lostItem.getTitle(),
 				lostItem.getItemName(),
-				lostItem.getCategoryMain(),
+				categoryName(lostItem),
 				lostItem.getLostArea(),
 				lostItem.getLostPlace(),
 				lostItem.getLostAt(),
@@ -103,10 +103,10 @@ public class LostItemService {
 	}
 
 	@Transactional
-	public Long create(LostItemCreateRequest request) {
+	public Long create(LostItemCreateRequest request, User loginUser) {
 		validateCreateRequest(request);
 
-		User user = getOrCreateDevUser();
+		User user = (loginUser != null) ? loginUser : getOrCreateDevUser();
 		LostItem lostItem = new LostItem(
 				user,
 				defaultText(request.getTitle(), request.getItemName()),
@@ -134,7 +134,7 @@ public class LostItemService {
 				lostItem.getLostId(),
 				lostItem.getTitle(),
 				lostItem.getItemName(),
-				lostItem.getCategoryMain(),
+				categoryName(lostItem),
 				lostItem.getLostArea(),
 				lostItem.getLostPlace(),
 				lostItem.getLostAt(),
@@ -234,6 +234,16 @@ public class LostItemService {
 			return "";
 		}
 		return extension;
+	}
+
+	private String categoryName(LostItem lostItem) {
+		if (!StringUtils.hasText(lostItem.getCategoryMain())) {
+			return null;
+		}
+		if (StringUtils.hasText(lostItem.getCategorySub())) {
+			return lostItem.getCategoryMain().trim() + " > " + lostItem.getCategorySub().trim();
+		}
+		return lostItem.getCategoryMain().trim();
 	}
 
 	private String statusLabel(String status) {

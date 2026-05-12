@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,7 +42,9 @@ class LostItemControllerTest {
 		categoryService = mock(CategoryService.class);
 		when(categoryService.getActiveCategoryNames()).thenReturn(List.of("지갑", "가방", "전자기기", "의류", "기타"));
 		when(lostItemService.getSearchCategoryNames()).thenReturn(List.of("가방", "전자기기"));
-		mockMvc = MockMvcBuilders.standaloneSetup(new LostItemController(categoryService, lostItemService)).build();
+		mockMvc = MockMvcBuilders.standaloneSetup(new LostItemController(categoryService, lostItemService))
+				.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+				.build();
 	}
 
 	@Test
@@ -83,7 +87,7 @@ class LostItemControllerTest {
 
 	@Test
 	void createRedirectsToCreatedLostItemDetail() throws Exception {
-		when(lostItemService.create(any(LostItemCreateRequest.class))).thenReturn(7L);
+		when(lostItemService.create(any(LostItemCreateRequest.class), isNull())).thenReturn(7L);
 
 		mockMvc.perform(post("/lost-items")
 						.param("title", "검정 지갑을 찾습니다")
@@ -97,7 +101,7 @@ class LostItemControllerTest {
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/lost-items/7"));
 
-		verify(lostItemService).create(any(LostItemCreateRequest.class));
+		verify(lostItemService).create(any(LostItemCreateRequest.class), isNull());
 	}
 
 	@Test

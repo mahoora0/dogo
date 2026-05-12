@@ -1,8 +1,8 @@
 package com.example.dogo.controller;
 
-import com.example.dogo.dto.LostItemCreateRequest;
+import com.example.dogo.dto.FoundItemCreateRequest;
 import com.example.dogo.service.CategoryService;
-import com.example.dogo.service.LostItemService;
+import com.example.dogo.service.FoundItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,19 +25,19 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-public class LostItemController {
+public class FoundItemController {
 
 	private static final int MAX_PAGE_SIZE = 30;
 
 	private final CategoryService categoryService;
-	private final LostItemService lostItemService;
+	private final FoundItemService foundItemService;
 
 	@ModelAttribute("categories")
 	public List<String> categories() {
 		return categoryService.getActiveCategoryNames();
 	}
 
-	@GetMapping("/lost-items")
+	@GetMapping("/found-items")
 	public String list(
 			@RequestParam(required = false) String keyword,
 			@RequestParam(required = false) String category,
@@ -52,62 +52,62 @@ public class LostItemController {
 		PageRequest pageRequest = PageRequest.of(
 				safePage,
 				safeSize,
-				Sort.by(Sort.Direction.DESC, "lostAt").and(Sort.by(Sort.Direction.DESC, "lostId"))
+				Sort.by(Sort.Direction.DESC, "foundAt").and(Sort.by(Sort.Direction.DESC, "foundId"))
 		);
-		Page<?> lostItemPage = lostItemService.search(keyword, category, area, status, pageRequest);
-		if (safePage > 0 && safePage >= lostItemPage.getTotalPages() && lostItemPage.getTotalPages() > 0) {
-			safePage = lostItemPage.getTotalPages() - 1;
+		Page<?> foundItemPage = foundItemService.search(keyword, category, area, status, pageRequest);
+		if (safePage > 0 && safePage >= foundItemPage.getTotalPages() && foundItemPage.getTotalPages() > 0) {
+			safePage = foundItemPage.getTotalPages() - 1;
 			pageRequest = PageRequest.of(
 					safePage,
 					safeSize,
-					Sort.by(Sort.Direction.DESC, "lostAt").and(Sort.by(Sort.Direction.DESC, "lostId"))
+					Sort.by(Sort.Direction.DESC, "foundAt").and(Sort.by(Sort.Direction.DESC, "foundId"))
 			);
-			lostItemPage = lostItemService.search(keyword, category, area, status, pageRequest);
+			foundItemPage = foundItemService.search(keyword, category, area, status, pageRequest);
 		}
 
-		model.addAttribute("lostItemPage", lostItemPage);
-		model.addAttribute("lostItems", lostItemPage.getContent());
-		model.addAttribute("searchCategories", lostItemService.getSearchCategoryNames());
+		model.addAttribute("foundItemPage", foundItemPage);
+		model.addAttribute("foundItems", foundItemPage.getContent());
+		model.addAttribute("searchCategories", foundItemService.getSearchCategoryNames());
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("category", category);
 		model.addAttribute("area", area);
 		model.addAttribute("status", status);
 		model.addAttribute("page", safePage);
 		model.addAttribute("size", safeSize);
-		return "lost-items/list";
+		return "found-items/list";
 	}
 
-	@GetMapping("/lost-items/new")
+	@GetMapping("/found-items/new")
 	public String createForm() {
-		return "lost-items/new";
+		return "found-items/new";
 	}
 
-	@PostMapping("/lost-items")
-	public String create(@ModelAttribute("request") LostItemCreateRequest request,
+	@PostMapping("/found-items")
+	public String create(@ModelAttribute("request") FoundItemCreateRequest request,
 						 @AuthenticationPrincipal CustomUserDetails userDetails,
 						 Model model) {
 		try {
-			Long lostItemId = lostItemService.create(request, userDetails != null ? userDetails.getUser() : null);
-			return "redirect:/lost-items/" + lostItemId;
+			Long foundItemId = foundItemService.create(request, userDetails != null ? userDetails.getUser() : null);
+			return "redirect:/found-items/" + foundItemId;
 		} catch (IllegalArgumentException exception) {
 			model.addAttribute("errorMessage", exception.getMessage());
-			return "lost-items/new";
+			return "found-items/new";
 		} catch (Exception exception) {
 			model.addAttribute("errorMessage", "등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-			return "lost-items/new";
+			return "found-items/new";
 		}
 	}
 
-	@GetMapping("/lost-items/{id}")
+	@GetMapping("/found-items/{id}")
 	public String detail(@PathVariable Long id, Model model) {
-		model.addAttribute("lostItem", lostItemService.getDetail(id));
-		return "lost-items/detail";
+		model.addAttribute("foundItem", foundItemService.getDetail(id));
+		return "found-items/detail";
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public String notFound(IllegalArgumentException exception, Model model) {
 		model.addAttribute("message", exception.getMessage());
-		return "lost-items/error";
+		return "found-items/error";
 	}
 }

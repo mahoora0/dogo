@@ -1,0 +1,44 @@
+package com.example.dogo.dto;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+public class FoundItemCreateRequest {
+
+	private String title;
+	private String itemName;
+	private String categoryMain;
+	private String categorySub;
+
+	@DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+	private LocalDateTime foundAt;
+
+	private String foundArea;
+	private String foundPlace;
+	private String keepPlace;
+	private String colorName;
+	private String content;
+	private MultipartFile image;
+	private List<MultipartFile> images = new ArrayList<>();
+
+	public List<MultipartFile> getUploadImages() {
+		List<MultipartFile> uploadImages = new ArrayList<>();
+		if (image != null && !image.isEmpty()) {
+			uploadImages.add(image);
+		}
+		if (images != null) {
+			uploadImages.addAll(images.stream()
+					.filter(candidate -> candidate != null && !candidate.isEmpty())
+					.toList());
+		}
+		return uploadImages;
+	}
+}
