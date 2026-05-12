@@ -41,6 +41,7 @@ dependencies {
 	developmentOnly("me.paulschwarz:springboot3-dotenv")
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'com.twilio.sdk:twilio:9.0.0'
 }
 
 tasks.named('test') {
