@@ -3,12 +3,15 @@ package com.example.dogo.service;
 import com.example.dogo.dto.FoundItemCreateRequest;
 import com.example.dogo.dto.FoundItemDetailView;
 import com.example.dogo.dto.FoundItemView;
+import com.example.dogo.dto.MatchCandidateView;
 import com.example.dogo.entity.FoundItem;
 import com.example.dogo.entity.FoundItemImage;
 import com.example.dogo.entity.User;
 import com.example.dogo.repository.FoundItemImageRepository;
 import com.example.dogo.repository.FoundItemRepository;
 import com.example.dogo.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +32,7 @@ import java.util.UUID;
 @Service
 public class FoundItemService {
 
+	private static final Logger log = LoggerFactory.getLogger(FoundItemService.class);
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%23e2e8f0'/%3E%3Cpath d='M260 385h380l-92-120-72 82-56-64-160 102z' fill='%2394a3b8'/%3E%3Ccircle cx='326' cy='214' r='46' fill='%23cbd5e1'/%3E%3Ctext x='450' y='490' text-anchor='middle' font-family='Arial' font-size='34' fill='%2364758b'%3ENo image%3C/text%3E%3C/svg%3E";
 
@@ -36,6 +40,7 @@ public class FoundItemService {
 	private final FoundItemImageRepository foundItemImageRepository;
 	private final UserRepository userRepository;
 	private final PoliceFoundItemDetailEnrichmentService policeFoundItemDetailEnrichmentService;
+	private final ItemMatchService itemMatchService;
 	private final Path foundItemUploadPath;
 
 	public FoundItemService(
@@ -43,12 +48,14 @@ public class FoundItemService {
 			FoundItemImageRepository foundItemImageRepository,
 			UserRepository userRepository,
 			PoliceFoundItemDetailEnrichmentService policeFoundItemDetailEnrichmentService,
+			ItemMatchService itemMatchService,
 			@Value("${file.upload-dir}") String uploadDir
 	) {
 		this.foundItemRepository = foundItemRepository;
 		this.foundItemImageRepository = foundItemImageRepository;
 		this.userRepository = userRepository;
 		this.policeFoundItemDetailEnrichmentService = policeFoundItemDetailEnrichmentService;
+		this.itemMatchService = itemMatchService;
 		this.foundItemUploadPath = Path.of(uploadDir, "found-items").toAbsolutePath().normalize();
 	}
 
@@ -61,6 +68,11 @@ public class FoundItemService {
 	@Transactional(readOnly = true)
 	public List<String> getSearchCategoryNames() {
 		return foundItemRepository.findActiveCategoryNames();
+	}
+
+	@Transactional(readOnly = true)
+	public List<MatchCandidateView> getMatchCandidates(Long foundId) {
+		return itemMatchService.getMatchesForFoundItem(foundId);
 	}
 
 	@Transactional(readOnly = true)
@@ -119,6 +131,13 @@ public class FoundItemService {
 
 		FoundItem savedItem = foundItemRepository.save(foundItem);
 		saveImages(savedItem, request.getUploadImages());
+
+		try {
+			itemMatchService.matchForFoundItem(savedItem);
+		} catch (Exception exception) {
+			log.warn("습득물 매칭 실행 중 오류가 발생했습니다. foundId={}", savedItem.getFoundId(), exception);
+		}
+
 		return savedItem.getFoundId();
 	}
 

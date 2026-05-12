@@ -103,6 +103,7 @@ public class FoundItemController {
 	@GetMapping("/found-items/{id}")
 	public String detail(@PathVariable Long id, Model model) {
 		model.addAttribute("foundItem", foundItemService.getDetail(id));
+		model.addAttribute("matchCandidates", foundItemService.getMatchCandidates(id));
 		return "found-items/detail";
 	}
 

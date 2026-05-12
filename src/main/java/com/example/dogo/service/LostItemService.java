@@ -3,12 +3,15 @@ package com.example.dogo.service;
 import com.example.dogo.dto.LostItemCreateRequest;
 import com.example.dogo.dto.LostItemDetailView;
 import com.example.dogo.dto.LostItemView;
+import com.example.dogo.dto.MatchCandidateView;
 import com.example.dogo.entity.LostItem;
 import com.example.dogo.entity.LostItemImage;
 import com.example.dogo.entity.User;
 import com.example.dogo.repository.LostItemImageRepository;
 import com.example.dogo.repository.LostItemRepository;
 import com.example.dogo.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +32,7 @@ import java.util.UUID;
 @Service
 public class LostItemService {
 
+	private static final Logger log = LoggerFactory.getLogger(LostItemService.class);
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%23e2e8f0'/%3E%3Cpath d='M260 385h380l-92-120-72 82-56-64-160 102z' fill='%2394a3b8'/%3E%3Ccircle cx='326' cy='214' r='46' fill='%23cbd5e1'/%3E%3Ctext x='450' y='490' text-anchor='middle' font-family='Arial' font-size='34' fill='%2364758b'%3ENo image%3C/text%3E%3C/svg%3E";
 
@@ -36,6 +40,7 @@ public class LostItemService {
 	private final LostItemImageRepository lostItemImageRepository;
 	private final UserRepository userRepository;
 	private final PoliceLostItemDetailEnrichmentService policeLostItemDetailEnrichmentService;
+	private final ItemMatchService itemMatchService;
 	private final Path lostItemUploadPath;
 
 	public LostItemService(
@@ -43,12 +48,14 @@ public class LostItemService {
 			LostItemImageRepository lostItemImageRepository,
 			UserRepository userRepository,
 			PoliceLostItemDetailEnrichmentService policeLostItemDetailEnrichmentService,
+			ItemMatchService itemMatchService,
 			@Value("${file.upload-dir}") String uploadDir
 	) {
 		this.lostItemRepository = lostItemRepository;
 		this.lostItemImageRepository = lostItemImageRepository;
 		this.userRepository = userRepository;
 		this.policeLostItemDetailEnrichmentService = policeLostItemDetailEnrichmentService;
+		this.itemMatchService = itemMatchService;
 		this.lostItemUploadPath = Path.of(uploadDir, "lost-items").toAbsolutePath().normalize();
 	}
 
@@ -68,6 +75,11 @@ public class LostItemService {
 	@Transactional(readOnly = true)
 	public List<String> getSearchCategoryNames() {
 		return lostItemRepository.findActiveCategoryNames();
+	}
+
+	@Transactional(readOnly = true)
+	public List<MatchCandidateView> getMatchCandidates(Long lostId) {
+		return itemMatchService.getMatchesForLostItem(lostId);
 	}
 
 	@Transactional
@@ -122,6 +134,13 @@ public class LostItemService {
 
 		LostItem savedItem = lostItemRepository.save(lostItem);
 		saveImages(savedItem, request.getUploadImages());
+
+		try {
+			itemMatchService.matchForLostItem(savedItem);
+		} catch (Exception exception) {
+			log.warn("분실물 매칭 실행 중 오류가 발생했습니다. lostId={}", savedItem.getLostId(), exception);
+		}
+
 		return savedItem.getLostId();
 	}
 

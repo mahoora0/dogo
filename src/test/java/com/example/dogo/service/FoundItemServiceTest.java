@@ -50,6 +50,9 @@ class FoundItemServiceTest {
 	@Mock
 	private PoliceFoundItemDetailEnrichmentService policeFoundItemDetailEnrichmentService;
 
+	@Mock
+	private ItemMatchService itemMatchService;
+
 	@TempDir
 	private Path uploadDir;
 
@@ -62,6 +65,7 @@ class FoundItemServiceTest {
 				foundItemImageRepository,
 				userRepository,
 				policeFoundItemDetailEnrichmentService,
+				itemMatchService,
 				uploadDir.toString()
 		);
 	}

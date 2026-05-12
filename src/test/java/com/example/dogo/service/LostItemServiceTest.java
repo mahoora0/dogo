@@ -47,6 +47,9 @@ class LostItemServiceTest {
 	@Mock
 	private PoliceLostItemDetailEnrichmentService policeLostItemDetailEnrichmentService;
 
+	@Mock
+	private ItemMatchService itemMatchService;
+
 	@TempDir
 	private Path uploadDir;
 
@@ -59,6 +62,7 @@ class LostItemServiceTest {
 				lostItemImageRepository,
 				userRepository,
 				policeLostItemDetailEnrichmentService,
+				itemMatchService,
 				uploadDir.toString()
 		);
 	}
