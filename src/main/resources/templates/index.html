@@ -3,11 +3,11 @@
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
     <div class="quick-actions">
-      <div class="action-card lost" onclick="location.href='/lost-items'">
+      <div class="action-card lost" onclick="location.href='/lost-items/new'">
         <div class="icon">🔍</div>
         <div class="text">
           <p>물건을 잃어버리셨나요?</p>
-          <strong>분실물 검색</strong>
+          <strong>분실물 등록</strong>
         </div>
       </div>
       <div class="action-card found" onclick="location.href='/found-items/new'">
