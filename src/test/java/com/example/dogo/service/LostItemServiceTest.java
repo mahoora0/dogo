@@ -113,7 +113,7 @@ class LostItemServiceTest {
 
 		LostItemCreateRequest request = request(null, "검정 지갑", null);
 
-		Long id = lostItemService.create(request);
+		Long id = lostItemService.create(request, null);
 
 		assertThat(id).isEqualTo(10L);
 
@@ -141,7 +141,7 @@ class LostItemServiceTest {
 				"test-image".getBytes()
 		);
 
-		lostItemService.create(request("검정 지갑을 찾습니다", "검정 지갑", image));
+		lostItemService.create(request("검정 지갑을 찾습니다", "검정 지갑", image), null);
 
 		ArgumentCaptor<LostItemImage> captor = ArgumentCaptor.forClass(LostItemImage.class);
 		verify(lostItemImageRepository).save(captor.capture());

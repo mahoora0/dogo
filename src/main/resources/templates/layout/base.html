@@ -69,9 +69,11 @@
           <div class="category">
             <h3>습득물</h3>
             <ul>
-              <li>습득물 검색</li>
-              <li th:classappend="${currentUri == '/lost-items/new' ? 'active' : ''}" onclick="location.href='/lost-items/new'">
-                <a th:href="@{/lost-items/new}">습득물 등록</a>
+              <li th:classappend="${currentUri == '/found-items' ? 'active' : ''}" onclick="location.href='/found-items'">
+                <a th:href="@{/found-items}">습득물 검색</a>
+              </li>
+              <li th:classappend="${currentUri == '/found-items/new' ? 'active' : ''}" onclick="location.href='/found-items/new'">
+                <a th:href="@{/found-items/new}">습득물 등록</a>
               </li>
               <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
                 <a th:href="@{/areas/list}">서비스센터 찾기</a>

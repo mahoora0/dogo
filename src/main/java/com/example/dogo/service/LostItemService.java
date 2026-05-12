@@ -103,10 +103,10 @@ public class LostItemService {
 	}
 
 	@Transactional
-	public Long create(LostItemCreateRequest request) {
+	public Long create(LostItemCreateRequest request, User loginUser) {
 		validateCreateRequest(request);
 
-		User user = getOrCreateDevUser();
+		User user = (loginUser != null) ? loginUser : getOrCreateDevUser();
 		LostItem lostItem = new LostItem(
 				user,
 				defaultText(request.getTitle(), request.getItemName()),
