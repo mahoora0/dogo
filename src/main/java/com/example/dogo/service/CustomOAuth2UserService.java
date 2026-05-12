@@ -53,7 +53,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             providerUserId = String.valueOf(attributes.get("id"));
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
             Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
-            
+
             email = (String) kakaoAccount.get("email");
             if (profile != null) {
                 nickname = (String) profile.get("nickname");
@@ -70,7 +70,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             UserSocialAccount socialAccount = socialAccountOpt.get();
             socialAccount.updateProfile(nickname, profileImageUrl);
             user = socialAccount.getUser();
-            
+
             // 기존 가입된 유저의 프로필 이미지가 null인 경우 (또는 소셜 프로필로 덮어쓰고 싶은 경우)
             if (profileImageUrl != null) {
                 user.updateProfileImage(profileImageUrl);

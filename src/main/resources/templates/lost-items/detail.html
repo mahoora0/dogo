@@ -1,64 +1,77 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title th:text="${lostItem.title} + ' | DOGO'">분실물 상세 | DOGO</title>
-	<script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-50 text-slate-900">
-<header class="border-b border-slate-200 bg-white">
-	<div class="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
-		<a href="/lost-items" class="text-xl font-bold tracking-tight">DOGO</a>
-		<a href="/lost-items" class="text-sm font-semibold text-slate-600 hover:text-slate-900">목록으로</a>
-	</div>
-</header>
+<th:block th:replace="~{layout/base :: setContent(~{this::content})}">
+  <th:block th:fragment="content">
+    <div class="mb-6">
+      <a th:href="@{/lost-items}" class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        목록으로 돌아가기
+      </a>
+    </div>
 
-<main class="mx-auto max-w-5xl px-5 py-8">
-	<section class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-		<div>
-			<img th:src="${lostItem.imageUrls[0]}" alt="" class="h-80 w-full rounded-lg object-cover shadow-sm lg:h-[480px]">
-			<div th:if="${#lists.size(lostItem.imageUrls) > 1}" class="mt-3 grid grid-cols-4 gap-3">
-				<img th:each="imageUrl : ${lostItem.imageUrls}" th:src="${imageUrl}" alt="" class="h-24 w-full rounded-md border border-slate-200 object-cover">
-			</div>
-		</div>
+    <section class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+      <div>
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm">
+          <img th:if="${lostItem.imageUrls != null && !lostItem.imageUrls.isEmpty()}"
+               th:src="${lostItem.imageUrls[0]}" alt=""
+               class="h-72 w-full object-cover lg:h-[420px]">
+          <div th:unless="${lostItem.imageUrls != null && !lostItem.imageUrls.isEmpty()}"
+               class="flex h-72 w-full items-center justify-center text-slate-300 lg:h-[420px]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+        </div>
+        <div th:if="${lostItem.imageUrls != null && #lists.size(lostItem.imageUrls) > 1}"
+             class="mt-3 grid grid-cols-4 gap-2">
+          <img th:each="imageUrl : ${lostItem.imageUrls}" th:src="${imageUrl}" alt=""
+               class="h-20 w-full cursor-pointer rounded-lg border-2 border-transparent object-cover transition hover:border-teal-500 hover:opacity-90">
+        </div>
+      </div>
 
-		<div>
-			<div class="mb-4 flex flex-wrap gap-2">
-				<span th:text="${lostItem.category ?: '미분류'}" class="rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">지갑</span>
-				<span th:text="${lostItem.statusLabel}" class="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">대기중</span>
-			</div>
-			<h1 th:text="${lostItem.title}" class="text-3xl font-bold tracking-tight">검정 카드지갑을 찾습니다</h1>
-			<p th:text="${lostItem.description ?: '상세 설명이 없습니다.'}" class="mt-4 leading-7 text-slate-700">상세 설명</p>
+      <div>
+        <div class="mb-4 flex flex-wrap items-center gap-2">
+          <span th:text="${lostItem.category ?: '미분류'}"
+                class="rounded-md bg-teal-50 px-2.5 py-1 text-sm font-semibold text-teal-700">지갑</span>
+          <span th:text="${lostItem.statusLabel}"
+                th:classappend="${lostItem.status == 'FOUND' ? ' bg-emerald-50 text-emerald-700' : (lostItem.status == 'MATCHING' ? ' bg-amber-50 text-amber-700' : ' bg-slate-100 text-slate-700')}"
+                class="rounded-md px-2.5 py-1 text-sm font-semibold">대기중</span>
+        </div>
 
-			<dl class="mt-6 divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
-				<div class="grid grid-cols-[96px_1fr] gap-4 px-4 py-3">
-					<dt class="text-sm font-semibold text-slate-500">물품명</dt>
-					<dd th:text="${lostItem.name}" class="text-sm font-medium">검정 카드지갑</dd>
-				</div>
-				<div class="grid grid-cols-[96px_1fr] gap-4 px-4 py-3">
-					<dt class="text-sm font-semibold text-slate-500">분실 지역</dt>
-					<dd th:text="${lostItem.area ?: '-'}" class="text-sm font-medium">서울 강남구</dd>
-				</div>
-				<div class="grid grid-cols-[96px_1fr] gap-4 px-4 py-3">
-					<dt class="text-sm font-semibold text-slate-500">분실 장소</dt>
-					<dd th:text="${lostItem.place}" class="text-sm font-medium">강남역</dd>
-				</div>
-				<div class="grid grid-cols-[96px_1fr] gap-4 px-4 py-3">
-					<dt class="text-sm font-semibold text-slate-500">분실 일시</dt>
-					<dd th:text="${#temporals.format(lostItem.lostAt, 'yyyy.MM.dd HH:mm')}" class="text-sm font-medium">2026.05.02 14:30</dd>
-				</div>
-				<div class="grid grid-cols-[96px_1fr] gap-4 px-4 py-3">
-					<dt class="text-sm font-semibold text-slate-500">연락처</dt>
-					<dd th:text="${lostItem.contact ?: '-'}" class="text-sm font-medium">010-1234-5678</dd>
-				</div>
-			</dl>
+        <h1 th:text="${lostItem.title}" class="text-2xl font-bold tracking-tight">검정 카드지갑을 찾습니다</h1>
 
-			<div class="mt-6 flex gap-2">
-				<a href="/lost-items" class="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">목록</a>
-			</div>
-		</div>
-	</section>
-</main>
-</body>
+        <p th:text="${lostItem.description ?: '상세 설명이 없습니다.'}"
+           class="mt-4 whitespace-pre-line leading-7 text-slate-600">상세 설명</p>
+
+        <dl class="mt-6 divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div class="flex gap-4 px-4 py-3.5">
+            <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">물품명</dt>
+            <dd th:text="${lostItem.name}" class="text-sm font-medium text-slate-800">검정 카드지갑</dd>
+          </div>
+          <div class="flex gap-4 px-4 py-3.5">
+            <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">분실 지역</dt>
+            <dd th:text="${lostItem.area ?: '-'}" class="text-sm font-medium text-slate-800">서울 강남구</dd>
+          </div>
+          <div class="flex gap-4 px-4 py-3.5">
+            <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">분실 장소</dt>
+            <dd th:text="${lostItem.place}" class="text-sm font-medium text-slate-800">강남역</dd>
+          </div>
+          <div class="flex gap-4 px-4 py-3.5">
+            <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">분실 일시</dt>
+            <dd th:text="${#temporals.format(lostItem.lostAt, 'yyyy.MM.dd HH:mm')}" class="text-sm font-medium text-slate-800">2026.05.02 14:30</dd>
+          </div>
+          <div class="flex gap-4 px-4 py-3.5">
+            <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">연락처</dt>
+            <dd th:text="${lostItem.contact ?: '-'}" class="text-sm font-medium text-slate-800">010-1234-5678</dd>
+          </div>
+        </dl>
+
+        <div class="mt-6 flex gap-2">
+          <a th:href="@{/lost-items}"
+             class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+            목록
+          </a>
+        </div>
+      </div>
+    </section>
+  </th:block>
+</th:block>
 </html>

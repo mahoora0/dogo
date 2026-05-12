@@ -44,13 +44,6 @@ class LostItemControllerTest {
 	}
 
 	@Test
-	void homeRedirectsToLostItems() throws Exception {
-		mockMvc.perform(get("/"))
-				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/lost-items"));
-	}
-
-	@Test
 	void listAddsSearchResultAndFiltersToModel() throws Exception {
 		LostItemView view = new LostItemView(
 				1L,

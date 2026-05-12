@@ -24,11 +24,11 @@ public class LoginController {
   }
 
   @PostMapping("/join")
-  public String joinProcess(@ModelAttribute com.example.dogo.dto.UserJoinDto userJoinDto, 
+  public String joinProcess(@ModelAttribute com.example.dogo.dto.UserJoinDto userJoinDto,
                             com.example.dogo.repository.UserRepository userRepository,
                             com.example.dogo.service.ProfileService profileService,
                             org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
-    
+
     // 프로필 이미지 저장
     String profileImageUrl = profileService.saveProfileImage(userJoinDto.getProfileImage());
 
