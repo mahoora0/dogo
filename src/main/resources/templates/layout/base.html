@@ -23,8 +23,6 @@
           </a>
         </div>
         <div class="nav-links flex items-center gap-2 text-sm font-medium">
-          <a th:href="@{/lost-items}" class="rounded-md bg-slate-900 px-3 py-2 text-white">내가 찾아요</a>
-
           <!-- 로그인 안 된 상태 (익명 사용자) -->
           <th:block sec:authorize="isAnonymous()">
             <a th:href="@{/login}" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</a>
