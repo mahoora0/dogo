@@ -90,7 +90,7 @@ public class LostItemService {
 				lostItem.getLostId(),
 				lostItem.getTitle(),
 				lostItem.getItemName(),
-				lostItem.getCategoryMain(),
+				categoryName(lostItem),
 				lostItem.getLostArea(),
 				lostItem.getLostPlace(),
 				lostItem.getLostAt(),
@@ -134,7 +134,7 @@ public class LostItemService {
 				lostItem.getLostId(),
 				lostItem.getTitle(),
 				lostItem.getItemName(),
-				lostItem.getCategoryMain(),
+				categoryName(lostItem),
 				lostItem.getLostArea(),
 				lostItem.getLostPlace(),
 				lostItem.getLostAt(),
@@ -234,6 +234,16 @@ public class LostItemService {
 			return "";
 		}
 		return extension;
+	}
+
+	private String categoryName(LostItem lostItem) {
+		if (!StringUtils.hasText(lostItem.getCategoryMain())) {
+			return null;
+		}
+		if (StringUtils.hasText(lostItem.getCategorySub())) {
+			return lostItem.getCategoryMain().trim() + " > " + lostItem.getCategorySub().trim();
+		}
+		return lostItem.getCategoryMain().trim();
 	}
 
 	private String statusLabel(String status) {

@@ -47,8 +47,12 @@
             <dd th:text="${lostItem.name}" class="text-sm font-medium text-slate-800">검정 카드지갑</dd>
           </div>
           <div class="flex gap-4 px-4 py-3.5">
-            <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">분실 지역</dt>
+            <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">지역</dt>
             <dd th:text="${lostItem.area ?: '-'}" class="text-sm font-medium text-slate-800">서울 강남구</dd>
+          </div>
+          <div class="flex gap-4 px-4 py-3.5">
+            <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">물품종류</dt>
+            <dd th:text="${lostItem.category ?: '-'}" class="text-sm font-medium text-slate-800">지갑 &gt; 여성용 지갑</dd>
           </div>
           <div class="flex gap-4 px-4 py-3.5">
             <dt class="w-24 shrink-0 text-sm font-semibold text-slate-400">분실 장소</dt>
