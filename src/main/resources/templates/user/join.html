@@ -53,12 +53,25 @@
         </label>
       </div>
 
+      <!-- 닉네임 -->
+      <div class="space-y-2">
+        <label class="block text-sm font-bold text-gray-900 ml-1">닉네임</label>
+        <div class="flex gap-2">
+          <input type="text" id="nickname" name="nickname" placeholder="닉네임 입력"
+                 class="flex-1 px-4 py-3 bg-[#E9ECEF] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-500 text-sm">
+          <button type="button" onclick="checkNickname()" class="bg-[#868E96] hover:bg-[#495057] text-white px-5 py-3 rounded-custom text-sm font-semibold transition-all whitespace-nowrap">
+            중복 확인
+          </button>
+        </div>
+        <p id="nicknameMessage" class="text-xs ml-1 hidden"></p>
+      </div>
+
       <!-- 아이디 -->
       <div class="space-y-2">
         <label class="block text-sm font-bold text-gray-900 ml-1">아이디</label>
-        <input type="text" id="username" name="username" placeholder="아이디 입력"
+        <input type="text" id="loginId" name="loginId" placeholder="아이디 입력"
                class="w-full px-4 py-3 bg-[#E9ECEF] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-500 text-sm">
-        <p id="usernameError" class="text-red-500 text-xs ml-1 hidden">4~20자의 영문 소문자, 숫자만 사용 가능합니다.</p>
+        <p id="loginIdError" class="text-red-500 text-xs ml-1 hidden">4~20자의 영문 소문자, 숫자만 사용 가능합니다.</p>
       </div>
 
       <!-- 비밀번호 -->
@@ -181,10 +194,12 @@
     }
   }
 
-  const usernameInput = document.getElementById('username');
+  const nicknameInput = document.getElementById('nickname');
+  const nicknameMessage = document.getElementById('nicknameMessage');
+  const loginIdInput = document.getElementById('loginId');
   const passwordInput = document.getElementById('password');
   const passwordConfirmInput = document.getElementById('passwordConfirm');
-  const usernameError = document.getElementById('usernameError');
+  const loginIdError = document.getElementById('loginIdError');
   const passwordError = document.getElementById('passwordError');
   const passwordMatchMessage = document.getElementById('passwordMatchMessage');
 
@@ -204,15 +219,50 @@
   
   let isEmailVerified = false;
   let isPhoneVerified = false;
+  let isNicknameChecked = false;
+
+  // 닉네임 중복 확인
+  async function checkNickname() {
+    const nickname = nicknameInput.value.trim();
+    if (!nickname) {
+      nicknameMessage.textContent = '닉네임을 입력해주세요.';
+      nicknameMessage.className = 'text-red-500 text-xs ml-1';
+      nicknameMessage.classList.remove('hidden');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/user/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+      const isDuplicate = await response.json();
+
+      if (isDuplicate) {
+        nicknameMessage.textContent = '이미 사용 중인 닉네임입니다.';
+        nicknameMessage.className = 'text-red-500 text-xs ml-1';
+        isNicknameChecked = false;
+      } else {
+        nicknameMessage.textContent = '사용 가능한 닉네임입니다.';
+        nicknameMessage.className = 'text-green-500 text-xs ml-1';
+        isNicknameChecked = true;
+      }
+      nicknameMessage.classList.remove('hidden');
+    } catch (error) {
+      alert('중복 확인 중 오류가 발생했습니다.');
+    }
+  }
+
+  nicknameInput.addEventListener('input', () => {
+    isNicknameChecked = false;
+    nicknameMessage.classList.add('hidden');
+  });
 
   // 아이디 유효성 검사 (4~20자, 영문 소문자/숫자)
-  usernameInput.addEventListener('input', () => {
-    const username = usernameInput.value;
+  loginIdInput.addEventListener('input', () => {
+    const loginId = loginIdInput.value;
     const regex = /^[a-z0-9]{4,20}$/;
-    if (!regex.test(username)) {
-      usernameError.classList.remove('hidden');
+    if (!regex.test(loginId)) {
+      loginIdError.classList.remove('hidden');
     } else {
-      usernameError.classList.add('hidden');
+      loginIdError.classList.add('hidden');
     }
   });
 
@@ -389,18 +439,20 @@
 
   // 폼 제출 전 최종 검사
   document.querySelector('form').addEventListener('submit', (e) => {
-    const username = usernameInput.value;
+    const loginId = loginIdInput.value;
     const password = passwordInput.value;
     const confirm = passwordConfirmInput.value;
 
-    const isUsernameValid = /^[a-z0-9]{4,20}$/.test(username);
+    const isLoginIdValid = /^[a-z0-9]{4,20}$/.test(loginId);
     const isPasswordValid = password.length >= 8 && /[!@#$%^&*(),.?":{}|<>]/.test(password);
     const isMatch = password === confirm && confirm !== '';
 
-    if (!isUsernameValid || !isPasswordValid || !isMatch || !isEmailVerified || !isPhoneVerified) {
+    if (!isLoginIdValid || !isPasswordValid || !isMatch || !isEmailVerified || !isPhoneVerified || !isNicknameChecked) {
       e.preventDefault();
       
-      if (!isEmailVerified) {
+      if (!isNicknameChecked) {
+        alert('닉네임 중복 확인을 완료해주세요.');
+      } else if (!isEmailVerified) {
         alert('이메일 인증을 완료해주세요.');
       } else if (!isPhoneVerified) {
         alert('연락처 인증을 완료해주세요.');
@@ -408,7 +460,7 @@
         alert('입력 정보를 다시 확인해주세요.');
       }
       
-      if (!isUsernameValid) usernameError.classList.remove('hidden');
+      if (!isLoginIdValid) loginIdError.classList.remove('hidden');
       if (!isPasswordValid) passwordError.classList.remove('hidden');
       if (!isMatch) {
           passwordMatchMessage.textContent = '비밀번호가 일치하지 않습니다.';

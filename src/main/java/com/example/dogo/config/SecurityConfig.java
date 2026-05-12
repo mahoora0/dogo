@@ -34,12 +34,13 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) // 로컬 테스트를 위해 CSRF 비활성화 (필요시 활성화)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/join", "/api/mail/**", "/api/sms/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/areas/**", "/error", "/uploads/**").permitAll()
+                .requestMatchers("/", "/login", "/join", "/api/user/**", "/api/mail/**", "/api/sms/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/areas/**", "/error", "/uploads/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/loginProcess")
+                .usernameParameter("loginId")
                 .defaultSuccessUrl("/", true)
                 .permitAll()
             )
@@ -47,6 +48,11 @@ public class SecurityConfig {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/")
                 .permitAll()
+            )
+            .rememberMe(remember -> remember
+                .key("uniqueAndSecret")
+                .tokenValiditySeconds(86400 * 30) // 30일 유지
+                .userDetailsService(clientRegistrationRepositoryProvider.getIfAvailable() == null ? null : null) // Will be auto-injected if bean exists
             );
 
         ClientRegistrationRepository clientRegistrationRepository = clientRegistrationRepositoryProvider.getIfAvailable();
