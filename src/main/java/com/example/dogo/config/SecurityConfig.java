@@ -1,6 +1,6 @@
 package com.example.dogo.config;
 
-import com.example.dogo.service.CustomOAuth2UserService;
+import com.example.dogo.service.user.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
