@@ -15,6 +15,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OneToMany;
 
 @Entity
 @Table(name = "LOST_ITEM")
@@ -27,6 +31,9 @@ public class LostItem {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "LOST_ID")
 	private Long lostId;
+
+	@OneToMany(mappedBy = "lostItem", cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<LostItemImage> images = new ArrayList<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "USER_NO")

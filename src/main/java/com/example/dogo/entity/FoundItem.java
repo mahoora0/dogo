@@ -15,6 +15,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OneToMany;
 
 @Entity
 @Table(name = "FOUND_ITEM")
@@ -27,6 +31,9 @@ public class FoundItem {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "FOUND_ID")
 	private Long foundId;
+
+	@OneToMany(mappedBy = "foundItem", cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<FoundItemImage> images = new ArrayList<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "USER_NO")

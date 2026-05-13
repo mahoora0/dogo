@@ -2,14 +2,16 @@ package com.example.dogo.config;
 
 import com.example.dogo.service.CustomOAuth2UserService;
 import com.example.dogo.service.CustomUserDetailsService;
+import com.example.dogo.security.CustomAuthenticationFailureHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -24,7 +26,17 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomUserDetailsService customUserDetailsService;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+    private final UserDetailsService userDetailsService;
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider;
+
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setHideUserNotFoundExceptions(false); // 아이디가 없을 때 UsernameNotFoundException을 던지도록 함
+        return provider;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -43,6 +55,7 @@ public class SecurityConfig {
                 .loginPage("/login")
                 .loginProcessingUrl("/loginProcess")
                 .usernameParameter("loginId")
+                .failureHandler(customAuthenticationFailureHandler)
                 .defaultSuccessUrl("/", true)
                 .permitAll()
             )
@@ -54,7 +67,7 @@ public class SecurityConfig {
             .rememberMe(remember -> remember
                 .key("uniqueAndSecret")
                 .tokenValiditySeconds(86400 * 30) // 30일 유지
-                .userDetailsService(customUserDetailsService)
+                .userDetailsService(clientRegistrationRepositoryProvider.getIfAvailable() == null ? null : null) // Will be auto-injected if bean exists
             );
 
         ClientRegistrationRepository clientRegistrationRepository = clientRegistrationRepositoryProvider.getIfAvailable();

@@ -10,6 +10,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import jakarta.persistence.PrePersist;
+
 @Entity
 @Table(name = "USERS")
 @Getter
@@ -45,10 +47,14 @@ public class User {
 	@Column(name = "STATUS", nullable = false)
 	private String status = "ACTIVE";
 
+	@Column(name = "REGDATE", nullable = false, updatable = false)
+	private java.time.LocalDateTime regDate;
+
 	public User(String email, String nickname, String phone) {
 		this.email = email;
 		this.nickname = nickname;
 		this.phone = phone;
+		this.regDate = java.time.LocalDateTime.now();
 	}
 
 	public User(String loginId, String password, String email, String nickname, String phone, String profileImageUrl) {
@@ -58,13 +64,29 @@ public class User {
 		this.nickname = nickname;
 		this.phone = phone;
 		this.profileImageUrl = profileImageUrl;
+		this.regDate = java.time.LocalDateTime.now();
 	}
 
 	public void updateProfileImage(String profileImageUrl) {
 		this.profileImageUrl = profileImageUrl;
 	}
 
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
 	public void withdraw() {
 		this.status = "WITHDRAWN";
+	}
+
+	@PrePersist
+	public void onCreate() {
+		if (this.regDate == null) {
+			this.regDate = java.time.LocalDateTime.now();
+		}
 	}
 }
