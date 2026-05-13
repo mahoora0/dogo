@@ -41,7 +41,7 @@ public class PoliceFoundItemDetailEnrichmentService {
 				return;
 			}
 
-			FoundItem enriched = mapper.toFoundItem(toListResponse(foundItem), detail.get());
+			FoundItem enriched = mapper.toFoundItem(toListResponse(foundItem), detail.get(), foundItem.getFoundArea());
 			foundItem.updatePoliceDetail(
 					enriched.getTitle(),
 					enriched.getContent(),

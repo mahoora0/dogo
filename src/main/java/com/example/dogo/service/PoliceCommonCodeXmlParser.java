@@ -1,8 +1,6 @@
 package com.example.dogo.service;
 
-import com.example.dogo.dto.PoliceFoundItemDetailResponse;
-import com.example.dogo.dto.PoliceFoundItemPage;
-import com.example.dogo.dto.PoliceFoundItemResponse;
+import com.example.dogo.dto.PoliceRegionCode;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
@@ -16,55 +14,22 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Component
-public class PoliceFoundItemXmlParser {
+public class PoliceCommonCodeXmlParser {
 
-	public PoliceFoundItemPage parse(String xml) {
+	public List<PoliceRegionCode> parseRegionCodes(String xml) {
 		Document document = parseDocument(xml);
 		if (document == null) {
-			return new PoliceFoundItemPage(null, null, 0, List.of());
+			return List.of();
 		}
 
-		return new PoliceFoundItemPage(
-				text(document, "resultCode"),
-				firstText(document, "resultMsg", "resultMag"),
-				parseInt(text(document, "totalCount")),
-				items(document.getElementsByTagName("item"))
-		);
-	}
-
-	public Optional<PoliceFoundItemDetailResponse> parseDetail(String xml) {
-		Document document = parseDocument(xml);
-		if (document == null) {
-			return Optional.empty();
-		}
-
-		NodeList itemNodes = document.getElementsByTagName("item");
-		if (itemNodes.getLength() == 0 || itemNodes.item(0).getNodeType() != Node.ELEMENT_NODE) {
-			return Optional.empty();
-		}
-
-		Element item = (Element) itemNodes.item(0);
-		return Optional.of(new PoliceFoundItemDetailResponse(
-				text(item, "atcId"),
-				text(item, "csteSteNm"),
-				text(item, "depPlace"),
-				text(item, "fdFilePathImg"),
-				text(item, "fdHor"),
-				text(item, "fdPlace"),
-				text(item, "fdPrdtNm"),
-				text(item, "fdSn"),
-				text(item, "fdYmd"),
-				text(item, "fndKeepOrgnSeNm"),
-				text(item, "orgId"),
-				text(item, "orgNm"),
-				text(item, "prdtClNm"),
-				text(item, "tel"),
-				text(item, "uniq"),
-				text(item, "clrNm")
-		));
+		List<RawRegionCode> rawCodes = rawRegionCodes(document.getElementsByTagName("item"));
+		return rawCodes.stream()
+				.filter(code -> StringUtils.hasText(code.code()))
+				.map(code -> new PoliceRegionCode(code.code(), regionName(code, rawCodes)))
+				.filter(code -> StringUtils.hasText(code.name()))
+				.toList();
 	}
 
 	String resultCode(String xml) {
@@ -96,12 +61,12 @@ public class PoliceFoundItemXmlParser {
 			document.getDocumentElement().normalize();
 			return document;
 		} catch (Exception exception) {
-			throw new IllegalArgumentException("경찰청 습득물 응답 XML 파싱에 실패했습니다.", exception);
+			throw new IllegalArgumentException("경찰청 공통코드 응답 XML 파싱에 실패했습니다.", exception);
 		}
 	}
 
-	private List<PoliceFoundItemResponse> items(NodeList itemNodes) {
-		List<PoliceFoundItemResponse> responses = new ArrayList<>();
+	private List<RawRegionCode> rawRegionCodes(NodeList itemNodes) {
+		List<RawRegionCode> responses = new ArrayList<>();
 		for (int index = 0; index < itemNodes.getLength(); index++) {
 			Node node = itemNodes.item(index);
 			if (node.getNodeType() != Node.ELEMENT_NODE) {
@@ -109,22 +74,45 @@ public class PoliceFoundItemXmlParser {
 			}
 
 			Element item = (Element) node;
-			PoliceFoundItemResponse response = new PoliceFoundItemResponse(
-					text(item, "atcId"),
-					text(item, "clrNm"),
-					text(item, "depPlace"),
-					text(item, "fdFilePathImg"),
-					text(item, "fdPrdtNm"),
-					text(item, "fdSbjt"),
-					text(item, "fdSn"),
-					text(item, "fdYmd"),
-					text(item, "prdtClNm")
-			);
-			if (StringUtils.hasText(response.atcId())) {
-				responses.add(response);
-			}
+			responses.add(new RawRegionCode(
+					text(item, "commCd"),
+					text(item, "cdNm")
+			));
 		}
 		return responses;
+	}
+
+	private String regionName(RawRegionCode code, List<RawRegionCode> allCodes) {
+		String normalizedName = blankToNull(code.name());
+		if (normalizedName == null) {
+			return null;
+		}
+		if (isTopLevelCode(code.code())) {
+			return normalizedName;
+		}
+
+		String topLevelName = allCodes.stream()
+				.filter(candidate -> topLevelCode(code.code()).equals(candidate.code()))
+				.map(RawRegionCode::name)
+				.map(this::blankToNull)
+				.filter(StringUtils::hasText)
+				.findFirst()
+				.orElse(null);
+		if (!StringUtils.hasText(topLevelName)) {
+			return normalizedName;
+		}
+		return topLevelName + " " + normalizedName;
+	}
+
+	private boolean isTopLevelCode(String code) {
+		return StringUtils.hasText(code) && code.endsWith("000");
+	}
+
+	private String topLevelCode(String code) {
+		if (!StringUtils.hasText(code) || code.length() < 3) {
+			return code;
+		}
+		return code.substring(0, 3) + "000";
 	}
 
 	private String firstText(Document document, String firstTagName, String secondTagName) {
@@ -151,17 +139,13 @@ public class PoliceFoundItemXmlParser {
 		return blankToNull(nodes.item(0).getTextContent());
 	}
 
-	private int parseInt(String value) {
-		if (!StringUtils.hasText(value)) {
-			return 0;
-		}
-		return Integer.parseInt(value.trim());
-	}
-
 	private String blankToNull(String value) {
 		if (!StringUtils.hasText(value)) {
 			return null;
 		}
 		return value.trim();
+	}
+
+	private record RawRegionCode(String code, String name) {
 	}
 }

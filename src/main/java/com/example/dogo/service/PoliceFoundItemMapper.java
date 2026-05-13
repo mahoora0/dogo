@@ -16,6 +16,10 @@ import java.time.format.DateTimeParseException;
 public class PoliceFoundItemMapper {
 
 	public FoundItem toFoundItem(PoliceFoundItemResponse response) {
+		return toFoundItem(response, (String) null);
+	}
+
+	public FoundItem toFoundItem(PoliceFoundItemResponse response, String regionName) {
 		if (response == null) {
 			throw new IllegalArgumentException("경찰청 습득물 응답이 비어 있습니다.");
 		}
@@ -40,7 +44,7 @@ public class PoliceFoundItemMapper {
 				categoryNames.sub(),
 				blankToNull(response.clrNm()),
 				parseFoundAt(response.fdYmd(), null),
-				null,
+				blankToNull(regionName),
 				null,
 				blankToNull(response.depPlace()),
 				null,
@@ -51,8 +55,12 @@ public class PoliceFoundItemMapper {
 	}
 
 	public FoundItem toFoundItem(PoliceFoundItemResponse listResponse, PoliceFoundItemDetailResponse detailResponse) {
+		return toFoundItem(listResponse, detailResponse, null);
+	}
+
+	public FoundItem toFoundItem(PoliceFoundItemResponse listResponse, PoliceFoundItemDetailResponse detailResponse, String regionName) {
 		if (detailResponse == null) {
-			return toFoundItem(listResponse);
+			return toFoundItem(listResponse, regionName);
 		}
 
 		String atcId = defaultText(detailResponse.atcId(), listResponse == null ? null : listResponse.atcId());
@@ -91,7 +99,7 @@ public class PoliceFoundItemMapper {
 				categoryNames.sub(),
 				colorName,
 				parseFoundAt(defaultText(detailResponse.fdYmd(), listResponse == null ? null : listResponse.fdYmd()), detailResponse.fdHor()),
-				null,
+				blankToNull(regionName),
 				blankToNull(detailResponse.fdPlace()),
 				defaultText(detailResponse.depPlace(), listResponse == null ? null : listResponse.depPlace()),
 				contact(detailResponse.orgNm(), detailResponse.tel()),
