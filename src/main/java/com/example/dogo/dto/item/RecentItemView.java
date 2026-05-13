@@ -10,6 +10,7 @@ public record RecentItemView(
 		String category,
 		String place,
 		LocalDateTime itemAt,
+		String status,
 		String statusLabel,
 		String imageUrl
 ) {

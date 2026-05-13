@@ -88,6 +88,7 @@ public class LostItemService {
 						categoryName(item),
 						item.getLostPlace(),
 						item.getLostAt(),
+						item.getStatus(),
 						statusLabel(item.getStatus()),
 						lostItemImageRepository.findFirstByLostItemOrderBySortOrderAscImageIdAsc(item)
 								.map(LostItemImage::getImageUrl)

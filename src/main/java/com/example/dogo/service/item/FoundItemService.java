@@ -80,6 +80,7 @@ public class FoundItemService {
 						item.getCategoryMain(),
 						item.getFoundPlace() != null ? item.getFoundPlace() : item.getFoundArea(),
 						item.getFoundAt(),
+						item.getStatus(),
 						statusLabel(item.getStatus()),
 						foundItemImageRepository.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(item)
 								.map(FoundItemImage::getImageUrl)
