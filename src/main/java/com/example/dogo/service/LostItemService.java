@@ -4,6 +4,7 @@ import com.example.dogo.dto.LostItemCreateRequest;
 import com.example.dogo.dto.LostItemDetailView;
 import com.example.dogo.dto.LostItemView;
 import com.example.dogo.dto.MatchCandidateView;
+import com.example.dogo.dto.RecentItemView;
 import com.example.dogo.entity.LostItem;
 import com.example.dogo.entity.LostItemImage;
 import com.example.dogo.entity.User;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -34,7 +36,7 @@ public class LostItemService {
 
 	private static final Logger log = LoggerFactory.getLogger(LostItemService.class);
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
-	private static final String PLACEHOLDER_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%23e2e8f0'/%3E%3Cpath d='M260 385h380l-92-120-72 82-56-64-160 102z' fill='%2394a3b8'/%3E%3Ccircle cx='326' cy='214' r='46' fill='%23cbd5e1'/%3E%3Ctext x='450' y='490' text-anchor='middle' font-family='Arial' font-size='34' fill='%2364758b'%3ENo image%3C/text%3E%3C/svg%3E";
+	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
 
 	private final LostItemRepository lostItemRepository;
 	private final LostItemImageRepository lostItemImageRepository;
@@ -70,6 +72,26 @@ public class LostItemService {
 	public Page<LostItemView> search(String keyword, String category, String area, String status, Pageable pageable) {
 		return lostItemRepository.search(keyword, category, area, status, pageable)
 				.map(this::toListView);
+	}
+
+	@Transactional(readOnly = true)
+	public List<RecentItemView> getRecentItems(int limit) {
+		Pageable pageable = Pageable.ofSize(limit);
+		return lostItemRepository.findByDeletedFalseOrderByLostAtDescLostIdDesc(pageable).stream()
+				.map(item -> new RecentItemView(
+						item.getLostId(),
+						"LOST",
+						"분실",
+						item.getTitle(),
+						categoryName(item),
+						item.getLostPlace(),
+						item.getLostAt(),
+						statusLabel(item.getStatus()),
+						lostItemImageRepository.findFirstByLostItemOrderBySortOrderAscImageIdAsc(item)
+								.map(LostItemImage::getImageUrl)
+								.orElse(PLACEHOLDER_IMAGE)
+				))
+				.toList();
 	}
 
 	@Transactional(readOnly = true)

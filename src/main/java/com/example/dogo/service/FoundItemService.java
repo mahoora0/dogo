@@ -4,6 +4,7 @@ import com.example.dogo.dto.FoundItemCreateRequest;
 import com.example.dogo.dto.FoundItemDetailView;
 import com.example.dogo.dto.FoundItemView;
 import com.example.dogo.dto.MatchCandidateView;
+import com.example.dogo.dto.RecentItemView;
 import com.example.dogo.entity.FoundItem;
 import com.example.dogo.entity.FoundItemImage;
 import com.example.dogo.entity.User;
@@ -34,7 +35,7 @@ public class FoundItemService {
 
 	private static final Logger log = LoggerFactory.getLogger(FoundItemService.class);
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
-	private static final String PLACEHOLDER_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%23e2e8f0'/%3E%3Cpath d='M260 385h380l-92-120-72 82-56-64-160 102z' fill='%2394a3b8'/%3E%3Ccircle cx='326' cy='214' r='46' fill='%23cbd5e1'/%3E%3Ctext x='450' y='490' text-anchor='middle' font-family='Arial' font-size='34' fill='%2364758b'%3ENo image%3C/text%3E%3C/svg%3E";
+	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
 
 	private final FoundItemRepository foundItemRepository;
 	private final FoundItemImageRepository foundItemImageRepository;
@@ -63,6 +64,26 @@ public class FoundItemService {
 	public Page<FoundItemView> search(String keyword, String category, String area, String status, Pageable pageable) {
 		return foundItemRepository.search(keyword, category, area, status, pageable)
 				.map(this::toListView);
+	}
+
+	@Transactional(readOnly = true)
+	public List<RecentItemView> getRecentItems(int limit) {
+		Pageable pageable = Pageable.ofSize(limit);
+		return foundItemRepository.findByDeletedFalseOrderByFoundAtDescFoundIdDesc(pageable).stream()
+				.map(item -> new RecentItemView(
+						item.getFoundId(),
+						"FOUND",
+						"습득",
+						item.getTitle(),
+						item.getCategoryMain(),
+						item.getFoundPlace() != null ? item.getFoundPlace() : item.getFoundArea(),
+						item.getFoundAt(),
+						statusLabel(item.getStatus()),
+						foundItemImageRepository.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(item)
+								.map(FoundItemImage::getImageUrl)
+								.orElse(PLACEHOLDER_IMAGE)
+				))
+				.toList();
 	}
 
 	@Transactional(readOnly = true)

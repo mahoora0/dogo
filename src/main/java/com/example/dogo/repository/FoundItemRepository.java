@@ -65,4 +65,6 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long> {
 			ORDER BY item.categoryMain ASC
 			""")
 	List<String> findActiveCategoryNames();
+
+	List<FoundItem> findByDeletedFalseOrderByFoundAtDescFoundIdDesc(Pageable pageable);
 }
