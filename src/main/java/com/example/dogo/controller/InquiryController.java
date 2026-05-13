@@ -23,12 +23,30 @@ public class InquiryController {
         model.addAttribute("currentUri", "/inquiry");
         model.addAttribute("inquiryGroups", inquiryService.groupedInquiries());
         model.addAttribute("inquiries", inquiryService.getInquiries());
+        
+        /* 
+        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        model.addAttribute("isAdmin", isAdmin);
+        */
+        model.addAttribute("isAdmin", true); // true:관리자 false:사용자
         return "inquiry/list";
     }
 
     @GetMapping({"/inquiry/new", "/inqiry/new"})
     public String inquiryForm(Model model) {
         model.addAttribute("currentUri", "/inquiry");
+
+        /*
+        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        model.addAttribute("isAdmin", isAdmin);
+        */
+        model.addAttribute("isAdmin", true); // true:관리자 false:사용자
         return "inquiry/inquiry";
     }
 
@@ -36,14 +54,32 @@ public class InquiryController {
     public String inquiryDetail(@PathVariable Long id, Model model) {
         model.addAttribute("currentUri", "/inquiry");
         model.addAttribute("inquiry", inquiryService.getInquiryDetail(id));
+
+        /*
+        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        model.addAttribute("isAdmin", isAdmin);
+        */
+        model.addAttribute("isAdmin", true); // true:관리자 false:사용자
         return "inquiry/detail";
     }
 
     @PostMapping({"/inquiry", "/inqiry"})
     public String createInquiry(@RequestParam String category,
                                 @RequestParam String title,
-                                @RequestParam String content) {
-        inquiryService.create(category, title, content);
+                                @RequestParam String content,
+                                @RequestParam(value = "files", required = false) org.springframework.web.multipart.MultipartFile[] files) {
+        java.util.List<org.springframework.web.multipart.MultipartFile> fileList = 
+                (files != null) ? java.util.Arrays.asList(files) : null;
+        inquiryService.create(category, title, content, fileList);
         return "redirect:/inquiry";
+    }
+
+    @PostMapping({"/inquiry/{id}/answer", "/inqiry/{id}/answer"})
+    public String answerInquiry(@PathVariable Long id, @RequestParam String answer) {
+        inquiryService.answer(id, answer);
+        return "redirect:/inquiry/" + id;
     }
 }

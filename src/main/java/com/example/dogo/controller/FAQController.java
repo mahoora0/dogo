@@ -16,7 +16,7 @@ public class FAQController {
         model.addAttribute("currentUri", "/faq");
         return "FAQ/FAQ";
     }
-
+/*
     @GetMapping("/notice")
     public String notice(Model model) {
         model.addAttribute("currentUri", "/notice");
@@ -27,5 +27,5 @@ public class FAQController {
     public String guide(Model model) {
         model.addAttribute("currentUri", "/guide");
         return "guide/index";
-    }
+    }*/
 }
