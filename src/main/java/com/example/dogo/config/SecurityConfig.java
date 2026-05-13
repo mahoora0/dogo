@@ -34,7 +34,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) // 로컬 테스트를 위해 CSRF 비활성화 (필요시 활성화)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/join", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/areas/**", "/error", "/uploads/**").permitAll()
+                .requestMatchers("/", "/login", "/join", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/areas/**", "/api/police/**", "/error", "/uploads/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
