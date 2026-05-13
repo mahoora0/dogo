@@ -109,7 +109,7 @@ public class PoliceFoundItemXmlParser {
 			}
 
 			Element item = (Element) node;
-			responses.add(new PoliceFoundItemResponse(
+			PoliceFoundItemResponse response = new PoliceFoundItemResponse(
 					text(item, "atcId"),
 					text(item, "clrNm"),
 					text(item, "depPlace"),
@@ -119,7 +119,10 @@ public class PoliceFoundItemXmlParser {
 					text(item, "fdSn"),
 					text(item, "fdYmd"),
 					text(item, "prdtClNm")
-			));
+			);
+			if (StringUtils.hasText(response.atcId())) {
+				responses.add(response);
+			}
 		}
 		return responses;
 	}

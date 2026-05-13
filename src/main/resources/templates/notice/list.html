@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: setContent(~{::content})}">
+<th:block th:fragment="content">
+  <section class="max-w-4xl mx-auto">
+    <div class="mb-8">
+      <h2 class="text-3xl font-extrabold text-slate-900 mb-3">공지사항</h2>
+      <p class="text-slate-500 text-lg">분실물센터의 주요 안내와 업데이트를 확인하세요.</p>
+    </div>
+
+    <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="grid grid-cols-[1fr_120px] border-b border-slate-200 bg-slate-50 px-6 py-3 text-sm font-semibold text-slate-600">
+        <span>제목</span>
+        <span class="text-right">등록일</span>
+      </div>
+      <div class="divide-y divide-slate-100">
+        <article class="grid grid-cols-[1fr_120px] px-6 py-4">
+          <div>
+            <h3 class="font-semibold text-slate-900">분실물 등록 시 사진과 상세 위치를 함께 입력해 주세요.</h3>
+            <p class="mt-1 text-sm text-slate-500">정확한 정보가 있을수록 물건을 찾을 가능성이 높아집니다.</p>
+          </div>
+          <time class="text-right text-sm text-slate-400">2026.05.13</time>
+        </article>
+        <article class="grid grid-cols-[1fr_120px] px-6 py-4">
+          <div>
+            <h3 class="font-semibold text-slate-900">습득물 보관 및 반환 안내</h3>
+            <p class="mt-1 text-sm text-slate-500">습득물은 등록 후 담당 센터 확인 절차를 거쳐 안내됩니다.</p>
+          </div>
+          <time class="text-right text-sm text-slate-400">2026.05.13</time>
+        </article>
+      </div>
+    </div>
+  </section>
+</th:block>
+</html>

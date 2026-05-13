@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface LostItemRepository extends JpaRepository<LostItem, Long> {
@@ -60,6 +61,24 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
 	);
 
 	@Query("""
+			SELECT item
+			FROM LostItem item
+			WHERE item.deleted = false
+				AND item.status IN ('WAITING', 'MATCHING')
+				AND item.lostAt BETWEEN :lostFrom AND :lostTo
+				AND (:category IS NULL OR :category = ''
+					OR item.categoryMain IS NULL
+					OR item.categoryMain = :category)
+			ORDER BY item.lostAt DESC, item.lostId DESC
+			""")
+	List<LostItem> findMatchCandidatesForFound(
+			@Param("category") String category,
+			@Param("lostFrom") LocalDateTime lostFrom,
+			@Param("lostTo") LocalDateTime lostTo,
+			Pageable pageable
+	);
+
+	@Query("""
 			SELECT DISTINCT item.categoryMain
 			FROM LostItem item
 			WHERE item.deleted = false
@@ -68,4 +87,6 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
 			ORDER BY item.categoryMain ASC
 			""")
 	List<String> findActiveCategoryNames();
+
+	List<LostItem> findByDeletedFalseOrderByLostAtDescLostIdDesc(Pageable pageable);
 }

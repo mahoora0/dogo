@@ -39,7 +39,7 @@ public class DataGoKrPoliceFoundItemClient implements PoliceFoundItemClient {
 	}
 
 	@Override
-	public PoliceFoundItemPage fetchFoundItems(LocalDate startDate, LocalDate endDate, int pageNo, int numOfRows) {
+	public PoliceFoundItemPage fetchFoundItems(LocalDate startDate, LocalDate endDate, int pageNo, int numOfRows, String regionCode) {
 		if (!StringUtils.hasText(serviceKey)) {
 			throw new IllegalStateException("경찰청 습득물 API serviceKey가 설정되지 않았습니다.");
 		}
@@ -49,6 +49,7 @@ public class DataGoKrPoliceFoundItemClient implements PoliceFoundItemClient {
 						.queryParam("serviceKey", serviceKey)
 						.queryParam("START_YMD", startDate.format(REQUEST_DATE_FORMAT))
 						.queryParam("END_YMD", endDate.format(REQUEST_DATE_FORMAT))
+						.queryParamIfPresent("N_FD_LCT_CD", Optional.ofNullable(blankToNull(regionCode)))
 						.queryParam("pageNo", pageNo)
 						.queryParam("numOfRows", numOfRows)
 						.build())
@@ -92,5 +93,12 @@ public class DataGoKrPoliceFoundItemClient implements PoliceFoundItemClient {
 			return "";
 		}
 		return new String(response, StandardCharsets.UTF_8);
+	}
+
+	private String blankToNull(String value) {
+		if (!StringUtils.hasText(value)) {
+			return null;
+		}
+		return value.trim();
 	}
 }

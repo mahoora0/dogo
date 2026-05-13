@@ -27,7 +27,7 @@ scripts/collect_seed.sh --help
 ## 2. dogo_seed 수집
 
 ```bash
-export POLICE_LOST_ITEM_SERVICE_KEY='발급받은_서비스키'
+export POLICE_SERVICE_KEY='발급받은_서비스키'
 export SEED_DB_PASSWORD='mysql_password'
 
 python scripts/police_seed_collector.py \
@@ -142,7 +142,7 @@ DEV_DB_NAME=dogo scripts/import_seed_to_dev.sh seed/dogo_seed_YYYYMMDD.sql.gz
 ## 주요 환경변수
 
 ```text
-POLICE_LOST_ITEM_SERVICE_KEY  경찰청 API 키
+POLICE_SERVICE_KEY            경찰청 API 키
 SEED_DB_NAME                  seed DB 이름, 기본 dogo_seed
 SEED_DB_HOST                  기본 127.0.0.1
 SEED_DB_PORT                  기본 3306

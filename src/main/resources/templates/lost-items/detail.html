@@ -76,6 +76,50 @@
         </div>
       </div>
     </section>
+
+    <section th:if="${matchCandidates != null && !matchCandidates.isEmpty()}" class="mt-10">
+      <h2 class="mb-4 text-lg font-bold tracking-tight">
+        이 물건과 비슷한 습득물
+        <span class="ml-2 text-sm font-normal text-slate-400" th:text="${#lists.size(matchCandidates)} + '건'">0건</span>
+      </h2>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <a th:each="match : ${matchCandidates}"
+           th:href="@{'/found-items/' + ${match.id()}}"
+           class="group block rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-teal-300 hover:shadow-md">
+          <div class="relative overflow-hidden rounded-t-xl bg-slate-100">
+            <img th:if="${match.imageUrl() != null}" th:src="${match.imageUrl()}" alt=""
+                 class="h-36 w-full object-cover transition group-hover:scale-105">
+            <div th:unless="${match.imageUrl() != null}"
+                 class="flex h-36 w-full items-center justify-center text-slate-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <span class="absolute right-2 top-2 rounded-full bg-teal-600 px-2 py-0.5 text-xs font-bold text-white"
+                  th:text="${match.score() + '점'}">85점</span>
+          </div>
+          <div class="p-3">
+            <p class="truncate text-sm font-semibold text-slate-800" th:text="${match.name()}">검정 반지갑</p>
+            <div class="mt-1 flex flex-wrap items-center gap-1.5">
+              <span th:if="${match.category() != null}" th:text="${match.category()}"
+                    class="rounded bg-teal-50 px-1.5 py-0.5 text-xs font-medium text-teal-700">지갑</span>
+              <span th:text="${match.statusLabel()}"
+                    class="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600">보관중</span>
+            </div>
+            <p th:if="${match.place() != null}" class="mt-1.5 truncate text-xs text-slate-500" th:text="${match.place()}">강남역</p>
+            <p th:if="${match.eventAt() != null}" class="text-xs text-slate-400"
+               th:text="${#temporals.format(match.eventAt(), 'yyyy.MM.dd')}">2026.05.02</p>
+            <div th:if="${match.matchReasons() != null && !match.matchReasons().isEmpty()}" class="mt-2 space-y-0.5">
+              <p th:each="reason : ${match.matchReasons()}" class="text-xs text-slate-400"
+                 th:text="'· ' + ${reason}">· 카테고리 일치</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <div th:if="${matchCandidates == null || matchCandidates.isEmpty()}" class="mt-10 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
+      <p class="text-sm text-slate-400">아직 매칭된 습득물이 없습니다.</p>
+      <p class="mt-1 text-xs text-slate-300">새로운 습득물이 등록되면 자동으로 매칭됩니다.</p>
+    </div>
   </th:block>
 </th:block>
 </html>

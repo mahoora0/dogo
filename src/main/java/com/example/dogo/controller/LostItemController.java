@@ -103,6 +103,7 @@ public class LostItemController {
 	@GetMapping("/lost-items/{id}")
 	public String detail(@PathVariable Long id, Model model) {
 		model.addAttribute("lostItem", lostItemService.getDetail(id));
+		model.addAttribute("matchCandidates", lostItemService.getMatchCandidates(id));
 		return "lost-items/detail";
 	}
 

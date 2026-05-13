@@ -1,6 +1,7 @@
 package com.example.dogo.config;
 
 import com.example.dogo.service.CustomOAuth2UserService;
+import com.example.dogo.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomUserDetailsService customUserDetailsService;
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider;
 
     @Bean
@@ -34,7 +36,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) // 로컬 테스트를 위해 CSRF 비활성화 (필요시 활성화)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/join", "/api/user/**", "/api/mail/**", "/api/sms/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/areas/**", "/error", "/uploads/**").permitAll()
+                .requestMatchers("/", "/login", "/join", "/api/user/**", "/api/mail/**", "/api/sms/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/areas/**", "/faq", "/inquiry/**", "/notice", "/guide", "/error", "/uploads/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -52,7 +54,7 @@ public class SecurityConfig {
             .rememberMe(remember -> remember
                 .key("uniqueAndSecret")
                 .tokenValiditySeconds(86400 * 30) // 30일 유지
-                .userDetailsService(clientRegistrationRepositoryProvider.getIfAvailable() == null ? null : null) // Will be auto-injected if bean exists
+                .userDetailsService(customUserDetailsService)
             );
 
         ClientRegistrationRepository clientRegistrationRepository = clientRegistrationRepositoryProvider.getIfAvailable();

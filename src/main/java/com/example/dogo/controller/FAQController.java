@@ -13,7 +13,19 @@ public class FAQController {
     @GetMapping("/faq")
     public String faq(Model model) {
         // 사이드바 메뉴 중 'FAQ' 항목을 활성화 상태로 표시하기 위해 현재 URI를 뷰로 전달합니다.
-        model.addAttribute("currentUri", "/faq"); 
-        return "FAQ/FAQ"; 
+        model.addAttribute("currentUri", "/faq");
+        return "FAQ/FAQ";
+    }
+
+    @GetMapping("/notice")
+    public String notice(Model model) {
+        model.addAttribute("currentUri", "/notice");
+        return "notice/list";
+    }
+
+    @GetMapping("/guide")
+    public String guide(Model model) {
+        model.addAttribute("currentUri", "/guide");
+        return "guide/index";
     }
 }

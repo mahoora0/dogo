@@ -18,7 +18,7 @@ class PoliceFoundItemMapperTest {
 	void mapsPoliceResponseToFoundItem() {
 		PoliceFoundItemResponse response = item("F202605110000001", "1");
 
-		FoundItem foundItem = mapper.toFoundItem(response);
+		FoundItem foundItem = mapper.toFoundItem(response, "서울특별시 용산구");
 
 		assertThat(foundItem.getSourceType()).isEqualTo("POLICE");
 		assertThat(foundItem.getAtcId()).isEqualTo("F202605110000001");
@@ -28,6 +28,7 @@ class PoliceFoundItemMapperTest {
 		assertThat(foundItem.getItemName()).isEqualTo("빵 봉투");
 		assertThat(foundItem.getColorName()).isEqualTo("브라운(갈)");
 		assertThat(foundItem.getFoundAt()).isEqualTo(LocalDateTime.of(2026, 5, 11, 0, 0));
+		assertThat(foundItem.getFoundArea()).isEqualTo("서울특별시 용산구");
 		assertThat(foundItem.getKeepPlace()).isEqualTo("서울역(한국철도공사)");
 		assertThat(foundItem.getCategoryMain()).isEqualTo("쇼핑백");
 		assertThat(foundItem.getCategorySub()).isEqualTo("쇼핑백");
@@ -36,12 +37,13 @@ class PoliceFoundItemMapperTest {
 
 	@Test
 	void mapsDetailResponseFieldsWhenPresent() {
-		FoundItem foundItem = mapper.toFoundItem(item("F202605110000001", "1"), detail("보관중"));
+		FoundItem foundItem = mapper.toFoundItem(item("F202605110000001", "1"), detail("보관중"), "서울특별시 용산구");
 
 		assertThat(foundItem.getAtcId()).isEqualTo("F202605110000001");
 		assertThat(foundItem.getFdSn()).isEqualTo(1);
 		assertThat(foundItem.getContent()).isEqualTo("특이사항 : 없음");
 		assertThat(foundItem.getFoundAt()).isEqualTo(LocalDateTime.of(2026, 5, 11, 20, 0));
+		assertThat(foundItem.getFoundArea()).isEqualTo("서울특별시 용산구");
 		assertThat(foundItem.getFoundPlace()).isEqualTo("기차");
 		assertThat(foundItem.getKeepPlace()).isEqualTo("서울역(한국철도공사)");
 		assertThat(foundItem.getContact()).isEqualTo("서울역(한국철도공사) / 02-3149-2531");

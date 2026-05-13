@@ -47,6 +47,9 @@ class LostItemServiceTest {
 	@Mock
 	private PoliceLostItemDetailEnrichmentService policeLostItemDetailEnrichmentService;
 
+	@Mock
+	private ItemMatchService itemMatchService;
+
 	@TempDir
 	private Path uploadDir;
 
@@ -59,6 +62,7 @@ class LostItemServiceTest {
 				lostItemImageRepository,
 				userRepository,
 				policeLostItemDetailEnrichmentService,
+				itemMatchService,
 				uploadDir.toString()
 		);
 	}
@@ -89,7 +93,7 @@ class LostItemServiceTest {
 
 		assertThat(result.id()).isEqualTo(2L);
 		assertThat(result.imageUrls()).hasSize(1);
-		assertThat(result.imageUrls().get(0)).startsWith("data:image/svg+xml");
+		assertThat(result.imageUrls().get(0)).isEqualTo("/images/noImageSize.png");
 	}
 
 	@Test

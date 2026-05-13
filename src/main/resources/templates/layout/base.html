@@ -67,12 +67,20 @@
             <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}">
               <a th:href="@{/lost-items}">분실물 검색</a>
             </li>
+            <li th:classappend="${currentUri == '/lost-items/new' ? 'active' : ''}">
+              <a th:href="@{/lost-items/new}">분실물 등록</a>
+            </li>
           </ul>
         </div>
         <div class="category">
           <h3>습득물</h3>
           <ul>
-            <li>습득물 등록</li>
+            <li th:classappend="${currentUri == '/found-items' ? 'active' : ''}">
+              <a th:href="@{/found-items}">습득물 검색</a>
+            </li>
+            <li th:classappend="${currentUri == '/found-items/new' ? 'active' : ''}">
+              <a th:href="@{/found-items/new}">습득물 등록</a>
+            </li>
             <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
               <a th:href="@{/areas/list}">서비스센터 찾기</a>
             </li>
@@ -87,8 +95,12 @@
             <li th:classappend="${currentUri == '/inquiry' ? 'active' : ''}">
               <a th:href="@{/inquiry}">문의하기</a>
             </li>
-            <li>공지사항</li>
-            <li>이용가이드</li>
+            <li th:classappend="${currentUri == '/notice' ? 'active' : ''}">
+              <a th:href="@{/notice}">공지사항</a>
+            </li>
+            <li th:classappend="${currentUri == '/guide' ? 'active' : ''}">
+              <a th:href="@{/guide}">이용가이드</a>
+            </li>
           </ul>
         </div>
       </nav>

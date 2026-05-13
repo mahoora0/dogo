@@ -105,8 +105,8 @@ class PoliceLostItemSyncServiceTest {
 		assertThat(result.savedCount()).isEqualTo(1);
 		assertThat(result.skippedCount()).isEqualTo(1);
 		assertThat(result.pageCount()).isEqualTo(3);
-		verify(client, never()).fetchLostItemDetail("L202605090000001");
-		verify(imageService, never()).saveImageIfPresent(any(), any());
+		verify(client).fetchLostItemDetail("L202605090000001");
+		verify(imageService).saveImageIfPresent(any(LostItem.class), any(PoliceLostItemDetailResponse.class));
 	}
 
 	@Test

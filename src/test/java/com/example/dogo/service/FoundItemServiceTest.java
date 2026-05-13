@@ -50,6 +50,9 @@ class FoundItemServiceTest {
 	@Mock
 	private PoliceFoundItemDetailEnrichmentService policeFoundItemDetailEnrichmentService;
 
+	@Mock
+	private ItemMatchService itemMatchService;
+
 	@TempDir
 	private Path uploadDir;
 
@@ -62,6 +65,7 @@ class FoundItemServiceTest {
 				foundItemImageRepository,
 				userRepository,
 				policeFoundItemDetailEnrichmentService,
+				itemMatchService,
 				uploadDir.toString()
 		);
 	}
@@ -94,7 +98,7 @@ class FoundItemServiceTest {
 		assertThat(result.id()).isEqualTo(2L);
 		assertThat(result.description()).isEqualTo("파란 파우치에 들어 있습니다");
 		assertThat(result.imageUrls()).hasSize(1);
-		assertThat(result.imageUrls().get(0)).startsWith("data:image/svg+xml");
+		assertThat(result.imageUrls().get(0)).isEqualTo("/images/noImageSize.png");
 	}
 
 	@Test

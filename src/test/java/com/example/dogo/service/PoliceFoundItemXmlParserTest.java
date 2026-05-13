@@ -50,6 +50,29 @@ class PoliceFoundItemXmlParserTest {
 	}
 
 	@Test
+	void ignoresEmptyItemNodeInZeroResultResponse() {
+		String xml = """
+				<response>
+					<header>
+						<resultCode>00</resultCode>
+						<resultMsg>NORMAL SERVICE</resultMsg>
+					</header>
+					<body>
+						<items>
+							<item />
+						</items>
+						<totalCount>0</totalCount>
+					</body>
+				</response>
+				""";
+
+		PoliceFoundItemPage page = parser.parse(xml);
+
+		assertThat(page.totalCount()).isZero();
+		assertThat(page.items()).isEmpty();
+	}
+
+	@Test
 	void parsesFoundItemDetailXmlResponse() {
 		String xml = """
 				<response>

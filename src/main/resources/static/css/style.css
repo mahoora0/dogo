@@ -80,6 +80,12 @@ body {
     font-size: 0.95rem;
 }
 
+.category li a {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
 .category li.active {
     background: #e7f1ff;
     color: #007bff;

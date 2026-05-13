@@ -4,6 +4,7 @@ import com.example.dogo.dto.PoliceFoundItemDetailResponse;
 import com.example.dogo.dto.PoliceFoundItemPage;
 import com.example.dogo.dto.PoliceFoundItemResponse;
 import com.example.dogo.dto.PoliceFoundItemSyncResult;
+import com.example.dogo.dto.PoliceRegionCode;
 import com.example.dogo.entity.FoundItem;
 import com.example.dogo.repository.FoundItemRepository;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,6 +24,7 @@ public class PoliceFoundItemSyncService {
 	private static final Logger log = LoggerFactory.getLogger(PoliceFoundItemSyncService.class);
 
 	private final PoliceFoundItemClient client;
+	private final PoliceCommonCodeClient commonCodeClient;
 	private final PoliceFoundItemMapper mapper;
 	private final FoundItemRepository foundItemRepository;
 	private final PoliceFoundItemImageService imageService;
@@ -32,6 +35,7 @@ public class PoliceFoundItemSyncService {
 
 	public PoliceFoundItemSyncService(
 			PoliceFoundItemClient client,
+			PoliceCommonCodeClient commonCodeClient,
 			PoliceFoundItemMapper mapper,
 			FoundItemRepository foundItemRepository,
 			PoliceFoundItemImageService imageService,
@@ -41,6 +45,7 @@ public class PoliceFoundItemSyncService {
 			@Value("${police.found-item.incremental-lookback-days:30}") int incrementalLookbackDays
 	) {
 		this.client = client;
+		this.commonCodeClient = commonCodeClient;
 		this.mapper = mapper;
 		this.foundItemRepository = foundItemRepository;
 		this.imageService = imageService;
@@ -61,18 +66,60 @@ public class PoliceFoundItemSyncService {
 	}
 
 	PoliceFoundItemSyncResult syncBackfill(LocalDate startDate, LocalDate endDate) {
-		return sync(startDate, endDate, false, true);
+		return syncByRegions(startDate, endDate, false, true);
 	}
 
 	PoliceFoundItemSyncResult syncIncremental(LocalDate startDate, LocalDate endDate) {
-		return sync(startDate, endDate, true, true);
+		return syncByRegions(startDate, endDate, true, true);
+	}
+
+	private PoliceFoundItemSyncResult syncByRegions(
+			LocalDate startDate,
+			LocalDate endDate,
+			boolean stopAfterDuplicatePages,
+			boolean includeDetail
+	) {
+		List<PoliceRegionCode> regionCodes = fetchTopLevelRegionCodes();
+		if (regionCodes.isEmpty()) {
+			return sync(startDate, endDate, stopAfterDuplicatePages, includeDetail, null);
+		}
+
+		int fetchedCount = 0;
+		int savedCount = 0;
+		int skippedCount = 0;
+		int pageCount = 0;
+		for (PoliceRegionCode regionCode : regionCodes) {
+			PoliceFoundItemSyncResult result = sync(startDate, endDate, stopAfterDuplicatePages, includeDetail, regionCode);
+			fetchedCount += result.fetchedCount();
+			savedCount += result.savedCount();
+			skippedCount += result.skippedCount();
+			pageCount += result.pageCount();
+		}
+		return new PoliceFoundItemSyncResult(fetchedCount, savedCount, skippedCount, pageCount);
+	}
+
+	private List<PoliceRegionCode> fetchTopLevelRegionCodes() {
+		try {
+			List<PoliceRegionCode> regionCodes = commonCodeClient.fetchRegionCodes();
+			if (regionCodes.isEmpty()) {
+				return List.of();
+			}
+			return regionCodes.stream()
+					.filter(region -> StringUtils.hasText(region.code()))
+					.filter(region -> region.code().endsWith("000"))
+					.toList();
+		} catch (RuntimeException exception) {
+			log.warn("경찰청 지역 공통코드 조회에 실패했습니다. 지역 없이 습득물을 동기화합니다.", exception);
+			return List.of();
+		}
 	}
 
 	private PoliceFoundItemSyncResult sync(
 			LocalDate startDate,
 			LocalDate endDate,
 			boolean stopAfterDuplicatePages,
-			boolean includeDetail
+			boolean includeDetail,
+			PoliceRegionCode regionCode
 	) {
 		int pageNo = 1;
 		int emptyNewPageCount = 0;
@@ -82,7 +129,13 @@ public class PoliceFoundItemSyncService {
 		int pageCount = 0;
 
 		while (true) {
-			PoliceFoundItemPage page = client.fetchFoundItems(startDate, endDate, pageNo, numOfRows);
+			PoliceFoundItemPage page = client.fetchFoundItems(
+					startDate,
+					endDate,
+					pageNo,
+					numOfRows,
+					regionCode == null ? null : regionCode.code()
+			);
 			pageCount++;
 
 			if (page.items().isEmpty()) {
@@ -92,7 +145,7 @@ public class PoliceFoundItemSyncService {
 			int newCount = 0;
 			for (PoliceFoundItemResponse response : page.items()) {
 				fetchedCount++;
-				if (saveIfNew(response, includeDetail)) {
+				if (saveIfNew(response, includeDetail, regionCode == null ? null : regionCode.name())) {
 					savedCount++;
 					newCount++;
 				} else {
@@ -118,7 +171,7 @@ public class PoliceFoundItemSyncService {
 		return new PoliceFoundItemSyncResult(fetchedCount, savedCount, skippedCount, pageCount);
 	}
 
-	private boolean saveIfNew(PoliceFoundItemResponse response, boolean includeDetail) {
+	private boolean saveIfNew(PoliceFoundItemResponse response, boolean includeDetail, String regionName) {
 		if (response == null || !StringUtils.hasText(response.atcId())) {
 			return false;
 		}
@@ -131,7 +184,7 @@ public class PoliceFoundItemSyncService {
 
 		try {
 			Optional<PoliceFoundItemDetailResponse> detail = includeDetail ? fetchDetail(atcId, fdSn) : Optional.empty();
-			FoundItem foundItem = mapper.toFoundItem(response, detail.orElse(null));
+			FoundItem foundItem = mapper.toFoundItem(response, detail.orElse(null), regionName);
 			FoundItem savedItem = foundItemRepository.save(foundItem);
 			if (detail.isPresent()) {
 				imageService.saveImageIfPresent(savedItem, detail.get());
