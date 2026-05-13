@@ -1,14 +1,16 @@
 package com.example.dogo.config;
 
 import com.example.dogo.service.CustomOAuth2UserService;
+import com.example.dogo.security.CustomAuthenticationFailureHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -22,7 +24,17 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+    private final UserDetailsService userDetailsService;
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider;
+
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setHideUserNotFoundExceptions(false); // 아이디가 없을 때 UsernameNotFoundException을 던지도록 함
+        return provider;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -41,6 +53,7 @@ public class SecurityConfig {
                 .loginPage("/login")
                 .loginProcessingUrl("/loginProcess")
                 .usernameParameter("loginId")
+                .failureHandler(customAuthenticationFailureHandler)
                 .defaultSuccessUrl("/", true)
                 .permitAll()
             )
@@ -78,14 +91,7 @@ public class SecurityConfig {
 
         resolver.setAuthorizationRequestCustomizer(customizer -> {
             customizer.attributes(attributes -> {
-                String registrationId = (String) attributes.get(OAuth2ParameterNames.REGISTRATION_ID);
-                if ("google".equals(registrationId)) {
-                    customizer.additionalParameters(params -> params.put("prompt", "select_account consent"));
-                } else if ("kakao".equals(registrationId)) {
-                    customizer.additionalParameters(params -> params.put("prompt", "login"));
-                } else if ("naver".equals(registrationId)) {
-                    customizer.additionalParameters(params -> params.put("auth_type", "reprompt"));
-                }
+                // 불필요하게 매번 동의창/로그인창이 뜨지 않도록 prompt/auth_type 파라미터 제거
             });
         });
 

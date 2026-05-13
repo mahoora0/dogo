@@ -66,15 +66,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         User user;
         if (socialAccountOpt.isPresent()) {
-            // 이미 가입된 경우 정보 갱신
+            // 이미 가입된 경우 소셜 계정 정보만 갱신 (User 엔티티의 정보는 덮어쓰지 않음)
             UserSocialAccount socialAccount = socialAccountOpt.get();
             socialAccount.updateProfile(nickname, profileImageUrl);
             user = socialAccount.getUser();
-
-            // 기존 가입된 유저의 프로필 이미지가 null인 경우 (또는 소셜 프로필로 덮어쓰고 싶은 경우)
-            if (profileImageUrl != null) {
-                user.updateProfileImage(profileImageUrl);
-            }
         } else {
             // 신규 가입
             // 이메일로 기존 일반 유저가 있는지 확인

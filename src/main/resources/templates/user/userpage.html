@@ -2,28 +2,269 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
-    <div class="max-w-4xl mx-auto py-10">
-      <h2 class="text-2xl font-bold mb-6">마이페이지</h2>
+    <div class="max-w-5xl mx-auto">
+      <!-- 프로필 정보 카드 -->
+      <div class="bg-[#EBF5FF] rounded-[24px] p-10 flex items-center justify-between mb-10 shadow-sm">
+        <div class="flex items-center gap-8">
+          <!-- 프로필 이미지 -->
+          <div class="relative">
+            <img th:if="${#authentication.principal.user.profileImageUrl != null}"
+                 th:src="${#authentication.principal.user.profileImageUrl}"
+                 class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-sm" alt="프로필">
+            <div th:unless="${#authentication.principal.user.profileImageUrl != null}"
+                 class="w-32 h-32 rounded-full bg-white flex items-center justify-center text-gray-300 border-4 border-white shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </div>
+          
+          <!-- 유저 텍스트 정보 -->
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <h2 class="text-3xl font-extrabold text-gray-900" sec:authentication="principal.user.nickname">김철수</h2>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.64.304 1.24.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="text-gray-600 font-medium">
+              <p>가입일: <span th:text="${#authentication.principal.user.regDate != null ? #temporals.format(#authentication.principal.user.regDate, 'yyyy.MM.dd') : '2024.01.15'}">2023.01.15</span></p>
+              <p>회원등급: <span th:text="${#authentication.principal.user.role == 'ADMIN' ? '관리자' : '일반'}">일반</span></p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 정보수정 버튼 -->
+        <button id="openEditModal" class="bg-[#333333] text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition-all">
+          정보수정
+        </button>
+      </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <h3 class="text-xl font-semibold mb-4">내 정보</h3>
-        <p class="text-gray-700 mb-2">
-          <strong>닉네임:</strong> <span sec:authentication="principal.user.nickname">닉네임</span>
-        </p>
-        <p class="text-gray-700 mb-2">
-          <strong>이메일:</strong> <span sec:authentication="name">이메일</span>
-        </p>
+      <!-- 내 활동 섹션 (네모칸 안에 타이틀 포함) -->
+      <div class="bg-white rounded-[24px] border border-gray-100 p-10 shadow-sm">
+        <h3 class="text-xl font-extrabold text-gray-900 mb-10">내 활동</h3>
+        
+        <!-- 활동 목록 칸 (임시 빈 칸) -->
+        <div class="min-h-[200px] flex items-center justify-center border-2 border-dashed border-gray-50 rounded-2xl">
+          <p class="text-gray-400 font-medium text-lg">활동 내역이 없습니다.</p>
+        </div>
       </div>
       
       <!-- 탈퇴하기 버튼 -->
-      <div class="mt-8 flex justify-start">
+      <div class="mt-12 flex justify-center">
         <form th:action="@{/user/withdraw}" method="post" onsubmit="return confirm('정말로 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.');">
-          <button type="submit" class="text-gray-400 hover:text-red-500 text-sm underline transition-colors">
+          <button type="submit" class="text-gray-400 hover:text-red-500 text-xs underline transition-colors">
             탈퇴하기
           </button>
         </form>
       </div>
     </div>
+
+    <!-- 사용자 정보 편집 모달 -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center hidden overflow-y-auto py-10 px-4">
+      <div class="bg-white w-full max-w-[500px] rounded-[32px] shadow-2xl relative my-auto">
+        <!-- 닫기 버튼 -->
+        <button id="closeEditModal" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 z-10">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <form th:action="@{/user/profile/update}" method="post" enctype="multipart/form-data" class="p-10">
+          <h2 class="text-2xl font-extrabold text-gray-900 mb-8">사용자 정보 편집</h2>
+
+          <!-- 프로필 사진 편집 -->
+          <div class="flex flex-col items-center mb-10">
+            <div class="relative group cursor-pointer" onclick="document.getElementById('profileImageInput').click()">
+              <img id="modalProfilePreview" 
+                   th:src="${#authentication.principal.user.profileImageUrl != null ? #authentication.principal.user.profileImageUrl : '/images/default-avatar.png'}"
+                   class="w-32 h-32 rounded-full object-cover border-4 border-[#EBF5FF] group-hover:opacity-80 transition-all" alt="미리보기">
+              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                 </svg>
+              </div>
+            </div>
+            <input type="file" id="profileImageInput" name="profileImage" class="hidden" accept="image/*">
+            <button type="button" onclick="document.getElementById('profileImageInput').click()" 
+                    class="mt-4 px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50">
+              프로필 사진 변경
+            </button>
+          </div>
+
+          <!-- 입력 필드들 -->
+          <div class="space-y-4">
+            <!-- 닉네임 -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-bold text-gray-700 ml-1">닉네임</label>
+              <div class="flex gap-2">
+                <input type="text" name="nickname" id="modalNickname" th:value="${#authentication.principal.user.nickname}"
+                       class="flex-1 px-4 py-3 bg-white border border-blue-400 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none font-medium">
+                <button type="button" id="checkNicknameBtn" class="px-4 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50">
+                  중복 확인
+                </button>
+              </div>
+              <p id="nicknameMsg" class="text-xs ml-2 font-medium hidden"></p>
+            </div>
+
+            <!-- ID (수정 불가) -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-bold text-gray-700 ml-1">ID</label>
+              <input type="text" th:value="${#authentication.principal.user.loginId}" readonly
+                     class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-xl text-gray-500 font-medium cursor-not-allowed">
+            </div>
+
+            <!-- 새 비밀번호 -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-bold text-gray-700 ml-1 flex items-center gap-1">
+                새 비밀번호
+                <span th:if="${#authentication.principal.user.password == null}" class="text-[10px] text-gray-400 font-normal">(소셜 계정은 수정 불가)</span>
+              </label>
+              <input type="password" name="password" placeholder="********"
+                     th:readonly="${#authentication.principal.user.password == null}"
+                     th:classappend="${#authentication.principal.user.password == null ? 'bg-[#F1F3F5] cursor-not-allowed' : 'bg-white border border-gray-200'}"
+                     class="w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none font-medium">
+            </div>
+
+            <!-- 새 비밀번호 확인 -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-bold text-gray-700 ml-1 flex items-center gap-1">
+                새 비밀번호 확인
+                <span th:if="${#authentication.principal.user.password == null}" class="text-[10px] text-gray-400 font-normal">(소셜 계정은 수정 불가)</span>
+              </label>
+              <input type="password" name="confirmPassword" placeholder="********"
+                     th:readonly="${#authentication.principal.user.password == null}"
+                     th:classappend="${#authentication.principal.user.password == null ? 'bg-[#F1F3F5] cursor-not-allowed' : 'bg-white border border-gray-200'}"
+                     class="w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none font-medium">
+            </div>
+
+            <!-- 이메일 (수정 불가) -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-bold text-gray-700 ml-1">이메일</label>
+              <input type="text" th:value="${#authentication.principal.user.email}" readonly
+                     class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-xl text-gray-500 font-medium cursor-not-allowed">
+            </div>
+
+            <!-- 연락처 (수정 불가) -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-bold text-gray-700 ml-1">연락처</label>
+              <input type="text" th:value="${#authentication.principal.user.phone}" readonly
+                     class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-xl text-gray-500 font-medium cursor-not-allowed">
+            </div>
+          </div>
+
+          <!-- 하단 버튼 -->
+          <div class="grid grid-cols-2 gap-3 mt-10">
+            <button type="submit" class="bg-blue-500 text-white py-4 rounded-xl font-bold hover:bg-blue-600 transition-all">저장</button>
+            <button type="button" id="cancelEditModal" class="bg-gray-500 text-white py-4 rounded-xl font-bold hover:bg-gray-600 transition-all">취소</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const editModal = document.getElementById('editModal');
+      const openEditModalBtn = document.getElementById('openEditModal');
+      const closeEditModalBtn = document.getElementById('closeEditModal');
+      const cancelEditModalBtn = document.getElementById('cancelEditModal');
+      const profileImageInput = document.getElementById('profileImageInput');
+      const modalProfilePreview = document.getElementById('modalProfilePreview');
+
+      openEditModalBtn.addEventListener('click', () => {
+        editModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // 배경 고정
+      });
+
+      const closeModal = () => {
+        editModal.classList.add('hidden');
+        document.body.style.overflow = 'auto'; // 배경 스크롤 복구
+      };
+
+      closeEditModalBtn.addEventListener('click', closeModal);
+      cancelEditModalBtn.addEventListener('click', closeModal);
+
+      // 모달 바깥 클릭 시 닫기
+      editModal.addEventListener('click', (e) => {
+        if (e.target === editModal) closeModal();
+      });
+
+      // 이미지 미리보기
+      profileImageInput.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            modalProfilePreview.src = e.target.result;
+          };
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      });
+
+      // 닉네임 중복 확인
+      const checkNicknameBtn = document.getElementById('checkNicknameBtn');
+      const modalNickname = document.getElementById('modalNickname');
+      const nicknameMsg = document.getElementById('nicknameMsg');
+      const currentNickname = modalNickname.value; // 현재 닉네임 저장
+      let isNicknameVerified = true; // 처음엔 현재 닉네임이므로 true
+
+      modalNickname.addEventListener('input', () => {
+        isNicknameVerified = (modalNickname.value === currentNickname);
+        nicknameMsg.classList.add('hidden');
+      });
+
+      checkNicknameBtn.addEventListener('click', async () => {
+        const nickname = modalNickname.value.trim();
+        
+        if (!nickname) {
+          alert('닉네임을 입력해주세요.');
+          return;
+        }
+
+        if (nickname === currentNickname) {
+          nicknameMsg.textContent = '현재 사용 중인 닉네임입니다.';
+          nicknameMsg.className = 'text-xs ml-2 font-medium text-blue-500';
+          nicknameMsg.classList.remove('hidden');
+          isNicknameVerified = true;
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/user/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+          const isExists = await response.json();
+
+          if (isExists) {
+            nicknameMsg.textContent = '이미 사용 중인 닉네임입니다.';
+            nicknameMsg.className = 'text-xs ml-2 font-medium text-red-500';
+            isNicknameVerified = false;
+          } else {
+            nicknameMsg.textContent = '사용 가능한 닉네임입니다.';
+            nicknameMsg.className = 'text-xs ml-2 font-medium text-green-600';
+            isNicknameVerified = true;
+          }
+          nicknameMsg.classList.remove('hidden');
+        } catch (error) {
+          console.error('Error checking nickname:', error);
+          alert('중복 확인 중 오류가 발생했습니다.');
+        }
+      });
+
+      // 폼 제출 전 검증
+      document.querySelector('#editModal form').addEventListener('submit', (e) => {
+        if (!isNicknameVerified) {
+          e.preventDefault();
+          alert('닉네임 중복 확인을 해주세요.');
+          modalNickname.focus();
+        }
+        
+        const pwd = document.getElementsByName('password')[0].value;
+        const confirmPwd = document.getElementsByName('confirmPassword')[0].value;
+        
+        if (pwd && pwd !== confirmPwd) {
+          e.preventDefault();
+          alert('비밀번호가 일치하지 않습니다.');
+        }
+      });
+    </script>
   </th:block>
 </th:block>
 </html>
