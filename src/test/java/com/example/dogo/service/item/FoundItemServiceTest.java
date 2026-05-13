@@ -112,15 +112,16 @@ class FoundItemServiceTest {
 			return saved;
 		});
 
-		Long id = foundItemService.create(request(null, "검정 지갑", null), loginUser);
+		Long id = foundItemService.create(request("검정 지갑을 주웠습니다", "검정 지갑", null), loginUser);
 
 		assertThat(id).isEqualTo(10L);
 
 		ArgumentCaptor<FoundItem> captor = ArgumentCaptor.forClass(FoundItem.class);
 		verify(foundItemRepository).save(captor.capture());
 		assertThat(captor.getValue().getUser()).isSameAs(loginUser);
-		assertThat(captor.getValue().getTitle()).isEqualTo("검정 지갑");
+		assertThat(captor.getValue().getTitle()).isEqualTo("검정 지갑을 주웠습니다");
 		assertThat(captor.getValue().getContent()).isEqualTo("카드가 들어 있습니다");
+		assertThat(captor.getValue().getFoundArea()).isEqualTo("서울특별시 강남구");
 		assertThat(captor.getValue().getStatus()).isEqualTo("KEEPING");
 		verify(userRepository, never()).findByEmail(any());
 		verify(foundItemImageRepository, never()).save(any());
@@ -200,7 +201,8 @@ class FoundItemServiceTest {
 		request.setItemName(itemName);
 		request.setCategoryMain("지갑");
 		request.setFoundAt(LocalDateTime.of(2026, 5, 8, 12, 0));
-		request.setFoundArea("서울");
+		request.setFoundAreaProvince("서울특별시");
+		request.setFoundAreaDistrict("강남구");
 		request.setFoundPlace("강남역");
 		request.setKeepPlace("강남경찰서");
 		request.setColorName("검정");

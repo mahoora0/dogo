@@ -44,7 +44,7 @@
         <label class="block relative">
           <span class="text-sm font-semibold text-slate-700">카테고리 <span class="text-red-400">*</span></span>
           <div class="relative mt-1.5">
-            <select name="categoryMain" required
+            <select id="categoryMain" name="categoryMain" required
                     class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
               <option value="">선택</option>
               <option th:each="categoryOption : ${categories}"
@@ -55,10 +55,49 @@
           </div>
         </label>
 
+        <label class="block relative">
+          <span class="text-sm font-semibold text-slate-700">세부 카테고리</span>
+          <div class="relative mt-1.5">
+            <select id="categorySub" name="categorySub"
+                    th:attr="data-current=${request != null ? request.categorySub : ''}"
+                    class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+              <option value="">선택 안 함</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </label>
+
+        <label class="block relative">
+          <span class="text-sm font-semibold text-slate-700">분실 지역 <span class="text-red-400">*</span></span>
+          <div class="relative mt-1.5">
+            <select id="lostAreaProvince" name="lostAreaProvince" required
+                    class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+              <option value="">시/도 선택</option>
+              <option th:each="regionOption : ${regionOptions}"
+                      th:value="${regionOption}" th:text="${regionOption}"
+                      th:selected="${request != null && request.lostAreaProvince == regionOption}">서울특별시</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </label>
+
+        <label class="block relative">
+          <span class="text-sm font-semibold text-slate-700">시/군/구 <span class="text-red-400">*</span></span>
+          <div class="relative mt-1.5">
+            <select id="lostAreaDistrict" name="lostAreaDistrict" required
+                    th:attr="data-current=${request != null ? request.lostAreaDistrict : ''}"
+                    class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+              <option value="">시/군/구 선택</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </label>
+
         <label class="block">
-          <span class="text-sm font-semibold text-slate-700">분실 지역</span>
-          <input name="lostArea" th:value="${request != null ? request.lostArea : ''}"
-                 placeholder="예: 서울 강남구"
+          <span class="text-sm font-semibold text-slate-700">분실 일시 <span class="text-red-400">*</span></span>
+          <input type="datetime-local" name="lostAt"
+                 th:value="${request != null && request.lostAt != null ? #temporals.format(request.lostAt, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                 required
                  class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
         </label>
 
@@ -69,12 +108,18 @@
                  class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
         </label>
 
-        <label class="block">
-          <span class="text-sm font-semibold text-slate-700">분실 일시 <span class="text-red-400">*</span></span>
-          <input type="datetime-local" name="lostAt"
-                 th:value="${request != null && request.lostAt != null ? #temporals.format(request.lostAt, 'yyyy-MM-dd''T''HH:mm') : ''}"
-                 required
-                 class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        <label class="block relative">
+          <span class="text-sm font-semibold text-slate-700">색상</span>
+          <div class="relative mt-1.5">
+            <select name="colorName"
+                    class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+              <option value="">선택 안 함</option>
+              <option th:each="colorOption : ${colorOptions}"
+                      th:value="${colorOption}" th:text="${colorOption}"
+                      th:selected="${request != null && request.colorName == colorOption}">검정</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
         </label>
 
         <label class="block">
@@ -125,7 +170,50 @@
       </div>
     </form>
 
-    <script>
+    <script th:inline="javascript">
+    (function() {
+      var categorySubOptions = /*[[${categorySubOptions}]]*/ {};
+      var regionDistrictOptions = /*[[${regionDistrictOptions}]]*/ {};
+      var categoryMain = document.getElementById('categoryMain');
+      var categorySub = document.getElementById('categorySub');
+      var areaProvince = document.getElementById('lostAreaProvince');
+      var areaDistrict = document.getElementById('lostAreaDistrict');
+
+      function fillSelect(select, values, placeholder, currentValue) {
+        select.innerHTML = '';
+        var empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = placeholder;
+        select.appendChild(empty);
+        values.forEach(function(value) {
+          var option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          if (value === currentValue) {
+            option.selected = true;
+          }
+          select.appendChild(option);
+        });
+      }
+
+      function renderCategorySub() {
+        var currentValue = categorySub.getAttribute('data-current') || categorySub.value;
+        fillSelect(categorySub, categorySubOptions[categoryMain.value] || [], '선택 안 함', currentValue);
+        categorySub.removeAttribute('data-current');
+      }
+
+      function renderAreaDistrict() {
+        var currentValue = areaDistrict.getAttribute('data-current') || areaDistrict.value;
+        fillSelect(areaDistrict, regionDistrictOptions[areaProvince.value] || [], '시/군/구 선택', currentValue);
+        areaDistrict.removeAttribute('data-current');
+      }
+
+      categoryMain.addEventListener('change', renderCategorySub);
+      areaProvince.addEventListener('change', renderAreaDistrict);
+      renderCategorySub();
+      renderAreaDistrict();
+    })();
+
     (function() {
       var input = document.getElementById('imageInput');
       var preview = document.getElementById('imagePreview');

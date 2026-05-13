@@ -17,10 +17,13 @@ public class LostItemCreateRequest {
 	private String itemName;
 	private String categoryMain;
 	private String categorySub;
+	private String colorName;
 
 	@DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
 	private LocalDateTime lostAt;
 
+	private String lostAreaProvince;
+	private String lostAreaDistrict;
 	private String lostArea;
 	private String lostPlace;
 	private String contact;

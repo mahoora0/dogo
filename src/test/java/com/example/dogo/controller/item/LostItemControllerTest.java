@@ -3,8 +3,8 @@ package com.example.dogo.controller.item;
 import com.example.dogo.dto.item.LostItemCreateRequest;
 import com.example.dogo.dto.item.LostItemDetailView;
 import com.example.dogo.dto.item.LostItemView;
-import com.example.dogo.service.item.CategoryService;
 import com.example.dogo.service.item.LostItemService;
+import com.example.dogo.service.item.RegistrationOptionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
@@ -33,16 +33,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LostItemControllerTest {
 
 	private LostItemService lostItemService;
-	private CategoryService categoryService;
+	private RegistrationOptionService registrationOptionService;
 	private MockMvc mockMvc;
 
 	@BeforeEach
 	void setUp() {
 		lostItemService = mock(LostItemService.class);
-		categoryService = mock(CategoryService.class);
-		when(categoryService.getActiveCategoryNames()).thenReturn(List.of("지갑", "가방", "전자기기", "의류", "기타"));
+		registrationOptionService = new RegistrationOptionService();
 		when(lostItemService.getSearchCategoryNames()).thenReturn(List.of("가방", "전자기기"));
-		mockMvc = MockMvcBuilders.standaloneSetup(new LostItemController(categoryService, lostItemService))
+		mockMvc = MockMvcBuilders.standaloneSetup(new LostItemController(lostItemService, registrationOptionService))
 				.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
 				.build();
 	}
@@ -79,7 +78,7 @@ class LostItemControllerTest {
 				.andExpect(model().attribute("category", "지갑"))
 				.andExpect(model().attribute("area", "강남"))
 				.andExpect(model().attribute("status", "WAITING"))
-				.andExpect(model().attribute("categories", List.of("지갑", "가방", "전자기기", "의류", "기타")))
+				.andExpect(model().attribute("categories", registrationOptionService.getCategoryMainOptions()))
 				.andExpect(model().attribute("searchCategories", List.of("가방", "전자기기")));
 
 		verify(lostItemService).search(eq("지갑"), eq("지갑"), eq("강남"), eq("WAITING"), any(Pageable.class));

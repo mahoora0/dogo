@@ -1,8 +1,8 @@
 package com.example.dogo.controller.item;
 
 import com.example.dogo.dto.item.FoundItemCreateRequest;
-import com.example.dogo.service.item.CategoryService;
 import com.example.dogo.service.item.FoundItemService;
+import com.example.dogo.service.item.RegistrationOptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.example.dogo.security.CustomUserDetails;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -29,12 +30,32 @@ public class FoundItemController {
 
 	private static final int MAX_PAGE_SIZE = 30;
 
-	private final CategoryService categoryService;
 	private final FoundItemService foundItemService;
+	private final RegistrationOptionService registrationOptionService;
 
 	@ModelAttribute("categories")
 	public List<String> categories() {
-		return categoryService.getActiveCategoryNames();
+		return registrationOptionService.getCategoryMainOptions();
+	}
+
+	@ModelAttribute("categorySubOptions")
+	public Map<String, List<String>> categorySubOptions() {
+		return registrationOptionService.getCategorySubOptions();
+	}
+
+	@ModelAttribute("colorOptions")
+	public List<String> colorOptions() {
+		return registrationOptionService.getColorOptions();
+	}
+
+	@ModelAttribute("regionOptions")
+	public List<String> regionOptions() {
+		return registrationOptionService.getRegionOptions();
+	}
+
+	@ModelAttribute("regionDistrictOptions")
+	public Map<String, List<String>> regionDistrictOptions() {
+		return registrationOptionService.getRegionDistrictOptions();
 	}
 
 	@GetMapping("/found-items")

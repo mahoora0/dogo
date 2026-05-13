@@ -5,8 +5,8 @@ import com.example.dogo.dto.item.FoundItemDetailView;
 import com.example.dogo.dto.item.FoundItemView;
 import com.example.dogo.entity.user.User;
 import com.example.dogo.security.CustomUserDetails;
-import com.example.dogo.service.item.CategoryService;
 import com.example.dogo.service.item.FoundItemService;
+import com.example.dogo.service.item.RegistrationOptionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
@@ -37,16 +37,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FoundItemControllerTest {
 
 	private FoundItemService foundItemService;
-	private CategoryService categoryService;
+	private RegistrationOptionService registrationOptionService;
 	private FoundItemController foundItemController;
 	private MockMvc mockMvc;
 
 	@BeforeEach
 	void setUp() {
 		foundItemService = mock(FoundItemService.class);
-		categoryService = mock(CategoryService.class);
-		foundItemController = new FoundItemController(categoryService, foundItemService);
-		when(categoryService.getActiveCategoryNames()).thenReturn(List.of("지갑", "가방", "전자기기", "의류", "기타"));
+		registrationOptionService = new RegistrationOptionService();
+		foundItemController = new FoundItemController(foundItemService, registrationOptionService);
 		when(foundItemService.getSearchCategoryNames()).thenReturn(List.of("가방", "전자기기"));
 		mockMvc = MockMvcBuilders.standaloneSetup(foundItemController)
 				.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
@@ -84,7 +83,7 @@ class FoundItemControllerTest {
 				.andExpect(model().attribute("category", "지갑"))
 				.andExpect(model().attribute("area", "강남"))
 				.andExpect(model().attribute("status", "KEEPING"))
-				.andExpect(model().attribute("categories", List.of("지갑", "가방", "전자기기", "의류", "기타")))
+				.andExpect(model().attribute("categories", registrationOptionService.getCategoryMainOptions()))
 				.andExpect(model().attribute("searchCategories", List.of("가방", "전자기기")));
 
 		verify(foundItemService).search(eq("지갑"), eq("지갑"), eq("강남"), eq("KEEPING"), any(Pageable.class));

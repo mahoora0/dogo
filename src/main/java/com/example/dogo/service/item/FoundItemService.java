@@ -144,7 +144,7 @@ public class FoundItemService {
 				request.getCategoryMain(),
 				blankToNull(request.getCategorySub()),
 				defaultFoundAt(request.getFoundAt()),
-				blankToNull(request.getFoundArea()),
+				normalizedArea(request.getFoundAreaProvince(), request.getFoundAreaDistrict(), request.getFoundArea()),
 				blankToNull(request.getFoundPlace()),
 				blankToNull(request.getKeepPlace()),
 				blankToNull(request.getColorName()),
@@ -230,8 +230,20 @@ public class FoundItemService {
 		if (!StringUtils.hasText(request.getItemName())) {
 			throw new IllegalArgumentException("물품명을 입력해주세요.");
 		}
+		if (!StringUtils.hasText(request.getTitle())) {
+			throw new IllegalArgumentException("제목을 입력해주세요.");
+		}
 		if (!StringUtils.hasText(request.getCategoryMain())) {
 			throw new IllegalArgumentException("카테고리를 선택해주세요.");
+		}
+		if (request.getFoundAt() == null) {
+			throw new IllegalArgumentException("습득 일시를 입력해주세요.");
+		}
+		if (!StringUtils.hasText(normalizedArea(request.getFoundAreaProvince(), request.getFoundAreaDistrict(), request.getFoundArea()))) {
+			throw new IllegalArgumentException("습득 지역을 선택해주세요.");
+		}
+		if (!StringUtils.hasText(request.getFoundPlace())) {
+			throw new IllegalArgumentException("습득 장소를 입력해주세요.");
 		}
 	}
 
@@ -258,7 +270,17 @@ public class FoundItemService {
 		if (!StringUtils.hasText(value)) {
 			return null;
 		}
-		return value;
+		return value.trim();
+	}
+
+	private String normalizedArea(String province, String district, String fallback) {
+		if (StringUtils.hasText(province) && StringUtils.hasText(district)) {
+			return province.trim() + " " + district.trim();
+		}
+		if (StringUtils.hasText(province)) {
+			return province.trim();
+		}
+		return blankToNull(fallback);
 	}
 
 	private String extractExtension(String filename) {

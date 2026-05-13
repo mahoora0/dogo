@@ -21,6 +21,8 @@ public class FoundItemCreateRequest {
 	@DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
 	private LocalDateTime foundAt;
 
+	private String foundAreaProvince;
+	private String foundAreaDistrict;
 	private String foundArea;
 	private String foundPlace;
 	private String keepPlace;

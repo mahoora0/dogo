@@ -118,7 +118,7 @@ class LostItemServiceTest {
 			return saved;
 		});
 
-		LostItemCreateRequest request = request(null, "검정 지갑", null);
+		LostItemCreateRequest request = request("검정 지갑을 찾습니다", "검정 지갑", null);
 
 		Long id = lostItemService.create(request, null);
 
@@ -126,8 +126,10 @@ class LostItemServiceTest {
 
 		ArgumentCaptor<LostItem> captor = ArgumentCaptor.forClass(LostItem.class);
 		verify(lostItemRepository).save(captor.capture());
-		assertThat(captor.getValue().getTitle()).isEqualTo("검정 지갑");
+		assertThat(captor.getValue().getTitle()).isEqualTo("검정 지갑을 찾습니다");
 		assertThat(captor.getValue().getContent()).isNull();
+		assertThat(captor.getValue().getColorName()).isEqualTo("검정");
+		assertThat(captor.getValue().getLostArea()).isEqualTo("서울특별시 강남구");
 		assertThat(captor.getValue().getStatus()).isEqualTo("WAITING");
 		verify(lostItemImageRepository, never()).save(any());
 	}
@@ -194,8 +196,10 @@ class LostItemServiceTest {
 		request.setTitle(title);
 		request.setItemName(itemName);
 		request.setCategoryMain("지갑");
+		request.setColorName("검정");
 		request.setLostAt(LocalDateTime.of(2026, 5, 8, 12, 0));
-		request.setLostArea("서울");
+		request.setLostAreaProvince("서울특별시");
+		request.setLostAreaDistrict("강남구");
 		request.setLostPlace("강남역");
 		request.setContact("010-1234-5678");
 		request.setContent(" ");
