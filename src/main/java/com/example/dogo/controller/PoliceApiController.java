@@ -54,19 +54,37 @@ public class PoliceApiController {
       
       List<String> subRegions = stations.stream()
           .map(s -> {
-            String rgn = s.getCmptncRgnNm();
-            // Fallback: If rgn is broken, try to extract from addr
-            if (rgn == null || rgn.isBlank() || rgn.length() < 2 || rgn.contains("\ufffd")) {
-              rgn = extractDistrict(s.getAddr());
+            // Priority 1: Extract from address (usually has the most accurate 'Gu/Gun/Si' name)
+            String rgn = extractDistrict(s.getAddr());
+            
+            // Priority 2: Use jurisdiction name from DB
+            if (rgn == null || rgn.isBlank()) {
+                rgn = s.getCmptncRgnNm();
             }
             
-            // Strip region name prefix (e.g., "광주광산" -> "광산")
-            if (rgn != null && region != null && rgn.startsWith(region) && rgn.length() > region.length()) {
-                return rgn.substring(region.length());
+            if (rgn == null || rgn.isBlank()) return null;
+
+            // Strip region name prefix if it exists (e.g., "서울강남구" -> "강남구")
+            // But be careful not to strip "서울" from "서울특별시" in a way that leaves "특별시"
+            if (region != null && rgn.startsWith(region)) {
+                String remainder = rgn.substring(region.length()).trim();
+                if (!remainder.isEmpty() && !remainder.startsWith("특별시") && !remainder.startsWith("광역시")) {
+                    return remainder;
+                }
             }
+            
+            // If it's something like "서울특별시 강남구", and region is "서울", 
+            // we might want just "강남구".
+            if (rgn.contains(" ")) {
+                String[] parts = rgn.split("\\s+");
+                if (parts.length >= 2 && (parts[1].endsWith("구") || parts[1].endsWith("군") || parts[1].endsWith("시"))) {
+                    return parts[1];
+                }
+            }
+
             return rgn;
           })
-          .filter(n -> n != null && !n.isBlank())
+          .filter(n -> n != null && !n.isBlank() && n.length() > 1)
           .distinct()
           .sorted()
           .toList();
@@ -80,12 +98,19 @@ public class PoliceApiController {
   private String extractDistrict(String addr) {
     if (addr == null) return null;
     String[] parts = addr.split("\\s+");
-    // Usually the second part of the address is the district (Gu/Gun)
+    // Usually the second part of the address is the district (Gu/Gun/Si)
     if (parts.length >= 2) {
       String district = parts[1];
-      if (district.endsWith("구") || district.endsWith("군")) {
+      if (district.endsWith("구") || district.endsWith("군") || district.endsWith("시")) {
         return district;
       }
+    }
+    // If the first part already contains the district (e.g. "세종특별자치시")
+    if (parts.length >= 1) {
+        String first = parts[0];
+        if (first.endsWith("구") || first.endsWith("군")) {
+            return first;
+        }
     }
     return null;
   }
