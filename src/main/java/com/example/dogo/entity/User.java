@@ -10,6 +10,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import jakarta.persistence.PrePersist;
+
 @Entity
 @Table(name = "USERS")
 @Getter
@@ -79,5 +81,12 @@ public class User {
 
 	public void withdraw() {
 		this.status = "WITHDRAWN";
+	}
+
+	@PrePersist
+	public void onCreate() {
+		if (this.regDate == null) {
+			this.regDate = java.time.LocalDateTime.now();
+		}
 	}
 }
