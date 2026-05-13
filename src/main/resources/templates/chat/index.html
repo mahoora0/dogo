@@ -1,12 +1,209 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
-  <th:block th:fragment="content">
-    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <p class="text-sm font-semibold text-teal-700">채팅</p>
-      <h1 class="mt-1 text-2xl font-bold tracking-tight">채팅 준비 중</h1>
-      <p class="mt-2 text-sm text-slate-500">상단 채팅 메뉴가 빈 페이지로 떨어지지 않도록 임시 화면을 연결했습니다.</p>
-    </section>
-  </th:block>
+    <th:block th:fragment="content">
+        <link rel="stylesheet" th:href="@{/css/chat.css}">
+        <!-- SockJS and STOMP -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+        <div class="chat-wrapper">
+            <!-- Sidebar: Room List -->
+            <div class="chat-sidebar">
+                <div class="chat-sidebar-header">
+                    <h2 class="text-xl font-bold mb-4">습득채팅</h2>
+                    <input type="text" class="chat-search" placeholder="검색">
+                </div>
+                <div class="chat-room-list">
+                    <div th:each="room : ${rooms}" 
+                         class="chat-room-item" 
+                         th:classappend="${param.roomId != null && param.roomId[0] == room.roomId.toString() ? 'active' : ''}"
+                         th:onclick="'selectRoom(' + ${room.roomId} + ')'">
+                        <img th:src="${room.itemThumbnail ?: '/images/placeholder.png'}" class="chat-room-thumb" alt="">
+                        <div class="chat-room-info">
+                            <div class="flex justify-between items-start">
+                                <div class="chat-room-name" th:text="${room.otherParticipantNickname}">상대방 닉네임</div>
+                                <span class="text-[10px] text-slate-400" th:text="${#temporals.format(room.lastMessageTime, 'HH:mm')}">오전 9:30</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="chat-room-last-msg" th:text="${room.lastMessage}">마지막 메시지 내용</div>
+                                <div th:if="${room.unreadCount != null && room.unreadCount > 0}" 
+                                     class="bg-violet-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center" 
+                                     th:text="${room.unreadCount}">2</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="chat-main">
+                <div id="chat-header" class="chat-header hidden">
+                    <div class="flex items-center gap-3">
+                        <button class="lg:hidden text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <div>
+                            <h3 id="current-room-name" class="font-bold text-slate-800">게시글 제목</h3>
+                            <p class="text-[11px] text-slate-400">최근 접속: 오늘 오전 9:25</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 text-slate-400">
+                        <button><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
+                    </div>
+                </div>
+
+                <div id="messages-container" class="chat-messages">
+                    <!-- Messages will be loaded here -->
+                    <div class="flex flex-col items-center justify-center h-full text-slate-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                        <p class="text-sm">채팅방을 선택하여 대화를 시작하세요.</p>
+                    </div>
+                </div>
+
+                <div id="input-area" class="chat-input-area hidden">
+                    <div class="chat-input-container">
+                        <input type="text" id="message-input" class="chat-input" placeholder="메시지를 입력하세요..." onkeypress="if(event.keyCode==13) sendMessage()">
+                        <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg></button>
+                        <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
+                        <button onclick="sendMessage()" class="chat-send-btn">전송</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Info -->
+            <div id="info-panel" class="chat-info-panel hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
+                    <h4 class="text-sm font-bold">습득물 정보</h4>
+                    <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
+                </div>
+
+                <div class="item-card">
+                    <img id="item-info-img" src="" class="item-img" alt="">
+                    <div class="item-details">
+                        <div class="flex justify-between items-start">
+                            <h4 id="item-info-title" class="item-title">아이템 제목</h4>
+                            <span class="bg-violet-50 text-violet-600 text-[10px] px-2 py-1 rounded font-bold">습득완료</span>
+                        </div>
+                        <div class="item-meta">
+                            <div class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> <span id="item-info-location">장소 정보</span></div>
+                            <div class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> <span id="item-info-date">날짜 정보</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h5 class="text-xs font-bold text-slate-400 mb-2">대화 중인 사용자</h5>
+                    <div class="participant-info mb-4">
+                        <img id="participant-img" src="" class="participant-avatar" alt="">
+                        <div>
+                            <div id="participant-name" class="font-bold text-sm">상대방 이름</div>
+                            <div class="text-[10px] text-slate-400">습득자</div>
+                        </div>
+                        <button class="btn-outline ml-auto w-auto px-4">프로필 보기</button>
+                    </div>
+                    <button class="btn-primary-large">대화 계속하기</button>
+                </div>
+            </div>
+        </div>
+
+        <script th:inline="javascript">
+            const currentUser = [[${currentUser}]];
+            const initialRoomId = [[${param.roomId}]];
+            const rooms = [[${rooms}]];
+            
+            let currentRoomId = null;
+            let stompClient = null;
+            let subscription = null;
+
+            function connect() {
+                const socket = new SockJS('/ws-stomp');
+                stompClient = Stomp.over(socket);
+                stompClient.debug = null; // Disable logging
+                stompClient.connect({}, function (frame) {
+                    if (initialRoomId) {
+                        selectRoom(initialRoomId[0]);
+                    }
+                });
+            }
+
+            function selectRoom(roomId) {
+                currentRoomId = roomId;
+                const room = rooms.find(r => r.roomId == roomId);
+                
+                // UI Update
+                document.querySelectorAll('.chat-room-item').forEach(el => el.classList.remove('active'));
+                const selectedEl = Array.from(document.querySelectorAll('.chat-room-item')).find(el => el.onclick.toString().includes(roomId));
+                if (selectedEl) selectedEl.classList.add('active');
+
+                document.getElementById('chat-header').classList.remove('hidden');
+                document.getElementById('input-area').classList.remove('hidden');
+                document.getElementById('info-panel').classList.remove('hidden');
+                
+                document.getElementById('current-room-name').innerText = room.itemTitle;
+                document.getElementById('item-info-title').innerText = room.itemTitle;
+                document.getElementById('item-info-img').src = room.itemThumbnail || '/images/placeholder.png';
+                document.getElementById('participant-name').innerText = room.otherParticipantNickname;
+                document.getElementById('participant-img').src = room.otherParticipantProfileImage || '/images/default-profile.png';
+
+                // Load Messages
+                fetch(`/chat/room/${roomId}/messages`)
+                    .then(res => res.json())
+                    .then(messages => {
+                        const container = document.getElementById('messages-container');
+                        container.innerHTML = '';
+                        messages.forEach(msg => appendMessage(msg));
+                        container.scrollTop = container.scrollHeight;
+                    });
+
+                // Subscribe to new messages
+                if (subscription) subscription.unsubscribe();
+                subscription = stompClient.subscribe(`/sub/chat/room/${roomId}`, function (message) {
+                    const msg = JSON.parse(message.body);
+                    appendMessage(msg);
+                    const container = document.getElementById('messages-container');
+                    container.scrollTop = container.scrollHeight;
+                });
+            }
+
+            function appendMessage(msg) {
+                const container = document.getElementById('messages-container');
+                const isMe = msg.senderNo == currentUser.userNo;
+                
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${isMe ? 'me' : 'other'}`;
+                
+                const timeStr = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                msgDiv.innerHTML = `
+                    ${isMe ? '' : `<img src="${msg.senderProfileImage || '/images/default-profile.png'}" class="message-avatar">`}
+                    <div class="message-content">
+                        <div class="message-bubble">${msg.content}</div>
+                        <div class="message-time">${timeStr}</div>
+                    </div>
+                `;
+                container.appendChild(msgDiv);
+            }
+
+            function sendMessage() {
+                const input = document.getElementById('message-input');
+                const content = input.value.trim();
+                if (!content || !currentRoomId) return;
+
+                const messageDto = {
+                    roomId: currentRoomId,
+                    senderNo: currentUser.userNo,
+                    content: content,
+                    type: 'TALK'
+                };
+
+                stompClient.send("/pub/chat/message", {}, JSON.stringify(messageDto));
+                input.value = '';
+            }
+
+            connect();
+        </script>
+    </th:block>
 </th:block>
 </html>
