@@ -33,7 +33,21 @@
                 <p th:text="${inquiry.content}" class="mt-3 whitespace-pre-line rounded-lg bg-slate-50 p-4 text-sm leading-6 text-slate-700">문의 내용</p>
             </div>
 
-            <div class="mt-6 border-t border-slate-100 pt-6">
+            <div th:if="${inquiry.files != null and not #lists.isEmpty(inquiry.files)}" class="mt-6 border-t border-slate-100 pt-6">
+                <h3 class="text-sm font-semibold text-slate-500 mb-3">첨부파일</h3>
+                <ul class="space-y-2">
+                    <li th:each="file : ${inquiry.files}" class="flex items-center gap-2">
+                        <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                        <a th:href="${file.fileUrl}" target="_blank" th:text="${file.originalName}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline">파일명.jpg</a>
+                        <span class="text-xs text-slate-400" th:text="'(' + ${file.fileSize / 1024} + ' KB)'">(100 KB)</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 사용자가 볼 때 (isAdmin이 false이거나 없을 때) -->
+            <div th:unless="${isAdmin}" class="mt-6 border-t border-slate-100 pt-6">
                 <div class="flex items-center justify-between gap-3">
                     <h3 class="text-sm font-semibold text-slate-500">답변</h3>
                     <span th:if="${inquiry.answeredAt != ''}" th:text="${inquiry.answeredAt}" class="text-xs text-slate-500">2026.05.12 12:00</span>
@@ -45,6 +59,19 @@
                     답변 내용
                 </p>
             </div>
+
+            <!-- 관리자가 볼 때 (isAdmin이 true일 때) -->
+            <form th:if="${isAdmin}" th:action="@{/inquiry/{id}/answer(id=${inquiry.id})}" method="post" class="mt-6 border-t border-slate-100 pt-6">
+                <label for="answer" class="block text-sm font-semibold text-slate-700">답변</label>
+                <textarea id="answer" name="answer" required rows="7" th:text="${inquiry.answer}" placeholder="답변 내용을 입력해주세요."
+                          class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-700 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"></textarea>
+                <p th:if="${inquiry.answeredAt != null and inquiry.answeredAt != ''}" th:text="'마지막 답변일: ' + ${inquiry.answeredAt}" class="mt-2 text-xs text-slate-500">마지막 답변일</p>
+                <div class="mt-4 flex justify-end">
+                    <button type="submit" class="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+                        답변 저장
+                    </button>
+                </div>
+            </form>
         </div>
     </section>
 </th:block>

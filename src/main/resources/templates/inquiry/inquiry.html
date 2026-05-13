@@ -46,14 +46,32 @@
                             <div class="flex text-sm text-slate-600 justify-center">
                                 <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none px-1">
                                     <span>파일 선택</span>
-                                    <input id="file-upload" name="file-upload" type="file" class="sr-only">
+                                    <input id="file-upload" name="files" type="file" multiple class="sr-only" onchange="updateFileList(this)">
                                 </label>
-                                <p class="pl-1">또는 여기로 드래그 앤 드롭</p>
+                                <p class="pl-1">또는 다중 파일 선택 가능</p>
                             </div>
-                            <p class="text-xs text-slate-500">PNG, JPG, PDF (최대 10MB)</p>
+                            <p class="text-xs text-slate-500">모든 파일 형식 (최대 10MB)</p>
+                            <div id="file-list" class="mt-2 text-sm text-slate-700 text-left"></div>
                         </div>
                     </div>
                 </div>
+
+                <script>
+                    function updateFileList(input) {
+                        const fileListDiv = document.getElementById('file-list');
+                        fileListDiv.innerHTML = '';
+                        if (input.files.length > 0) {
+                            const ul = document.createElement('ul');
+                            ul.className = 'list-disc pl-5 mt-2';
+                            Array.from(input.files).forEach(file => {
+                                const li = document.createElement('li');
+                                li.textContent = file.name;
+                                ul.appendChild(li);
+                            });
+                            fileListDiv.appendChild(ul);
+                        }
+                    }
+                </script>
 
                 <!-- 등록버튼 -->
                 <div class="pt-4">
