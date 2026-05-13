@@ -63,4 +63,8 @@ public class User {
 	public void updateProfileImage(String profileImageUrl) {
 		this.profileImageUrl = profileImageUrl;
 	}
+
+	public void withdraw() {
+		this.status = "WITHDRAWN";
+	}
 }

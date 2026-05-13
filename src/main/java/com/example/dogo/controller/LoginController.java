@@ -9,17 +9,20 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.http.ResponseEntity;
 import lombok.RequiredArgsConstructor;
 import com.example.dogo.repository.UserRepository;
+import com.example.dogo.repository.UserSocialAccountRepository;
 import com.example.dogo.service.ProfileService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.example.dogo.security.CustomUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 @Controller
 @RequiredArgsConstructor
 public class LoginController {
     
   private final UserRepository userRepository;
+  private final UserSocialAccountRepository userSocialAccountRepository;
   private final ProfileService profileService;
   private final PasswordEncoder passwordEncoder;
 
@@ -68,18 +71,19 @@ public class LoginController {
   }
 
   @PostMapping("/user/withdraw")
+  @Transactional
   public String withdraw(@AuthenticationPrincipal CustomUserDetails userDetails,
                          HttpServletRequest request) throws Exception {
     com.example.dogo.entity.User user = userDetails.getUser();
     
-    // 상태를 'WITHDRAWN'으로 변경 (또는 삭제 userRepository.delete(user))
-    // 여기서는 영속성 컨텍스트 관리를 위해 레포지토리를 통해 명시적으로 업데이트하거나 로직 수행
     com.example.dogo.entity.User dbUser = userRepository.findById(user.getUserNo()).orElseThrow();
     
-    // User 엔티티에 status 필드를 변경할 수 있는 메서드가 없으면 리플렉션을 쓰거나 필드 추가 필요
-    // 일단 간단히 엔티티 직접 수정을 고려하여 status 변경 로직 추가 (User.java 수정 필요할수도 있음)
-    // 여기서는 예시로 soft delete 또는 hard delete 처리
-    userRepository.delete(dbUser);
+    // 소셜 계정 연결 정보가 있다면 삭제 (다음에 다시 동의창을 띄우기 위함)
+    userSocialAccountRepository.deleteByUser(dbUser);
+    
+    // Hard Delete 대신 Soft Delete (상태 변경) 처리
+    // 다른 테이블(소셜 계정, 게시글 등)과의 외래 키 제약 조건을 피하기 위함입니다.
+    dbUser.withdraw();
     
     // 로그아웃 처리
     request.logout();

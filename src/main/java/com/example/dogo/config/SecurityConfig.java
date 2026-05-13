@@ -80,11 +80,11 @@ public class SecurityConfig {
             customizer.attributes(attributes -> {
                 String registrationId = (String) attributes.get(OAuth2ParameterNames.REGISTRATION_ID);
                 if ("google".equals(registrationId)) {
-                    customizer.additionalParameters(params -> params.put("prompt", "select_account"));
+                    customizer.additionalParameters(params -> params.put("prompt", "select_account consent"));
                 } else if ("kakao".equals(registrationId)) {
                     customizer.additionalParameters(params -> params.put("prompt", "login"));
                 } else if ("naver".equals(registrationId)) {
-                    customizer.additionalParameters(params -> params.put("auth_type", "reauthenticate"));
+                    customizer.additionalParameters(params -> params.put("auth_type", "reprompt"));
                 }
             });
         });
