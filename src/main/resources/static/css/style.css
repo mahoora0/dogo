@@ -11,7 +11,6 @@ body {
 }
 
 .navbar .logo {
-    margin-left: 80px; /* 원하는 만큼 수치를 조절하세요 (예: 10px, 30px 등) */
     display: flex;
     align-items: center;
 }

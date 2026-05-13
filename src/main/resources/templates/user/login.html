@@ -32,10 +32,10 @@
       <p class="text-gray-500 text-sm">분실물센터 계정으로 로그인하세요</p>
     </div>
 
-    <form action="#" th:action="@{/login}" method="post" class="space-y-5">
+    <form action="#" th:action="@{/loginProcess}" method="post" class="space-y-5">
       <div class="space-y-2">
         <label class="block text-sm font-bold text-gray-700 ml-1">아이디</label>
-        <input type="text" name="username" placeholder="아이디 입력"
+        <input type="text" name="loginId" placeholder="아이디 입력"
                class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400">
       </div>
 
@@ -47,7 +47,7 @@
 
       <div class="flex justify-between items-center text-xs px-1">
         <label class="flex items-center gap-2 text-gray-500 cursor-pointer">
-          <input type="checkbox" class="rounded border-gray-300"> 로그인 상태 유지
+          <input type="checkbox" name="remember-me" class="rounded border-gray-300"> 로그인 상태 유지
         </label>
         <a href="#" class="text-gray-600 font-semibold border-b border-gray-400">아이디/비밀번호 찾기</a>
       </div>

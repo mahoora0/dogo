@@ -14,93 +14,95 @@
   </head>
 
   <body class="bg-slate-50 text-slate-900">
-  <header class="navbar border-b border-slate-200 bg-white">
-    <div class="header-container mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-      <div class="logo">
-        <a th:href="@{/}" style="text-decoration: none; color: inherit;" class="text-xl font-bold tracking-tight">
-          <img id="logoImg" th:src="@{/images/logo.png}" alt="분실물센터 로고" style="height: 40px;" onerror="hideLogo()">
-          <span id="logoText" style="display: none;">📦 DOGO</span>
-        </a>
-      </div>
-      <div class="nav-links flex items-center gap-2 text-sm font-medium">
-
-        <!-- 로그인 안 된 상태 (익명 사용자) -->
-        <th:block sec:authorize="isAnonymous()">
-          <a th:href="@{/login}" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</a>
-          <a th:href="@{/join}" class="btn-join rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">회원가입</a>
-        </th:block>
-
-        <!-- 로그인 된 상태 -->
-        <th:block sec:authorize="isAuthenticated()">
-          <a th:href="@{/chat}" class="chat-button" title="채팅하기">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
-            </svg>
-            <span class="chat-text">채팅</span>
+    <header class="navbar border-b border-slate-200 bg-white">
+      <div class="header-container mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+        <div class="logo">
+          <a th:href="@{/}" style="text-decoration: none; color: inherit;" class="text-xl font-bold tracking-tight">
+            <img id="logoImg" th:src="@{/images/logo.png}" alt="분실물센터 로고" style="height: 40px;" onerror="hideLogo()">
+            <span id="logoText" style="display: none;">📦 DOGO</span>
           </a>
-          <a th:href="@{/userpage}"
-             class="flex items-center gap-2 text-slate-700 font-bold mr-2 hover:text-blue-600 transition-colors group">
-            <!-- 프로필 이미지 (있으면 표시, 없으면 기본 아이콘) -->
-            <img th:if="${#authentication.principal.user.profileImageUrl != null}"
-                 th:src="${#authentication.principal.user.profileImageUrl}"
-                 class="w-8 h-8 rounded-full object-cover border border-gray-200" alt="프로필">
-            <div th:unless="${#authentication.principal.user.profileImageUrl != null}"
-                 class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+        </div>
+        <div class="nav-links flex items-center gap-2 text-sm font-medium">
+          <!-- 로그인 안 된 상태 (익명 사용자) -->
+          <th:block sec:authorize="isAnonymous()">
+            <a th:href="@{/login}" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그인</a>
+            <a th:href="@{/join}" class="btn-join rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">회원가입</a>
+          </th:block>
+
+          <!-- 로그인 된 상태 -->
+          <th:block sec:authorize="isAuthenticated()">
+            <a th:href="@{/chat}" class="chat-button" title="채팅하기">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
               </svg>
-            </div>
-            <span class="group-hover:underline" sec:authentication="principal.user.nickname">닉네임</span>
-          </a>
-          <form th:action="@{/logout}" method="post" style="margin:0; padding:0; display:inline;">
-            <button type="submit" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그아웃</button>
-          </form>
-        </th:block>
+              <span class="chat-text">채팅</span>
+            </a>
+            <a th:href="@{/userpage}"
+               class="flex items-center gap-2 text-slate-700 font-bold mr-2 hover:text-blue-600 transition-colors group">
+              <!-- 프로필 이미지 (있으면 표시, 없으면 기본 아이콘) -->
+              <img th:if="${#authentication.principal.user.profileImageUrl != null}"
+                   th:src="${#authentication.principal.user.profileImageUrl}"
+                   class="w-8 h-8 rounded-full object-cover border border-gray-200" alt="프로필">
+              <div th:unless="${#authentication.principal.user.profileImageUrl != null}"
+                   class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <span class="group-hover:underline" sec:authentication="principal.user.nickname">닉네임</span>
+            </a>
+            <form th:action="@{/logout}" method="post" style="margin:0; padding:0; display:inline;">
+              <button type="submit" class="btn-login rounded-md px-3 py-2 text-slate-600 hover:bg-slate-100">로그아웃</button>
+            </form>
+          </th:block>
+        </div>
       </div>
+    </header>
+
+    <div class="main-layout mx-auto max-w-6xl">
+      <aside class="sidebar">
+        <nav>
+          <div class="category">
+            <h3>분실물</h3>
+            <ul>
+              <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}" onclick="location.href='/lost-items'">
+                <a th:href="@{/lost-items}">분실물 검색</a>
+              </li>
+              <li th:classappend="${currentUri == '/lost-items/new' ? 'active' : ''}" onclick="location.href='/lost-items/new'">
+                <a th:href="@{/lost-items/new}">분실물 등록</a>
+              </li>
+            </ul>
+          </div>
+          <div class="category">
+            <h3>습득물</h3>
+            <ul>
+              <li th:classappend="${currentUri == '/found-items' ? 'active' : ''}" onclick="location.href='/found-items'">
+                <a th:href="@{/found-items}">습득물 검색</a>
+              </li>
+              <li th:classappend="${currentUri == '/found-items/new' ? 'active' : ''}" onclick="location.href='/found-items/new'">
+                <a th:href="@{/found-items/new}">습득물 등록</a>
+              </li>
+              <li th:classappend="${currentUri == '/areas/list' ? 'active' : ''}">
+                <a th:href="@{/areas/list}">서비스센터 찾기</a>
+              </li>
+            </ul>
+          </div>
+          <div class="category">
+            <h3>고객지원</h3>
+            <ul>
+              <li>공지사항</li>
+              <li>자주 묻는 질문</li>
+              <li>문의하기</li>
+              <li>이용 가이드</li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <main class="content px-5 py-8">
+        <th:block th:replace="${content}"></th:block>
+      </main>
     </div>
-  </header>
-
-  <div class="main-layout mx-auto max-w-6xl">
-    <aside class="sidebar">
-      <nav>
-        <div class="category">
-          <h3>분실물</h3>
-          <ul>
-            <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}" onclick="location.href='/lost-items'">
-              <a th:href="@{/lost-items}">분실물 검색</a>
-            </li>
-            <li>분실물 등록</li>
-          </ul>
-        </div>
-        <div class="category">
-          <h3>습득물</h3>
-          <ul>
-            <li>습득물 검색</li>
-            <li th:classappend="${currentUri == '/lost-items/new' ? 'active' : ''}"
-                onclick="location.href='/lost-items/new'">
-              <a th:href="@{/lost-items/new}">습득물 등록</a>
-            </li>
-            <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
-              <a th:href="@{/areas/list}">서비스센터 찾기</a>
-            </li>
-          </ul>
-        </div>
-        <div class="category">
-          <h3>고객지원</h3>
-          <ul>
-            <li>공지사항</li>
-            <li>자주 묻는 질문</li>
-            <li>문의하기</li>
-            <li>이용 가이드</li>
-          </ul>
-        </div>
-      </nav>
-    </aside>
-
-    <main class="content px-5 py-8">
-      <th:block th:replace="${content}"></th:block>
-    </main>
-  </div>
   </body>
 </th:block>
 

@@ -74,11 +74,13 @@ public class FoundItemController {
 		model.addAttribute("status", status);
 		model.addAttribute("page", safePage);
 		model.addAttribute("size", safeSize);
+		model.addAttribute("currentUri", "/found-items");
 		return "found-items/list";
 	}
 
 	@GetMapping("/found-items/new")
-	public String createForm() {
+	public String createForm(Model model) {
+		model.addAttribute("currentUri", "/found-items/new");
 		return "found-items/new";
 	}
 

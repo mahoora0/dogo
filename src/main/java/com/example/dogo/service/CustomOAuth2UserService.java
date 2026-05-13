@@ -47,7 +47,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
             providerUserId = (String) response.get("id");
             email = (String) response.get("email");
-            nickname = (String) response.get("name");
+            nickname = (String) response.get("nickname");
             profileImageUrl = (String) response.get("profile_image");
         } else if ("kakao".equals(registrationId)) {
             providerUserId = String.valueOf(attributes.get("id"));
