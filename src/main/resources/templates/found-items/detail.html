@@ -73,6 +73,14 @@
         </dl>
 
         <div class="mt-6 flex gap-2">
+          <form th:action="@{/chat/room}" method="post" style="display: inline;">
+            <input type="hidden" name="itemId" th:value="${foundItem.id}">
+            <input type="hidden" name="itemType" value="FOUND">
+            <button type="submit"
+                    class="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 shadow-md">
+              채팅하기
+            </button>
+          </form>
           <a th:href="@{/found-items}"
              class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
             목록
