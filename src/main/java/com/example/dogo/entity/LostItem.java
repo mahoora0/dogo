@@ -53,6 +53,9 @@ public class LostItem {
 	@Column(name = "CATEGORY_SUB")
 	private String categorySub;
 
+	@Column(name = "COLOR_NAME")
+	private String colorName;
+
 	@Column(name = "LOST_AT", nullable = false)
 	private LocalDateTime lostAt;
 
@@ -78,6 +81,7 @@ public class LostItem {
 			String itemName,
 			String categoryMain,
 			String categorySub,
+			String colorName,
 			LocalDateTime lostAt,
 			String lostArea,
 			String lostPlace,
@@ -89,6 +93,7 @@ public class LostItem {
 		this.itemName = itemName;
 		this.categoryMain = categoryMain;
 		this.categorySub = categorySub;
+		this.colorName = colorName;
 		this.lostAt = lostAt;
 		this.lostArea = lostArea;
 		this.lostPlace = lostPlace;
@@ -102,6 +107,7 @@ public class LostItem {
 			String itemName,
 			String categoryMain,
 			String categorySub,
+			String colorName,
 			LocalDateTime lostAt,
 			String lostArea,
 			String lostPlace,
@@ -115,6 +121,7 @@ public class LostItem {
 		lostItem.itemName = itemName;
 		lostItem.categoryMain = categoryMain;
 		lostItem.categorySub = categorySub;
+		lostItem.colorName = colorName;
 		lostItem.lostAt = lostAt;
 		lostItem.lostArea = lostArea;
 		lostItem.lostPlace = lostPlace;
@@ -129,6 +136,7 @@ public class LostItem {
 			String itemName,
 			String categoryMain,
 			String categorySub,
+			String colorName,
 			LocalDateTime lostAt,
 			String lostArea,
 			String lostPlace,
@@ -139,6 +147,7 @@ public class LostItem {
 		this.itemName = itemName;
 		this.categoryMain = categoryMain;
 		this.categorySub = categorySub;
+		this.colorName = colorName;
 		this.lostAt = lostAt;
 		this.lostArea = lostArea;
 		this.lostPlace = lostPlace;

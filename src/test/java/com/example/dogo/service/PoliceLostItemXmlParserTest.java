@@ -98,6 +98,7 @@ class PoliceLostItemXmlParserTest {
 		assertThat(detail.lstPrdtNm()).isEqualTo("루이까또즈 남성용 반지갑");
 		assertThat(detail.lstHor()).isEqualTo("21");
 		assertThat(detail.uniq()).isEqualTo("개인정보보호정책에 의해 정보가 제공되지 않습니다.");
+		assertThat(detail.clrNm()).isEqualTo("블루(파랑)");
 		assertThat(detail.lstLctNm()).isEqualTo("대전광역시");
 		assertThat(detail.orgNm()).isEqualTo("대전역지구대");
 		assertThat(detail.tel()).isEqualTo("042-271-0112");

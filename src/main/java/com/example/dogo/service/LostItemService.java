@@ -149,6 +149,7 @@ public class LostItemService {
 				request.getItemName(),
 				request.getCategoryMain(),
 				blankToNull(request.getCategorySub()),
+				null,
 				defaultLostAt(request.getLostAt()),
 				blankToNull(request.getLostArea()),
 				request.getLostPlace(),
@@ -190,6 +191,10 @@ public class LostItemService {
 	}
 
 	private String colorName(LostItem lostItem) {
+		if (StringUtils.hasText(lostItem.getColorName())) {
+			return lostItem.getColorName();
+		}
+
 		String text = String.join(" ",
 				defaultText(lostItem.getItemName(), ""),
 				defaultText(lostItem.getTitle(), ""),

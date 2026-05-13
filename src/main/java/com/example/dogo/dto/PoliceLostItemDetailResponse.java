@@ -9,6 +9,7 @@ public record PoliceLostItemDetailResponse(
 		String lstPlace,
 		String prdtClNm,
 		String lstSteNm,
+		String clrNm,
 		String uniq,
 		String lstLctNm,
 		String orgId,

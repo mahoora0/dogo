@@ -39,6 +39,7 @@ public class PoliceLostItemMapper {
 				itemName,
 				categoryNames.main(),
 				categoryNames.sub(),
+				colorName(response.lstSbjt(), response.lstPrdtNm(), null),
 				parseLostAt(response.lstYmd()),
 				null,
 				defaultText(response.lstPlace(), UNKNOWN_PLACE),
@@ -78,6 +79,7 @@ public class PoliceLostItemMapper {
 				itemName,
 				categoryNames.main(),
 				categoryNames.sub(),
+				colorName(detailResponse.lstSbjt(), detailResponse.lstPrdtNm(), detailResponse.clrNm()),
 				parseLostAt(defaultText(detailResponse.lstYmd(), listResponse == null ? null : listResponse.lstYmd()), detailResponse.lstHor()),
 				blankToNull(detailResponse.lstLctNm()),
 				defaultText(detailResponse.lstPlace(), listResponse == null ? UNKNOWN_PLACE : defaultText(listResponse.lstPlace(), UNKNOWN_PLACE)),
@@ -151,6 +153,85 @@ public class PoliceLostItemMapper {
 			return normalizedTel;
 		}
 		return normalizedOrg;
+	}
+
+	private String colorName(String title, String itemName, String detailColorName) {
+		String normalizedDetailColor = normalizeColorName(detailColorName);
+		if (normalizedDetailColor != null) {
+			return normalizedDetailColor;
+		}
+
+		String text = String.join(" ", defaultText(title, ""), defaultText(itemName, ""));
+		String colorInParentheses = extractColorInParentheses(text);
+		if (colorInParentheses != null) {
+			return colorInParentheses;
+		}
+
+		return normalizeColorName(text);
+	}
+
+	private String extractColorInParentheses(String text) {
+		String normalizedText = blankToNull(text);
+		if (normalizedText == null) {
+			return null;
+		}
+
+		java.util.regex.Matcher matcher = java.util.regex.Pattern
+				.compile("\\(([^)]*(?:색|검정|파랑|블랙|블루|화이트|레드|그린|브라운|그레이|핑크|노랑|초록|갈색|회색)[^)]*)\\)색?")
+				.matcher(normalizedText);
+		while (matcher.find()) {
+			String value = normalizeColorName(matcher.group(1));
+			if (value != null) {
+				return value;
+			}
+		}
+		return null;
+	}
+
+	private String normalizeColorName(String value) {
+		String normalized = blankToNull(value);
+		if (normalized == null) {
+			return null;
+		}
+
+		String lower = normalized.toLowerCase();
+		if (lower.contains("블랙") || lower.contains("검정") || lower.contains("검은") || lower.contains("black")) {
+			return "블랙(검정)";
+		}
+		if (lower.contains("화이트") || lower.contains("흰색") || lower.contains("하얀") || lower.contains("white")) {
+			return "화이트(흰색)";
+		}
+		if (lower.contains("블루") || lower.contains("파랑") || lower.contains("파란") || lower.contains("blue")) {
+			return "블루(파랑)";
+		}
+		if (lower.contains("레드") || lower.contains("빨강") || lower.contains("빨간") || lower.contains("red")) {
+			return "레드(빨강)";
+		}
+		if (lower.contains("그린") || lower.contains("초록") || lower.contains("green")) {
+			return "그린(초록)";
+		}
+		if (lower.contains("옐로") || lower.contains("노랑") || lower.contains("노란") || lower.contains("yellow")) {
+			return "옐로우(노랑)";
+		}
+		if (lower.contains("핑크") || lower.contains("분홍") || lower.contains("pink")) {
+			return "핑크(분홍)";
+		}
+		if (lower.contains("브라운") || lower.contains("갈색") || lower.contains("brown")) {
+			return "브라운(갈색)";
+		}
+		if (lower.contains("그레이") || lower.contains("회색") || lower.contains("gray") || lower.contains("grey")) {
+			return "그레이(회색)";
+		}
+		if (lower.contains("베이지") || lower.contains("beige")) {
+			return "베이지";
+		}
+		if (lower.contains("실버") || lower.contains("은색") || lower.contains("silver")) {
+			return "실버(은색)";
+		}
+		if (lower.contains("골드") || lower.contains("금색") || lower.contains("gold")) {
+			return "골드(금색)";
+		}
+		return normalized.contains("(") ? normalized : null;
 	}
 
 	private String defaultText(String value, String fallback) {

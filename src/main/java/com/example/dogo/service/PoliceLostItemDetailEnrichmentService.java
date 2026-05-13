@@ -48,6 +48,7 @@ public class PoliceLostItemDetailEnrichmentService {
 					enriched.getItemName(),
 					enriched.getCategoryMain(),
 					enriched.getCategorySub(),
+					enriched.getColorName(),
 					enriched.getLostAt(),
 					enriched.getLostArea(),
 					enriched.getLostPlace(),
@@ -64,6 +65,7 @@ public class PoliceLostItemDetailEnrichmentService {
 				&& POLICE_SOURCE_TYPE.equals(lostItem.getSourceType())
 				&& StringUtils.hasText(lostItem.getAtcId())
 				&& (!StringUtils.hasText(lostItem.getContent())
+				|| !StringUtils.hasText(lostItem.getColorName())
 				|| !StringUtils.hasText(lostItem.getLostArea())
 				|| !StringUtils.hasText(lostItem.getContact()));
 	}

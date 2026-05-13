@@ -56,6 +56,7 @@ public class PoliceLostItemXmlParser {
 				text(item, "lstPlace"),
 				text(item, "prdtClNm"),
 				text(item, "lstSteNm"),
+				text(item, "clrNm"),
 				text(item, "uniq"),
 				text(item, "lstLctNm"),
 				text(item, "orgId"),

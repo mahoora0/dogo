@@ -79,6 +79,7 @@ class PoliceLostItemMapperTest {
 				"대흥동 택시 안",
 				"지갑 > 남성용 지갑",
 				"담당자 접수",
+				"블루(파랑)",
 				"개인정보보호정책에 의해 정보가 제공되지 않습니다.",
 				"대전광역시",
 				"O0000673",
@@ -99,6 +100,7 @@ class PoliceLostItemMapperTest {
 		assertThat(lostItem.getLostPlace()).isEqualTo("대흥동 택시 안");
 		assertThat(lostItem.getCategoryMain()).isEqualTo("지갑");
 		assertThat(lostItem.getCategorySub()).isEqualTo("남성용 지갑");
+		assertThat(lostItem.getColorName()).isEqualTo("블루(파랑)");
 		assertThat(lostItem.getContact()).isEqualTo("대전역지구대 / 042-271-0112");
 	}
 
