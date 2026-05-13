@@ -117,7 +117,7 @@ function updateMap() {
     markers.forEach(marker => marker.setMap(null));
   }
   markers = [];
-  const listContainer = document.getElementById('center-list');
+  const listContainer = document.getElementById('centerList');
   if (listContainer) {
     listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">검색 중...</div>';
   }
@@ -177,7 +177,7 @@ function renderCenterList(data, keyword) {
   filtered.forEach(station => {
     centerList.innerHTML += `
       <div class="center-card">
-        <h4>${station.polstnNm}</h4>
+        <h4>${station.polstnNm} ${station.se}</h4>
         <p>${station.addr}</p>
         <p>${station.telno}</p>
       </div>
@@ -199,7 +199,7 @@ function renderMarkers(data, keyword) {
     const infowindow = new kakao.maps.InfoWindow({
       content: `
         <div style="padding:8px; font-size:13px;">
-          <b>${station.polstnNm}</b><br>
+          <b>${station.polstnNm} ${station.se}</b><br>
           ${station.telno}
         </div>
       `

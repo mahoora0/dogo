@@ -32,11 +32,22 @@ public class PoliceApiController {
               if (subRegion == null || subRegion.isBlank()) return true;
               String rgn = s.getCmptncRgnNm();
               String addr = s.getAddr();
-              // 관할구역명에 포함되거나, 주소에 포함되어 있으면 매칭으로 간주
+              String address = s.getAddress();
+              String address1 = s.getAddress1();
+              
+              // Check all relevant fields for subRegion match
               return (rgn != null && (rgn.contains(subRegion) || subRegion.contains(rgn))) || 
-                     (addr != null && addr.contains(subRegion));
+                     (addr != null && addr.contains(subRegion)) ||
+                     (address != null && address.contains(subRegion)) ||
+                     (address1 != null && address1.contains(subRegion));
           })
-          .filter(s -> neighborhood == null || neighborhood.isBlank() || (s.getAddr() != null && s.getAddr().contains(neighborhood)))
+          .filter(s -> {
+              if (neighborhood == null || neighborhood.isBlank()) return true;
+              // Check all relevant fields for neighborhood match
+              return (s.getAddr() != null && s.getAddr().contains(neighborhood)) ||
+                     (s.getAddress() != null && s.getAddress().contains(neighborhood)) ||
+                     (s.getAddress1() != null && s.getAddress1().contains(neighborhood));
+          })
           .toList();
     }
     return policeStationRepository.findByAddrContainingOrCmptncRgnNmContaining(region, region);

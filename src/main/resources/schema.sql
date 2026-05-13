@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS police_station (
   cmptnc_rgn_nm VARCHAR(40) NOT NULL,
   polstn_nm VARCHAR(20) NOT NULL,
   se VARCHAR(20) NOT NULL,
-  telno VARCHAR(10) NOT NULL,
+  telno VARCHAR(20) NOT NULL,
   addr VARCHAR(200) NOT NULL
 );
 
