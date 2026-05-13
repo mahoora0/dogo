@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="setContent(content)">
-
   <head>
     <meta charset="UTF-8">
     <title>분실물센터</title>
@@ -59,45 +58,41 @@
       </div>
     </header>
 
-    <div class="main-layout mx-auto max-w-6xl">
-      <aside class="sidebar">
-        <nav>
-          <div class="category">
-            <h3>분실물</h3>
-            <ul>
-              <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}" onclick="location.href='/lost-items'">
-                <a th:href="@{/lost-items}">분실물 검색</a>
-              </li>
-              <li th:classappend="${currentUri == '/lost-items/new' ? 'active' : ''}" onclick="location.href='/lost-items/new'">
-                <a th:href="@{/lost-items/new}">분실물 등록</a>
-              </li>
-            </ul>
-          </div>
-          <div class="category">
-            <h3>습득물</h3>
-            <ul>
-              <li th:classappend="${currentUri == '/found-items' ? 'active' : ''}" onclick="location.href='/found-items'">
-                <a th:href="@{/found-items}">습득물 검색</a>
-              </li>
-              <li th:classappend="${currentUri == '/found-items/new' ? 'active' : ''}" onclick="location.href='/found-items/new'">
-                <a th:href="@{/found-items/new}">습득물 등록</a>
-              </li>
-              <li th:classappend="${currentUri == '/areas/list' ? 'active' : ''}">
-                <a th:href="@{/areas/list}">서비스센터 찾기</a>
-              </li>
-            </ul>
-          </div>
-          <div class="category">
-            <h3>고객지원</h3>
-            <ul>
-              <li>공지사항</li>
-              <li>자주 묻는 질문</li>
-              <li>문의하기</li>
-              <li>이용 가이드</li>
-            </ul>
-          </div>
-        </nav>
-      </aside>
+  <div class="main-layout mx-auto max-w-6xl">
+    <aside class="sidebar">
+      <nav>
+        <div class="category">
+          <h3>분실물</h3>
+          <ul>
+            <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}">
+              <a th:href="@{/lost-items}">분실물 검색</a>
+            </li>
+          </ul>
+        </div>
+        <div class="category">
+          <h3>습득물</h3>
+          <ul>
+            <li>습득물 등록</li>
+            <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
+              <a th:href="@{/areas/list}">서비스센터 찾기</a>
+            </li>
+          </ul>
+        </div>
+        <div class="category">
+          <h3>고객지원</h3>
+          <ul>
+            <li th:classappend="${currentUri == '/faq' ? 'active' : ''}">
+              <a th:href="@{/faq}">FAQ</a>
+            </li>
+            <li th:classappend="${currentUri == '/inquiry' ? 'active' : ''}">
+              <a th:href="@{/inquiry}">문의하기</a>
+            </li>
+            <li>공지사항</li>
+            <li>이용가이드</li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
 
       <main class="content px-5 py-8">
         <th:block th:replace="${content}"></th:block>
