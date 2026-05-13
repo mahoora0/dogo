@@ -242,3 +242,24 @@ CREATE TABLE IF NOT EXISTS SERVICE_CENTER (
   REGDATE DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   MODDATE DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS korail_station_location (
+  station_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  line_name VARCHAR(50) NOT NULL,
+  station_name VARCHAR(100) NOT NULL,
+  latitude DOUBLE NOT NULL,
+  longitude DOUBLE NOT NULL,
+  exit_count INT,
+  INDEX idx_station_lookup (station_name, line_name)
+);
+
+CREATE TABLE IF NOT EXISTS korail_lost_found_center (
+  center_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  operator_name VARCHAR(100),
+  line_name VARCHAR(50),
+  station_name VARCHAR(100) NOT NULL,
+  location_details VARCHAR(500),
+  operating_hours VARCHAR(200),
+  tel_no VARCHAR(50),
+  INDEX idx_lost_found_station (station_name, line_name)
+);

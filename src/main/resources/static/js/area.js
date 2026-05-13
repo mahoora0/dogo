@@ -124,49 +124,74 @@ function updateMap() {
 
   if (!region) return;
 
-  // 경찰관서 데이터 불러오기
-  fetch(`/api/police?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion)}&neighborhood=${encodeURIComponent(neighborhood)}`)
-      .then(response => response.json())
-      .then(data => {
-        renderCenterList(data, keyword);
-        
-        if (data.length > 0) {
-            const bounds = new kakao.maps.LatLngBounds();
-            data.forEach(item => {
-                const marker = new kakao.maps.Marker({
-                    position: new kakao.maps.LatLng(item.latitude, item.longitude),
-                    map: map
-                });
-                markers.push(marker);
-                bounds.extend(marker.getPosition());
+  // 경찰관서와 코레일 유실물 센터 데이터 함께 불러오기
+  const policeUrl = `/api/police?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion)}&neighborhood=${encodeURIComponent(neighborhood)}`;
+  const korailUrl = `/api/korail/lost-found?region=${encodeURIComponent(region)}`;
+
+  Promise.all([
+    fetch(policeUrl).then(res => res.json()),
+    fetch(korailUrl).then(res => res.json())
+  ])
+  .then(([policeData, korailData]) => {
+    // 코레일 데이터 필터링 (선택된 지역에 해당하는 것만 표시하고 싶을 수 있으나, 일단 모두 표시하거나 역명으로 필터링 필요)
+    // 여기서는 일단 모든 코레일 센터를 데이터셋에 포함시킵니다.
+    const allData = [
+      ...policeData.map(d => ({ ...d, type: 'POLICE', name: `${d.polstnNm} ${d.se}`, address: d.addr, tel: d.telno })),
+      ...korailData.map(d => ({ ...d, type: 'KORAIL', name: `${d.stationName}역 유실물센터 (${d.lineName})`, address: d.locationDetails, tel: d.telNo }))
+    ];
+
+    renderCenterList(allData, keyword);
+    
+    if (allData.length > 0) {
+        const bounds = new kakao.maps.LatLngBounds();
+        allData.forEach(item => {
+            const marker = new kakao.maps.Marker({
+                position: new kakao.maps.LatLng(item.latitude, item.longitude),
+                map: map
             });
-            map.setBounds(bounds);
-        } else {
-            // 결과가 없으면 해당 광역 지역의 중심좌표로 이동
-            fetch(`/api/areas/coords?name=${encodeURIComponent(region)}`)
-                .then(res => res.json())
-                .then(coord => {
-                    if (coord) {
-                        map.setCenter(new kakao.maps.LatLng(coord.latitude, coord.longitude));
-                        map.setLevel(coord.defaultLevel || 8);
-                    }
-                });
-        }
-      })
-      .catch(err => {
-        console.error('Search failed:', err);
-        if (listContainer) {
-          listContainer.innerHTML = '<div class="p-4 text-center text-red-500">데이터를 불러오지 못했습니다.</div>';
-        }
-      });
+            markers.push(marker);
+            bounds.extend(marker.getPosition());
+            
+            // 인포윈도우 추가
+            const infowindow = new kakao.maps.InfoWindow({
+                content: `<div style="padding:10px; min-width:200px;">
+                            <div style="font-weight:bold; margin-bottom:5px;">${item.name}</div>
+                            <div style="font-size:12px; color:#666;">${item.address || ''}</div>
+                            <div style="font-size:12px; color:#007bff;">${item.tel || ''}</div>
+                          </div>`
+            });
+            
+            kakao.maps.event.addListener(marker, 'click', () => {
+                infowindow.open(map, marker);
+            });
+        });
+        map.setBounds(bounds);
+    } else {
+        // 결과가 없으면 해당 광역 지역의 중심좌표로 이동
+        fetch(`/api/areas/coords?name=${encodeURIComponent(region)}`)
+            .then(res => res.json())
+            .then(coord => {
+                if (coord) {
+                    map.setCenter(new kakao.maps.LatLng(coord.latitude, coord.longitude));
+                    map.setLevel(coord.defaultLevel || 8);
+                }
+            });
+    }
+  })
+  .catch(err => {
+    console.error('Search failed:', err);
+    if (listContainer) {
+      listContainer.innerHTML = '<div class="p-4 text-center text-red-500">데이터를 불러오지 못했습니다.</div>';
+    }
+  });
 }
 
 function renderCenterList(data, keyword) {
   const centerList = document.getElementById('centerList');
   centerList.innerHTML = '';
 
-  const filtered = data.filter(station =>
-      keyword === '' || station.polstnNm.includes(keyword)
+  const filtered = data.filter(item =>
+      keyword === '' || item.name.includes(keyword)
   );
 
   if (filtered.length === 0) {
@@ -174,12 +199,18 @@ function renderCenterList(data, keyword) {
     return;
   }
 
-  filtered.forEach(station => {
+  filtered.forEach(item => {
+    const typeLabel = item.type === 'POLICE' ? '경찰' : '코레일';
+    const typeClass = item.type === 'POLICE' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+    
     centerList.innerHTML += `
-      <div class="center-card">
-        <h4>${station.polstnNm} ${station.se}</h4>
-        <p>${station.addr}</p>
-        <p>${station.telno}</p>
+      <div class="center-card p-3 border-bottom hover-bg-light cursor-pointer">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <h5 class="mb-0 fs-6 fw-bold">${item.name}</h5>
+          <span class="badge ${typeClass}" style="font-size: 10px;">${typeLabel}</span>
+        </div>
+        <p class="mb-1 text-muted small">${item.address || '주소 정보 없음'}</p>
+        <p class="mb-0 text-primary small">${item.tel || '전화번호 없음'}</p>
       </div>
     `;
   });
