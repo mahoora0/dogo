@@ -130,6 +130,7 @@ public class LostItemService {
 				lostItem.getLostAt(),
 				lostItem.getStatus(),
 				statusLabel(lostItem.getStatus()),
+				colorName(lostItem),
 				lostItem.getContent(),
 				lostItem.getContact(),
 				imageUrls
@@ -181,10 +182,57 @@ public class LostItemService {
 				lostItem.getLostAt(),
 				lostItem.getStatus(),
 				statusLabel(lostItem.getStatus()),
+				colorName(lostItem),
 				lostItem.getContent(),
 				lostItem.getContact(),
 				imageUrl
 		);
+	}
+
+	private String colorName(LostItem lostItem) {
+		String text = String.join(" ",
+				defaultText(lostItem.getItemName(), ""),
+				defaultText(lostItem.getTitle(), ""),
+				defaultText(lostItem.getContent(), "")
+		).toLowerCase(Locale.ROOT);
+
+		if (text.contains("블랙") || text.contains("검정") || text.contains("검은") || text.contains("black")) {
+			return "블랙(검정)";
+		}
+		if (text.contains("화이트") || text.contains("흰색") || text.contains("하얀") || text.contains("white")) {
+			return "화이트(흰색)";
+		}
+		if (text.contains("레드") || text.contains("빨강") || text.contains("빨간") || text.contains("red")) {
+			return "레드(빨강)";
+		}
+		if (text.contains("블루") || text.contains("파랑") || text.contains("파란") || text.contains("blue")) {
+			return "블루(파랑)";
+		}
+		if (text.contains("그린") || text.contains("초록") || text.contains("green")) {
+			return "그린(초록)";
+		}
+		if (text.contains("옐로") || text.contains("노랑") || text.contains("노란") || text.contains("yellow")) {
+			return "옐로우(노랑)";
+		}
+		if (text.contains("핑크") || text.contains("분홍") || text.contains("pink")) {
+			return "핑크(분홍)";
+		}
+		if (text.contains("브라운") || text.contains("갈색") || text.contains("brown")) {
+			return "브라운(갈색)";
+		}
+		if (text.contains("그레이") || text.contains("회색") || text.contains("gray") || text.contains("grey")) {
+			return "그레이(회색)";
+		}
+		if (text.contains("베이지") || text.contains("beige")) {
+			return "베이지";
+		}
+		if (text.contains("실버") || text.contains("은색") || text.contains("silver")) {
+			return "실버(은색)";
+		}
+		if (text.contains("골드") || text.contains("금색") || text.contains("gold")) {
+			return "골드(금색)";
+		}
+		return null;
 	}
 
 	private void saveImages(LostItem lostItem, List<MultipartFile> images) {

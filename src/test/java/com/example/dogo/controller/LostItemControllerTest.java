@@ -59,6 +59,7 @@ class LostItemControllerTest {
 				LocalDateTime.of(2026, 5, 8, 12, 0),
 				"WAITING",
 				"대기중",
+				"블랙(검정)",
 				"카드가 들어있습니다",
 				"010-1234-5678",
 				"/uploads/lost-items/wallet.jpg"
@@ -116,6 +117,7 @@ class LostItemControllerTest {
 				LocalDateTime.of(2026, 5, 8, 12, 0),
 				"WAITING",
 				"대기중",
+				"블랙(검정)",
 				"카드가 들어있습니다",
 				"010-1234-5678",
 				List.of("/uploads/lost-items/wallet.jpg")

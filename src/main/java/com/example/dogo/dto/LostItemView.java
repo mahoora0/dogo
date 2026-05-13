@@ -12,6 +12,7 @@ public record LostItemView(
 		LocalDateTime lostAt,
 		String status,
 		String statusLabel,
+		String colorName,
 		String description,
 		String contact,
 		String imageUrl

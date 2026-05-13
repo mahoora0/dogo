@@ -80,6 +80,7 @@ class LostItemServiceTest {
 		assertThat(result.get(0).id()).isEqualTo(1L);
 		assertThat(result.get(0).title()).isEqualTo("검정 지갑을 찾습니다");
 		assertThat(result.get(0).statusLabel()).isEqualTo("대기중");
+		assertThat(result.get(0).colorName()).isEqualTo("블랙(검정)");
 		assertThat(result.get(0).imageUrl()).isEqualTo("/uploads/lost-items/wallet.jpg");
 	}
 
@@ -93,7 +94,7 @@ class LostItemServiceTest {
 
 		assertThat(result.id()).isEqualTo(2L);
 		assertThat(result.imageUrls()).hasSize(1);
-		assertThat(result.imageUrls().get(0)).startsWith("data:image/svg+xml");
+		assertThat(result.imageUrls().get(0)).isEqualTo("/images/noImageSize.png");
 	}
 
 	@Test

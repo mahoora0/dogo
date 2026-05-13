@@ -98,7 +98,7 @@ class FoundItemServiceTest {
 		assertThat(result.id()).isEqualTo(2L);
 		assertThat(result.description()).isEqualTo("파란 파우치에 들어 있습니다");
 		assertThat(result.imageUrls()).hasSize(1);
-		assertThat(result.imageUrls().get(0)).startsWith("data:image/svg+xml");
+		assertThat(result.imageUrls().get(0)).isEqualTo("/images/noImageSize.png");
 	}
 
 	@Test

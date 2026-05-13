@@ -1,5 +1,6 @@
 package com.example.dogo.controller;
 
+import com.example.dogo.service.FoundItemService;
 import com.example.dogo.service.LostItemService;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,16 +18,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MainControllerTest {
 
 	private final LostItemService lostItemService = mock(LostItemService.class);
-	private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(new MainController(lostItemService)).build();
+	private final FoundItemService foundItemService = mock(FoundItemService.class);
+	private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(new MainController(lostItemService, foundItemService)).build();
 
 	@Test
 	void homeShowsIndexPage() throws Exception {
 		when(lostItemService.getSearchCategoryNames()).thenReturn(List.of("가방", "전자기기"));
+		when(lostItemService.getRecentItems(6)).thenReturn(List.of());
+		when(foundItemService.getRecentItems(6)).thenReturn(List.of());
 
 		mockMvc.perform(get("/"))
 				.andExpect(status().isOk())
 				.andExpect(view().name("index"))
 				.andExpect(model().attribute("currentUri", "/"))
-				.andExpect(model().attribute("searchCategories", List.of("가방", "전자기기")));
+				.andExpect(model().attribute("searchCategories", List.of("가방", "전자기기")))
+				.andExpect(model().attribute("recentItems", List.of()));
 	}
 }
