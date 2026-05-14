@@ -66,7 +66,7 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long> {
 			""")
 	List<String> findActiveCategoryNames();
 
-	void deleteByUser(com.example.dogo.entity.User user);
+	void deleteByUser(com.example.dogo.entity.user.User user);
 
 	List<FoundItem> findByDeletedFalseOrderByFoundAtDescFoundIdDesc(Pageable pageable);
 }

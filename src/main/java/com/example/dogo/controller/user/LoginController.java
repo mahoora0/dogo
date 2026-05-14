@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.http.ResponseEntity;
 import lombok.RequiredArgsConstructor;
-import com.example.dogo.repository.UserRepository;
-import com.example.dogo.repository.UserSocialAccountRepository;
-import com.example.dogo.service.ProfileService;
+import com.example.dogo.repository.user.UserRepository;
+import com.example.dogo.repository.user.UserSocialAccountRepository;
+import com.example.dogo.service.user.ProfileService;
 import com.example.dogo.service.OAuth2Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,8 +23,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import com.example.dogo.dto.UserProfileUpdateDto;
 import org.springframework.util.StringUtils;
 
-import com.example.dogo.repository.LostItemRepository;
-import com.example.dogo.repository.FoundItemRepository;
+import com.example.dogo.repository.item.LostItemRepository;
+import com.example.dogo.repository.item.FoundItemRepository;
 import org.springframework.ui.Model;
 
 @Controller
@@ -93,9 +93,9 @@ public class LoginController {
   @Transactional
   public String withdraw(@AuthenticationPrincipal CustomUserDetails userDetails,
                          HttpServletRequest request) throws Exception {
-    com.example.dogo.entity.User user = userDetails.getUser();
+    com.example.dogo.entity.user.User user = userDetails.getUser();
     
-    com.example.dogo.entity.User dbUser = userRepository.findById(user.getUserNo()).orElseThrow();
+    com.example.dogo.entity.user.User dbUser = userRepository.findById(user.getUserNo()).orElseThrow();
     
     // 소셜 연동 해제 (카카오/네이버 등)
     oauth2Service.unlink(dbUser);
@@ -120,8 +120,8 @@ public class LoginController {
   @Transactional
   public String updateProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
                               @ModelAttribute UserProfileUpdateDto updateDto) {
-    com.example.dogo.entity.User user = userDetails.getUser();
-    com.example.dogo.entity.User dbUser = userRepository.findById(user.getUserNo()).orElseThrow();
+    com.example.dogo.entity.user.User user = userDetails.getUser();
+    com.example.dogo.entity.user.User dbUser = userRepository.findById(user.getUserNo()).orElseThrow();
 
     // 닉네임 변경
     if (StringUtils.hasText(updateDto.getNickname())) {

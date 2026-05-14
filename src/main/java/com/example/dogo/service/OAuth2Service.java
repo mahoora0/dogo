@@ -1,9 +1,10 @@
 package com.example.dogo.service;
 
-import com.example.dogo.entity.User;
-import com.example.dogo.entity.UserSocialAccount;
-import com.example.dogo.repository.UserSocialAccountRepository;
+import com.example.dogo.entity.user.User;
+import com.example.dogo.entity.user.UserSocialAccount;
+import com.example.dogo.repository.user.UserSocialAccountRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.*;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -20,8 +21,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OAuth2Service {
 
-    private final OAuth2AuthorizedClientService authorizedClientService;
-    private final ClientRegistrationRepository clientRegistrationRepository;
+    private final ObjectProvider<OAuth2AuthorizedClientService> authorizedClientServiceProvider;
+    private final ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider;
     private final UserSocialAccountRepository userSocialAccountRepository;
 
     public void unlink(User user) {
@@ -33,6 +34,9 @@ public class OAuth2Service {
 
         UserSocialAccount socialAccount = socialAccountOpt.get();
         String provider = socialAccount.getProvider();
+
+        OAuth2AuthorizedClientService authorizedClientService = authorizedClientServiceProvider.getIfAvailable();
+        if (authorizedClientService == null) return;
         
         OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(provider, user.getEmail());
         if (client == null) return;
@@ -60,7 +64,12 @@ public class OAuth2Service {
     }
 
     private void unlinkNaver(String accessToken, String provider) {
+        ClientRegistrationRepository clientRegistrationRepository = clientRegistrationRepositoryProvider.getIfAvailable();
+        if (clientRegistrationRepository == null) return;
+
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId(provider);
+        if (registration == null) return;
+
         String clientId = registration.getClientId();
         String clientSecret = registration.getClientSecret();
 

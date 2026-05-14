@@ -13,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.example.dogo.entity.user.User;
 import java.time.LocalDateTime;
 
 @Entity
