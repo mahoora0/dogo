@@ -18,4 +18,15 @@ public class PoliceSyncConfig {
 		executor.initialize();
 		return executor;
 	}
+
+	@Bean
+	public TaskExecutor itemMatchTaskExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(2);
+		executor.setMaxPoolSize(4);
+		executor.setQueueCapacity(100);
+		executor.setThreadNamePrefix("item-match-");
+		executor.initialize();
+		return executor;
+	}
 }

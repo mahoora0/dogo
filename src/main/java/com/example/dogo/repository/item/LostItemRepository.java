@@ -74,8 +74,7 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
 	List<LostItem> findMatchCandidatesForFound(
 			@Param("category") String category,
 			@Param("lostFrom") LocalDateTime lostFrom,
-			@Param("lostTo") LocalDateTime lostTo,
-			Pageable pageable
+			@Param("lostTo") LocalDateTime lostTo
 	);
 
 	@Query("""

@@ -185,8 +185,8 @@ public class ItemMatchScorer {
 	}
 
 	private BigDecimal keywordScore(LostItem lost, FoundItem found, List<String> reasons) {
-		Set<String> lostTokens = tokenizer.tokenize(lost.getItemName(), lost.getTitle());
-		Set<String> foundTokens = tokenizer.tokenize(found.getItemName(), found.getTitle(), found.getColorName());
+		Set<String> lostTokens = tokenizer.tokenize(lost.getItemName());
+		Set<String> foundTokens = tokenizer.tokenize(found.getItemName());
 		if (lostTokens.isEmpty() || foundTokens.isEmpty()) {
 			return BigDecimal.ZERO;
 		}

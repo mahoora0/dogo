@@ -83,6 +83,19 @@ class ItemMatchScorerTest {
 	}
 
 	@Test
+	void keywordScoreUsesOnlyItemNames() {
+		LostItem lost = lostItem("wallet", "etc", LocalDateTime.of(2026, 5, 10, 8, 0), "seoul", "gangnam");
+		FoundItem found = foundItem("phone", "etc", LocalDateTime.of(2026, 5, 10, 10, 0), "seoul", "gangnam", "wallet");
+		ReflectionTestUtils.setField(lost, "title", "gangnam station wallet");
+		ReflectionTestUtils.setField(found, "title", "gangnam station wallet");
+
+		MatchScoreResult result = scorer.score(lost, found);
+
+		assertThat(result.eligible()).isTrue();
+		assertThat(result.keywordScore()).isEqualByComparingTo(BigDecimal.ZERO);
+	}
+
+	@Test
 	void scoreRejectsCompletedStatus() {
 		LostItem lost = lostItem("검정 지갑", "지갑", LocalDateTime.of(2026, 5, 10, 12, 0), "서울", "강남역");
 		FoundItem found = foundItem("검정 지갑", "지갑", LocalDateTime.of(2026, 5, 10, 13, 0), "서울", "강남역", "검정");

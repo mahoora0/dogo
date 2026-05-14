@@ -12,9 +12,9 @@ import com.example.dogo.repository.item.LostItemImageRepository;
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.match.ItemMatchService;
+import com.example.dogo.service.match.LostItemMatchRequestedEvent;
 import com.example.dogo.service.police.sync.PoliceLostItemDetailEnrichmentService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +36,6 @@ import java.util.UUID;
 @Service
 public class LostItemService {
 
-	private static final Logger log = LoggerFactory.getLogger(LostItemService.class);
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
 
@@ -45,6 +44,7 @@ public class LostItemService {
 	private final UserRepository userRepository;
 	private final PoliceLostItemDetailEnrichmentService policeLostItemDetailEnrichmentService;
 	private final ItemMatchService itemMatchService;
+	private final ApplicationEventPublisher eventPublisher;
 	private final Path lostItemUploadPath;
 
 	public LostItemService(
@@ -53,6 +53,7 @@ public class LostItemService {
 			UserRepository userRepository,
 			PoliceLostItemDetailEnrichmentService policeLostItemDetailEnrichmentService,
 			ItemMatchService itemMatchService,
+			ApplicationEventPublisher eventPublisher,
 			@Value("${file.upload-dir}") String uploadDir
 	) {
 		this.lostItemRepository = lostItemRepository;
@@ -60,6 +61,7 @@ public class LostItemService {
 		this.userRepository = userRepository;
 		this.policeLostItemDetailEnrichmentService = policeLostItemDetailEnrichmentService;
 		this.itemMatchService = itemMatchService;
+		this.eventPublisher = eventPublisher;
 		this.lostItemUploadPath = Path.of(uploadDir, "lost-items").toAbsolutePath().normalize();
 	}
 
@@ -161,12 +163,7 @@ public class LostItemService {
 
 		LostItem savedItem = lostItemRepository.save(lostItem);
 		saveImages(savedItem, request.getUploadImages());
-
-		try {
-			itemMatchService.matchForLostItem(savedItem);
-		} catch (Exception exception) {
-			log.warn("분실물 매칭 실행 중 오류가 발생했습니다. lostId={}", savedItem.getLostId(), exception);
-		}
+		eventPublisher.publishEvent(new LostItemMatchRequestedEvent(savedItem.getLostId()));
 
 		return savedItem.getLostId();
 	}
