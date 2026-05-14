@@ -4,13 +4,18 @@
 
     <div class="faq-container max-w-4xl mx-auto">
         
-        <!-- 페이지 상단 제목 및 설명 영역 -->
-        <div class="mb-8">
-            <h2 class="text-3xl font-extrabold text-slate-900 mb-3">FAQ (자주 묻는 질문)</h2>
-            <p class="text-slate-500 text-lg">분실물 센터 이용과 관련하여 궁금하신 점을 확인해 보세요.</p>
+        <!-- 제목 및 설명 -->
+        <div class="mb-8 flex justify-between items-end">
+            <div>
+                <h2 class="text-3xl font-extrabold text-slate-900 mb-3">FAQ (자주 묻는 질문)</h2>
+                <p class="text-slate-500 text-lg">분실물 센터 이용과 관련하여 궁금하신 점을 확인해 보세요.</p>
+            </div>
+            <div th:if="${isAdmin}">
+                <a href="/faq/new" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">FAQ 등록</a>
+            </div>
         </div>
 
-        <!-- 질문 검색 바 영역 -->
+        <!-- 질문 검색  -->
         <div class="mb-8 relative">
             <input type="text" id="faqSearchInput" placeholder="어떤 것이 궁금하신가요?" class="w-full bg-white border border-slate-300 rounded-lg pl-4 pr-12 py-3 text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition duration-200">
             <button id="faqSearchBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none">
@@ -20,7 +25,7 @@
             </button>
         </div>
 
-        <!-- 질문 카테고리(분류) 선택 탭 -->
+        <!-- 질문 카테고리(분류) -->
         <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
             <button class="category-btn whitespace-nowrap px-4 py-2 rounded-full bg-slate-900 text-white border border-transparent font-medium text-sm transition-colors">전체</button>
             <button class="category-btn whitespace-nowrap px-4 py-2 rounded-full bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 font-medium text-sm transition-colors">분실물 신고</button>
@@ -28,9 +33,37 @@
             <button class="category-btn whitespace-nowrap px-4 py-2 rounded-full bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 font-medium text-sm transition-colors">이용 안내</button>
         </div>
 
-        <!-- FAQ 질문과 답변 목록 영역 -->
+        <!-- FAQ 질문과 답변 목록 -->
         <div class="space-y-4">
             
+            <!-- DB에서 불러온 FAQ 항목 -->
+            <th:block th:each="faq : ${faqList}">
+                <div class="faq-item bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden transition-all duration-200" th:data-category="${faq.category}">
+                    <button class="faq-btn w-full px-6 py-4 flex justify-between items-center text-left focus:outline-none">
+                        <div class="flex items-center gap-4">
+                            <span class="text-indigo-600 font-bold text-lg">Q.</span>
+                            <span class="font-medium text-slate-800 text-lg" th:text="${faq.question}">질문</span>
+                        </div>
+                        <svg class="faq-icon h-5 w-5 text-slate-400 transform transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div class="faq-answer hidden bg-slate-50 px-6 py-4 border-t border-slate-100">
+                        <div class="flex gap-4">
+                            <span class="text-slate-400 font-bold text-lg">A.</span>
+                            <div class="text-slate-600 leading-relaxed flex-grow" th:utext="${faq.answer}">
+                                답변 내용
+                            </div>
+                        </div>
+                        <div th:if="${isAdmin}" class="mt-4 flex justify-end">
+                            <form th:action="@{/faq/{id}/delete(id=${faq.id})}" method="post" onsubmit="return confirm('이 FAQ를 정말 삭제하시겠습니까?');">
+                                <button type="submit" class="text-sm text-red-500 hover:text-red-700 font-medium px-3 py-1 border border-red-200 hover:bg-red-50 rounded transition-colors">삭제</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+
             <!-- 첫 번째 FAQ 항목 -->
             <div class="faq-item bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden transition-all duration-200" data-category="분실물 신고">
                 <button class="faq-btn w-full px-6 py-4 flex justify-between items-center text-left focus:outline-none">
@@ -98,7 +131,7 @@
         </div>
     </div>
 
-    <!-- FAQ 페이지 동작 스크립트 (탭 변경, 아코디언, 검색 기능) -->
+    <!-- 탭 변경, 아코디언, 검색 기능 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // 1. 카테고리 탭 클릭 시 디자인 변경 로직
@@ -108,22 +141,19 @@
 
             categoryBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    // 모든 버튼의 활성화 스타일을 제거하고 기본(비활성) 상태로 되돌립니다.
                     categoryBtns.forEach(b => {
                         b.classList.remove(...activeClasses);
                         b.classList.add(...inactiveClasses);
                     });
                     
-                    // 클릭한 버튼에만 진한 색상의 활성화 스타일을 적용합니다.
                     btn.classList.remove(...inactiveClasses);
                     btn.classList.add(...activeClasses);
                     
-                    // 카테고리가 변경되었으므로 목록을 다시 필터링(검색)합니다.
                     performSearch();
                 });
             });
 
-            // 2. 질문 클릭 시 답변이 열리고 닫히는 아코디언 로직
+            // 질문 클릭 시 답변이 열리고 닫히는 로직
             const faqBtns = document.querySelectorAll('.faq-btn');
             
             faqBtns.forEach(btn => {
@@ -131,14 +161,11 @@
                     const answer = btn.nextElementSibling;
                     const icon = btn.querySelector('.faq-icon');
                     
-                    // 현재 클릭한 항목이 열려있는지 닫혀있는지 확인 후 토글합니다.
                     if (answer.classList.contains('hidden')) {
-                        // 닫혀있다면 답변을 열고 화살표 아이콘을 회전시킵니다.
                         answer.classList.remove('hidden');
                         icon.classList.add('rotate-180');
                         btn.parentElement.classList.add('border-indigo-200', 'ring-1', 'ring-indigo-100');
                     } else {
-                        // 이미 열려있다면 답변을 숨기고 아이콘을 원래대로 되돌립니다.
                         answer.classList.add('hidden');
                         icon.classList.remove('rotate-180');
                         btn.parentElement.classList.remove('border-indigo-200', 'ring-1', 'ring-indigo-100');
@@ -146,7 +173,7 @@
                 });
             });
 
-            // 3. 검색 및 필터링 핵심 로직
+            // 검색 및 필터링 핵심 로직
             const searchInput = document.getElementById('faqSearchInput');
             const searchBtn = document.getElementById('faqSearchBtn');
             const faqItems = document.querySelectorAll('.faq-item');
@@ -165,21 +192,21 @@
                     const matchesCategory = selectedCategory === '전체' || itemCategory === selectedCategory;
                     
                     if (matchesSearch && matchesCategory) {
-                        item.style.display = ''; // 검색어와 카테고리가 일치하면 화면에 보여줍니다.
+                        item.style.display = '';
                     } else {
-                        item.style.display = 'none'; // 일치하지 않으면 화면에서 숨깁니다.
+                        item.style.display = 'none';
                     }
                 });
             };
 
-            // 검색창에서 Enter 키를 눌렀을 때 검색 기능 실행
+            // 검색창에서 Enter 키를 눌렀을 때 검색 기능
             searchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     performSearch();
                 }
             });
 
-            // 돋보기(검색) 버튼을 클릭했을 때 검색 기능 실행
+            // 돋보기 버튼을 클릭했을 때 검색 기능
             if (searchBtn) {
                 searchBtn.addEventListener('click', performSearch);
             }

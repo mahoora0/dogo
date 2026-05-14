@@ -1,7 +1,7 @@
-package com.example.dogo.repository;
+package com.example.dogo.repository.Support;
 
-import com.example.dogo.entity.Inquiry;
-import com.example.dogo.entity.InquiryFile;
+import com.example.dogo.entity.Support.Inquiry;
+import com.example.dogo.entity.Support.InquiryFile;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,6 +1,7 @@
-package com.example.dogo.controller;
+package com.example.dogo.controller.Support;
 
-import com.example.dogo.service.InquiryService;
+import com.example.dogo.service.Support.InquiryService;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-/*1:1 문의하기 페이지와 관련된 웹 요청을 처리하는 컨트롤러 클래스입니다.*/
+/*1:1 문의하기 페이지와 관련된 웹 요청을 처리*/
 @Controller
 public class InquiryController {
 
@@ -19,11 +20,17 @@ public class InquiryController {
     }
 
     @GetMapping({"/inquiry", "/inqiry"})
-    public String inquiryList(Model model) {
+    public String inquiryList(@RequestParam(required = false) String category,
+                              @RequestParam(required = false) String status,
+                              @RequestParam(defaultValue = "0") int page,
+                              Model model) {
+        Page<InquiryService.InquirySummary> inquiries = inquiryService.getInquiryPage(category, status, page, 5);
+
         model.addAttribute("currentUri", "/inquiry");
-        model.addAttribute("inquiryGroups", inquiryService.groupedInquiries());
-        model.addAttribute("inquiries", inquiryService.getInquiries());
-        
+        model.addAttribute("inquiries", inquiries);
+        model.addAttribute("currentCategory", category == null || category.isEmpty() ? "전체" : category);
+        model.addAttribute("currentStatus", status == null || status.isEmpty() ? "전체" : status);
+
         /* 
         // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -32,6 +39,15 @@ public class InquiryController {
         model.addAttribute("isAdmin", isAdmin);
         */
         model.addAttribute("isAdmin", true); // true:관리자 false:사용자
+
+        int blockLimit = 5;
+        int startPage = (((int)(Math.ceil((double)(page + 1) / blockLimit))) - 1) * blockLimit + 1;
+        int endPage = Math.min((startPage + blockLimit - 1), inquiries.getTotalPages());
+        if (endPage == 0) endPage = 1;
+
+        model.addAttribute("startPage", startPage);
+        model.addAttribute("endPage", endPage);
+
         return "inquiry/list";
     }
 
