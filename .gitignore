@@ -44,3 +44,12 @@ out/
 ### Seed artifacts ###
 .venv-seed/
 seed/
+
+### Python ###
+__pycache__/
+**/__pycache__/
+.venv/
+**/.venv/
+.pytest_cache/
+**/.pytest_cache/
+*.py[cod]
