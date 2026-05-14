@@ -10,6 +10,7 @@ import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.service.police.client.PoliceCommonCodeClient;
 import com.example.dogo.service.police.client.PoliceFoundItemClient;
 import com.example.dogo.service.police.mapper.PoliceFoundItemMapper;
+import com.example.dogo.service.police.station.PoliceStationAddressResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,7 @@ public class PoliceFoundItemSyncService {
 	private final PoliceFoundItemClient client;
 	private final PoliceCommonCodeClient commonCodeClient;
 	private final PoliceFoundItemMapper mapper;
+	private final PoliceStationAddressResolver stationAddressResolver;
 	private final FoundItemRepository foundItemRepository;
 	private final PoliceFoundItemImageService imageService;
 	private final int numOfRows;
@@ -40,6 +42,7 @@ public class PoliceFoundItemSyncService {
 			PoliceFoundItemClient client,
 			PoliceCommonCodeClient commonCodeClient,
 			PoliceFoundItemMapper mapper,
+			PoliceStationAddressResolver stationAddressResolver,
 			FoundItemRepository foundItemRepository,
 			PoliceFoundItemImageService imageService,
 			@Value("${police.found-item.num-of-rows:100}") int numOfRows,
@@ -50,6 +53,7 @@ public class PoliceFoundItemSyncService {
 		this.client = client;
 		this.commonCodeClient = commonCodeClient;
 		this.mapper = mapper;
+		this.stationAddressResolver = stationAddressResolver;
 		this.foundItemRepository = foundItemRepository;
 		this.imageService = imageService;
 		this.numOfRows = numOfRows;
@@ -187,7 +191,10 @@ public class PoliceFoundItemSyncService {
 
 		try {
 			Optional<PoliceFoundItemDetailResponse> detail = includeDetail ? fetchDetail(atcId, fdSn) : Optional.empty();
-			FoundItem foundItem = mapper.toFoundItem(response, detail.orElse(null), regionName);
+			String foundArea = detail
+					.flatMap(detailResponse -> stationAddressResolver.resolveFoundArea(detailResponse, regionName))
+					.orElse(regionName);
+			FoundItem foundItem = mapper.toFoundItem(response, detail.orElse(null), foundArea);
 			FoundItem savedItem = foundItemRepository.save(foundItem);
 			if (detail.isPresent()) {
 				imageService.saveImageIfPresent(savedItem, detail.get());

@@ -5,6 +5,7 @@ import com.example.dogo.dto.police.PoliceFoundItemResponse;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.service.police.client.PoliceFoundItemClient;
 import com.example.dogo.service.police.mapper.PoliceFoundItemMapper;
+import com.example.dogo.service.police.station.PoliceStationAddressResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +31,7 @@ class PoliceFoundItemDetailEnrichmentServiceTest {
 		enrichmentService = new PoliceFoundItemDetailEnrichmentService(
 				client,
 				new PoliceFoundItemMapper(),
+				new PoliceStationAddressResolver(),
 				imageService
 		);
 	}

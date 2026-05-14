@@ -5,6 +5,7 @@ import com.example.dogo.dto.police.PoliceFoundItemResponse;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.service.police.client.PoliceFoundItemClient;
 import com.example.dogo.service.police.mapper.PoliceFoundItemMapper;
+import com.example.dogo.service.police.station.PoliceStationAddressResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,15 +21,18 @@ public class PoliceFoundItemDetailEnrichmentService {
 
 	private final PoliceFoundItemClient client;
 	private final PoliceFoundItemMapper mapper;
+	private final PoliceStationAddressResolver stationAddressResolver;
 	private final PoliceFoundItemImageService imageService;
 
 	public PoliceFoundItemDetailEnrichmentService(
 			PoliceFoundItemClient client,
 			PoliceFoundItemMapper mapper,
+			PoliceStationAddressResolver stationAddressResolver,
 			PoliceFoundItemImageService imageService
 	) {
 		this.client = client;
 		this.mapper = mapper;
+		this.stationAddressResolver = stationAddressResolver;
 		this.imageService = imageService;
 	}
 
@@ -43,7 +47,9 @@ public class PoliceFoundItemDetailEnrichmentService {
 				return;
 			}
 
-			FoundItem enriched = mapper.toFoundItem(toListResponse(foundItem), detail.get(), foundItem.getFoundArea());
+			String foundArea = stationAddressResolver.resolveFoundArea(detail.get(), foundItem.getFoundArea())
+					.orElse(foundItem.getFoundArea());
+			FoundItem enriched = mapper.toFoundItem(toListResponse(foundItem), detail.get(), foundArea);
 			foundItem.updatePoliceDetail(
 					enriched.getTitle(),
 					enriched.getContent(),
@@ -73,7 +79,18 @@ public class PoliceFoundItemDetailEnrichmentService {
 				&& foundItem.getFdSn() != null
 				&& (!StringUtils.hasText(foundItem.getContent())
 				|| !StringUtils.hasText(foundItem.getFoundPlace())
-				|| !StringUtils.hasText(foundItem.getContact()));
+				|| !StringUtils.hasText(foundItem.getContact())
+				|| isCoarseArea(foundItem.getFoundArea()));
+	}
+
+	private boolean isCoarseArea(String foundArea) {
+		if (!StringUtils.hasText(foundArea) || foundArea.contains(",")) {
+			return false;
+		}
+		return foundArea.endsWith("특별시")
+				|| foundArea.endsWith("광역시")
+				|| foundArea.endsWith("특별자치시")
+				|| foundArea.endsWith("도");
 	}
 
 	private PoliceFoundItemResponse toListResponse(FoundItem foundItem) {
