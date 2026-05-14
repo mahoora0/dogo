@@ -57,11 +57,11 @@ public class PoliceApiController {
   public List<String> getSubRegions(@RequestParam String region) {
     long totalCount = policeStationRepository.count();
     String pnuPrefix = getPnuPrefixByRegion(region);
-    log.info("API CALL: getSubRegions - Region: {}, Prefix: {}, DB Total: {}", region, pnuPrefix, totalCount);
+
     
     if (pnuPrefix != null) {
       List<PoliceStation> stations = policeStationRepository.findByPnuStartingWith(pnuPrefix);
-      log.info("Found {} stations for prefix {}", stations.size(), pnuPrefix);
+
       
       List<String> subRegions = stations.stream()
           .map(s -> {
@@ -100,7 +100,7 @@ public class PoliceApiController {
           .sorted()
           .toList();
           
-      log.info("Returning {} distinct sub-regions", subRegions.size());
+
       return subRegions;
     }
     return List.of();
@@ -129,7 +129,7 @@ public class PoliceApiController {
   @GetMapping("/neighborhoods")
   public List<String> getNeighborhoods(@RequestParam String region, @RequestParam String subRegion) {
     String pnuPrefix = getPnuPrefixByRegion(region);
-    log.info("API CALL: getNeighborhoods - Region: {}, SubRegion: {}, Prefix: {}", region, subRegion, pnuPrefix);
+
     
     if (pnuPrefix != null) {
       List<PoliceStation> stations = policeStationRepository.findByPnuStartingWith(pnuPrefix);
@@ -158,7 +158,7 @@ public class PoliceApiController {
           .sorted()
           .toList();
       
-      log.info("Found {} neighborhoods for subRegion {}", neighborhoods.size(), subRegion);
+
       return neighborhoods;
     }
     return List.of();

@@ -24,7 +24,7 @@ public class KorailApiController {
             @org.springframework.web.bind.annotation.RequestParam(required = false) String subRegion,
             @org.springframework.web.bind.annotation.RequestParam(required = false) String neighborhood) {
         
-        log.info("API CALL: getLostFoundCenters - Region: {}, SubRegion: {}, Neighborhood: {}", region, subRegion, neighborhood);
+
         List<Map<String, Object>> allCenters = lostFoundCenterRepository.findAllWithCoordinates();
         
         return allCenters.stream()

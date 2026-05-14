@@ -110,10 +110,6 @@ public class PoliceStationDataInitializer implements CommandLineRunner {
                     
                     stations.add(station);
                     
-                    if (stations.size() <= 5) {
-                        log.info("Sample data ({}) - PNU: {}, Station: {}, Addr: {}", 
-                            encoding, station.getPnu(), station.getPolstnNm(), station.getAddr());
-                    }
                     
                     if (stations.size() >= 1000) {
                         policeStationRepository.saveAll(stations);
