@@ -1,6 +1,6 @@
 package com.example.dogo.controller;
 
-import com.example.dogo.repository.UserRepository;
+import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.SmsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

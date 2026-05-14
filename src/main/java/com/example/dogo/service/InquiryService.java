@@ -2,10 +2,10 @@ package com.example.dogo.service;
 
 import com.example.dogo.entity.Inquiry;
 import com.example.dogo.entity.InquiryFile;
-import com.example.dogo.entity.User;
+import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.InquiryFileRepository;
 import com.example.dogo.repository.InquiryRepository;
-import com.example.dogo.repository.UserRepository;
+import com.example.dogo.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

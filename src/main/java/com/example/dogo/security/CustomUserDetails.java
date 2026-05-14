@@ -1,6 +1,6 @@
 package com.example.dogo.security;
 
-import com.example.dogo.entity.User;
+import com.example.dogo.entity.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

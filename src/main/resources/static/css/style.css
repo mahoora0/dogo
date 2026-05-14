@@ -52,6 +52,9 @@ body {
     padding: 20px;
     border-radius: 10px;
     height: fit-content;
+    position: sticky;
+    top: 80px;
+    align-self: flex-start;
 }
 
 .sidebar h2 {

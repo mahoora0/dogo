@@ -1,6 +1,6 @@
 package com.example.dogo.config;
 
-import com.example.dogo.service.CustomOAuth2UserService;
+import com.example.dogo.service.user.CustomOAuth2UserService;
 import com.example.dogo.service.CustomUserDetailsService;
 import com.example.dogo.security.CustomAuthenticationFailureHandler;
 import lombok.RequiredArgsConstructor;

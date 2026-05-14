@@ -1,7 +1,7 @@
 package com.example.dogo.service;
 
-import com.example.dogo.entity.User;
-import com.example.dogo.repository.UserRepository;
+import com.example.dogo.entity.user.User;
+import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
