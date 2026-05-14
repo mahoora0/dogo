@@ -40,6 +40,8 @@ public class ItemMatchService {
 	private static final BigDecimal MIN_LOCATION_EVIDENCE_SCORE = new BigDecimal("6.00");
 	private static final BigDecimal RULE_WEIGHT = new BigDecimal("0.7");
 	private static final BigDecimal SEMANTIC_WEIGHT = new BigDecimal("0.3");
+	private static final BigDecimal AREA_MISMATCH_CAP = new BigDecimal("58.00");
+	private static final BigDecimal TRANSPORT_AREA_MISMATCH_CAP = new BigDecimal("62.00");
 	private static final String RULE_MATCH_VERSION = "java-rule-v1";
 	private static final String SEMANTIC_MATCH_VERSION = "java-rule-v1+kosimcse-v1";
 
@@ -266,6 +268,7 @@ public class ItemMatchService {
 			matchVersion = SEMANTIC_MATCH_VERSION;
 			modelName = semanticModelName;
 		}
+		finalScore = applyLocationCap(lost, found, finalScore, reasons);
 
 		return new ItemMatch(lost, found, ruleScore.totalScore(), semanticScore, finalScore,
 				reasons, matchVersion, modelName);
@@ -279,6 +282,116 @@ public class ItemMatchService {
 				.add(semanticScore.multiply(SEMANTIC_WEIGHT))
 				.setScale(2, RoundingMode.HALF_UP)
 				.min(new BigDecimal("100.00"));
+	}
+
+	private BigDecimal applyLocationCap(LostItem lost, FoundItem found, BigDecimal finalScore, List<String> reasons) {
+		BigDecimal cap = locationCap(lost, found);
+		if (cap == null || finalScore.compareTo(cap) <= 0) {
+			return finalScore;
+		}
+		reasons.add("분실/습득 지역 차이가 커 점수 상한 적용 (" + cap.setScale(0, RoundingMode.HALF_UP) + "점)");
+		return cap;
+	}
+
+	private BigDecimal locationCap(LostItem lost, FoundItem found) {
+		String lostBroadArea = broadArea(lost.getLostArea());
+		String foundBroadArea = broadArea(found.getFoundArea());
+		if (lostBroadArea == null || foundBroadArea == null || lostBroadArea.equals(foundBroadArea)) {
+			return null;
+		}
+		if (hasCommonPlaceToken(lost, found)) {
+			return null;
+		}
+		if (hasMovementContext(lost.getLostPlace()) && hasMovementContext(found.getFoundPlace(), found.getKeepPlace())) {
+			return TRANSPORT_AREA_MISMATCH_CAP;
+		}
+		return AREA_MISMATCH_CAP;
+	}
+
+	private String broadArea(String area) {
+		if (area == null || area.isBlank()) {
+			return null;
+		}
+		String first = area.replace(",", " ").trim().split("\\s+")[0];
+		return switch (first) {
+			case "서울특별시" -> "서울";
+			case "부산광역시" -> "부산";
+			case "대구광역시" -> "대구";
+			case "인천광역시" -> "인천";
+			case "광주광역시" -> "광주";
+			case "대전광역시" -> "대전";
+			case "울산광역시" -> "울산";
+			case "세종특별자치시" -> "세종";
+			case "경기도" -> "경기";
+			case "강원특별자치도", "강원도" -> "강원";
+			case "충청북도" -> "충북";
+			case "충청남도" -> "충남";
+			case "전북특별자치도", "전라북도" -> "전북";
+			case "전라남도" -> "전남";
+			case "경상북도" -> "경북";
+			case "경상남도" -> "경남";
+			case "제주특별자치도" -> "제주";
+			default -> first;
+		};
+	}
+
+	private boolean hasCommonPlaceToken(LostItem lost, FoundItem found) {
+		List<String> lostTokens = placeTokens(lost.getLostPlace());
+		List<String> foundTokens = placeTokens(found.getFoundPlace(), found.getKeepPlace());
+		return lostTokens.stream().anyMatch(foundTokens::contains);
+	}
+
+	private List<String> placeTokens(String... values) {
+		String joined = String.join(" ", java.util.Arrays.stream(values)
+				.filter(value -> value != null && !value.isBlank())
+				.toList());
+		if (joined.isBlank()) {
+			return List.of();
+		}
+		return java.util.Arrays.stream(joined.toLowerCase()
+						.replaceAll("[^가-힣a-z0-9\\s]", " ")
+						.split("\\s+"))
+				.map(String::trim)
+				.filter(token -> token.length() >= 2)
+				.filter(token -> !token.matches("\\d+"))
+				.filter(token -> !isGenericPlaceToken(token))
+				.distinct()
+				.toList();
+	}
+
+	private boolean isGenericPlaceToken(String token) {
+		return token.equals("택시")
+				|| token.equals("버스")
+				|| token.equals("지하철")
+				|| token.equals("전철")
+				|| token.equals("기차")
+				|| token.equals("ktx")
+				|| token.equals("열차")
+				|| token.equals("공항")
+				|| token.equals("비행기")
+				|| token.equals("터미널")
+				|| token.equals("정류장")
+				|| token.equals("승강장")
+				|| token.equals("인근")
+				|| token.equals("근처");
+	}
+
+	private boolean hasMovementContext(String... values) {
+		String text = String.join(" ", java.util.Arrays.stream(values)
+				.filter(value -> value != null && !value.isBlank())
+				.toList()).toLowerCase();
+		return text.contains("택시")
+				|| text.contains("버스")
+				|| text.contains("지하철")
+				|| text.contains("전철")
+				|| text.contains("기차")
+				|| text.contains("ktx")
+				|| text.contains("열차")
+				|| text.contains("공항")
+				|| text.contains("비행기")
+				|| text.contains("터미널")
+				|| text.contains("정류장")
+				|| text.contains("역");
 	}
 
 	private List<String> matchReasons(ItemMatch match, LostItem lostItem, FoundItem foundItem) {
