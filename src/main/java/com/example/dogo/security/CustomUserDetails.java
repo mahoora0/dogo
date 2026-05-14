@@ -42,7 +42,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getPassword() {
-        return null; // 소셜 로그인의 경우 비밀번호가 없음
+        return user.getPassword();
     }
 
     @Override

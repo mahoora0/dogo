@@ -10,4 +10,6 @@ public interface UserSocialAccountRepository extends JpaRepository<UserSocialAcc
 
     @EntityGraph(attributePaths = {"user"})
     Optional<UserSocialAccount> findByProviderAndProviderUserId(String provider, String providerUserId);
+
+    void deleteByUser(com.example.dogo.entity.User user);
 }

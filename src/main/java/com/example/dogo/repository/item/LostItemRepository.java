@@ -88,5 +88,7 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
 			""")
 	List<String> findActiveCategoryNames();
 
+	void deleteByUser(com.example.dogo.entity.User user);
+
 	List<LostItem> findByDeletedFalseOrderByLostAtDescLostIdDesc(Pageable pageable);
 }

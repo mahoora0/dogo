@@ -7,7 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 public class UserJoinDto {
-    private String username; // form의 name="username"과 매핑 (LOGIN_ID로 사용)
+    private String loginId; // form의 name="loginId"와 매핑 (아이디)
+    private String nickname;
     private String password;
     private String passwordConfirm;
     private String email;

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: setContent(~{::content})}">
+<th:block th:fragment="content">
+
+    <div class="inquiry-container max-w-3xl mx-auto">
+        
+        <div class="mb-8">
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-3">1:1 문의하기</h2>
+            <p class="text-slate-500 text-lg">궁금하신 점이나 불편한 사항을 남겨주시면 신속하게 답변해 드리겠습니다.</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+            <form th:action="@{/inquiry}" method="post" enctype="multipart/form-data" class="space-y-6">
+                
+                <!-- 문의 유형 -->
+                <div>
+                    <label for="category" class="block text-sm font-medium text-slate-700 mb-2">문의 유형 <span class="text-red-500">*</span></label>
+                    <select id="category" name="category" required class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200">
+                        <option value="" disabled selected>문의 유형을 선택해주세요</option>
+                        <option value="분실물">분실물 관련 문의</option>
+                        <option value="습득물">습득물 관련 문의</option>
+                        <option value="서비스">서비스 이용 문의</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+                <!-- 제목 -->
+                <div>
+                    <label for="title" class="block text-sm font-medium text-slate-700 mb-2">제목 <span class="text-red-500">*</span></label>
+                    <input type="text" id="title" name="title" required placeholder="문의 제목을 입력해주세요" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200">
+                </div>
+
+                <!-- 내용 -->
+                <div>
+                    <label for="content" class="block text-sm font-medium text-slate-700 mb-2">문의 내용 <span class="text-red-500">*</span></label>
+                    <textarea id="content" name="content" required rows="6" placeholder="문의하실 내용을 상세히 적어주세요." class="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 resize-none"></textarea>
+                </div>
+
+                <!-- 첨부파일 -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">첨부파일</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-lg hover:border-indigo-400 transition-colors bg-slate-50">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-slate-600 justify-center">
+                                <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none px-1">
+                                    <span>파일 선택</span>
+                                    <input id="file-upload" name="files" type="file" multiple class="sr-only" onchange="updateFileList(this)">
+                                </label>
+                                <p class="pl-1">또는 다중 파일 선택 가능</p>
+                            </div>
+                            <p class="text-xs text-slate-500">모든 파일 형식 (최대 10MB)</p>
+                            <div id="file-list" class="mt-2 text-sm text-slate-700 text-left"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function updateFileList(input) {
+                        const fileListDiv = document.getElementById('file-list');
+                        fileListDiv.innerHTML = '';
+                        if (input.files.length > 0) {
+                            const ul = document.createElement('ul');
+                            ul.className = 'list-disc pl-5 mt-2';
+                            Array.from(input.files).forEach(file => {
+                                const li = document.createElement('li');
+                                li.textContent = file.name;
+                                ul.appendChild(li);
+                            });
+                            fileListDiv.appendChild(ul);
+                        }
+                    }
+                </script>
+
+                <!-- 등록버튼 -->
+                <div class="pt-4">
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-colors">
+                        문의 접수하기
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</th:block>
+</html>

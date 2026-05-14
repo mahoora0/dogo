@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: setContent(~{::content})}">
+<th:block th:fragment="content">
+    <section class="max-w-4xl mx-auto">
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-sm font-semibold text-indigo-700">고객지원</p>
+                <h2 class="mt-2 text-3xl font-extrabold text-slate-900">문의하기</h2>
+                <p class="mt-2 text-slate-600">DOGO 이용 중 궁금한 점이나 불편한 사항을 남겨주세요.</p>
+            </div>
+            <a th:href="@{/inquiry/new}"
+               class="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
+                등록
+            </a>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-3">
+            <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                <h3 class="text-lg font-bold text-slate-900">분실물 문의</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600">등록한 분실물, 검색 결과, 알림과 관련된 내용을 문의할 수 있습니다.</p>
+            </article>
+            <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                <h3 class="text-lg font-bold text-slate-900">습득물 문의</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600">습득물 등록, 보관 장소, 전달 절차에 대한 도움을 받을 수 있습니다.</p>
+            </article>
+            <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                <h3 class="text-lg font-bold text-slate-900">서비스 문의</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600">계정, 이용 방법, 오류 등 서비스 이용 전반에 대해 문의할 수 있습니다.</p>
+            </article>
+        </div>
+
+        <div class="mt-8 flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:flex-row">
+            <div class="flex-1 sm:max-w-xs">
+                <label for="inquiryTypeFilter" class="block text-sm font-semibold text-slate-700">문의 종류</label>
+                <select id="inquiryTypeFilter"
+                        class="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100">
+                    <option value="" selected>전체 문의 종류</option>
+                    <option th:each="entry : ${inquiryGroups}" th:value="${entry.key}" th:text="${entry.key}">분실물 문의</option>
+                </select>
+            </div>
+            
+            <div th:if="${isAdmin}" class="flex-1 sm:max-w-xs">
+                <label for="inquiryStatusFilter" class="block text-sm font-semibold text-slate-700">상태</label>
+                <select id="inquiryStatusFilter"
+                        class="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100">
+                    <option value="" selected>전체 상태</option>
+                    <option value="접수">접수</option>
+                    <option value="답변완료">답변완료</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="inquiryEmptyState" class="mt-6 hidden rounded-lg border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-slate-500">
+            조건에 맞는 문의 내역이 없습니다.
+        </div>
+
+        <div id="allInquiryList" class="mt-6 rounded-lg border border-slate-200 bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                <h3 class="text-lg font-bold text-slate-900">전체 문의</h3>
+                <span class="list-count rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600" th:text="${#lists.size(inquiries)} + '건'">0건</span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(inquiries)}" class="px-5 py-6 text-sm text-slate-500">
+                등록된 문의가 없습니다.
+            </div>
+
+            <div th:unless="${#lists.isEmpty(inquiries)}" class="divide-y divide-slate-100">
+                <article th:each="inquiry : ${inquiries}" class="px-5 py-4 inquiry-item" th:attr="data-status=${inquiry.status}">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <div class="mb-1 flex flex-wrap items-center gap-2">
+                                <span th:text="${inquiry.categoryLabel}" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">분실물 문의</span>
+                                <span th:text="${inquiry.status}" class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">접수</span>
+                            </div>
+                            <a th:href="@{/inquiry/{id}(id=${inquiry.id})}" th:text="${inquiry.title}" class="font-semibold text-slate-900 hover:text-indigo-700">문의 제목</a>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                        <span th:text="${inquiry.createdAt}">2026.05.12 09:00</span>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <div class="mt-6 space-y-6">
+            <section th:each="entry : ${inquiryGroups}" th:attr="data-inquiry-type=${entry.key}" class="inquiry-group hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                    <h3 th:text="${entry.key}" class="text-lg font-bold text-slate-900">분실물 문의</h3>
+                    <span class="group-count rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600" th:text="${#lists.size(entry.value)} + '건'">0건</span>
+                </div>
+
+                <div th:if="${#lists.isEmpty(entry.value)}" class="px-5 py-6 text-sm text-slate-500">
+                    등록된 문의가 없습니다.
+                </div>
+
+                <div th:unless="${#lists.isEmpty(entry.value)}" class="divide-y divide-slate-100">
+                    <article th:each="inquiry : ${entry.value}" class="px-5 py-4 inquiry-item" th:attr="data-status=${inquiry.status}">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <a th:href="@{/inquiry/{id}(id=${inquiry.id})}" th:text="${inquiry.title}" class="font-semibold text-slate-900 hover:text-indigo-700">문의 제목</a>
+                            </div>
+                            <span th:text="${inquiry.status}" class="inline-flex w-fit rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">접수</span>
+                        </div>
+                        <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                            <span th:text="${inquiry.createdAt}">2026.05.12 09:00</span>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </div>
+
+        <script>
+            const inquiryTypeFilter = document.getElementById('inquiryTypeFilter');
+            const inquiryStatusFilter = document.getElementById('inquiryStatusFilter');
+            const inquiryGroups = document.querySelectorAll('.inquiry-group');
+            const inquiryEmptyState = document.getElementById('inquiryEmptyState');
+            const allInquiryList = document.getElementById('allInquiryList');
+
+            const applyInquiryFilter = () => {
+                const typeVal = inquiryTypeFilter.value;
+                const statusVal = inquiryStatusFilter ? inquiryStatusFilter.value : '';
+                const showAllType = typeVal === '';
+
+                let totalVisible = 0;
+
+                // 전체 리스트 영역 필터링
+                allInquiryList.classList.toggle('hidden', !showAllType);
+                if (showAllType) {
+                    let visibleCount = 0;
+                    allInquiryList.querySelectorAll('.inquiry-item').forEach(item => {
+                        const matchStatus = statusVal === '' || item.dataset.status === statusVal;
+                        item.style.display = matchStatus ? '' : 'none';
+                        if (matchStatus) visibleCount++;
+                    });
+                    const countEl = allInquiryList.querySelector('.list-count');
+                    if (countEl) countEl.textContent = visibleCount + '건';
+                    totalVisible += visibleCount;
+                }
+
+                // 카테고리별 영역 필터링
+                inquiryGroups.forEach((group) => {
+                    const shouldShowGroup = !showAllType && group.dataset.inquiryType === typeVal;
+                    group.classList.toggle('hidden', !shouldShowGroup);
+                    
+                    if (shouldShowGroup) {
+                        let visibleCount = 0;
+                        group.querySelectorAll('.inquiry-item').forEach(item => {
+                            const matchStatus = statusVal === '' || item.dataset.status === statusVal;
+                            item.style.display = matchStatus ? '' : 'none';
+                            if (matchStatus) visibleCount++;
+                        });
+                        const countEl = group.querySelector('.group-count');
+                        if (countEl) countEl.textContent = visibleCount + '건';
+                        totalVisible += visibleCount;
+                    }
+                });
+
+                // 항목이 하나도 없을 경우 빈 상태 메시지 표시
+                inquiryEmptyState.classList.toggle('hidden', totalVisible > 0);
+            };
+
+            inquiryTypeFilter.addEventListener('change', applyInquiryFilter);
+            if (inquiryStatusFilter) inquiryStatusFilter.addEventListener('change', applyInquiryFilter);
+            applyInquiryFilter();
+        </script>
+    </section>
+</th:block>
+</html>
