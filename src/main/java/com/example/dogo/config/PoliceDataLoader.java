@@ -6,8 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import org.springframework.core.io.ClassPathResource;
+
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
 @Component
@@ -23,8 +24,8 @@ public class PoliceDataLoader implements CommandLineRunner {
 
     BufferedReader br = new BufferedReader(
         new InputStreamReader(
-            new FileInputStream("C:/workspace/dogo/src/main/resources/data/police_station.csv"),
-            "UTF-8"
+            new ClassPathResource("data/police_station.csv").getInputStream(),
+            "EUC-KR"
         )
     );
 
