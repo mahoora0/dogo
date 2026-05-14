@@ -55,9 +55,42 @@ public class PoliceStationAddressResolver {
 		}
 
 		if (bestMatch == null || bestScore < MIN_MATCH_SCORE || tied) {
-			return Optional.empty();
+			return resolveByPoliceOffice(normalizedDepPlace, normalizedOrgName, regionName);
 		}
 		return areaFromAddress(bestMatch.address());
+	}
+
+	private Optional<String> resolveByPoliceOffice(String normalizedDepPlace, String normalizedOrgName, String regionName) {
+		List<String> candidates = new ArrayList<>();
+		addCandidate(candidates, normalizePoliceStationName(normalizedDepPlace));
+		addCandidate(candidates, normalizedOrgName);
+
+		for (String candidate : candidates) {
+			List<String> areas = stations().stream()
+					.filter(station -> policeOfficeMatches(station, candidate))
+					.filter(station -> !StringUtils.hasText(regionKey(regionName)) || regionMatches(station, regionName))
+					.map(station -> areaFromAddress(station.address()))
+					.flatMap(Optional::stream)
+					.distinct()
+					.toList();
+			if (areas.size() == 1) {
+				return Optional.of(areas.get(0));
+			}
+		}
+		return Optional.empty();
+	}
+
+	private void addCandidate(List<String> candidates, String candidate) {
+		if (StringUtils.hasText(candidate) && !candidates.contains(candidate)) {
+			candidates.add(candidate);
+		}
+	}
+
+	private boolean policeOfficeMatches(StationAddress station, String candidate) {
+		return StringUtils.hasText(candidate)
+				&& (candidate.equals(station.normalizedPoliceStationName())
+				|| candidate.contains(station.normalizedPoliceStationName())
+				|| station.normalizedPoliceStationName().contains(candidate));
 	}
 
 	private int matchScore(
