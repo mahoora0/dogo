@@ -50,7 +50,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
 
                 .requestMatchers("/", "/login", "/join", "/api/user/**", "/api/mail/**", "/api/sms/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/areas/**", "/api/police/**", "/api/korail/**", "/faq", "/inquiry/**", "/notice", "/guide", "/error", "/uploads/**")
-                .anyRequest().authenticated()
+                .permitAll().anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")

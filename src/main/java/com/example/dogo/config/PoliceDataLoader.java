@@ -1,7 +1,7 @@
 package com.example.dogo.config;
 
-import com.example.dogo.entity.PoliceStation;
-import com.example.dogo.repository.PoliceStationRepository;
+import com.example.dogo.entity.area.PoliceStation;
+import com.example.dogo.repository.area.PoliceStationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

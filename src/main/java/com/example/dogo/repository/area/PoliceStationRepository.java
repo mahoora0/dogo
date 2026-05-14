@@ -1,6 +1,6 @@
-package com.example.dogo.repository;
+package com.example.dogo.repository.area;
 
-import com.example.dogo.entity.PoliceStation;
+import com.example.dogo.entity.area.PoliceStation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

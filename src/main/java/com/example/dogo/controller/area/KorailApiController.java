@@ -1,6 +1,6 @@
-package com.example.dogo.controller;
+package com.example.dogo.controller.area;
 
-import com.example.dogo.repository.KorailLostFoundCenterRepository;
+import com.example.dogo.repository.area.KorailLostFoundCenterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,4 +1,4 @@
-package com.example.dogo.entity;
+package com.example.dogo.entity.area;
 
 import jakarta.persistence.*;
 import lombok.*;

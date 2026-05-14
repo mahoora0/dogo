@@ -1,7 +1,7 @@
-package com.example.dogo.controller;
+package com.example.dogo.controller.area;
 
-import com.example.dogo.entity.PoliceStation;
-import com.example.dogo.repository.PoliceStationRepository;
+import com.example.dogo.entity.area.PoliceStation;
+import com.example.dogo.repository.area.PoliceStationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;

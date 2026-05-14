@@ -1,7 +1,7 @@
 package com.example.dogo.config;
 
-import com.example.dogo.entity.Area;
-import com.example.dogo.repository.AreaRepository;
+import com.example.dogo.entity.area.Area;
+import com.example.dogo.repository.area.AreaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;

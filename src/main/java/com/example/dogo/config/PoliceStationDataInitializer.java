@@ -1,18 +1,15 @@
 package com.example.dogo.config;
 
-import com.example.dogo.entity.PoliceStation;
-import com.example.dogo.repository.PoliceStationRepository;
+import com.example.dogo.entity.area.PoliceStation;
+import com.example.dogo.repository.area.PoliceStationRepository;
 import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 

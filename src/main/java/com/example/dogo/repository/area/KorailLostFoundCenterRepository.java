@@ -1,6 +1,6 @@
-package com.example.dogo.repository;
+package com.example.dogo.repository.area;
 
-import com.example.dogo.entity.KorailLostFoundCenter;
+import com.example.dogo.entity.area.KorailLostFoundCenter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
