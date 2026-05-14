@@ -7,6 +7,9 @@ import com.example.dogo.repository.InquiryFileRepository;
 import com.example.dogo.repository.InquiryRepository;
 import com.example.dogo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -60,6 +63,44 @@ public class InquiryService {
         return inquiryRepository.findAllByOrderByRegdateDescInquiryIdDesc().stream()
                 .map(this::toSummary)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<InquirySummary> getInquiryPage(String category, String status, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        
+        String mappedCategory = category;
+        if (StringUtils.hasText(category)) {
+            if (category.contains("분실물")) mappedCategory = "분실물";
+            else if (category.contains("습득물")) mappedCategory = "습득물";
+            else if (category.contains("서비스")) mappedCategory = "서비스";
+            else if (category.contains("기타")) mappedCategory = "기타";
+        }
+
+        boolean hasCategory = StringUtils.hasText(mappedCategory) && !"전체".equals(mappedCategory);
+        boolean hasStatus = StringUtils.hasText(status) && !"전체".equals(status);
+
+        Page<Inquiry> inquiryPage;
+
+        if (hasCategory && hasStatus) {
+            if ("답변완료".equals(status)) {
+                inquiryPage = inquiryRepository.findByCategoryAndStatusOrderByRegdateDescInquiryIdDesc(mappedCategory, "ANSWERED", pageable);
+            } else {
+                inquiryPage = inquiryRepository.findByCategoryAndStatusNotOrderByRegdateDescInquiryIdDesc(mappedCategory, "ANSWERED", pageable);
+            }
+        } else if (hasCategory) {
+            inquiryPage = inquiryRepository.findByCategoryOrderByRegdateDescInquiryIdDesc(mappedCategory, pageable);
+        } else if (hasStatus) {
+            if ("답변완료".equals(status)) {
+                inquiryPage = inquiryRepository.findByStatusOrderByRegdateDescInquiryIdDesc("ANSWERED", pageable);
+            } else {
+                inquiryPage = inquiryRepository.findByStatusNotOrderByRegdateDescInquiryIdDesc("ANSWERED", pageable);
+            }
+        } else {
+            inquiryPage = inquiryRepository.findAllByOrderByRegdateDescInquiryIdDesc(pageable);
+        }
+
+        return inquiryPage.map(this::toSummary);
     }
 
     @Transactional(readOnly = true)

@@ -56,7 +56,9 @@
             <li th:classappend="${currentUri == '/inquiry' ? 'active' : ''}">
               <a th:href="@{/inquiry}">문의하기</a>
             </li>
-            <li>공지사항</li>
+            <li th:classappend="${currentUri == '/notice' ? 'active' : ''}">
+              <a th:href="@{/notice}">공지사항</a>
+            </li>
             <li>이용가이드</li>
           </ul>
         </div>

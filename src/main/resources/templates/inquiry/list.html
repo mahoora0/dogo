@@ -1,168 +1,165 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: setContent(~{::content})}">
 <th:block th:fragment="content">
-    <section class="max-w-4xl mx-auto">
+
+    <div class="inquiry-container max-w-5xl mx-auto">
+        
+        <!-- 페이지 상단 -->
         <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <p class="text-sm font-semibold text-indigo-700">고객지원</p>
-                <h2 class="mt-2 text-3xl font-extrabold text-slate-900">문의하기</h2>
-                <p class="mt-2 text-slate-600">DOGO 이용 중 궁금한 점이나 불편한 사항을 남겨주세요.</p>
+                <p class="text-sm font-semibold text-indigo-600 tracking-wide">고객지원</p>
+                <h2 class="mt-1 text-3xl font-extrabold text-slate-900">문의하기</h2>
+                <p class="mt-2 text-slate-500 text-lg">DOGO 이용 중 궁금한 점이나 불편한 사항을 남겨주세요.</p>
             </div>
-            <a th:href="@{/inquiry/new}"
-               class="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
-                등록
-            </a>
+            <div>
+                <a th:href="@{/inquiry/new}"
+                   class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 transition-all duration-200">
+                    문의 등록
+                </a>
+            </div>
         </div>
 
-        <div class="grid gap-4 md:grid-cols-3">
-            <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 class="text-lg font-bold text-slate-900">분실물 문의</h3>
-                <p class="mt-2 text-sm leading-6 text-slate-600">등록한 분실물, 검색 결과, 알림과 관련된 내용을 문의할 수 있습니다.</p>
+        <!-- 상단 안내 카드 -->
+        <div class="grid gap-5 md:grid-cols-3 mb-8">
+            <article class="rounded-xl border border-slate-200/80 bg-white/60 backdrop-blur-sm p-5 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500 opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                <h3 class="text-lg font-bold text-slate-900 pl-2">분실물 문의</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600 pl-2">등록한 분실물, 검색 결과, 알림과 관련된 내용을 문의할 수 있습니다.</p>
             </article>
-            <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 class="text-lg font-bold text-slate-900">습득물 문의</h3>
-                <p class="mt-2 text-sm leading-6 text-slate-600">습득물 등록, 보관 장소, 전달 절차에 대한 도움을 받을 수 있습니다.</p>
+            <article class="rounded-xl border border-slate-200/80 bg-white/60 backdrop-blur-sm p-5 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500 opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                <h3 class="text-lg font-bold text-slate-900 pl-2">습득물 문의</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600 pl-2">습득물 등록, 보관 장소, 전달 절차에 대한 도움을 받을 수 있습니다.</p>
             </article>
-            <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 class="text-lg font-bold text-slate-900">서비스 문의</h3>
-                <p class="mt-2 text-sm leading-6 text-slate-600">계정, 이용 방법, 오류 등 서비스 이용 전반에 대해 문의할 수 있습니다.</p>
+            <article class="rounded-xl border border-slate-200/80 bg-white/60 backdrop-blur-sm p-5 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-amber-500 opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                <h3 class="text-lg font-bold text-slate-900 pl-2">서비스 문의</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600 pl-2">계정, 이용 방법, 오류 등 서비스 이용 전반에 대해 문의할 수 있습니다.</p>
             </article>
         </div>
 
-        <div class="mt-8 flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:flex-row">
-            <div class="flex-1 sm:max-w-xs">
-                <label for="inquiryTypeFilter" class="block text-sm font-semibold text-slate-700">문의 종류</label>
-                <select id="inquiryTypeFilter"
-                        class="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100">
-                    <option value="" selected>전체 문의 종류</option>
-                    <option th:each="entry : ${inquiryGroups}" th:value="${entry.key}" th:text="${entry.key}">분실물 문의</option>
-                </select>
+        <!-- 필터 및 제어 -->
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <div class="text-sm font-medium text-slate-500">
+                총 <span class="font-bold text-indigo-600" th:text="${inquiries.totalElements}">0</span>건의 문의가 있습니다.
             </div>
             
-            <div th:if="${isAdmin}" class="flex-1 sm:max-w-xs">
-                <label for="inquiryStatusFilter" class="block text-sm font-semibold text-slate-700">상태</label>
-                <select id="inquiryStatusFilter"
-                        class="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100">
-                    <option value="" selected>전체 상태</option>
-                    <option value="접수">접수</option>
-                    <option value="답변완료">답변완료</option>
-                </select>
-            </div>
-        </div>
-
-        <div id="inquiryEmptyState" class="mt-6 hidden rounded-lg border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-slate-500">
-            조건에 맞는 문의 내역이 없습니다.
-        </div>
-
-        <div id="allInquiryList" class="mt-6 rounded-lg border border-slate-200 bg-white shadow-sm">
-            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-                <h3 class="text-lg font-bold text-slate-900">전체 문의</h3>
-                <span class="list-count rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600" th:text="${#lists.size(inquiries)} + '건'">0건</span>
-            </div>
-
-            <div th:if="${#lists.isEmpty(inquiries)}" class="px-5 py-6 text-sm text-slate-500">
-                등록된 문의가 없습니다.
-            </div>
-
-            <div th:unless="${#lists.isEmpty(inquiries)}" class="divide-y divide-slate-100">
-                <article th:each="inquiry : ${inquiries}" class="px-5 py-4 inquiry-item" th:attr="data-status=${inquiry.status}">
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                            <div class="mb-1 flex flex-wrap items-center gap-2">
-                                <span th:text="${inquiry.categoryLabel}" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">분실물 문의</span>
-                                <span th:text="${inquiry.status}" class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">접수</span>
-                            </div>
-                            <a th:href="@{/inquiry/{id}(id=${inquiry.id})}" th:text="${inquiry.title}" class="font-semibold text-slate-900 hover:text-indigo-700">문의 제목</a>
-                        </div>
-                    </div>
-                    <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
-                        <span th:text="${inquiry.createdAt}">2026.05.12 09:00</span>
-                    </div>
-                </article>
-            </div>
-        </div>
-
-        <div class="mt-6 space-y-6">
-            <section th:each="entry : ${inquiryGroups}" th:attr="data-inquiry-type=${entry.key}" class="inquiry-group hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-                <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-                    <h3 th:text="${entry.key}" class="text-lg font-bold text-slate-900">분실물 문의</h3>
-                    <span class="group-count rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600" th:text="${#lists.size(entry.value)} + '건'">0건</span>
+            <form th:action="@{/inquiry}" method="get" class="flex flex-wrap items-center gap-3">
+                <div>
+                    <label for="categoryFilter" class="sr-only">문의 종류</label>
+                    <select id="categoryFilter" name="category" onchange="this.form.submit()"
+                            class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all duration-200">
+                        <option value="전체" th:selected="${currentCategory == '전체'}">전체 종류</option>
+                        <option value="분실물" th:selected="${currentCategory == '분실물'}">분실물 문의</option>
+                        <option value="습득물" th:selected="${currentCategory == '습득물'}">습득물 문의</option>
+                        <option value="서비스" th:selected="${currentCategory == '서비스'}">서비스 문의</option>
+                        <option value="기타" th:selected="${currentCategory == '기타'}">기타 문의</option>
+                    </select>
                 </div>
-
-                <div th:if="${#lists.isEmpty(entry.value)}" class="px-5 py-6 text-sm text-slate-500">
-                    등록된 문의가 없습니다.
+                
+                <div>
+                    <label for="statusFilter" class="sr-only">처리 상태</label>
+                    <select id="statusFilter" name="status" onchange="this.form.submit()"
+                            class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all duration-200">
+                        <option value="전체" th:selected="${currentStatus == '전체'}">전체 상태</option>
+                        <option value="접수" th:selected="${currentStatus == '접수'}">접수</option>
+                        <option value="답변완료" th:selected="${currentStatus == '답변완료'}">답변완료</option>
+                    </select>
                 </div>
-
-                <div th:unless="${#lists.isEmpty(entry.value)}" class="divide-y divide-slate-100">
-                    <article th:each="inquiry : ${entry.value}" class="px-5 py-4 inquiry-item" th:attr="data-status=${inquiry.status}">
-                        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                                <a th:href="@{/inquiry/{id}(id=${inquiry.id})}" th:text="${inquiry.title}" class="font-semibold text-slate-900 hover:text-indigo-700">문의 제목</a>
-                            </div>
-                            <span th:text="${inquiry.status}" class="inline-flex w-fit rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">접수</span>
-                        </div>
-                        <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
-                            <span th:text="${inquiry.createdAt}">2026.05.12 09:00</span>
-                        </div>
-                    </article>
-                </div>
-            </section>
+            </form>
         </div>
 
-        <script>
-            const inquiryTypeFilter = document.getElementById('inquiryTypeFilter');
-            const inquiryStatusFilter = document.getElementById('inquiryStatusFilter');
-            const inquiryGroups = document.querySelectorAll('.inquiry-group');
-            const inquiryEmptyState = document.getElementById('inquiryEmptyState');
-            const allInquiryList = document.getElementById('allInquiryList');
+        <!-- 문의 리스트 테이블 -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-sm font-bold text-slate-600">
+                        <th scope="col" class="py-4 px-6 w-32 text-center">문의 종류</th>
+                        <th scope="col" class="py-4 px-6 w-28 text-center">상태</th>
+                        <th scope="col" class="py-4 px-6">제목</th>
+                        <th scope="col" class="py-4 px-6 w-40 text-center">등록일</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+                    <tr th:if="${inquiries.isEmpty()}" class="hover:bg-transparent">
+                        <td colspan="4" class="py-16 text-center text-slate-400 font-medium">
+                            조건에 맞는 문의 내역이 없습니다.
+                        </td>
+                    </tr>
+                    <tr th:each="inquiry : ${inquiries}" class="hover:bg-slate-50/80 transition-colors group">
+                        <!-- 카테고리 -->
+                        <td class="py-4 px-6 text-center font-semibold text-xs text-slate-600">
+                            <span th:text="${inquiry.categoryLabel}">분실물 문의</span>
+                        </td>
+                        <!-- 상태 -->
+                        <td class="py-4 px-6 text-center font-semibold text-xs">
+                            <span th:text="${inquiry.status}"
+                                  th:classappend="${inquiry.status == '답변완료' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : (inquiry.status == '확인중' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200')}"
+                                  class="px-2.5 py-1 rounded-full whitespace-nowrap inline-block shadow-xs">접수</span>
+                        </td>
+                        <!-- 제목 -->
+                        <td class="py-4 px-6 font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
+                            <a th:href="@{/inquiry/{id}(id=${inquiry.id})}" th:text="${inquiry.title}" class="block truncate max-w-xs sm:max-w-md md:max-w-xl font-semibold">
+                                문의 제목입니다.
+                            </a>
+                        </td>
+                        <!-- 등록일 -->
+                        <td class="py-4 px-6 text-center text-slate-400 font-medium text-xs" th:text="${inquiry.createdAt}">
+                            2026.05.14 12:00
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-            const applyInquiryFilter = () => {
-                const typeVal = inquiryTypeFilter.value;
-                const statusVal = inquiryStatusFilter ? inquiryStatusFilter.value : '';
-                const showAllType = typeVal === '';
+        <!-- 페이징 바 -->
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <!-- 페이징 바 -->
+            <div th:if="${inquiries.totalPages > 0}">
+                <nav class="inline-flex rounded-md shadow-sm isolate" aria-label="Pagination">
+                    <!-- 이전 페이지 -->
+                    <a th:href="@{/inquiry(category=${currentCategory}, status=${currentStatus}, page=${inquiries.number - 1})}"
+                       th:classappend="${inquiries.first ? 'pointer-events-none text-slate-300' : 'text-slate-500 hover:bg-slate-50'}"
+                       class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium border border-slate-300 bg-white transition-colors">
+                        <span class="sr-only">이전</span>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
 
-                let totalVisible = 0;
+                    <!-- 페이지 번호 -->
+                    <th:block th:each="p : ${#numbers.sequence(startPage, endPage)}">
+                        <a th:href="@{/inquiry(category=${currentCategory}, status=${currentStatus}, page=${p - 1})}"
+                           th:text="${p}"
+                           th:classappend="${p - 1 == inquiries.number ? 'z-10 bg-indigo-600 text-white font-semibold border-indigo-600' : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50 font-medium'}"
+                           class="relative inline-flex items-center px-4 py-2 text-sm border transition-colors">
+                            1
+                        </a>
+                    </th:block>
 
-                // 전체 리스트 영역 필터링
-                allInquiryList.classList.toggle('hidden', !showAllType);
-                if (showAllType) {
-                    let visibleCount = 0;
-                    allInquiryList.querySelectorAll('.inquiry-item').forEach(item => {
-                        const matchStatus = statusVal === '' || item.dataset.status === statusVal;
-                        item.style.display = matchStatus ? '' : 'none';
-                        if (matchStatus) visibleCount++;
-                    });
-                    const countEl = allInquiryList.querySelector('.list-count');
-                    if (countEl) countEl.textContent = visibleCount + '건';
-                    totalVisible += visibleCount;
-                }
+                    <!-- 다음 페이지 -->
+                    <a th:href="@{/inquiry(category=${currentCategory}, status=${currentStatus}, page=${inquiries.number + 1})}"
+                       th:classappend="${inquiries.last ? 'pointer-events-none text-slate-300' : 'text-slate-500 hover:bg-slate-50'}"
+                       class="relative inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium border border-slate-300 bg-white transition-colors">
+                        <span class="sr-only">다음</span>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </nav>
+            </div>
+        </div>
 
-                // 카테고리별 영역 필터링
-                inquiryGroups.forEach((group) => {
-                    const shouldShowGroup = !showAllType && group.dataset.inquiryType === typeVal;
-                    group.classList.toggle('hidden', !shouldShowGroup);
-                    
-                    if (shouldShowGroup) {
-                        let visibleCount = 0;
-                        group.querySelectorAll('.inquiry-item').forEach(item => {
-                            const matchStatus = statusVal === '' || item.dataset.status === statusVal;
-                            item.style.display = matchStatus ? '' : 'none';
-                            if (matchStatus) visibleCount++;
-                        });
-                        const countEl = group.querySelector('.group-count');
-                        if (countEl) countEl.textContent = visibleCount + '건';
-                        totalVisible += visibleCount;
-                    }
-                });
+    </div>
 
-                // 항목이 하나도 없을 경우 빈 상태 메시지 표시
-                inquiryEmptyState.classList.toggle('hidden', totalVisible > 0);
-            };
+    <!-- BFCache 복귀 시 최신 상태 갱신을 위한 자동 새로고침 스크립트 -->
+    <script>
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
+    </script>
 
-            inquiryTypeFilter.addEventListener('change', applyInquiryFilter);
-            if (inquiryStatusFilter) inquiryStatusFilter.addEventListener('change', applyInquiryFilter);
-            applyInquiryFilter();
-        </script>
-    </section>
 </th:block>
 </html>

@@ -46,7 +46,7 @@
                 </ul>
             </div>
 
-            <!-- 사용자가 볼 때 (isAdmin이 false이거나 없을 때) -->
+            <!-- 사용자가 볼 때 -->
             <div th:unless="${isAdmin}" class="mt-6 border-t border-slate-100 pt-6">
                 <div class="flex items-center justify-between gap-3">
                     <h3 class="text-sm font-semibold text-slate-500">답변</h3>
@@ -60,7 +60,7 @@
                 </p>
             </div>
 
-            <!-- 관리자가 볼 때 (isAdmin이 true일 때) -->
+            <!-- 관리자가 볼 때 -->
             <form th:if="${isAdmin}" th:action="@{/inquiry/{id}/answer(id=${inquiry.id})}" method="post" class="mt-6 border-t border-slate-100 pt-6">
                 <label for="answer" class="block text-sm font-semibold text-slate-700">답변</label>
                 <textarea id="answer" name="answer" required rows="7" th:text="${inquiry.answer}" placeholder="답변 내용을 입력해주세요."

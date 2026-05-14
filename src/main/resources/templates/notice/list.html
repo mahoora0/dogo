@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: setContent(~{::content})}">
+<th:block th:fragment="content">
+
+    <div class="notice-container max-w-5xl mx-auto">
+        
+        <!-- 페이지 상단 타이틀 영역 -->
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <h2 class="text-3xl font-extrabold text-slate-900 mb-2">공지사항</h2>
+                <p class="text-slate-500 text-lg">시스템의 새로운 소식 및 점검 안내를 확인하세요.</p>
+            </div>
+            
+            <!-- 카테고리 필터 드롭다운 -->
+            <div>
+                <form th:action="@{/notice}" method="get" class="flex items-center gap-2">
+                    <label for="categoryFilter" class="sr-only">카테고리 선택</label>
+                    <select id="categoryFilter" name="category" onchange="this.form.submit()"
+                            class="bg-white border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200">
+                        <option value="전체" th:selected="${currentCategory == '전체'}">전체 보기</option>
+                        <option value="시스템공지" th:selected="${currentCategory == '시스템공지'}">시스템공지</option>
+                        <option value="시스템점검" th:selected="${currentCategory == '시스템점검'}">시스템점검</option>
+                        <option value="시스템안내" th:selected="${currentCategory == '시스템안내'}">시스템안내</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+
+        <!-- 공지사항 리스트 테이블 -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-sm font-bold text-slate-600">
+                        <th scope="col" class="py-4 px-6 w-28 text-center">카테고리</th>
+                        <th scope="col" class="py-4 px-6">제목</th>
+                        <th scope="col" class="py-4 px-6 w-32 text-center">작성자</th>
+                        <th scope="col" class="py-4 px-6 w-24 text-center">조회수</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+                    <tr th:if="${notices.isEmpty()}" class="hover:bg-transparent">
+                        <td colspan="4" class="py-12 text-center text-slate-400 font-medium">
+                            등록된 공지사항이 없습니다.
+                        </td>
+                    </tr>
+                    <tr th:each="notice : ${notices}" class="hover:bg-slate-50/80 transition-colors group">
+                        <!-- 카테고리 -->
+                        <td class="py-4 px-6 text-center font-semibold text-xs">
+                            <span th:text="${notice.category}"
+                                  th:classappend="${notice.category == '시스템점검' ? 'bg-amber-50 text-amber-700 border border-amber-200' : (notice.category == '시스템공지' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-slate-50 text-slate-700 border border-slate-200')}"
+                                  class="px-2.5 py-1 rounded-full whitespace-nowrap block">시스템공지</span>
+                        </td>
+                        <!-- 제목 -->
+                        <td class="py-4 px-6 font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
+                            <a th:href="@{/notice/{id}(id=${notice.id})}" th:text="${notice.title}" class="block truncate max-w-md sm:max-w-xl">
+                                공지사항 제목입니다.
+                            </a>
+                        </td>
+                        <!-- 작성자 -->
+                        <td class="py-4 px-6 text-center text-slate-500 font-medium" th:text="${notice.writer}">관리자</td>
+                        <!-- 조회수 -->
+                        <td class="py-4 px-6 text-center text-slate-400 font-semibold" th:text="${notice.viewCount}">12</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 하단 영역: 페이징 바 및 관리자용 등록 버튼 분기 -->
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            
+            <!-- 관리자용 등록버튼 (위치 보정을 위해 빈 div 배치 또는 버튼 배치) -->
+            <div class="w-full sm:w-auto order-2 sm:order-1">
+                <a th:if="${isAdmin}" th:href="@{/notice/new}"
+                   class="w-full sm:w-auto inline-flex justify-center items-center px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-colors shadow-sm">
+                    공지사항 등록
+                </a>
+            </div>
+
+            <!-- 페이징 바 -->
+            <div th:if="${notices.totalPages > 0}" class="order-1 sm:order-2">
+                <nav class="inline-flex rounded-md shadow-sm isolate" aria-label="Pagination">
+                    <!-- 이전 페이지 -->
+                    <a th:href="@{/notice(category=${currentCategory}, page=${notices.number - 1})}"
+                       th:classappend="${notices.first ? 'pointer-events-none text-slate-300' : 'text-slate-500 hover:bg-slate-50'}"
+                       class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium border border-slate-300 bg-white transition-colors">
+                        <span class="sr-only">이전</span>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+
+                    <!-- 페이지 번호 블록 -->
+                    <th:block th:each="p : ${#numbers.sequence(startPage, endPage)}">
+                        <a th:href="@{/notice(category=${currentCategory}, page=${p - 1})}"
+                           th:text="${p}"
+                           th:classappend="${p - 1 == notices.number ? 'z-10 bg-indigo-600 text-white font-semibold border-indigo-600' : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50 font-medium'}"
+                           class="relative inline-flex items-center px-4 py-2 text-sm border transition-colors">
+                            1
+                        </a>
+                    </th:block>
+
+                    <!-- 다음 페이지 -->
+                    <a th:href="@{/notice(category=${currentCategory}, page=${notices.number + 1})}"
+                       th:classappend="${notices.last ? 'pointer-events-none text-slate-300' : 'text-slate-500 hover:bg-slate-50'}"
+                       class="relative inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium border border-slate-300 bg-white transition-colors">
+                        <span class="sr-only">다음</span>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- 레이아웃 균형을 위한 빈 영역 -->
+            <div class="hidden sm:block w-24 order-3"></div>
+
+        </div>
+
+    </div>
+
+    <!-- 브라우저 뒤로가기(BFCache) 시 최신 조회수 반영을 위한 자동 새로고침 스크립트 -->
+    <script>
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
+    </script>
+
+</th:block>
+</html>
