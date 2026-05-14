@@ -18,7 +18,6 @@ import com.example.dogo.service.match.semantic.SemanticMatchResponse;
 import com.example.dogo.service.match.semantic.SemanticMatchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +34,6 @@ public class ItemMatchService {
 	private static final Logger log = LoggerFactory.getLogger(ItemMatchService.class);
 
 	private static final int MAX_CANDIDATES = 10;
-	private static final int MATCH_SCAN_LIMIT = 500;
 	private static final int LOST_DATE_MARGIN_DAYS = 3;
 	private static final int MAX_MATCH_DAYS = 60;
 	private static final BigDecimal MIN_SCORE = new BigDecimal("45.00");
@@ -83,8 +81,7 @@ public class ItemMatchService {
 		List<FoundItem> candidates = foundItemRepository.findMatchCandidatesForLost(
 				lostItem.getCategoryMain(),
 				lostItem.getLostAt().minusDays(LOST_DATE_MARGIN_DAYS),
-				lostItem.getLostAt().plusDays(MAX_MATCH_DAYS),
-				PageRequest.of(0, MATCH_SCAN_LIMIT)
+				lostItem.getLostAt().plusDays(MAX_MATCH_DAYS)
 		);
 
 		List<RuleCandidate> ruleEligible = new ArrayList<>();
@@ -136,8 +133,7 @@ public class ItemMatchService {
 		List<LostItem> candidates = lostItemRepository.findMatchCandidatesForFound(
 				foundItem.getCategoryMain(),
 				foundItem.getFoundAt().minusDays(MAX_MATCH_DAYS),
-				foundItem.getFoundAt().plusDays(LOST_DATE_MARGIN_DAYS),
-				PageRequest.of(0, MATCH_SCAN_LIMIT)
+				foundItem.getFoundAt().plusDays(LOST_DATE_MARGIN_DAYS)
 		);
 
 		List<RuleCandidate> ruleEligible = new ArrayList<>();

@@ -18,7 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -81,7 +80,7 @@ class ItemMatchServiceTest {
 		FoundItem weak = foundItem(11L, "목걸이", "지갑", lostAt.plusHours(1), "부산", "서면로", "검정");
 
 		when(foundItemRepository.findMatchCandidatesForLost(
-				eq("지갑"), eq(lostAt.minusDays(3)), eq(lostAt.plusDays(60)), any(Pageable.class)
+				eq("지갑"), eq(lostAt.minusDays(3)), eq(lostAt.plusDays(60))
 		)).thenReturn(List.of(strong, weak));
 		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
 		when(semanticMatchClient.score(any())).thenReturn(new SemanticMatchResponse(null, List.of()));
@@ -106,7 +105,7 @@ class ItemMatchServiceTest {
 		LostItem lost = lostItem(2L, "검정색루에브르지갑", "지갑", foundAt.minusHours(2), "서울", "강남역");
 
 		when(lostItemRepository.findMatchCandidatesForFound(
-				eq("지갑"), eq(foundAt.minusDays(60)), eq(foundAt.plusDays(3)), any(Pageable.class)
+				eq("지갑"), eq(foundAt.minusDays(60)), eq(foundAt.plusDays(3))
 		)).thenReturn(List.of(lost));
 		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(2L, 20L)).thenReturn(false);
 		when(semanticMatchClient.score(any())).thenReturn(new SemanticMatchResponse(null, List.of()));
@@ -132,7 +131,7 @@ class ItemMatchServiceTest {
 		LostItem lost = lostItem(1L, "검정색루에브르지갑", "지갑", lostAt, "서울", "강남역");
 		FoundItem found = foundItem(10L, "블랙 여성 반지갑", "지갑", lostAt.plusHours(2), "서울", "강남역", "블랙");
 
-		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any(), any()))
+		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
 				.thenReturn(List.of(found));
 		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
 
@@ -171,7 +170,7 @@ class ItemMatchServiceTest {
 		LostItem lost = lostItem(1L, "검정색루에브르지갑", "지갑", lostAt, "서울", "강남역");
 		FoundItem found = foundItem(10L, "블랙 여성 반지갑", "지갑", lostAt.plusHours(2), "서울", "강남역", "블랙");
 
-		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any(), any()))
+		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
 				.thenReturn(List.of(found));
 		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
 		when(semanticMatchClient.score(any())).thenThrow(new RuntimeException("Python 서버 연결 실패"));
@@ -199,7 +198,7 @@ class ItemMatchServiceTest {
 		FoundItem found1 = foundItem(10L, "블랙 여성 반지갑", "지갑", lostAt.plusHours(1), "서울", "강남역", "블랙");
 		FoundItem found2 = foundItem(11L, "검정 지갑", "지갑", lostAt.plusHours(2), "서울", "강남역", "검정");
 
-		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any(), any()))
+		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
 				.thenReturn(List.of(found1, found2));
 		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(eq(1L), any())).thenReturn(false);
 
