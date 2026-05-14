@@ -41,81 +41,151 @@ public class KorailDataInitializer implements CommandLineRunner {
 
     private void initializeStations() {
         String fileName = "data/KORAIL_Station_Locations.csv";
-        try {
-            java.io.InputStream is = getInputStream(fileName);
-            if (is == null) return;
-            
-            try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(is, Charset.forName("MS949")))
-                    .withCSVParser(new CSVParserBuilder().withSeparator(',').build())
-                    .build()) {
+        String[] encodings = {"MS949", "UTF-8", "EUC-KR"};
+        
+        for (String encoding : encodings) {
+            try {
+                java.io.InputStream is = getInputStream(fileName);
+                if (is == null) continue;
                 
-                reader.readNext(); // Skip header
-                int count = 0;
-                String[] line;
-                while ((line = reader.readNext()) != null) {
-                    if (line.length < 4) continue;
-                    try {
+                try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(is, Charset.forName(encoding)))
+                        .withCSVParser(new CSVParserBuilder().withSeparator(',').build())
+                        .build()) {
+                    
+                    String[] header = reader.readNext();
+                    if (header == null) continue;
+                    
+                    String headerStr = String.join("", header);
+                    // Improved check: If UTF-8, it shouldn't contain garbage characters common when reading MS949 as UTF-8
+                    if (encoding.equals("UTF-8") && (headerStr.contains("\uFFFD") || headerStr.matches(".*[-].*"))) {
+                        continue;
+                    }
+
+                    int count = 0;
+                    String[] line;
+                    while ((line = reader.readNext()) != null) {
+                        if (line.length < 4) continue;
                         String lName = clean(line[0]);
                         String sName = clean(line[1]);
                         if (sName.endsWith("역")) sName = sName.substring(0, sName.length() - 1);
-                        
                         double lat = parseD(line[2]);
                         double lng = parseD(line[3]);
                         Integer exits = (line.length > 4) ? parseI(line[4]) : null;
 
-                        jdbcTemplate.update(
-                            "INSERT INTO korail_station_location (line_name, station_name, latitude, longitude, exit_count) VALUES (?, ?, ?, ?, ?)",
-                            lName, sName, lat, lng, exits
-                        );
-                        count++;
-                    } catch (Exception e) {
-                        if (count < 1) log.error("Station Insert Error: {}", e.getMessage());
+                        if (lat != 0 && lng != 0) {
+                            jdbcTemplate.update(
+                                "INSERT INTO korail_station_location (line_name, station_name, latitude, longitude, exit_count) VALUES (?, ?, ?, ?, ?)",
+                                lName, sName, lat, lng, exits
+                            );
+                            count++;
+                        }
+                    }
+                    if (count > 0) {
+                        log.info("Successfully inserted {} stations via JDBC using {}", count, encoding);
+                        return;
                     }
                 }
-                log.info("Successfully inserted {} stations via JDBC", count);
+            } catch (Exception e) {
+                log.warn("Failed with encoding {}: {}", encoding, e.getMessage());
             }
-        } catch (Exception e) {
-            log.error("Station init failed", e);
         }
     }
 
     private void initializeCenters() {
         String fileName = "data/KORAIL_Lost_and_Found_Centers_.csv";
-        try {
-            java.io.InputStream is = getInputStream(fileName);
-            if (is == null) return;
+        String[] encodings = {"MS949", "UTF-8", "EUC-KR"};
+        
+        for (String encoding : encodings) {
+            try {
+                java.io.InputStream is = getInputStream(fileName);
+                if (is == null) continue;
 
-            try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(is, Charset.forName("MS949")))
-                    .withCSVParser(new CSVParserBuilder().withSeparator(',').build())
-                    .build()) {
-                
-                reader.readNext(); // Skip header
-                int count = 0;
-                String[] line;
-                while ((line = reader.readNext()) != null) {
-                    if (line.length < 3) continue;
-                    try {
+                try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(is, Charset.forName(encoding)))
+                        .withCSVParser(new CSVParserBuilder().withSeparator(',').build())
+                        .build()) {
+                    
+                    String[] header = reader.readNext();
+                    if (header == null) continue;
+                    
+                    String headerStr = String.join("", header);
+                    if (encoding.equals("UTF-8") && (headerStr.contains("\uFFFD") || headerStr.matches(".*[-].*"))) {
+                        continue;
+                    }
+
+                    int count = 0;
+                    String[] line;
+                    while ((line = reader.readNext()) != null) {
+                        if (line.length < 3) continue;
+                        String opName = clean(line[0]);
+                        String lName = clean(line[1]);
                         String sName = clean(line[2]);
                         if (sName.endsWith("역")) sName = sName.substring(0, sName.length() - 1);
+                        String details = line.length > 6 ? clean(line[6]) : null;
+                        String subRegion = extractSubRegion(details, sName);
 
                         jdbcTemplate.update(
-                            "INSERT INTO korail_lost_found_center (operator_name, line_name, station_name, location_details, operating_hours, tel_no) VALUES (?, ?, ?, ?, ?, ?)",
-                            clean(line[0]), clean(line[1]), sName, 
-                            line.length > 6 ? clean(line[6]) : null,
+                            "INSERT INTO korail_lost_found_center (operator_name, line_name, station_name, sub_region, location_details, operating_hours, tel_no) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                            opName, lName, sName, subRegion, details,
                             line.length > 7 ? clean(line[7]) : null,
                             line.length > 8 ? clean(line[8]) : null
                         );
                         count++;
-                    } catch (Exception e) {
-                        if (count < 1) log.error("Center Insert Error: {}", e.getMessage());
+                    }
+                    if (count > 0) {
+                        log.info("Successfully inserted {} centers via JDBC using {}", count, encoding);
+                        return;
                     }
                 }
-                log.info("Successfully inserted {} centers via JDBC", count);
+            } catch (Exception e) {
+                log.warn("Failed with encoding {}: {}", encoding, e.getMessage());
             }
-        } catch (Exception e) {
-            log.error("Center init failed", e);
         }
     }
+
+
+    private String extractSubRegion(String details, String stationName) {
+        // 1. Priority: Hardcoded mappings for known major stations to ensure consistency
+        // Format: "Province District" to ensure both filters work
+        if (stationName.contains("부산")) return "부산 동구";
+        if (stationName.contains("부전")) return "부산 진구";
+        if (stationName.contains("서울")) return "서울 중구";
+        if (stationName.contains("용산")) return "서울 용산구";
+        if (stationName.contains("영등포")) return "서울 영등포구";
+        if (stationName.contains("청량리")) return "서울 동대문구";
+        if (stationName.contains("수원")) return "경기 수원시";
+        if (stationName.contains("안양")) return "경기 안양시";
+        if (stationName.contains("부천")) return "경기 부천시";
+        if (stationName.contains("역곡")) return "경기 부천시";
+        if (stationName.contains("광명")) return "경기 광명시";
+        if (stationName.contains("대전")) return "대전 동구";
+        if (stationName.contains("천안")) return "충남 천안시";
+        if (stationName.contains("광주송정")) return "광주 광산구";
+        if (stationName.contains("동대구")) return "대구 동구";
+        if (stationName.contains("울산")) return "울산 남구";
+        if (stationName.contains("포항")) return "경북 포항시";
+        if (stationName.contains("창원")) return "경남 창원시";
+        if (stationName.contains("마산")) return "경남 마산회원구";
+        if (stationName.contains("강릉")) return "강원 강릉시";
+        if (stationName.contains("춘천")) return "강원 춘천시";
+        if (stationName.contains("원주")) return "강원 원주시";
+
+        if (details == null || details.isBlank()) return null;
+
+        // 2. Fallback: Parse from location details address
+        String[] parts = details.split("\\s+");
+        String result = null;
+        
+        for (String part : parts) {
+            // Priority: District (구) > City (시) > County (군)
+            if (part.endsWith("구")) return part;
+            if (part.endsWith("시") && !part.equals(parts[0])) result = part; 
+            if (part.endsWith("군") && result == null) result = part;
+        }
+        return result;
+    }
+
+
+
 
     private java.io.InputStream getInputStream(String fileName) throws java.io.IOException {
         java.io.File file = new java.io.File("src/main/resources/" + fileName);

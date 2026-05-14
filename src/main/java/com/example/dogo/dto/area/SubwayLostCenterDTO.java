@@ -1,0 +1,21 @@
+package com.example.dogo.dto.area;
+
+import lombok.*;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SubwayLostCenterDTO {
+
+  private Long id;
+  private String operatorName;
+  private String lineName;
+  private String stationName;
+  private Double latitude;
+  private Double longitude;
+  private String detailLocation;
+  private String availableTime;
+  private String telNo;
+}

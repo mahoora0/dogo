@@ -33,21 +33,21 @@ public class PoliceStation {
   @Column(name = "no_value")
   private Integer noValue;
 
-  @Column(length = 10)
+  @Column(length = 100)
   private String lclsf;
 
-  @Column(name = "cmptnc_rgn_nm", length = 40)
+  @Column(name = "cmptnc_rgn_nm", length = 255)
   private String cmptncRgnNm;
 
-  @Column(name = "polstn_nm", length = 20)
+  @Column(name = "polstn_nm", length = 255)
   private String polstnNm;
 
-  @Column(length = 20)
+  @Column(length = 100)
   private String se;
 
-  @Column(length = 20)
+  @Column(length = 100)
   private String telno;
 
-  @Column(length = 200)
+  @Column(length = 1000)
   private String addr;
 }

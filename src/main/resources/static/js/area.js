@@ -9,8 +9,8 @@ function drawMap() {
   }
 
   const mapOption = {
-    center: new kakao.maps.LatLng(35.1795, 129.0756),
-    level: 4
+    center: new kakao.maps.LatLng(36.5, 127.5),
+    level: 13
   };
 
   map = new kakao.maps.Map(mapContainer, mapOption);
@@ -18,10 +18,8 @@ function drawMap() {
 
 function loadMap() {
   if (typeof kakao === 'undefined' || !kakao.maps) {
-    console.error('Kakao Maps SDK is not loaded.');
     return;
   }
-
   kakao.maps.load(drawMap);
 }
 
@@ -29,193 +27,321 @@ function loadSubRegions() {
   const sel = document.getElementById('areaSelect');
   const subSel = document.getElementById('subAreaSelect');
   const neighborSel = document.getElementById('neighborhoodSelect');
-  
   if (!sel || !subSel) return;
-  
+
   const region = sel.value;
+  
+  // Clear and disable immediately to provide visual feedback
+  subSel.innerHTML = '<option value="">시/군/구</option>';
+  subSel.disabled = true;
+  neighborSel.innerHTML = '<option value="">읍/면/동</option>';
+  neighborSel.disabled = true;
+
   if (!region) {
-    subSel.disabled = true;
-    neighborSel.disabled = true;
-    subSel.innerHTML = '<option value="">시/군/구</option>';
-    neighborSel.innerHTML = '<option value="">읍/면/동</option>';
+    updateMap();
     return;
   }
-  
+
   fetch(`/api/police/sub-regions?region=${encodeURIComponent(region)}`)
-    .then(res => {
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
-    })
-    .then(data => {
-      subSel.innerHTML = '<option value="">시/군/구</option>';
-      data.forEach(sub => {
-        subSel.innerHTML += `<option value="${sub}">${sub}</option>`;
+      .then(res => {
+        if (!res.ok) throw new Error('API request failed');
+        return res.json();
+      })
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data.value || []);
+        subSel.innerHTML = '<option value="">시/군/구</option>';
+        if (list.length > 0) {
+          list.forEach(sub => {
+            subSel.innerHTML += `<option value="${sub}">${sub}</option>`;
+          });
+          subSel.disabled = false;
+        } else {
+          subSel.disabled = true;
+        }
+        updateMap();
+      })
+      .catch(err => {
+        console.error('Error loading sub-regions:', err);
+        subSel.disabled = true;
+        updateMap();
       });
-      subSel.disabled = false;
-      neighborSel.disabled = true;
-      neighborSel.innerHTML = '<option value="">읍/면/동</option>';
-      updateMap();
-    })
-    .catch(err => {
-      console.error('Failed to load sub-regions:', err);
-      subSel.disabled = false; // Enable anyway to prevent stuck UI
-    });
 }
 
 function loadNeighborhoods() {
   const sel = document.getElementById('areaSelect');
   const subSel = document.getElementById('subAreaSelect');
   const neighborSel = document.getElementById('neighborhoodSelect');
-  
+  if (!subSel || !neighborSel) return;
+
   const region = sel.value;
   const subRegion = subSel.value;
   
+  // Clear and disable immediately
+  neighborSel.innerHTML = '<option value="">읍/면/동</option>';
+  neighborSel.disabled = true;
+
   if (!subRegion) {
-    neighborSel.disabled = true;
-    neighborSel.innerHTML = '<option value="">읍/면/동</option>';
     updateMap();
     return;
   }
-  
+
   fetch(`/api/police/neighborhoods?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion)}`)
-    .then(res => {
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
-    })
-    .then(data => {
-      neighborSel.innerHTML = '<option value="">읍/면/동</option>';
-      if (data.length > 0) {
-        data.forEach(n => {
-          neighborSel.innerHTML += `<option value="${n}">${n}</option>`;
-        });
-        neighborSel.disabled = false;
-      } else {
+      .then(res => {
+        if (!res.ok) throw new Error('API request failed');
+        return res.json();
+      })
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data.value || []);
+        neighborSel.innerHTML = '<option value="">읍/면/동</option>';
+        if (list.length > 0) {
+          list.forEach(n => {
+            neighborSel.innerHTML += `<option value="${n}">${n}</option>`;
+          });
+          neighborSel.disabled = false;
+        } else {
+          neighborSel.disabled = true;
+        }
+        updateMap();
+      })
+      .catch(err => {
+        console.error('Error loading neighborhoods:', err);
         neighborSel.disabled = true;
-      }
-      updateMap();
-    })
-    .catch(err => {
-      console.error('Failed to load neighborhoods:', err);
-      neighborSel.disabled = false;
-    });
+        updateMap();
+      });
 }
 
-function updateMap() {
+const fetchJson = (url) => fetch(url).then(res => {
+  if (!res.ok) return [];
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) return [];
+  return res.json();
+}).catch(() => []);
+
+function getSelectedMapLevel(subRegion, neighborhood) {
+  if (neighborhood) return 4;
+  if (subRegion) return 6;
+  return 8;
+}
+
+function focusSelectedArea(region, subRegion, neighborhood, searchId) {
+  if (!region) return;
+
+  fetch(`/api/areas/coords?name=${encodeURIComponent(region)}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(coord => {
+        if (searchId !== currentSearchId || !coord) return;
+        map.setCenter(new kakao.maps.LatLng(coord.latitude, coord.longitude));
+        map.setLevel(subRegion || neighborhood ? getSelectedMapLevel(subRegion, neighborhood) : (coord.defaultLevel || 8));
+      })
+      .catch(() => {});
+}
+
+function pointFromItem(item) {
+  const lat = parseFloat(item.latitude);
+  const lng = parseFloat(item.longitude);
+  if (!lat || !lng || lat === 0 || lng === 0) return null;
+  return { lat, lng };
+}
+
+function selectedPoliceBounds(policeData, subRegion, neighborhood) {
+  if (!subRegion && !neighborhood) return null;
+  if (!Array.isArray(policeData) || policeData.length === 0) return null;
+
+  const points = policeData.map(pointFromItem).filter(Boolean);
+  if (points.length === 0) return null;
+
+  const lats = points.map(p => p.lat);
+  const lngs = points.map(p => p.lng);
+  const padding = neighborhood ? 0.015 : 0.05;
+
+  return {
+    minLat: Math.min(...lats) - padding,
+    maxLat: Math.max(...lats) + padding,
+    minLng: Math.min(...lngs) - padding,
+    maxLng: Math.max(...lngs) + padding
+  };
+}
+
+function isInsideBounds(item, bounds) {
+  const point = pointFromItem(item);
+  if (!point || !bounds) return false;
+  return point.lat >= bounds.minLat
+      && point.lat <= bounds.maxLat
+      && point.lng >= bounds.minLng
+      && point.lng <= bounds.maxLng;
+}
+
+function textMatchesSelection(item, subRegion, neighborhood) {
+  const target = [
+    item.subRegion,
+    item.locationDetails,
+    item.detailLocation,
+    item.stationName
+  ].filter(Boolean).join(' ');
+
+  if (neighborhood && target.includes(neighborhood)) return true;
+  if (subRegion && target.includes(subRegion)) return true;
+
+  const shortSubRegion = subRegion && subRegion.length >= 2 ? subRegion.substring(0, 2) : subRegion;
+  const shortNeighborhood = neighborhood && neighborhood.length >= 2 ? neighborhood.substring(0, 2) : neighborhood;
+
+  return (!!shortNeighborhood && target.includes(shortNeighborhood))
+      || (!!shortSubRegion && target.includes(shortSubRegion));
+}
+
+function filterRailBySelection(data, policeData, subRegion, neighborhood) {
+  if (!subRegion && !neighborhood) return data;
+  if (!Array.isArray(data)) return [];
+
+  const bounds = selectedPoliceBounds(policeData, subRegion, neighborhood);
+  return data.filter(item => textMatchesSelection(item, subRegion, neighborhood) || isInsideBounds(item, bounds));
+}
+
+let currentSearchId = 0;
+
+function updateMap(keyword = '') {
   const sel = document.getElementById('areaSelect');
   const subSel = document.getElementById('subAreaSelect');
   const neighborSel = document.getElementById('neighborhoodSelect');
-  const keywordInput = document.getElementById('centerSearch');
+  const listContainer = document.getElementById('centerList');
 
   if (!map || !sel) return;
 
   const region = sel.value;
   const subRegion = subSel.value;
   const neighborhood = neighborSel.value;
-  const keyword = keywordInput ? keywordInput.value.trim() : '';
+  const searchId = ++currentSearchId;
 
-  // 기존 마커 및 리스트 초기화
-  if (markers) {
-    markers.forEach(marker => marker.setMap(null));
-  }
+  markers.forEach(m => m.setMap(null));
   markers = [];
-  if (currentInfowindow) {
-    currentInfowindow.close();
-    currentInfowindow = null;
-  }
-  const listContainer = document.getElementById('centerList');
-  if (listContainer) {
-    listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">검색 중...</div>';
-  }
+  if (currentInfowindow) currentInfowindow.close();
 
-  if (!region) return;
-
-  if (!subRegion) {
-      if (listContainer) {
-          listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">시/군/구를 선택하시면 목록이 표시됩니다.</div>';
-      }
-      // 리스트는 보여주지 않더라도 지도는 해당 지역의 중심으로 이동시킴
-      fetch(`/api/areas/coords?name=${encodeURIComponent(region)}`)
-          .then(res => res.json())
-          .then(coord => {
-              if (coord) {
-                  map.setCenter(new kakao.maps.LatLng(coord.latitude, coord.longitude));
-                  map.setLevel(coord.defaultLevel || 8);
-              }
-          });
-      return;
-  }
-  const policeUrl = `/api/police?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion)}&neighborhood=${encodeURIComponent(neighborhood)}`;
-  const korailUrl = `/api/korail/lost-found?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion)}&neighborhood=${encodeURIComponent(neighborhood)}`;
-
-  Promise.all([
-    fetch(policeUrl).then(res => res.json()),
-    fetch(korailUrl).then(res => res.json())
-  ])
-  .then(([policeData, korailData]) => {
-    // 코레일 데이터 필터링 (선택된 지역에 해당하는 것만 표시하고 싶을 수 있으나, 일단 모두 표시하거나 역명으로 필터링 필요)
-    // 여기서는 일단 모든 코레일 센터를 데이터셋에 포함시킵니다.
-    const allData = [
-      ...policeData.map(d => ({ ...d, type: 'POLICE', name: `${d.polstnNm} ${d.se}`, address: d.addr, tel: d.telno })),
-      ...korailData.map(d => ({ ...d, type: 'KORAIL', name: `${d.stationName}역 유실물센터 (${d.lineName})`, address: d.locationDetails, tel: d.telNo }))
-    ];
-
-    renderCenterList(allData, keyword);
-    
-    if (allData.length > 0) {
-        const bounds = new kakao.maps.LatLngBounds();
-        allData.forEach(item => {
-            const marker = new kakao.maps.Marker({
-                position: new kakao.maps.LatLng(item.latitude, item.longitude),
-                map: map
-            });
-            markers.push(marker);
-            bounds.extend(marker.getPosition());
-            
-            // 인포윈도우 추가
-            const infowindow = new kakao.maps.InfoWindow({
-                content: `<div style="padding:10px; min-width:200px;">
-                            <div style="font-weight:bold; margin-bottom:5px;">${item.name}</div>
-                            <div style="font-size:12px; color:#666;">${item.address || ''}</div>
-                            <div style="font-size:12px; color:#007bff;">${item.tel || ''}</div>
-                          </div>`
-            });
-            
-            kakao.maps.event.addListener(marker, 'click', () => {
-                if (currentInfowindow) {
-                    currentInfowindow.close();
-                }
-                infowindow.open(map, marker);
-                currentInfowindow = infowindow;
-            });
-        });
-        map.setBounds(bounds);
-    } else {
-        // 결과가 없으면 해당 광역 지역의 중심좌표로 이동
-        fetch(`/api/areas/coords?name=${encodeURIComponent(region)}`)
-            .then(res => res.json())
-            .then(coord => {
-                if (coord) {
-                    map.setCenter(new kakao.maps.LatLng(coord.latitude, coord.longitude));
-                    map.setLevel(coord.defaultLevel || 8);
-                }
-            });
-    }
-  })
-  .catch(err => {
-    console.error('Search failed:', err);
+  if (!region) {
     if (listContainer) {
-      listContainer.innerHTML = '<div class="p-4 text-center text-red-500">데이터를 불러오지 못했습니다.</div>';
+      listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">지역을 선택하시면 상세 목록이 표시됩니다.</div>';
     }
-  });
+    return;
+  }
+
+  if (listContainer) {
+    listContainer.innerHTML = '<div class="p-4 text-center text-gray-500"><div class="spinner-border spinner-border-sm me-2"></div>검색 중...</div>';
+  }
+
+  const policeUrl = `/api/police?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion || '')}&neighborhood=${encodeURIComponent(neighborhood || '')}`;
+  const korailUrl = `/api/korail/lost-found?region=${encodeURIComponent(region)}`;
+  const subwayUrl = `/api/subway/list?region=${encodeURIComponent(region)}`;
+
+
+  Promise.all([fetchJson(policeUrl), fetchJson(korailUrl), fetchJson(subwayUrl)])
+      .then(([pDataRaw, kDataRaw, sDataRaw]) => {
+        if (searchId !== currentSearchId) return;
+
+        const pData = Array.isArray(pDataRaw) ? pDataRaw : (pDataRaw.value || []);
+        const kData = filterRailBySelection(
+            Array.isArray(kDataRaw) ? kDataRaw : (kDataRaw.value || []),
+            pData,
+            subRegion,
+            neighborhood
+        );
+        const sData = filterRailBySelection(
+            Array.isArray(sDataRaw) ? sDataRaw : (sDataRaw.value || []),
+            pData,
+            subRegion,
+            neighborhood
+        );
+
+        const allData = [
+          ...pData.map(d => ({ ...d, type: 'POLICE', name: `${d.polstnNm} ${d.se}`, address: d.addr, tel: d.telno })),
+          ...kData.map(d => ({ ...d, type: 'KORAIL', name: `${d.stationName}역 유실물센터 (${d.lineName})`, address: d.locationDetails, tel: d.telNo })),
+          ...sData.map(d => ({ ...d, type: 'SUBWAY', name: `${d.stationName}역 유실물센터`, address: d.detailLocation, tel: d.telNo }))
+        ];
+
+        renderCenterList(allData, keyword);
+        renderMarkersOnMap(pData, kData, sData, { region, subRegion, neighborhood, searchId });
+      })
+      .catch(err => {
+        console.error('Update map error:', err);
+        if (searchId === currentSearchId && listContainer) {
+          listContainer.innerHTML = '<div class="p-4 text-center text-red-500">데이터를 불러오는 중 오류가 발생했습니다.</div>';
+        }
+      });
+}
+
+function renderMarkersOnMap(policeData, korailData, subwayData, selection) {
+  const bounds = new kakao.maps.LatLngBounds();
+  let hasMarkers = false;
+  let markerCount = 0;
+  let firstPosition = null;
+
+  const addMarkers = (data, type) => {
+    if (!Array.isArray(data)) return;
+    data.forEach(item => {
+      // Use latitude/longitude if they exist and are not 0
+      const lat = parseFloat(item.latitude);
+      const lng = parseFloat(item.longitude);
+      
+      if (!lat || !lng || lat === 0 || lng === 0) return;
+      
+      const pos = new kakao.maps.LatLng(lat, lng);
+      
+      let markerImage = null;
+      if (type === 'KORAIL') {
+          markerImage = new kakao.maps.MarkerImage('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png', new kakao.maps.Size(24, 35));
+      } else if (type === 'SUBWAY') {
+          markerImage = new kakao.maps.MarkerImage('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png', new kakao.maps.Size(24, 35));
+      }
+
+      const marker = new kakao.maps.Marker({
+        position: pos,
+        map: map,
+        image: markerImage
+      });
+
+      const name = type === 'POLICE' ? `${item.polstnNm || ''} ${item.se || ''}` : `${item.stationName || ''}역 유실물센터`;
+      const addr = type === 'POLICE' ? (item.addr || item.address) : (type === 'KORAIL' ? item.locationDetails : item.detailLocation);
+      const tel = item.telNo || item.telno || item.tel;
+
+      const infowindow = new kakao.maps.InfoWindow({
+        content: `<div style="padding:10px; min-width:200px;"><div style="font-weight:bold;">${name}</div><div style="font-size:12px; color:#666;">${addr || ''}</div><div style="font-size:12px; color:#007bff;">${tel || ''}</div></div>`
+      });
+
+      kakao.maps.event.addListener(marker, 'click', () => {
+        if (currentInfowindow) currentInfowindow.close();
+        infowindow.open(map, marker);
+        currentInfowindow = infowindow;
+      });
+
+      markers.push(marker);
+      bounds.extend(pos);
+      firstPosition = firstPosition || pos;
+      markerCount++;
+      hasMarkers = true;
+    });
+  };
+
+  addMarkers(policeData, 'POLICE');
+  addMarkers(korailData, 'KORAIL');
+  addMarkers(subwayData, 'SUBWAY');
+
+  if (!hasMarkers) {
+    focusSelectedArea(selection.region, selection.subRegion, selection.neighborhood, selection.searchId);
+    return;
+  }
+
+  if (markerCount === 1) {
+    map.setCenter(firstPosition);
+    map.setLevel(getSelectedMapLevel(selection.subRegion, selection.neighborhood));
+  } else {
+    map.setBounds(bounds, 48, 48, 48, 48);
+  }
 }
 
 function renderCenterList(data, keyword) {
   const centerList = document.getElementById('centerList');
+  if (!centerList) return;
   centerList.innerHTML = '';
 
-  const filtered = data.filter(item =>
-      keyword === '' || item.name.includes(keyword)
-  );
+  const filtered = data.filter(item => keyword === '' || item.name.includes(keyword));
 
   if (filtered.length === 0) {
     centerList.innerHTML = '<p class="empty-msg">검색 결과가 없습니다.</p>';
@@ -223,9 +349,9 @@ function renderCenterList(data, keyword) {
   }
 
   filtered.forEach(item => {
-    const typeLabel = item.type === 'POLICE' ? '경찰' : '코레일';
-    const typeClass = item.type === 'POLICE' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
-    
+    const typeClass = item.type === 'POLICE' ? 'bg-blue-100 text-blue-800' : item.type === 'KORAIL' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800';
+    const typeLabel = item.type === 'POLICE' ? '경찰' : (item.type === 'KORAIL' ? '코레일' : '지하철');
+
     centerList.innerHTML += `
       <div class="center-card p-3 border-bottom hover-bg-light cursor-pointer">
         <div class="d-flex justify-content-between align-items-start mb-1">
@@ -236,38 +362,6 @@ function renderCenterList(data, keyword) {
         <p class="mb-0 text-primary small">${item.tel || '전화번호 없음'}</p>
       </div>
     `;
-  });
-}
-
-function renderMarkers(data, keyword) {
-  const filtered = data.filter(station =>
-      keyword === '' || station.polstnNm.includes(keyword)
-  );
-
-  filtered.forEach(station => {
-    const marker = new kakao.maps.Marker({
-      map: map,
-      position: new kakao.maps.LatLng(station.latitude, station.longitude)
-    });
-
-    const infowindow = new kakao.maps.InfoWindow({
-      content: `
-        <div style="padding:8px; font-size:13px;">
-          <b>${station.polstnNm} ${station.se}</b><br>
-          ${station.telno}
-        </div>
-      `
-    });
-
-    kakao.maps.event.addListener(marker, 'click', function () {
-      if (currentInfowindow) {
-        currentInfowindow.close();
-      }
-      infowindow.open(map, marker);
-      currentInfowindow = infowindow;
-    });
-
-    markers.push(marker);
   });
 }
 
