@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,19 +20,25 @@ public class PoliceStationAddressResolver {
 
 	private static final Logger log = LoggerFactory.getLogger(PoliceStationAddressResolver.class);
 	private static final String RESOURCE_PATH = "data/police-station-addresses-20251231.csv";
+	private static final String CONTACT_ALIAS_RESOURCE_PATH = "data/police-station-contact-aliases.csv";
 	private static final Charset CSV_CHARSET = Charset.forName("MS949");
 	private static final int MIN_MATCH_SCORE = 125;
 
 	private volatile List<StationAddress> cachedStations;
+	private volatile List<ContactAlias> cachedContactAliases;
 
 	public Optional<String> resolveFoundArea(PoliceFoundItemDetailResponse detail, String regionName) {
 		if (detail == null) {
 			return Optional.empty();
 		}
-		return resolveFoundArea(detail.depPlace(), detail.orgNm(), regionName);
+		return resolveFoundArea(detail.depPlace(), detail.orgNm(), detail.orgId(), detail.tel(), regionName);
 	}
 
 	public Optional<String> resolveFoundArea(String depPlace, String orgNm, String regionName) {
+		return resolveFoundArea(depPlace, orgNm, null, null, regionName);
+	}
+
+	public Optional<String> resolveFoundArea(String depPlace, String orgNm, String orgId, String tel, String regionName) {
 		String normalizedDepPlace = normalizeStationName(depPlace);
 		if (!StringUtils.hasText(normalizedDepPlace)) {
 			return Optional.empty();
@@ -55,9 +62,47 @@ public class PoliceStationAddressResolver {
 		}
 
 		if (bestMatch == null || bestScore < MIN_MATCH_SCORE || tied) {
+			Optional<String> aliasArea = resolveByContactAlias(orgId, tel, normalizedDepPlace, regionName);
+			if (aliasArea.isPresent()) {
+				return aliasArea;
+			}
 			return resolveByPoliceOffice(normalizedDepPlace, normalizedOrgName, regionName);
 		}
 		return areaFromAddress(bestMatch.address());
+	}
+
+	private Optional<String> resolveByContactAlias(String orgId, String tel, String normalizedDepPlace, String regionName) {
+		List<ContactAlias> matchedAliases = contactAliases().stream()
+				.filter(alias -> alias.matches(orgId, tel))
+				.toList();
+		if (matchedAliases.isEmpty()) {
+			return Optional.empty();
+		}
+
+		for (ContactAlias alias : matchedAliases) {
+			String normalizedAliasOffice = normalizePoliceStationName(alias.policeStationName());
+			String normalizedAliasStation = normalizeStationName(alias.stationName());
+			List<String> areas = stations().stream()
+					.filter(station -> policeOfficeMatches(station, normalizedAliasOffice))
+					.filter(station -> stationNameMatches(station, normalizedAliasStation, normalizedDepPlace))
+					.filter(station -> !StringUtils.hasText(regionKey(regionName)) || regionMatches(station, regionName))
+					.map(station -> areaFromAddress(station.address()))
+					.flatMap(Optional::stream)
+					.distinct()
+					.toList();
+			if (areas.size() == 1) {
+				return Optional.of(areas.get(0));
+			}
+		}
+		return Optional.empty();
+	}
+
+	private boolean stationNameMatches(StationAddress station, String normalizedAliasStation, String normalizedDepPlace) {
+		if (StringUtils.hasText(normalizedAliasStation)) {
+			return normalizedAliasStation.equals(station.normalizedStationName());
+		}
+		return StringUtils.hasText(normalizedDepPlace)
+				&& normalizedDepPlace.equals(station.normalizedStationName());
 	}
 
 	private Optional<String> resolveByPoliceOffice(String normalizedDepPlace, String normalizedOrgName, String regionName) {
@@ -298,6 +343,20 @@ public class PoliceStationAddressResolver {
 		return stations;
 	}
 
+	private List<ContactAlias> contactAliases() {
+		List<ContactAlias> aliases = cachedContactAliases;
+		if (aliases == null) {
+			synchronized (this) {
+				aliases = cachedContactAliases;
+				if (aliases == null) {
+					aliases = loadContactAliases();
+					cachedContactAliases = aliases;
+				}
+			}
+		}
+		return aliases;
+	}
+
 	private List<StationAddress> loadStations() {
 		ClassPathResource resource = new ClassPathResource(RESOURCE_PATH);
 		if (!resource.exists()) {
@@ -336,6 +395,34 @@ public class PoliceStationAddressResolver {
 		return List.copyOf(stations);
 	}
 
+	private List<ContactAlias> loadContactAliases() {
+		ClassPathResource resource = new ClassPathResource(CONTACT_ALIAS_RESOURCE_PATH);
+		if (!resource.exists()) {
+			return List.of();
+		}
+
+		List<ContactAlias> aliases = new ArrayList<>();
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+			String line = reader.readLine();
+			while ((line = reader.readLine()) != null) {
+				List<String> fields = parseCsvLine(line);
+				if (fields.size() < 4) {
+					continue;
+				}
+				aliases.add(new ContactAlias(
+						blankToNull(fields.get(0)),
+						digitsOnly(fields.get(1)),
+						blankToNull(fields.get(2)),
+						blankToNull(fields.get(3))
+				));
+			}
+		} catch (Exception exception) {
+			log.warn("Failed to load police station contact alias CSV: {}", CONTACT_ALIAS_RESOURCE_PATH, exception);
+			return List.of();
+		}
+		return List.copyOf(aliases);
+	}
+
 	private List<String> parseCsvLine(String line) {
 		List<String> fields = new ArrayList<>();
 		StringBuilder field = new StringBuilder();
@@ -360,6 +447,21 @@ public class PoliceStationAddressResolver {
 		return fields;
 	}
 
+	private String digitsOnly(String value) {
+		if (!StringUtils.hasText(value)) {
+			return null;
+		}
+		String digits = value.replaceAll("\\D", "");
+		return StringUtils.hasText(digits) ? digits : null;
+	}
+
+	private String blankToNull(String value) {
+		if (!StringUtils.hasText(value)) {
+			return null;
+		}
+		return value.trim();
+	}
+
 	private record StationAddress(
 			String sidoOffice,
 			String policeStationName,
@@ -369,5 +471,30 @@ public class PoliceStationAddressResolver {
 			String normalizedPoliceStationName,
 			String normalizedStationName
 	) {
+	}
+
+	private record ContactAlias(
+			String orgId,
+			String telPrefix,
+			String policeStationName,
+			String stationName
+	) {
+
+		boolean matches(String candidateOrgId, String candidateTel) {
+			if (StringUtils.hasText(orgId) && orgId.equals(blank(candidateOrgId))) {
+				return true;
+			}
+			String normalizedTel = candidateTel == null ? null : candidateTel.replaceAll("\\D", "");
+			return StringUtils.hasText(telPrefix)
+					&& StringUtils.hasText(normalizedTel)
+					&& normalizedTel.startsWith(telPrefix);
+		}
+
+		private String blank(String value) {
+			if (!StringUtils.hasText(value)) {
+				return null;
+			}
+			return value.trim();
+		}
 	}
 }
