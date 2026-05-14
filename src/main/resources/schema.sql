@@ -243,7 +243,8 @@ CREATE TABLE IF NOT EXISTS SERVICE_CENTER (
   MODDATE DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS korail_station_location (
+DROP TABLE IF EXISTS korail_station_location;
+CREATE TABLE korail_station_location (
   station_id BIGINT AUTO_INCREMENT PRIMARY KEY,
   line_name VARCHAR(50) NOT NULL,
   station_name VARCHAR(100) NOT NULL,
@@ -253,7 +254,8 @@ CREATE TABLE IF NOT EXISTS korail_station_location (
   INDEX idx_station_lookup (station_name, line_name)
 );
 
-CREATE TABLE IF NOT EXISTS korail_lost_found_center (
+DROP TABLE IF EXISTS korail_lost_found_center;
+CREATE TABLE korail_lost_found_center (
   center_id BIGINT AUTO_INCREMENT PRIMARY KEY,
   operator_name VARCHAR(100),
   line_name VARCHAR(50),

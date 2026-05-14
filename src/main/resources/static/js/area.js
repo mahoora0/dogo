@@ -1,5 +1,6 @@
 let map;
 let markers = [];
+let currentInfowindow = null;
 
 function drawMap() {
   const mapContainer = document.getElementById('map');
@@ -117,6 +118,10 @@ function updateMap() {
     markers.forEach(marker => marker.setMap(null));
   }
   markers = [];
+  if (currentInfowindow) {
+    currentInfowindow.close();
+    currentInfowindow = null;
+  }
   const listContainer = document.getElementById('centerList');
   if (listContainer) {
     listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">검색 중...</div>';
@@ -126,7 +131,7 @@ function updateMap() {
 
   // 경찰관서와 코레일 유실물 센터 데이터 함께 불러오기
   const policeUrl = `/api/police?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion)}&neighborhood=${encodeURIComponent(neighborhood)}`;
-  const korailUrl = `/api/korail/lost-found?region=${encodeURIComponent(region)}`;
+  const korailUrl = `/api/korail/lost-found?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion)}&neighborhood=${encodeURIComponent(neighborhood)}`;
 
   Promise.all([
     fetch(policeUrl).then(res => res.json()),
@@ -162,7 +167,11 @@ function updateMap() {
             });
             
             kakao.maps.event.addListener(marker, 'click', () => {
+                if (currentInfowindow) {
+                    currentInfowindow.close();
+                }
                 infowindow.open(map, marker);
+                currentInfowindow = infowindow;
             });
         });
         map.setBounds(bounds);
@@ -237,7 +246,11 @@ function renderMarkers(data, keyword) {
     });
 
     kakao.maps.event.addListener(marker, 'click', function () {
+      if (currentInfowindow) {
+        currentInfowindow.close();
+      }
       infowindow.open(map, marker);
+      currentInfowindow = infowindow;
     });
 
     markers.push(marker);
