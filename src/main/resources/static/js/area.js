@@ -129,7 +129,21 @@ function updateMap() {
 
   if (!region) return;
 
-  // 경찰관서와 코레일 유실물 센터 데이터 함께 불러오기
+  if (!subRegion) {
+      if (listContainer) {
+          listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">시/군/구를 선택하시면 목록이 표시됩니다.</div>';
+      }
+      // 리스트는 보여주지 않더라도 지도는 해당 지역의 중심으로 이동시킴
+      fetch(`/api/areas/coords?name=${encodeURIComponent(region)}`)
+          .then(res => res.json())
+          .then(coord => {
+              if (coord) {
+                  map.setCenter(new kakao.maps.LatLng(coord.latitude, coord.longitude));
+                  map.setLevel(coord.defaultLevel || 8);
+              }
+          });
+      return;
+  }
   const policeUrl = `/api/police?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion)}&neighborhood=${encodeURIComponent(neighborhood)}`;
   const korailUrl = `/api/korail/lost-found?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion)}&neighborhood=${encodeURIComponent(neighborhood)}`;
 
