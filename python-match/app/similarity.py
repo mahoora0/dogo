@@ -36,30 +36,12 @@ def compute_similarity(
 
     results: list[CandidateResult] = []
 
-    # Candidates with empty text get score 0.0 immediately.
+    # Empty query/candidate text means "semantic unavailable" for that pair.
+    # Omit those results so Java falls back to rule-only scoring.
     valid_indices = [i for i, t in enumerate(candidate_texts) if t]
-    empty_indices = [i for i, t in enumerate(candidate_texts) if not t]
-
-    for i in empty_indices:
-        results.append(
-            CandidateResult(
-                candidateId=candidates[i].id,
-                semanticScore=0.0,
-                reasons=[],
-            )
-        )
 
     if not query_text or not valid_indices:
-        for i in valid_indices:
-            results.append(
-                CandidateResult(
-                    candidateId=candidates[i].id,
-                    semanticScore=0.0,
-                    reasons=[],
-                )
-            )
-        results.sort(key=lambda r: r.candidateId)
-        return results
+        return []
 
     texts_to_encode = [query_text] + [candidate_texts[i] for i in valid_indices]
     embeddings = model.encode(texts_to_encode, convert_to_tensor=True, normalize_embeddings=True)

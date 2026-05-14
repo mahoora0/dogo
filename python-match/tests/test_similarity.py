@@ -73,21 +73,20 @@ class TestComputeSimilarity:
         assert len(results) == 1
         assert results[0].semanticScore < 60.0
 
-    def test_empty_candidate_text_score_zero(self):
+    def test_empty_candidate_text_omitted(self):
         query = self._query("검정 명함지갑", "명함지갑 분실")
         candidate = make_item(30, None, None)
         results = compute_similarity(query, [candidate])
-        assert len(results) == 1
-        assert results[0].semanticScore == 0.0
+        assert results == []
 
-    def test_empty_query_text_all_zero(self):
+    def test_empty_query_text_omits_all_results(self):
         query = self._query(None, None)
         candidates = [
             make_item(1, "검정 명함지갑", "강남역 명함지갑"),
             make_item(2, "자전거", "한강공원 자전거"),
         ]
         results = compute_similarity(query, candidates)
-        assert all(r.semanticScore == 0.0 for r in results)
+        assert results == []
 
     def test_multiple_candidates_result_count(self):
         query = self._query("명함지갑", "명함지갑 분실")
