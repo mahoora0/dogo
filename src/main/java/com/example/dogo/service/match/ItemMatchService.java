@@ -32,6 +32,7 @@ public class ItemMatchService {
 	private static final int MAX_MATCH_DAYS = 60;
 	private static final BigDecimal MIN_SCORE = new BigDecimal("45.00");
 	private static final BigDecimal MIN_LOCATION_EVIDENCE_SCORE = new BigDecimal("6.00");
+	private static final String RULE_MATCH_VERSION = "java-rule-v1";
 
 	private final ItemMatchRepository itemMatchRepository;
 	private final FoundItemRepository foundItemRepository;
@@ -57,6 +58,13 @@ public class ItemMatchService {
 	}
 
 	@Transactional
+	public void matchForLostItemId(Long lostId) {
+		LostItem lostItem = lostItemRepository.findById(lostId)
+				.orElseThrow(() -> new IllegalArgumentException("분실물을 찾을 수 없습니다. lostId=" + lostId));
+		matchForLostItem(lostItem);
+	}
+
+	@Transactional
 	public void matchForLostItem(LostItem lostItem) {
 		List<FoundItem> candidates = foundItemRepository.findMatchCandidatesForLost(
 				lostItem.getCategoryMain(),
@@ -72,7 +80,7 @@ public class ItemMatchService {
 				continue;
 			}
 			if (shouldStore(score)) {
-				matches.add(new ItemMatch(lostItem, found, score.totalScore()));
+				matches.add(toRuleOnlyMatch(lostItem, found, score));
 			}
 		}
 
@@ -87,6 +95,13 @@ public class ItemMatchService {
 		}
 
 		log.info("분실물 매칭 완료: lostId={}, 후보={}건", lostItem.getLostId(), topMatches.size());
+	}
+
+	@Transactional
+	public void matchForFoundItemId(Long foundId) {
+		FoundItem foundItem = foundItemRepository.findById(foundId)
+				.orElseThrow(() -> new IllegalArgumentException("습득물을 찾을 수 없습니다. foundId=" + foundId));
+		matchForFoundItem(foundItem);
 	}
 
 	@Transactional
@@ -105,7 +120,7 @@ public class ItemMatchService {
 				continue;
 			}
 			if (shouldStore(score)) {
-				matches.add(new ItemMatch(lost, foundItem, score.totalScore()));
+				matches.add(toRuleOnlyMatch(lost, foundItem, score));
 			}
 		}
 
@@ -145,8 +160,8 @@ public class ItemMatchService {
 							found.getStatus(),
 							foundStatusLabel(found.getStatus()),
 							imageUrl,
-							match.getMatchScore(),
-							itemMatchScorer.score(lost, found).reasons()
+							match.displayScore(),
+							matchReasons(match, lost, found)
 					);
 				})
 				.toList();
@@ -175,11 +190,32 @@ public class ItemMatchService {
 							lost.getStatus(),
 							lostStatusLabel(lost.getStatus()),
 							imageUrl,
-							match.getMatchScore(),
-							itemMatchScorer.score(lost, found).reasons()
+							match.displayScore(),
+							matchReasons(match, lost, found)
 					);
 				})
 				.toList();
+	}
+
+	private ItemMatch toRuleOnlyMatch(LostItem lostItem, FoundItem foundItem, MatchScoreResult score) {
+		return new ItemMatch(
+				lostItem,
+				foundItem,
+				score.totalScore(),
+				null,
+				score.totalScore(),
+				score.reasons(),
+				RULE_MATCH_VERSION,
+				null
+		);
+	}
+
+	private List<String> matchReasons(ItemMatch match, LostItem lostItem, FoundItem foundItem) {
+		List<String> storedReasons = match.getMatchReasonList();
+		if (!storedReasons.isEmpty()) {
+			return storedReasons;
+		}
+		return itemMatchScorer.score(lostItem, foundItem).reasons();
 	}
 
 	private boolean shouldStore(MatchScoreResult score) {

@@ -11,10 +11,10 @@ import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.item.FoundItemImageRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
+import com.example.dogo.service.match.FoundItemMatchRequestedEvent;
 import com.example.dogo.service.match.ItemMatchService;
 import com.example.dogo.service.police.sync.PoliceFoundItemDetailEnrichmentService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +35,6 @@ import java.util.UUID;
 @Service
 public class FoundItemService {
 
-	private static final Logger log = LoggerFactory.getLogger(FoundItemService.class);
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
 
@@ -44,6 +43,7 @@ public class FoundItemService {
 	private final UserRepository userRepository;
 	private final PoliceFoundItemDetailEnrichmentService policeFoundItemDetailEnrichmentService;
 	private final ItemMatchService itemMatchService;
+	private final ApplicationEventPublisher eventPublisher;
 	private final Path foundItemUploadPath;
 
 	public FoundItemService(
@@ -52,6 +52,7 @@ public class FoundItemService {
 			UserRepository userRepository,
 			PoliceFoundItemDetailEnrichmentService policeFoundItemDetailEnrichmentService,
 			ItemMatchService itemMatchService,
+			ApplicationEventPublisher eventPublisher,
 			@Value("${file.upload-dir}") String uploadDir
 	) {
 		this.foundItemRepository = foundItemRepository;
@@ -59,6 +60,7 @@ public class FoundItemService {
 		this.userRepository = userRepository;
 		this.policeFoundItemDetailEnrichmentService = policeFoundItemDetailEnrichmentService;
 		this.itemMatchService = itemMatchService;
+		this.eventPublisher = eventPublisher;
 		this.foundItemUploadPath = Path.of(uploadDir, "found-items").toAbsolutePath().normalize();
 	}
 
@@ -155,12 +157,7 @@ public class FoundItemService {
 
 		FoundItem savedItem = foundItemRepository.save(foundItem);
 		saveImages(savedItem, request.getUploadImages());
-
-		try {
-			itemMatchService.matchForFoundItem(savedItem);
-		} catch (Exception exception) {
-			log.warn("습득물 매칭 실행 중 오류가 발생했습니다. foundId={}", savedItem.getFoundId(), exception);
-		}
+		eventPublisher.publishEvent(new FoundItemMatchRequestedEvent(savedItem.getFoundId()));
 
 		return savedItem.getFoundId();
 	}

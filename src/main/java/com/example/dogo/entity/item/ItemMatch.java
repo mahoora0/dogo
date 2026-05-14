@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 @Entity
 @Table(name = "ITEM_MATCH")
@@ -38,6 +40,24 @@ public class ItemMatch {
 	@Column(name = "MATCH_SCORE")
 	private BigDecimal matchScore;
 
+	@Column(name = "RULE_SCORE")
+	private BigDecimal ruleScore;
+
+	@Column(name = "SEMANTIC_SCORE")
+	private BigDecimal semanticScore;
+
+	@Column(name = "FINAL_SCORE")
+	private BigDecimal finalScore;
+
+	@Column(name = "MATCH_REASONS", columnDefinition = "TEXT")
+	private String matchReasons;
+
+	@Column(name = "MATCH_VERSION")
+	private String matchVersion;
+
+	@Column(name = "MODEL_NAME")
+	private String modelName;
+
 	@Column(name = "MATCH_STATUS", nullable = false)
 	private String matchStatus = "CANDIDATE";
 
@@ -48,8 +68,54 @@ public class ItemMatch {
 	private LocalDateTime moddate = LocalDateTime.now();
 
 	public ItemMatch(LostItem lostItem, FoundItem foundItem, BigDecimal matchScore) {
+		this(lostItem, foundItem, matchScore, null, matchScore, List.of(), "java-rule-v1", null);
+	}
+
+	public ItemMatch(
+			LostItem lostItem,
+			FoundItem foundItem,
+			BigDecimal ruleScore,
+			BigDecimal semanticScore,
+			BigDecimal finalScore,
+			List<String> matchReasons,
+			String matchVersion,
+			String modelName
+	) {
 		this.lostItem = lostItem;
 		this.foundItem = foundItem;
-		this.matchScore = matchScore;
+		this.ruleScore = ruleScore;
+		this.semanticScore = semanticScore;
+		this.finalScore = finalScore;
+		this.matchScore = finalScore;
+		this.matchReasons = serializeReasons(matchReasons);
+		this.matchVersion = matchVersion;
+		this.modelName = modelName;
+	}
+
+	public List<String> getMatchReasonList() {
+		if (matchReasons == null || matchReasons.isBlank()) {
+			return List.of();
+		}
+		return Arrays.stream(matchReasons.split("\\R"))
+				.map(String::trim)
+				.filter(reason -> !reason.isEmpty())
+				.toList();
+	}
+
+	public BigDecimal displayScore() {
+		if (finalScore != null) {
+			return finalScore;
+		}
+		return matchScore;
+	}
+
+	private String serializeReasons(List<String> reasons) {
+		if (reasons == null || reasons.isEmpty()) {
+			return null;
+		}
+		return String.join("\n", reasons.stream()
+				.filter(reason -> reason != null && !reason.isBlank())
+				.map(String::trim)
+				.toList());
 	}
 }
