@@ -1,5 +1,8 @@
 package com.example.dogo.entity.item;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,6 +26,10 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ItemMatch {
+
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	private static final TypeReference<List<String>> STRING_LIST_TYPE = new TypeReference<>() {
+	};
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -96,6 +103,17 @@ public class ItemMatch {
 		if (matchReasons == null || matchReasons.isBlank()) {
 			return List.of();
 		}
+		String trimmedReasons = matchReasons.trim();
+		if (trimmedReasons.startsWith("[")) {
+			try {
+				return OBJECT_MAPPER.readValue(trimmedReasons, STRING_LIST_TYPE).stream()
+						.filter(reason -> reason != null && !reason.isBlank())
+						.map(String::trim)
+						.toList();
+			} catch (JsonProcessingException ignored) {
+				// Fall through for legacy newline-separated rows.
+			}
+		}
 		return Arrays.stream(matchReasons.split("\\R"))
 				.map(String::trim)
 				.filter(reason -> !reason.isEmpty())
@@ -113,9 +131,17 @@ public class ItemMatch {
 		if (reasons == null || reasons.isEmpty()) {
 			return null;
 		}
-		return String.join("\n", reasons.stream()
+		List<String> filteredReasons = reasons.stream()
 				.filter(reason -> reason != null && !reason.isBlank())
 				.map(String::trim)
-				.toList());
+				.toList();
+		if (filteredReasons.isEmpty()) {
+			return null;
+		}
+		try {
+			return OBJECT_MAPPER.writeValueAsString(filteredReasons);
+		} catch (JsonProcessingException exception) {
+			throw new IllegalArgumentException("매칭 사유를 JSON으로 변환할 수 없습니다.", exception);
+		}
 	}
 }
