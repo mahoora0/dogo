@@ -257,6 +257,30 @@ class ItemMatchServiceTest {
 	}
 
 	@Test
+	void matchForLostItem_usesStrictCapWhenOnlyStationNameAndFoundPlaceHasMovementContext() {
+		LocalDateTime lostAt = LocalDateTime.of(2026, 5, 13, 19, 0);
+		LostItem lost = lostItem(1L, "검정색 반지갑", "지갑", lostAt, "서울", "강남역 2번 출구");
+		FoundItem found = foundItem(10L, "검정색 반지갑", "지갑", lostAt.plusMinutes(90), "충남", "택시", "블랙");
+
+		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
+				.thenReturn(List.of(found));
+		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
+		when(semanticMatchClient.score(any()))
+				.thenReturn(new SemanticMatchResponse("BM-K/KoSimCSE-roberta-multitask",
+						List.of(new SemanticMatchResult(10L, new BigDecimal("100.00"), List.of("물품명/제목 의미 유사")))));
+
+		itemMatchService.matchForLostItem(lost);
+
+		ArgumentCaptor<ItemMatch> captor = ArgumentCaptor.forClass(ItemMatch.class);
+		verify(itemMatchRepository).save(captor.capture());
+		ItemMatch saved = captor.getValue();
+
+		assertThat(saved.getMatchScore()).isEqualByComparingTo(new BigDecimal("58.00"));
+		assertThat(saved.getFinalScore()).isEqualByComparingTo(new BigDecimal("58.00"));
+		assertThat(saved.getMatchReasonList()).contains("분실/습득 지역 차이가 커 점수 상한 적용 (58점)");
+	}
+
+	@Test
 	void matchForLostItem_usesSofterCapWhenBothPlacesHaveMovementContext() {
 		LocalDateTime lostAt = LocalDateTime.of(2026, 5, 13, 19, 0);
 		LostItem lost = lostItem(1L, "검정색 반지갑", "지갑", lostAt, "서울", "강남역 택시 승강장");

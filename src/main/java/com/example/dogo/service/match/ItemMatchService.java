@@ -390,8 +390,7 @@ public class ItemMatchService {
 				|| text.contains("공항")
 				|| text.contains("비행기")
 				|| text.contains("터미널")
-				|| text.contains("정류장")
-				|| text.contains("역");
+				|| text.contains("정류장");
 	}
 
 	private List<String> matchReasons(ItemMatch match, LostItem lostItem, FoundItem foundItem) {
