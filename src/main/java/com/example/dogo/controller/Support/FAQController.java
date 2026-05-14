@@ -1,6 +1,8 @@
 package com.example.dogo.controller.Support;
 
 import com.example.dogo.service.Support.FAQService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,13 +23,12 @@ public class FAQController {
         model.addAttribute("currentUri", "/faq"); 
         model.addAttribute("faqList", faqService.getActiveFAQs());
         /*
-        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         model.addAttribute("isAdmin", isAdmin);
         */
-        model.addAttribute("isAdmin", false); // true:관리자 false:사용자
+        model.addAttribute("isAdmin", true);
         return "FAQ/FAQ"; 
     }
 
@@ -35,13 +36,12 @@ public class FAQController {
     public String faqForm(Model model) {
         model.addAttribute("currentUri", "/faq");
         /*
-        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         model.addAttribute("isAdmin", isAdmin);
         */
-        model.addAttribute("isAdmin", false); // true:관리자 false:사용자
+        model.addAttribute("isAdmin", true);
         return "FAQ/FAQ-write";
     }
 

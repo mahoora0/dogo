@@ -222,6 +222,8 @@ public class InquiryService {
                 .map(f -> new InquiryFileView(f.getFileId(), f.getOriginalName(), f.getFileUrl(), f.getFileSize()))
                 .toList();
 
+        String writerEmail = inquiry.getUser() == null ? "" : inquiry.getUser().getEmail();
+
         return new InquiryDetail(
                 inquiry.getInquiryId(),
                 categoryLabel(inquiry.getCategory()),
@@ -231,7 +233,8 @@ public class InquiryService {
                 inquiry.getAnswer(),
                 createdAt,
                 answeredAt,
-                files
+                files,
+                writerEmail
         );
     }
 
@@ -311,7 +314,8 @@ public class InquiryService {
             String answer,
             String createdAt,
             String answeredAt,
-            List<InquiryFileView> files
+            List<InquiryFileView> files,
+            String writerEmail
     ) {
     }
 

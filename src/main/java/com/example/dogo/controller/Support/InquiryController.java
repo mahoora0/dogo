@@ -2,6 +2,8 @@ package com.example.dogo.controller.Support;
 
 import com.example.dogo.service.Support.InquiryService;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,14 +33,13 @@ public class InquiryController {
         model.addAttribute("currentCategory", category == null || category.isEmpty() ? "전체" : category);
         model.addAttribute("currentStatus", status == null || status.isEmpty() ? "전체" : status);
 
-        /* 
-        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
+        /*
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         model.addAttribute("isAdmin", isAdmin);
         */
-        model.addAttribute("isAdmin", true); // true:관리자 false:사용자
+        model.addAttribute("isAdmin", true);
 
         int blockLimit = 5;
         int startPage = (((int)(Math.ceil((double)(page + 1) / blockLimit))) - 1) * blockLimit + 1;
@@ -56,13 +57,12 @@ public class InquiryController {
         model.addAttribute("currentUri", "/inquiry");
 
         /*
-        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         model.addAttribute("isAdmin", isAdmin);
         */
-        model.addAttribute("isAdmin", true); // true:관리자 false:사용자
+        model.addAttribute("isAdmin", true);
         return "inquiry/inquiry";
     }
 
@@ -72,13 +72,12 @@ public class InquiryController {
         model.addAttribute("inquiry", inquiryService.getInquiryDetail(id));
 
         /*
-        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         model.addAttribute("isAdmin", isAdmin);
         */
-        model.addAttribute("isAdmin", true); // true:관리자 false:사용자
+        model.addAttribute("isAdmin", true);
         return "inquiry/detail";
     }
 
@@ -95,6 +94,15 @@ public class InquiryController {
 
     @PostMapping({"/inquiry/{id}/answer", "/inqiry/{id}/answer"})
     public String answerInquiry(@PathVariable Long id, @RequestParam String answer) {
+        /*
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        if (!isAdmin) {
+            return "redirect:/inquiry/" + id;
+        }
+        */
+
         inquiryService.answer(id, answer);
         return "redirect:/inquiry/" + id;
     }

@@ -2,6 +2,8 @@ package com.example.dogo.controller.Support;
 
 import com.example.dogo.entity.Support.Notice;
 import com.example.dogo.service.Support.NoticeService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,13 +30,12 @@ public class NoticeController {
         model.addAttribute("currentCategory", category == null || category.isEmpty() ? "전체" : category);
 
         /*
-        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         model.addAttribute("isAdmin", isAdmin);
         */
-        model.addAttribute("isAdmin", true); // true:관리자, false:사용자
+        model.addAttribute("isAdmin", true);
 
         // 페이지 블록 계산 (예: 5개씩 렌더링)
         int blockLimit = 5;
@@ -56,25 +57,29 @@ public class NoticeController {
         model.addAttribute("notice", notice);
 
         /*
-        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         model.addAttribute("isAdmin", isAdmin);
         */
-        model.addAttribute("isAdmin", true); // true:관리자, false:사용자
+        model.addAttribute("isAdmin", true);
 
         return "notice/detail";
     }
 
     @GetMapping("/new")
     public String form(Model model) {
+        /*
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        if (!isAdmin) {
+            return "redirect:/notice";
+        }
+        */
+
         model.addAttribute("currentUri", "/notice");
         model.addAttribute("notice", new Notice());
-        
-        /*
-        // TODO: 향후 Spring Security 적용 시 아래 코드로 실제 관리자 여부 확인
-        */
         model.addAttribute("isAdmin", true);
 
         return "notice/form";
@@ -85,12 +90,30 @@ public class NoticeController {
                          @RequestParam String category,
                          @RequestParam String content,
                          @RequestParam(required = false, defaultValue = "관리자") String writer) {
+        /*
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        if (!isAdmin) {
+            return "redirect:/notice";
+        }
+        */
+
         noticeService.createNotice(title, category, content, writer);
         return "redirect:/notice";
     }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
+        /*
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        if (!isAdmin) {
+            return "redirect:/notice";
+        }
+        */
+
         Notice notice = noticeService.getNoticeDetail(id);
         
         model.addAttribute("currentUri", "/notice");
@@ -105,12 +128,30 @@ public class NoticeController {
                        @RequestParam String title,
                        @RequestParam String category,
                        @RequestParam String content) {
+        /*
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        if (!isAdmin) {
+            return "redirect:/notice";
+        }
+        */
+
         noticeService.updateNotice(id, title, category, content);
         return "redirect:/notice/" + id;
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
+        /*
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        if (!isAdmin) {
+            return "redirect:/notice";
+        }
+        */
+
         noticeService.deleteNotice(id);
         return "redirect:/notice";
     }
