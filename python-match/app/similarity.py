@@ -15,11 +15,11 @@ def _load_model() -> SentenceTransformer:
 
 
 def build_match_text(item: MatchItem) -> str:
-    return " ".join(
-        part.strip()
-        for part in [item.itemName, item.title]
-        if part and part.strip()
-    )
+    if item.itemName and item.itemName.strip():
+        return item.itemName.strip()
+    if item.title and item.title.strip():
+        return item.title.strip()
+    return ""
 
 
 def compute_similarity(

@@ -19,7 +19,7 @@ def make_item(id: int, item_name: str | None, title: str | None, type: str = "FO
 class TestBuildMatchText:
     def test_both_fields(self):
         item = make_item(1, "검정 명함지갑", "강남역에서 명함지갑 잃어버렸어요")
-        assert build_match_text(item) == "검정 명함지갑 강남역에서 명함지갑 잃어버렸어요"
+        assert build_match_text(item) == "검정 명함지갑"
 
     def test_only_item_name(self):
         item = make_item(1, "명함지갑", None)
