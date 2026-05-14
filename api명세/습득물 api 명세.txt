@@ -1,0 +1,114 @@
+﻿습득한 물품에 대한 분류, 지역, 기간 정보를 조회 할 수 있다.
+활용승인 절차 개발단계 : 심의승인 / 운영단계 : 자동승인
+신청가능 트래픽 개발계정 : 100,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능
+요청주소 http://apis.data.go.kr/1320000/LosfundInfoInqireService/getLosfundInfoAccToClAreaPd
+서비스URL http://apis.data.go.kr/1320000/LosfundInfoInqireService
+ 활용신청
+요청변수(Request Parameter)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+물품분류1	PRDT_CL_CD_01	6	옵션	PRH000	대분류
+물품분류2	PRDT_CL_CD_02	6	옵션	PRH200	중분류
+색상코드	FD_COL_CD	8	옵션	CL1002	습득물 색상
+습득일자	START_YMD	8	옵션	20180302	검색시작일
+습득일자	END_YMD	8	옵션	20180802	검색종료일
+습득지역	N_FD_LCT_CD	6	옵션	LCA000	습득지역
+페이지 번호	pageNo	100	옵션	1	페이지 번호
+목록 건수	numOfRows	100	옵션	10	목록 건수
+출력결과(Response Element)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+결과코드	resultCode	2	필수	00	00:성공
+결과메시지	resultMag	10	필수	NORMAL SERVICE	결과메시지
+관리ID	atcId	17	옵션	F2018080900000674	관리ID
+색상명	clrNm	100	옵션	블랙(검정)	색상명
+보관장소	depPlace	100	옵션	서울은평경찰서	보관장소
+습득물 사진 이미지명	fdFilePathImg	100	옵션	https://www.lost112.go.kr/lostnfs/images/sub/img02_no_img.gif	습득물 사진 이미지명
+물품명	fdPrdtNm	200	옵션	남성용 반지갑	물품명
+게시제목	fdSbjt	300	옵션	남성용 반지갑(블랙(검정)색)을 습득하여 보관하고 있습니다	게시제목
+습득순번	fdSn	3	옵션	12	습득순번
+습득일자	fdYmd	10	옵션	2018-06-01	습득일자
+물품분류명	prdtClNm	100	옵션	지갑 > 남성용 지갑	물품분류명
+일련번호	rnum	10	옵션	1	일련번호
+
+
+습득한 물품의 명칭, 보관 장소별 습득물 정보를 조회 할 수 있다.
+활용승인 절차 개발단계 : 심의승인 / 운영단계 : 자동승인
+신청가능 트래픽 개발계정 : 100,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능
+요청주소 http://apis.data.go.kr/1320000/LosfundInfoInqireService/getLosfundInfoAccTpNmCstdyPlace
+서비스URL http://apis.data.go.kr/1320000/LosfundInfoInqireService
+ 활용신청
+요청변수(Request Parameter)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+물품명	PRDT_NM	200	옵션	지갑	물품명
+보관장소	DEP_PLACE	200	옵션	서울동작경찰서	보관장소
+페이지 번호	pageNo	100	옵션	1	페이지 번호
+목록 건수	numOfRows	100	옵션	10	목록 건수
+출력결과(Response Element)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+결과코드	resultCode	2	필수	00	결과코드
+결과메시지	resultMag	10	필수	NORMAL SERVICE	결과메시지
+관리ID	atcId	17	옵션	F2019010500000753	관리ID
+보관장소	depPlace	100	옵션	서울동작경찰서	보관장소
+습득물 사진 이미지명	fdFilePathImg	100	옵션	https://www.lost112.go.kr/lostnfs/images/uploadImg/20190105/r_20190105032129938.jpg	습득물 사진 이미지명
+물품명	fdPrdtNm	200	옵션	지갑	물품명
+게시제목	fdSbjt	300	옵션	지갑(그레이(회)색)을 습득하여 보관하고 있습니다	게시제목
+습득순번	fdSn	3	옵션	1	습득순번
+습득일자	fdYmd	10	옵션	2019-01-05	습득일자
+물품분류명	prdtClNm	100	옵션	지갑 > 기타 지갑	물품분류명
+일련번호	rnum	10	옵션	1	일련번호
+
+
+습득한 물품의 상세한 정보를 조회 할 수 있다.
+활용승인 절차 개발단계 : 심의승인 / 운영단계 : 자동승인
+신청가능 트래픽 개발계정 : 100,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능
+요청주소 http://apis.data.go.kr/1320000/LosfundInfoInqireService/getLosfundDetailInfo
+서비스URL http://apis.data.go.kr/1320000/LosfundInfoInqireService
+ 활용신청
+요청변수(Request Parameter)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+관리ID	ATC_ID	17	필수	F2018113000002322	관리ID
+습득순번	FD_SN	3	필수	1	습득순번
+출력결과(Response Element)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+결과코드	resultCode	2	필수	00	결과코드
+결과메시지	resultMag	10	필수	NORMAL SERVICE	결과메시지
+관리ID	atcId	17	옵션	F2018113000002322	관리ID
+보관상태명	csteSteNm	100	옵션	보관중	보관상태명
+보관장소	depPlace	100	옵션	서울강북경찰서	보관장소
+습득물 사진 파일경로	fdFilePathImg	500	옵션	https://www.lost112.go.kr/lostnfs/images/sub/img04_no_img.gif	습득물 사진 파일경로
+습득시간	fdHor	10	옵션	24	습득시간
+습득장소	fdPlace	100	옵션	노상	습득장소
+물품명	fdPrdtNm	200	옵션	영성용가박	물품명
+습득순번	fdSn	3	옵션	1	습득순번
+습득일자	fdYmd	10	옵션	2018-11-30	습득일자
+습득물보관기관구분명	fndKeepOrgnSeNm	100	옵션	관서보관	습득물보관기관구분명
+기관아이디	orgId	8	옵션	O0000129	기관아이디
+기관명	orgNm	400	옵션	서울강북경찰서	기관명
+물품분류명	prdtClNm	100	옵션	가방 > 여성용가방	물품분류명
+전화번호	tel	15	옵션	02-944-4347	전화번호
+특이사항	uniq	4000	옵션	내용 번동파출소에서는 [2018.11.30] [영성용가박(핑크(분홍)색)]을 습득/보관 하였습니다. 분실하신 분께서는 본인을 증명할 수 있는 서류를 지참하시어 보관중으로 기재되어 있는 기관에 방문하시어 보관물품을 수령하시기 바랍니다. 특이사항 : 없음	특이사항
+
+현재 위치주소와 근처에 위치한 지구대의 습득물 정보를 조회 할 수 있다.
+활용승인 절차 개발단계 : 심의승인 / 운영단계 : 자동승인
+신청가능 트래픽 개발계정 : 100,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능
+요청주소 http://apis.data.go.kr/1320000/LosfundInfoInqireService/getLosfundInfoAccToLc
+서비스URL http://apis.data.go.kr/1320000/LosfundInfoInqireService
+ 활용신청
+요청변수(Request Parameter)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+물품명	PRDT_NM	200	옵션	지갑	물품명
+기관도로명주소	ADDR	100	옵션	전라북도 전주시 덕진구 사평로 76	기관도로명주소
+페이지 번호	pageNo	100	옵션	1	페이지 번호
+목록 건수	numOfRows	100	옵션	10	목록 건수
+출력결과(Response Element)
+항목명(국문)	항목명(영문)	항목크기	항목구분	샘플데이터	항목설명
+결과코드	resultCode	2	필수	00	00:성공
+결과메시지	resultMag	10	필수	NORMAL SERVICE	결과메시지
+기관도로명주소	addr	100	옵션	전라북도 전주시 덕진구 사평로 76 전주덕진경찰서덕진지구대76	기관도로명주소
+관리ID	atcId	17	옵션	F2019010700000028	관리ID
+보관장소	depPlace	100	옵션	덕진지구대	보관장소
+물품명	fdPrdtNm	200	옵션	GUCCI 남성용 반지갑	물품명
+게시제목	fdSbjt	300	옵션	GUCCI 남성용 반지갑(블랙(검정)색)을 습득하여 보관하고 있습니다	게시제목
+습득순번	fdSn	3	옵션	1	습득순번
+습득일자	fdYmd	10	옵션	2019-01-07	습득일자
+물품분류명	prdtClNm	100	옵션	지갑 > 남성용 지갑	물품분류명
+일련번호	rnum	10	옵션	1	일련번호

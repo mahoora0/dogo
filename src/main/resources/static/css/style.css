@@ -10,27 +10,22 @@ body {
     color: #333;
 }
 
+.navbar .logo {
+    display: flex;
+    align-items: center;
+}
+
 .navbar .logo img {
-    width: 230px;       /* 원하는 가로 크기 */
-    height: auto;        /* 가로 비율에 맞춰 높이를 자동 계산 */
+    height: 50px;
+    width: auto;
     display: block;
-    object-fit: contain; /* 이미지가 잘리거나 왜곡되지 않게 컨테이너 안에 맞춤 */
-}
-
-/* 로고가 커짐에 따라 헤더 높이가 너무 답답해 보인다면 padding을 조절하세요 */
-.navbar {
-    background: #fff;
-    border-bottom: 1px solid #ddd;
-    padding: 15px 20px; /* 위아래 패딩을 살짝 늘려주면 여유로워 보입니다 */
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    object-fit: contain;
 }
 
 .navbar {
     background: #fff;
-    border-bottom: 1px solid #ddd;
-    padding: 10px 20px;
+    border-bottom: 1px solid #eee;
+    padding: 0 20px;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -57,6 +52,9 @@ body {
     padding: 20px;
     border-radius: 10px;
     height: fit-content;
+    position: sticky;
+    top: 80px;
+    align-self: flex-start;
 }
 
 .sidebar h2 {
@@ -83,6 +81,12 @@ body {
     cursor: pointer;
     border-radius: 5px;
     font-size: 0.95rem;
+}
+
+.category li a {
+    display: block;
+    color: inherit;
+    text-decoration: none;
 }
 
 .category li.active {
@@ -185,4 +189,33 @@ body {
     font-size: 0.8rem;
     color: #666;
     margin-top: 2px;
+}
+
+/* 채팅 버튼 컨테이너 */
+.chat-button {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* 아이콘과 글자 사이 간격 */
+    padding: 6px 12px;
+    color: #334155; /* 슬레이트 700 색상 */
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.chat-button:hover {
+    background-color: #f1f5f9; /* hover 시 연한 회색 배경 */
+}
+
+/* 아이콘 스타일 */
+.chat-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* '채팅' 텍스트 스타일 */
+.chat-text {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
 }

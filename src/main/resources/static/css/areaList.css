@@ -18,6 +18,30 @@
     border: none;
     outline: none;
     padding: 5px 10px;
+    background: transparent;
+}
+
+.area-select {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px;
+    padding: 4px 8px !important;
+    font-size: 14px;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+}
+
+.area-select:disabled {
+    background-color: #f8fafc;
+    color: #cbd5e1;
+    cursor: not-allowed;
+    border-color: #f1f5f9 !important;
+}
+
+.area-select:not(:disabled):hover {
+    border-color: #94a3b8 !important;
+    background-color: #f8fafc;
 }
 
 .divider {
