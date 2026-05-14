@@ -10,6 +10,7 @@ import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.service.police.client.PoliceCommonCodeClient;
 import com.example.dogo.service.police.client.PoliceFoundItemClient;
 import com.example.dogo.service.police.mapper.PoliceFoundItemMapper;
+import com.example.dogo.service.police.station.PoliceStationAddressResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -48,6 +49,7 @@ class PoliceFoundItemSyncServiceTest {
 				client,
 				commonCodeClient,
 				new PoliceFoundItemMapper(),
+				new PoliceStationAddressResolver(),
 				foundItemRepository,
 				imageService,
 				100,
