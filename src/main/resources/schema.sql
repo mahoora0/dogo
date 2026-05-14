@@ -78,6 +78,21 @@ CREATE TABLE IF NOT EXISTS AREA (
     FOREIGN KEY (PARENT_AREA_ID) REFERENCES AREA(AREA_ID)
 );
 
+CREATE TABLE IF NOT EXISTS police_station (
+  pnu VARCHAR(19) PRIMARY KEY,
+  longitude DOUBLE NOT NULL,
+  latitude DOUBLE NOT NULL,
+  address VARCHAR(1000),
+  address1 VARCHAR(1000) NOT NULL,
+  no_value INT NOT NULL,
+  lclsf VARCHAR(10) NOT NULL,
+  cmptnc_rgn_nm VARCHAR(40) NOT NULL,
+  polstn_nm VARCHAR(20) NOT NULL,
+  se VARCHAR(20) NOT NULL,
+  telno VARCHAR(20) NOT NULL,
+  addr VARCHAR(200) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS LOST_ITEM (
   LOST_ID BIGINT AUTO_INCREMENT PRIMARY KEY,
   USER_NO BIGINT,
@@ -261,3 +276,25 @@ REFERENCES INQUIRY(INQUIRY_ID) ON DELETE CASCADE
 );
 
 
+DROP TABLE IF EXISTS korail_station_location;
+CREATE TABLE korail_station_location (
+  station_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  line_name VARCHAR(50) NOT NULL,
+  station_name VARCHAR(100) NOT NULL,
+  latitude DOUBLE NOT NULL,
+  longitude DOUBLE NOT NULL,
+  exit_count INT,
+  INDEX idx_station_lookup (station_name, line_name)
+);
+
+DROP TABLE IF EXISTS korail_lost_found_center;
+CREATE TABLE korail_lost_found_center (
+  center_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  operator_name VARCHAR(100),
+  line_name VARCHAR(50),
+  station_name VARCHAR(100) NOT NULL,
+  location_details VARCHAR(500),
+  operating_hours VARCHAR(200),
+  tel_no VARCHAR(50),
+  INDEX idx_lost_found_station (station_name, line_name)
+);
