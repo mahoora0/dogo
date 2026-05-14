@@ -13,7 +13,7 @@
 
     <section class="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] items-start">
       <!-- Image Gallery Section -->
-      <div class="flex flex-col gap-4 sticky top-24">
+      <div class="flex flex-col gap-4 lg:sticky lg:top-24">
         <div class="relative overflow-hidden rounded-3xl bg-black/5 shadow-inner">
           <!-- Background Blur for aspect ratio safety -->
           <div th:if="${lostItem.imageUrls != null && !lostItem.imageUrls.isEmpty()}"
