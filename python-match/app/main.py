@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 
 from app.logger import get_logger
 from app.schemas import HealthResponse, SimilarityRequest, SimilarityResponse
-from app.similarity import MODEL_NAME, _load_model, compute_similarity
+from app.similarity import MODEL_BACKEND, MODEL_NAME, _load_model, compute_similarity
 
 logger = get_logger("main")
 
@@ -13,7 +13,7 @@ logger = get_logger("main")
 async def lifespan(app: FastAPI):
     logger.info("dogo-python-match 서버 시작")
     _load_model()
-    logger.info(f"서버 준비 완료 | 모델={MODEL_NAME}")
+    logger.info(f"서버 준비 완료 | 모델={MODEL_NAME} | backend={MODEL_BACKEND}")
     yield
     logger.info("서버 종료")
 

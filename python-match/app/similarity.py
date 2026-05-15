@@ -1,6 +1,7 @@
 import os
 import time
 from functools import lru_cache
+from pathlib import Path
 
 import torch
 from sentence_transformers import SentenceTransformer, util
@@ -11,16 +12,85 @@ from app.schemas import CandidateResult, MatchItem
 logger = get_logger("similarity")
 
 MODEL_NAME = os.getenv("MATCH_MODEL_NAME", "BM-K/KoSimCSE-roberta-multitask")
+MODEL_BACKEND = os.getenv("MATCH_MODEL_BACKEND", "torch").strip().lower()
+MODEL_CACHE_DIR = os.getenv("MATCH_MODEL_CACHE_DIR") or None
+ONNX_SAVE_DIR = os.getenv("MATCH_ONNX_SAVE_DIR") or None
+ONNX_FILE_NAME = os.getenv("MATCH_ONNX_FILE_NAME") or None
+ONNX_PROVIDER = os.getenv("MATCH_ONNX_PROVIDER", "CPUExecutionProvider")
+ONNX_EXPORT = os.getenv("MATCH_ONNX_EXPORT", "true").strip().lower() in {"1", "true", "yes", "on"}
+SUPPORTED_BACKENDS = {"torch", "onnx"}
 
 
 @lru_cache(maxsize=1)
 def _load_model() -> SentenceTransformer:
+    if MODEL_BACKEND not in SUPPORTED_BACKENDS:
+        raise ValueError(
+            f"Unsupported MATCH_MODEL_BACKEND={MODEL_BACKEND!r}. "
+            f"Expected one of {sorted(SUPPORTED_BACKENDS)}."
+        )
+
+    model_name_or_path = _resolve_model_name_or_path()
+    model_kwargs = _build_model_kwargs()
+    logger.info(
+        f"Loading model: {model_name_or_path} "
+        f"(source={MODEL_NAME}, backend={MODEL_BACKEND})"
+    )
     logger.info(f"모델 로딩 중: {MODEL_NAME}")
     t0 = time.perf_counter()
-    model = SentenceTransformer(MODEL_NAME)
+    model = SentenceTransformer(
+        model_name_or_path,
+        backend=MODEL_BACKEND,
+        cache_folder=MODEL_CACHE_DIR,
+        model_kwargs=model_kwargs or None,
+    )
+    _save_exported_onnx_model(model)
     elapsed = time.perf_counter() - t0
     logger.info(f"모델 로딩 완료 ({elapsed:.1f}s)")
     return model
+
+
+def _resolve_model_name_or_path() -> str:
+    if MODEL_BACKEND != "onnx" or not ONNX_SAVE_DIR:
+        return MODEL_NAME
+
+    if _has_saved_onnx_model():
+        save_dir = Path(ONNX_SAVE_DIR)
+        return str(save_dir)
+    return MODEL_NAME
+
+
+def _build_model_kwargs() -> dict[str, object]:
+    if MODEL_BACKEND != "onnx":
+        return {}
+
+    kwargs: dict[str, object] = {
+        "provider": ONNX_PROVIDER,
+        "export": ONNX_EXPORT and not _has_saved_onnx_model(),
+    }
+    if ONNX_FILE_NAME:
+        kwargs["file_name"] = ONNX_FILE_NAME
+    return kwargs
+
+
+def _save_exported_onnx_model(model: SentenceTransformer) -> None:
+    if MODEL_BACKEND != "onnx" or not ONNX_SAVE_DIR:
+        return
+
+    save_dir = Path(ONNX_SAVE_DIR)
+    if (save_dir / "config_sentence_transformers.json").exists():
+        return
+
+    save_dir.mkdir(parents=True, exist_ok=True)
+    model.save_pretrained(str(save_dir))
+    logger.info(f"Saved ONNX model for reuse: {save_dir}")
+
+
+def _has_saved_onnx_model() -> bool:
+    if not ONNX_SAVE_DIR:
+        return False
+
+    save_dir = Path(ONNX_SAVE_DIR)
+    return (save_dir / "config_sentence_transformers.json").exists()
 
 
 def build_match_text(item: MatchItem) -> str:

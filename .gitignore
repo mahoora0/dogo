@@ -52,4 +52,5 @@ __pycache__/
 **/.venv/
 .pytest_cache/
 **/.pytest_cache/
+python-match/.onnx/
 *.py[cod]
