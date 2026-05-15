@@ -54,3 +54,4 @@ __pycache__/
 **/.pytest_cache/
 python-match/.onnx/
 *.py[cod]
+python-match/logs/match.log

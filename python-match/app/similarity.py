@@ -7,7 +7,7 @@ import torch
 from sentence_transformers import SentenceTransformer, util
 
 from app.logger import get_logger
-from app.schemas import CandidateResult, MatchItem
+from app.schemas import CandidateResult, EmbeddingItem, EmbeddingVector, MatchItem
 
 logger = get_logger("similarity")
 
@@ -92,6 +92,15 @@ def _has_saved_onnx_model() -> bool:
 
     save_dir = Path(ONNX_SAVE_DIR)
     return (save_dir / "config_sentence_transformers.json").exists()
+
+
+def compute_embeddings(items: list[EmbeddingItem]) -> list[EmbeddingVector]:
+    if not items:
+        return []
+    model = _load_model()
+    texts = [item.text for item in items]
+    embeddings = model.encode(texts, convert_to_numpy=True, normalize_embeddings=True)
+    return [EmbeddingVector(id=item.id, vector=emb.tolist()) for item, emb in zip(items, embeddings)]
 
 
 def build_match_text(item: MatchItem) -> str:

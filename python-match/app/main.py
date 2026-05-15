@@ -3,8 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 
 from app.logger import get_logger
-from app.schemas import HealthResponse, SimilarityRequest, SimilarityResponse
-from app.similarity import MODEL_BACKEND, MODEL_NAME, _load_model, compute_similarity
+from app.schemas import EmbeddingsRequest, EmbeddingsResponse, HealthResponse, SimilarityRequest, SimilarityResponse
+from app.similarity import MODEL_BACKEND, MODEL_NAME, _load_model, compute_embeddings, compute_similarity
 
 logger = get_logger("main")
 
@@ -31,3 +31,9 @@ def health() -> HealthResponse:
 def similarity(request: SimilarityRequest) -> SimilarityResponse:
     results = compute_similarity(request.query, request.candidates)
     return SimilarityResponse(model=MODEL_NAME, results=results)
+
+
+@app.post("/embeddings", response_model=EmbeddingsResponse)
+def embeddings(request: EmbeddingsRequest) -> EmbeddingsResponse:
+    vectors = compute_embeddings(request.items)
+    return EmbeddingsResponse(model=MODEL_NAME, embeddings=vectors)

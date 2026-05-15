@@ -86,9 +86,10 @@ public class ItemMatchService {
 				lostItem.getLostAt().plusDays(MAX_MATCH_DAYS)
 		);
 
+		ItemMatchScorer.LostItemContext lostCtx = itemMatchScorer.precompute(lostItem);
 		List<RuleCandidate> ruleEligible = new ArrayList<>();
 		for (FoundItem found : candidates) {
-			MatchScoreResult score = itemMatchScorer.score(lostItem, found);
+			MatchScoreResult score = itemMatchScorer.score(lostCtx, found);
 			if (score.eligible() && shouldStore(score)) {
 				ruleEligible.add(new RuleCandidate(lostItem, found, score));
 			}
@@ -138,9 +139,10 @@ public class ItemMatchService {
 				foundItem.getFoundAt().plusDays(LOST_DATE_MARGIN_DAYS)
 		);
 
+		ItemMatchScorer.FoundItemContext foundCtx = itemMatchScorer.precompute(foundItem);
 		List<RuleCandidate> ruleEligible = new ArrayList<>();
 		for (LostItem lost : candidates) {
-			MatchScoreResult score = itemMatchScorer.score(lost, foundItem);
+			MatchScoreResult score = itemMatchScorer.score(lost, foundCtx);
 			if (score.eligible() && shouldStore(score)) {
 				ruleEligible.add(new RuleCandidate(lost, foundItem, score));
 			}

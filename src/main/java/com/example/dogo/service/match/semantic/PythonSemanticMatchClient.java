@@ -2,7 +2,7 @@ package com.example.dogo.service.match.semantic;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -12,7 +12,7 @@ import org.springframework.web.client.RestClient;
 import java.time.Duration;
 
 @Component
-@ConditionalOnProperty(name = "match.semantic.enabled", havingValue = "true")
+@ConditionalOnExpression("${match.semantic.enabled:false} && !${match.embedding.enabled:false}")
 public class PythonSemanticMatchClient implements SemanticMatchClient {
 
 	private static final Logger log = LoggerFactory.getLogger(PythonSemanticMatchClient.class);
