@@ -13,11 +13,13 @@ public interface KorailLostFoundCenterRepository extends JpaRepository<KorailLos
     
     @Query("SELECT c.centerId as id, c.stationName as stationName, c.lineName as lineName, " +
            "c.telNo as telNo, c.operatingHours as operatingHours, c.locationDetails as locationDetails, " +
-           "MAX(s.latitude) as latitude, MAX(s.longitude) as longitude " +
+           "c.subRegion as subRegion, " +
+           "COALESCE(MAX(s.latitude), 0) as latitude, COALESCE(MAX(s.longitude), 0) as longitude " +
            "FROM KorailLostFoundCenter c " +
-           "LEFT JOIN KorailStationLocation s ON TRIM(s.stationName) = TRIM(c.stationName) " +
-           "OR s.stationName LIKE CONCAT('%', c.stationName, '%') " +
-           "OR c.stationName LIKE CONCAT('%', s.stationName, '%') " +
-           "GROUP BY c.centerId, c.stationName, c.lineName, c.telNo, c.operatingHours, c.locationDetails")
+           "LEFT JOIN KorailStationLocation s ON " +
+           "REPLACE(s.stationName, '역', '') = REPLACE(c.stationName, '역', '') OR " +
+           "s.stationName LIKE CONCAT(REPLACE(c.stationName, '역', ''), '(%') OR " +
+           "c.stationName LIKE CONCAT(REPLACE(s.stationName, '역', ''), '(%') " +
+           "GROUP BY c.centerId, c.stationName, c.lineName, c.telNo, c.operatingHours, c.locationDetails, c.subRegion")
     List<Map<String, Object>> findAllWithCoordinates();
 }

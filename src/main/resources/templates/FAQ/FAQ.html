@@ -11,7 +11,7 @@
                 <p class="text-slate-500 text-lg">분실물 센터 이용과 관련하여 궁금하신 점을 확인해 보세요.</p>
             </div>
             <div th:if="${isAdmin}">
-                <a href="/faq/new" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">FAQ 등록</a>
+                <a href="/admin/faq/new" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">FAQ 등록</a>
             </div>
         </div>
 
@@ -56,7 +56,7 @@
                             </div>
                         </div>
                         <div th:if="${isAdmin}" class="mt-4 flex justify-end">
-                            <form th:action="@{/faq/{id}/delete(id=${faq.id})}" method="post" onsubmit="return confirm('이 FAQ를 정말 삭제하시겠습니까?');">
+                            <form th:action="@{/admin/faq/{id}/delete(id=${faq.id})}" method="post" onsubmit="return confirm('이 FAQ를 정말 삭제하시겠습니까?');">
                                 <button type="submit" class="text-sm text-red-500 hover:text-red-700 font-medium px-3 py-1 border border-red-200 hover:bg-red-50 rounded transition-colors">삭제</button>
                             </form>
                         </div>

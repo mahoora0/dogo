@@ -48,6 +48,13 @@ public class AreaService {
     return entityToDto(area);
   }
 
+  @Transactional(readOnly = true)
+  public AreaDTO getAreaByName(String areaName) { // 지역명으로 조회
+    return areaRepository.findByAreaName(areaName)
+        .map(this::entityToDto)
+        .orElse(null);
+  }
+
   private AreaDTO entityToDto(Area area) { // Entity를 DTO로 변환하는 내부 메서드
     return AreaDTO.builder()
         .areaId(area.getAreaId())
