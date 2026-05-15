@@ -1,5 +1,6 @@
 package com.example.dogo.dto.area;
 
+import jakarta.persistence.Column;
 import lombok.*;
 
 @Getter
@@ -14,6 +15,7 @@ public class SubwayLostCenterDTO {
   private String lineName;
   private String region;
   private String subRegion;
+  @Column(name = "station_name")
   private String stationName;
   private Double latitude;
   private Double longitude;

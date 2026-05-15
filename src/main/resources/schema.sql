@@ -280,17 +280,17 @@ REFERENCES INQUIRY(INQUIRY_ID) ON DELETE CASCADE
 );
 
 
-CREATE TABLE IF NOT EXISTS korail_station_location (
+CREATE TABLE IF NOT EXISTS KORAIL_STATION_LOCATION (
   station_id BIGINT AUTO_INCREMENT PRIMARY KEY,
   line_name VARCHAR(50) NOT NULL,
   station_name VARCHAR(100) NOT NULL,
   latitude DOUBLE NOT NULL,
   longitude DOUBLE NOT NULL,
   exit_count INT,
-  INDEX idx_station_lookup (station_name, line_name)
+  INDEX IDX_STATION_LOOKUP (station_name, line_name)
 );
 
-CREATE TABLE IF NOT EXISTS korail_lost_found_center (
+CREATE TABLE IF NOT EXISTS KORAIL_LOST_FOUND_CENTER (
   center_id BIGINT AUTO_INCREMENT PRIMARY KEY,
   operator_name VARCHAR(100),
   line_name VARCHAR(50),
@@ -299,5 +299,5 @@ CREATE TABLE IF NOT EXISTS korail_lost_found_center (
   location_details VARCHAR(500),
   operating_hours VARCHAR(200),
   tel_no VARCHAR(50),
-  INDEX idx_lost_found_station (station_name, line_name)
+  INDEX IDX_LOST_FOUND_STATION (station_name, line_name)
 );
