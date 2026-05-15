@@ -183,7 +183,6 @@ public class ItemEmbeddingService {
 			return;
 		}
 
-		log.info("[embedding] 임베딩 요청: itemType={} itemId={} text={}", itemType, itemId, text);
 		float[] vector = embeddingClient.embedText(text);
 		if (vector.length == 0) {
 			log.warn("[embedding] 빈 벡터 반환, 저장 스킵: itemType={} itemId={}", itemType, itemId);
@@ -197,7 +196,6 @@ public class ItemEmbeddingService {
 			embeddingRepository.save(new ItemEmbedding(
 					itemType, itemId, text, hash, SemanticMatchTextBuilder.TEXT_VERSION, blob));
 		}
-		log.info("[embedding] 저장 완료: itemType={} itemId={}", itemType, itemId);
 	}
 
 	private void saveOrUpdate(String itemType, Long itemId, String text, float[] vector, ItemEmbedding existing) {
