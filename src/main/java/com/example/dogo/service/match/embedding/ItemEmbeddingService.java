@@ -5,6 +5,7 @@ import com.example.dogo.entity.item.ItemEmbedding;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.repository.item.ItemEmbeddingRepository;
 import com.example.dogo.service.match.semantic.SemanticMatchItem;
+import com.example.dogo.service.match.semantic.SemanticMatchTextBuilder;
 import com.example.dogo.util.VectorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,14 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,23 +28,26 @@ public class ItemEmbeddingService {
 
 	private final ItemEmbeddingRepository embeddingRepository;
 	private final PythonEmbeddingClient embeddingClient;
+	private final SemanticMatchTextBuilder textBuilder;
 
 	public ItemEmbeddingService(ItemEmbeddingRepository embeddingRepository,
-			PythonEmbeddingClient embeddingClient) {
+			PythonEmbeddingClient embeddingClient,
+			SemanticMatchTextBuilder textBuilder) {
 		this.embeddingRepository = embeddingRepository;
 		this.embeddingClient = embeddingClient;
+		this.textBuilder = textBuilder;
 	}
 
 	@Transactional
 	public void embedAndSave(LostItem item) {
-		String text = buildText(item.getItemName(), item.getTitle());
+		String text = textBuilder.build(item);
 		if (!StringUtils.hasText(text)) return;
 		embedAndSave("LOST", item.getLostId(), text);
 	}
 
 	@Transactional
 	public void embedAndSave(FoundItem item) {
-		String text = buildText(item.getItemName(), item.getTitle());
+		String text = textBuilder.build(item);
 		if (!StringUtils.hasText(text)) return;
 		embedAndSave("FOUND", item.getFoundId(), text);
 	}
@@ -56,7 +56,7 @@ public class ItemEmbeddingService {
 	@Transactional
 	public int embedLostBatch(List<LostItem> items) {
 		List<EmbeddingItem> batch = items.stream()
-				.map(item -> new EmbeddingItem(item.getLostId(), buildText(item.getItemName(), item.getTitle())))
+				.map(item -> new EmbeddingItem(item.getLostId(), textBuilder.build(item)))
 				.toList();
 		return embedBatch("LOST", batch);
 	}
@@ -65,7 +65,7 @@ public class ItemEmbeddingService {
 	@Transactional
 	public int embedFoundBatch(List<FoundItem> items) {
 		List<EmbeddingItem> batch = items.stream()
-				.map(item -> new EmbeddingItem(item.getFoundId(), buildText(item.getItemName(), item.getTitle())))
+				.map(item -> new EmbeddingItem(item.getFoundId(), textBuilder.build(item)))
 				.toList();
 		return embedBatch("FOUND", batch);
 	}
@@ -75,31 +75,73 @@ public class ItemEmbeddingService {
 	public Map<Long, float[]> getOrFetch(String itemType, List<SemanticMatchItem> candidates) {
 		if (candidates.isEmpty()) return Map.of();
 
-		List<Long> ids = candidates.stream().map(SemanticMatchItem::id).toList();
-		Map<Long, float[]> result = new HashMap<>();
-
-		embeddingRepository.findByItemTypeAndItemIdIn(itemType, ids)
-				.forEach(e -> result.put(e.getItemId(), VectorUtils.fromBytes(e.getVectorBlob())));
-
-		List<EmbeddingItem> missing = candidates.stream()
-				.filter(c -> !result.containsKey(c.id()))
-				.map(c -> new EmbeddingItem(c.id(), buildText(c.itemName(), c.title())))
+		List<EmbeddingItem> requested = candidates.stream()
+				.map(c -> new EmbeddingItem(c.id(), textBuilder.build(c)))
 				.filter(e -> StringUtils.hasText(e.text()))
+				.toList();
+		if (requested.isEmpty()) return Map.of();
+
+		List<Long> ids = requested.stream().map(EmbeddingItem::id).toList();
+		Map<Long, EmbeddingItem> requestedById = requested.stream()
+				.collect(Collectors.toMap(EmbeddingItem::id, e -> e, (left, right) -> left));
+		Map<Long, float[]> result = new HashMap<>();
+		Map<Long, ItemEmbedding> existingById = embeddingRepository.findByItemTypeAndItemIdIn(itemType, ids)
+				.stream()
+				.collect(Collectors.toMap(ItemEmbedding::getItemId, e -> e, (left, right) -> left));
+
+		List<EmbeddingItem> missing = requested.stream()
+				.filter(e -> {
+					ItemEmbedding existing = existingById.get(e.id());
+					if (existing == null) {
+						return true;
+					}
+					String expectedHash = textBuilder.hash(e.text());
+					if (!expectedHash.equals(existing.getTextHash())) {
+						return true;
+					}
+					result.put(e.id(), VectorUtils.fromBytes(existing.getVectorBlob()));
+					return false;
+				})
 				.toList();
 
 		if (!missing.isEmpty()) {
 			log.info("[embedding] DB 미보유 {}건 Python 실시간 요청 (itemType={})", missing.size(), itemType);
 			Map<Long, float[]> fetched = embeddingClient.embedItems(missing);
 			fetched.forEach((id, vector) -> {
-				EmbeddingItem req = missing.stream().filter(e -> e.id() == id).findFirst().orElseThrow();
-				String hash = sha256(req.text());
-				embeddingRepository.save(
-						new ItemEmbedding(itemType, id, req.text(), hash, "", VectorUtils.toBytes(vector)));
+				EmbeddingItem req = requestedById.get(id);
+				if (req == null) {
+					return;
+				}
+				saveOrUpdate(itemType, id, req.text(), vector, existingById.get(id));
 				result.put(id, vector);
 			});
 		}
 
 		return result;
+	}
+
+	@Transactional
+	public float[] getOrFetchOne(String itemType, SemanticMatchItem item) {
+		String text = textBuilder.build(item);
+		if (!StringUtils.hasText(text)) {
+			return new float[0];
+		}
+
+		Optional<ItemEmbedding> existing = embeddingRepository.findByItemTypeAndItemId(itemType, item.id());
+		String hash = textBuilder.hash(text);
+		if (existing.isPresent() && existing.get().getTextHash().equals(hash)) {
+			return VectorUtils.fromBytes(existing.get().getVectorBlob());
+		}
+
+		log.info("[embedding] 단건 Python 실시간 요청: itemType={} itemId={}", itemType, item.id());
+		float[] vector = embeddingClient.embedText(text);
+		if (vector.length == 0) {
+			log.warn("[embedding] 빈 벡터 반환, 저장 스킵: itemType={} itemId={}", itemType, item.id());
+			return new float[0];
+		}
+
+		saveOrUpdate(itemType, item.id(), text, vector, existing.orElse(null));
+		return vector;
 	}
 
 	private int embedBatch(String itemType, List<EmbeddingItem> items) {
@@ -108,12 +150,16 @@ public class ItemEmbeddingService {
 				.toList();
 		if (candidates.isEmpty()) return 0;
 
-		Set<Long> existing = embeddingRepository.findByItemTypeAndItemIdIn(itemType,
+		Map<Long, ItemEmbedding> existingById = embeddingRepository.findByItemTypeAndItemIdIn(itemType,
 				candidates.stream().map(EmbeddingItem::id).toList())
-				.stream().map(ItemEmbedding::getItemId).collect(Collectors.toSet());
+				.stream()
+				.collect(Collectors.toMap(ItemEmbedding::getItemId, e -> e, (left, right) -> left));
 
 		List<EmbeddingItem> missing = candidates.stream()
-				.filter(e -> !existing.contains(e.id()))
+				.filter(e -> {
+					ItemEmbedding existing = existingById.get(e.id());
+					return existing == null || !textBuilder.hash(e.text()).equals(existing.getTextHash());
+				})
 				.toList();
 		if (missing.isEmpty()) return 0;
 
@@ -121,14 +167,15 @@ public class ItemEmbeddingService {
 		Map<Long, String> textById = missing.stream().collect(Collectors.toMap(EmbeddingItem::id, EmbeddingItem::text));
 		vectors.forEach((id, vector) -> {
 			String text = textById.get(id);
-			embeddingRepository.save(
-					new ItemEmbedding(itemType, id, text, sha256(text), "", VectorUtils.toBytes(vector)));
+			if (text != null) {
+				saveOrUpdate(itemType, id, text, vector, existingById.get(id));
+			}
 		});
 		return vectors.size();
 	}
 
 	private void embedAndSave(String itemType, Long itemId, String text) {
-		String hash = sha256(text);
+		String hash = textBuilder.hash(text);
 		Optional<ItemEmbedding> existing = embeddingRepository.findByItemTypeAndItemId(itemType, itemId);
 
 		if (existing.isPresent() && existing.get().getTextHash().equals(hash)) {
@@ -145,28 +192,22 @@ public class ItemEmbeddingService {
 
 		byte[] blob = VectorUtils.toBytes(vector);
 		if (existing.isPresent()) {
-			existing.get().update(text, hash, "", blob);
+			existing.get().update(text, hash, SemanticMatchTextBuilder.TEXT_VERSION, blob);
 		} else {
-			embeddingRepository.save(new ItemEmbedding(itemType, itemId, text, hash, "", blob));
+			embeddingRepository.save(new ItemEmbedding(
+					itemType, itemId, text, hash, SemanticMatchTextBuilder.TEXT_VERSION, blob));
 		}
 		log.info("[embedding] 저장 완료: itemType={} itemId={}", itemType, itemId);
 	}
 
-	private String buildText(String itemName, String title) {
-		if (StringUtils.hasText(itemName)) return itemName.trim();
-		if (StringUtils.hasText(title)) return title.trim();
-		return "";
-	}
-
-	private String sha256(String text) {
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			byte[] hash = md.digest(text.getBytes(StandardCharsets.UTF_8));
-			StringBuilder sb = new StringBuilder(64);
-			for (byte b : hash) sb.append(String.format("%02x", b));
-			return sb.toString();
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
+	private void saveOrUpdate(String itemType, Long itemId, String text, float[] vector, ItemEmbedding existing) {
+		String hash = textBuilder.hash(text);
+		byte[] blob = VectorUtils.toBytes(vector);
+		if (existing != null) {
+			existing.update(text, hash, SemanticMatchTextBuilder.TEXT_VERSION, blob);
+		} else {
+			embeddingRepository.save(new ItemEmbedding(
+					itemType, itemId, text, hash, SemanticMatchTextBuilder.TEXT_VERSION, blob));
 		}
 	}
 }

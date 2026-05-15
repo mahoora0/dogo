@@ -1,7 +1,6 @@
 package com.example.dogo.service.match.semantic;
 
 import com.example.dogo.service.match.embedding.ItemEmbeddingService;
-import com.example.dogo.service.match.embedding.PythonEmbeddingClient;
 import com.example.dogo.util.VectorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,18 +19,18 @@ public class PrecomputedSemanticMatchClient implements SemanticMatchClient {
 
 	private static final Logger log = LoggerFactory.getLogger(PrecomputedSemanticMatchClient.class);
 
-	private final PythonEmbeddingClient embeddingClient;
 	private final ItemEmbeddingService embeddingService;
+	private final SemanticMatchTextBuilder textBuilder;
 
-	public PrecomputedSemanticMatchClient(PythonEmbeddingClient embeddingClient,
-			ItemEmbeddingService embeddingService) {
-		this.embeddingClient = embeddingClient;
+	public PrecomputedSemanticMatchClient(ItemEmbeddingService embeddingService,
+			SemanticMatchTextBuilder textBuilder) {
 		this.embeddingService = embeddingService;
+		this.textBuilder = textBuilder;
 	}
 
 	@Override
 	public SemanticMatchResponse score(SemanticMatchRequest request) {
-		String queryText = buildText(request.query());
+		String queryText = textBuilder.build(request.query());
 		if (!StringUtils.hasText(queryText)) {
 			return new SemanticMatchResponse(null, List.of());
 		}
@@ -39,9 +38,9 @@ public class PrecomputedSemanticMatchClient implements SemanticMatchClient {
 		// 1. query 실시간 임베딩 (1개)
 		float[] queryVector;
 		try {
-			queryVector = embeddingClient.embedText(queryText);
+			queryVector = embeddingService.getOrFetchOne(request.query().type(), request.query());
 		} catch (Exception e) {
-			log.warn("[precomputed] query 임베딩 실패, rule-only 폴백: {}", e.getMessage());
+			log.warn("[precomputed] query 임베딩 조회 실패, rule-only 폴백: {}", e.getMessage());
 			return new SemanticMatchResponse(null, List.of());
 		}
 		if (queryVector.length == 0) {
@@ -66,7 +65,7 @@ public class PrecomputedSemanticMatchClient implements SemanticMatchClient {
 					BigDecimal score = BigDecimal.valueOf(Math.max(0.0, Math.min(100.0, cosine * 100.0)))
 							.setScale(2, RoundingMode.HALF_UP);
 					List<String> reasons = score.compareTo(new BigDecimal("50")) >= 0
-							? List.of("물품명/제목 의미 유사") : List.of();
+							? List.of("물품명/제목/카테고리/색상 의미 유사") : List.of();
 					return new SemanticMatchResult(c.id(), score, reasons);
 				})
 				.toList();
@@ -75,11 +74,5 @@ public class PrecomputedSemanticMatchClient implements SemanticMatchClient {
 				queryText, request.candidates().size(), results.size());
 
 		return new SemanticMatchResponse(null, results);
-	}
-
-	private String buildText(SemanticMatchItem item) {
-		if (StringUtils.hasText(item.itemName())) return item.itemName().trim();
-		if (StringUtils.hasText(item.title())) return item.title().trim();
-		return "";
 	}
 }

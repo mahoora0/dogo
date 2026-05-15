@@ -104,11 +104,22 @@ def compute_embeddings(items: list[EmbeddingItem]) -> list[EmbeddingVector]:
 
 
 def build_match_text(item: MatchItem) -> str:
-    if item.itemName and item.itemName.strip():
-        return item.itemName.strip()
-    if item.title and item.title.strip():
-        return item.title.strip()
-    return ""
+    parts: list[str] = []
+    _append_text_part(parts, "물품명", item.itemName)
+    _append_text_part(parts, "제목", item.title)
+    _append_text_part(parts, "카테고리", item.category)
+    _append_text_part(parts, "색상", item.color)
+    return ". ".join(parts)
+
+
+def _append_text_part(parts: list[str], label: str, value: str | None) -> None:
+    if not value or not value.strip():
+        return
+
+    normalized = " ".join(value.strip().split())
+    if any(existing.endswith(f": {normalized}") for existing in parts):
+        return
+    parts.append(f"{label}: {normalized}")
 
 
 def compute_similarity(
@@ -168,7 +179,7 @@ def compute_similarity(
             CandidateResult(
                 candidateId=candidates[i].id,
                 semanticScore=score,
-                reasons=["물품명/제목 의미 유사"] if score >= 50.0 else [],
+                reasons=["물품명/제목/카테고리/색상 의미 유사"] if score >= 50.0 else [],
             )
         )
 
