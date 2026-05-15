@@ -10,7 +10,7 @@
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
-            <form th:action="${notice.id == null ? '/notice' : '/notice/' + notice.id + '/edit'}" method="post" class="space-y-6">
+            <form th:action="${notice.id == null ? '/admin/notice' : '/admin/notice/' + notice.id + '/edit'}" method="post" class="space-y-6">
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <!-- 카테고리 -->

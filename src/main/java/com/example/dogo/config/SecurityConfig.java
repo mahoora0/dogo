@@ -50,7 +50,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
 
                 // 비로그인 사용자도 공지사항 목록 및 상세조회가 가능하도록 /notice/** 경로 허용 추가
-                .requestMatchers("/", "/login", "/join", "/api/user/**", "/api/mail/**", "/api/sms/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/areas/**", "/api/police/**", "/api/korail/**", "/faq", "/inquiry/**", "/notice/**", "/guide", "/error", "/uploads/**")
+                .requestMatchers("/", "/login", "/join", "/api/user/**", "/api/mail/**", "/api/sms/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/areas/**", "/api/police/**", "/api/korail/**", "/faq", "/faq/**", "/inquiry/**", "/notice/**", "/guide", "/error", "/uploads/**", "/admin/**")
                 .permitAll().anyRequest().authenticated()
             )
             .formLogin(form -> form

@@ -92,7 +92,7 @@ public class InquiryController {
         return "redirect:/inquiry";
     }
 
-    @PostMapping({"/inquiry/{id}/answer", "/inqiry/{id}/answer"})
+    @PostMapping("/admin/inquiry/{id}/answer")
     public String answerInquiry(@PathVariable Long id, @RequestParam String answer) {
         /*
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

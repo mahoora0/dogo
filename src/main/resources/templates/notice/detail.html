@@ -53,12 +53,12 @@
                 <!-- 오른쪽: 관리자용 수정/삭제 버튼 분기 -->
                 <div th:if="${isAdmin}" class="flex items-center gap-2">
                     <!-- 수정 버튼 -->
-                    <a th:href="@{/notice/{id}/edit(id=${notice.id})}"
+                    <a th:href="@{/admin/notice/{id}/edit(id=${notice.id})}"
                        class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-semibold text-sm transition-colors border border-indigo-200">
                         수정
                     </a>
                     <!-- 삭제 버튼 (Form submit 방식) -->
-                    <form th:action="@{/notice/{id}/delete(id=${notice.id})}" method="post" onsubmit="return confirm('이 공지사항을 삭제하시겠습니까?');">
+                    <form th:action="@{/admin/notice/{id}/delete(id=${notice.id})}" method="post" onsubmit="return confirm('이 공지사항을 삭제하시겠습니까?');">
                         <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-semibold text-sm transition-colors border border-red-200">
                             삭제
                         </button>
