@@ -1,12 +1,12 @@
 package com.example.dogo.service.match.semantic;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-@ConditionalOnProperty(name = "match.semantic.enabled", havingValue = "false", matchIfMissing = true)
+@ConditionalOnExpression("!${match.semantic.enabled:false} && !${match.embedding.enabled:false}")
 public class NoOpSemanticMatchClient implements SemanticMatchClient {
 
 	@Override

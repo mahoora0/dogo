@@ -11,6 +11,7 @@ import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.match.FoundItemMatchRequestedEvent;
 import com.example.dogo.service.match.ItemMatchService;
+import com.example.dogo.service.match.embedding.FoundItemEmbeddingRequestedEvent;
 import com.example.dogo.service.police.sync.PoliceFoundItemDetailEnrichmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -132,9 +134,10 @@ class FoundItemServiceTest {
 		verify(userRepository, never()).findByEmail(any());
 		verify(foundItemImageRepository, never()).save(any());
 
-		ArgumentCaptor<FoundItemMatchRequestedEvent> eventCaptor = ArgumentCaptor.forClass(FoundItemMatchRequestedEvent.class);
-		verify(eventPublisher).publishEvent(eventCaptor.capture());
-		assertThat(eventCaptor.getValue().foundId()).isEqualTo(10L);
+		verify(eventPublisher).publishEvent((Object) argThat(event ->
+				event instanceof FoundItemEmbeddingRequestedEvent e && e.foundId().equals(10L)));
+		verify(eventPublisher).publishEvent((Object) argThat(event ->
+				event instanceof FoundItemMatchRequestedEvent e && e.foundId().equals(10L)));
 	}
 
 	@Test

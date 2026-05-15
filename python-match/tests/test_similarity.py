@@ -19,15 +19,27 @@ def make_item(id: int, item_name: str | None, title: str | None, type: str = "FO
 class TestBuildMatchText:
     def test_both_fields(self):
         item = make_item(1, "검정 명함지갑", "강남역에서 명함지갑 잃어버렸어요")
-        assert build_match_text(item) == "검정 명함지갑"
+        assert build_match_text(item) == "물품명: 검정 명함지갑. 제목: 강남역에서 명함지갑 잃어버렸어요"
 
     def test_only_item_name(self):
         item = make_item(1, "명함지갑", None)
-        assert build_match_text(item) == "명함지갑"
+        assert build_match_text(item) == "물품명: 명함지갑"
 
     def test_only_title(self):
         item = make_item(1, None, "강남역 습득")
-        assert build_match_text(item) == "강남역 습득"
+        assert build_match_text(item) == "제목: 강남역 습득"
+
+    def test_includes_category_and_color(self):
+        item = MatchItem(
+            id=1,
+            type="FOUND",
+            itemName="카드지갑",
+            title="강남역 카드지갑 습득",
+            category="지갑",
+            color="검정",
+            content="상세 설명은 semantic v2 텍스트에서 제외합니다",
+        )
+        assert build_match_text(item) == "물품명: 카드지갑. 제목: 강남역 카드지갑 습득. 카테고리: 지갑. 색상: 검정"
 
     def test_both_none(self):
         item = make_item(1, None, None)
@@ -115,4 +127,4 @@ class TestComputeSimilarity:
         query = self._query("검정 명함지갑", "강남역 명함지갑 분실")
         candidate = make_item(10, "검정 명함지갑", "강남역 명함지갑 분실")
         results = compute_similarity(query, [candidate])
-        assert "물품명/제목 의미 유사" in results[0].reasons
+        assert "물품명/제목/카테고리/색상 의미 유사" in results[0].reasons

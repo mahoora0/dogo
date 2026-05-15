@@ -7,6 +7,7 @@ import com.example.dogo.dto.police.PoliceFoundItemSyncResult;
 import com.example.dogo.dto.police.PoliceRegionCode;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.repository.item.FoundItemRepository;
+import com.example.dogo.service.match.embedding.FoundItemEmbeddingRequestedEvent;
 import com.example.dogo.service.police.client.PoliceCommonCodeClient;
 import com.example.dogo.service.police.client.PoliceFoundItemClient;
 import com.example.dogo.service.police.mapper.PoliceFoundItemMapper;
@@ -14,6 +15,7 @@ import com.example.dogo.service.police.station.PoliceStationAddressResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -33,6 +35,7 @@ public class PoliceFoundItemSyncService {
 	private final PoliceStationAddressResolver stationAddressResolver;
 	private final FoundItemRepository foundItemRepository;
 	private final PoliceFoundItemImageService imageService;
+	private final ApplicationEventPublisher eventPublisher;
 	private final int numOfRows;
 	private final int incrementalEmptyPageLimit;
 	private final int backfillLookbackDays;
@@ -45,6 +48,7 @@ public class PoliceFoundItemSyncService {
 			PoliceStationAddressResolver stationAddressResolver,
 			FoundItemRepository foundItemRepository,
 			PoliceFoundItemImageService imageService,
+			ApplicationEventPublisher eventPublisher,
 			@Value("${police.found-item.num-of-rows:100}") int numOfRows,
 			@Value("${police.found-item.incremental-empty-page-limit:2}") int incrementalEmptyPageLimit,
 			@Value("${police.found-item.backfill-lookback-days:1}") int backfillLookbackDays,
@@ -56,6 +60,7 @@ public class PoliceFoundItemSyncService {
 		this.stationAddressResolver = stationAddressResolver;
 		this.foundItemRepository = foundItemRepository;
 		this.imageService = imageService;
+		this.eventPublisher = eventPublisher;
 		this.numOfRows = numOfRows;
 		this.incrementalEmptyPageLimit = incrementalEmptyPageLimit;
 		this.backfillLookbackDays = Math.max(backfillLookbackDays, 1);
@@ -201,6 +206,7 @@ public class PoliceFoundItemSyncService {
 			} else {
 				imageService.saveImageIfPresent(savedItem, response);
 			}
+			eventPublisher.publishEvent(new FoundItemEmbeddingRequestedEvent(savedItem.getFoundId()));
 			return true;
 		} catch (DataIntegrityViolationException exception) {
 			log.debug("이미 저장된 경찰청 습득물입니다. atcId={}, fdSn={}", atcId, fdSn, exception);

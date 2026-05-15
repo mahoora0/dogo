@@ -9,7 +9,7 @@ SEED_DB_PORT="${SEED_DB_PORT:-3306}"
 SEED_DB_DOCKER_CONTAINER="${SEED_DB_DOCKER_CONTAINER:-dogo-mysql}"
 SEED_DB_USE_DOCKER="${SEED_DB_USE_DOCKER:-auto}"
 OUT_DIR="${SEED_DUMP_DIR:-seed}"
-OUT_FILE="${1:-${OUT_DIR}/dogo_seed_$(date +%Y%m%d).sql.gz}"
+OUT_FILE="${1:-${OUT_DIR}/dogo_seed.sql.gz}"
 
 mkdir -p "$(dirname "$OUT_FILE")"
 

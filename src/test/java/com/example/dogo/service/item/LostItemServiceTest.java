@@ -11,6 +11,7 @@ import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.match.ItemMatchService;
 import com.example.dogo.service.match.LostItemMatchRequestedEvent;
+import com.example.dogo.service.match.embedding.LostItemEmbeddingRequestedEvent;
 import com.example.dogo.service.police.sync.PoliceLostItemDetailEnrichmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -139,9 +141,10 @@ class LostItemServiceTest {
 		assertThat(captor.getValue().getStatus()).isEqualTo("WAITING");
 		verify(lostItemImageRepository, never()).save(any());
 
-		ArgumentCaptor<LostItemMatchRequestedEvent> eventCaptor = ArgumentCaptor.forClass(LostItemMatchRequestedEvent.class);
-		verify(eventPublisher).publishEvent(eventCaptor.capture());
-		assertThat(eventCaptor.getValue().lostId()).isEqualTo(10L);
+		verify(eventPublisher).publishEvent((Object) argThat(event ->
+				event instanceof LostItemEmbeddingRequestedEvent e && e.lostId().equals(10L)));
+		verify(eventPublisher).publishEvent((Object) argThat(event ->
+				event instanceof LostItemMatchRequestedEvent e && e.lostId().equals(10L)));
 	}
 
 	@Test

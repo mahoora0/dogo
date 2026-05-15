@@ -135,7 +135,7 @@ class ItemMatchServiceTest {
 				.thenReturn(List.of(found));
 		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
 
-		SemanticMatchResult semResult = new SemanticMatchResult(10L, new BigDecimal("80.00"), List.of("물품명/제목 의미 유사"));
+		SemanticMatchResult semResult = new SemanticMatchResult(10L, new BigDecimal("80.00"), List.of("물품명/제목/카테고리/색상 의미 유사"));
 		when(semanticMatchClient.score(any()))
 				.thenReturn(new SemanticMatchResponse("BM-K/KoSimCSE-roberta-multitask", List.of(semResult)));
 
@@ -157,7 +157,7 @@ class ItemMatchServiceTest {
 
 		// Python reason이 matchReasons에 포함되어야 함
 		assertThat(saved.getMatchReasonList()).anyMatch(r -> r.contains("의미 유사도"));
-		assertThat(saved.getMatchReasonList()).contains("물품명/제목 의미 유사");
+		assertThat(saved.getMatchReasonList()).contains("물품명/제목/카테고리/색상 의미 유사");
 	}
 
 	// -----------------------------------------------------------------------
@@ -243,7 +243,7 @@ class ItemMatchServiceTest {
 		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
 		when(semanticMatchClient.score(any()))
 				.thenReturn(new SemanticMatchResponse("BM-K/KoSimCSE-roberta-multitask",
-						List.of(new SemanticMatchResult(10L, new BigDecimal("100.00"), List.of("물품명/제목 의미 유사")))));
+						List.of(new SemanticMatchResult(10L, new BigDecimal("100.00"), List.of("물품명/제목/카테고리/색상 의미 유사")))));
 
 		itemMatchService.matchForLostItem(lost);
 
@@ -267,7 +267,7 @@ class ItemMatchServiceTest {
 		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
 		when(semanticMatchClient.score(any()))
 				.thenReturn(new SemanticMatchResponse("BM-K/KoSimCSE-roberta-multitask",
-						List.of(new SemanticMatchResult(10L, new BigDecimal("100.00"), List.of("물품명/제목 의미 유사")))));
+						List.of(new SemanticMatchResult(10L, new BigDecimal("100.00"), List.of("물품명/제목/카테고리/색상 의미 유사")))));
 
 		itemMatchService.matchForLostItem(lost);
 
@@ -291,7 +291,7 @@ class ItemMatchServiceTest {
 		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
 		when(semanticMatchClient.score(any()))
 				.thenReturn(new SemanticMatchResponse("BM-K/KoSimCSE-roberta-multitask",
-						List.of(new SemanticMatchResult(10L, new BigDecimal("100.00"), List.of("물품명/제목 의미 유사")))));
+						List.of(new SemanticMatchResult(10L, new BigDecimal("100.00"), List.of("물품명/제목/카테고리/색상 의미 유사")))));
 
 		itemMatchService.matchForLostItem(lost);
 

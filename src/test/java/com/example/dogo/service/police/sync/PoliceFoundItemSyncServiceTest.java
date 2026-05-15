@@ -7,6 +7,7 @@ import com.example.dogo.dto.police.PoliceFoundItemSyncResult;
 import com.example.dogo.dto.police.PoliceRegionCode;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.repository.item.FoundItemRepository;
+import com.example.dogo.service.match.embedding.FoundItemEmbeddingRequestedEvent;
 import com.example.dogo.service.police.client.PoliceCommonCodeClient;
 import com.example.dogo.service.police.client.PoliceFoundItemClient;
 import com.example.dogo.service.police.mapper.PoliceFoundItemMapper;
@@ -14,13 +15,17 @@ import com.example.dogo.service.police.station.PoliceStationAddressResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -32,6 +37,7 @@ class PoliceFoundItemSyncServiceTest {
 	private PoliceCommonCodeClient commonCodeClient;
 	private FoundItemRepository foundItemRepository;
 	private PoliceFoundItemImageService imageService;
+	private ApplicationEventPublisher eventPublisher;
 	private PoliceFoundItemSyncService syncService;
 
 	@BeforeEach
@@ -40,11 +46,17 @@ class PoliceFoundItemSyncServiceTest {
 		commonCodeClient = mock(PoliceCommonCodeClient.class);
 		foundItemRepository = mock(FoundItemRepository.class);
 		imageService = mock(PoliceFoundItemImageService.class);
+		eventPublisher = mock(ApplicationEventPublisher.class);
 		when(commonCodeClient.fetchRegionCodes()).thenReturn(List.of(
 				new PoliceRegionCode("LCA000", "서울특별시"),
 				new PoliceRegionCode("LCA020", "서울특별시 용산구")
 		));
-		when(foundItemRepository.save(any(FoundItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		AtomicLong idSequence = new AtomicLong(100L);
+		when(foundItemRepository.save(any(FoundItem.class))).thenAnswer(invocation -> {
+			FoundItem saved = invocation.getArgument(0);
+			ReflectionTestUtils.setField(saved, "foundId", idSequence.getAndIncrement());
+			return saved;
+		});
 		syncService = new PoliceFoundItemSyncService(
 				client,
 				commonCodeClient,
@@ -52,6 +64,7 @@ class PoliceFoundItemSyncServiceTest {
 				new PoliceStationAddressResolver(),
 				foundItemRepository,
 				imageService,
+				eventPublisher,
 				100,
 				2,
 				1,
@@ -91,6 +104,8 @@ class PoliceFoundItemSyncServiceTest {
 		assertThat(captor.getValue().getContact()).isEqualTo("서울역(한국철도공사) / 02-3149-2531");
 
 		verify(imageService).saveImageIfPresent(captor.getValue(), detail("F202605110000001", "1"));
+		verify(eventPublisher).publishEvent((Object) argThat(event ->
+				event instanceof FoundItemEmbeddingRequestedEvent e && e.foundId().equals(100L)));
 	}
 
 	@Test

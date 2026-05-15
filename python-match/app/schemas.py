@@ -32,3 +32,22 @@ class SimilarityResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     model: str
+
+
+class EmbeddingItem(BaseModel):
+    id: int
+    text: str
+
+
+class EmbeddingVector(BaseModel):
+    id: int
+    vector: list[float]
+
+
+class EmbeddingsRequest(BaseModel):
+    items: list[EmbeddingItem]
+
+
+class EmbeddingsResponse(BaseModel):
+    model: str
+    embeddings: list[EmbeddingVector]

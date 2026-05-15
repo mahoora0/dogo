@@ -37,7 +37,52 @@ public class ItemMatchScorer {
 		this.tokenizer = tokenizer;
 	}
 
+	// ─── Pre-computed context records ────────────────────────────────────────
+
+	public record LostItemContext(
+			LostItem item,
+			Set<String> locationTokens,
+			Set<String> keywordTokens,
+			Set<String> detailTokens,
+			Optional<String> color
+	) {}
+
+	public record FoundItemContext(
+			FoundItem item,
+			Set<String> locationTokens,
+			Set<String> keywordTokens,
+			Set<String> detailTokens,
+			Optional<String> color
+	) {}
+
+	public LostItemContext precompute(LostItem lost) {
+		return new LostItemContext(
+				lost,
+				tokenizer.tokenize(lost.getLostArea(), lost.getLostPlace()),
+				tokenizer.tokenize(lost.getItemName()),
+				tokenizer.tokenize(lost.getContent()),
+				normalizer.extractColor(lost.getItemName(), lost.getTitle(), lost.getContent())
+		);
+	}
+
+	public FoundItemContext precompute(FoundItem found) {
+		return new FoundItemContext(
+				found,
+				tokenizer.tokenize(found.getFoundArea(), found.getFoundPlace(), found.getKeepPlace()),
+				tokenizer.tokenize(found.getItemName()),
+				tokenizer.tokenize(found.getContent()),
+				normalizer.extractColor(found.getColorName(), found.getItemName(), found.getTitle(), found.getContent())
+		);
+	}
+
+	// ─── Public score methods ─────────────────────────────────────────────────
+
 	public MatchScoreResult score(LostItem lost, FoundItem found) {
+		return score(precompute(lost), found);
+	}
+
+	public MatchScoreResult score(LostItemContext lostCtx, FoundItem found) {
+		LostItem lost = lostCtx.item();
 		if (lost == null || found == null) {
 			return MatchScoreResult.ineligible("비교 대상이 없습니다.");
 		}
@@ -54,13 +99,18 @@ public class ItemMatchScorer {
 			return MatchScoreResult.ineligible("분실/습득 시간이 매칭 범위를 벗어났습니다.");
 		}
 
+		Set<String> foundLocationTokens = tokenizer.tokenize(found.getFoundArea(), found.getFoundPlace(), found.getKeepPlace());
+		Set<String> foundKeywordTokens = tokenizer.tokenize(found.getItemName());
+		Set<String> foundDetailTokens = tokenizer.tokenize(found.getContent());
+		Optional<String> foundColor = normalizer.extractColor(found.getColorName(), found.getItemName(), found.getTitle(), found.getContent());
+
 		List<String> reasons = new ArrayList<>();
 		BigDecimal categoryScore = categoryScore(lost, found, reasons);
 		BigDecimal timeScore = timeScore(lost, found, reasons);
-		BigDecimal locationScore = locationScore(lost, found, reasons);
-		BigDecimal keywordScore = keywordScore(lost, found, reasons);
-		BigDecimal colorScore = colorScore(lost, found, reasons);
-		BigDecimal detailScore = detailScore(lost, found, reasons);
+		BigDecimal locationScore = locationScore(lostCtx.locationTokens(), foundLocationTokens, reasons);
+		BigDecimal keywordScore = keywordScore(lostCtx.keywordTokens(), foundKeywordTokens, reasons);
+		BigDecimal colorScore = colorScore(lostCtx.color(), foundColor, reasons);
+		BigDecimal detailScore = detailScore(lostCtx.detailTokens(), foundDetailTokens, reasons);
 
 		BigDecimal total = categoryScore
 				.add(timeScore)
@@ -71,17 +121,57 @@ public class ItemMatchScorer {
 				.setScale(2, RoundingMode.HALF_UP);
 
 		return new MatchScoreResult(
-				true,
-				total,
-				categoryScore,
-				timeScore,
-				locationScore,
-				keywordScore,
-				colorScore,
-				detailScore,
-				List.copyOf(reasons)
+				true, total, categoryScore, timeScore, locationScore,
+				keywordScore, colorScore, detailScore, List.copyOf(reasons)
 		);
 	}
+
+	public MatchScoreResult score(LostItem lost, FoundItemContext foundCtx) {
+		FoundItem found = foundCtx.item();
+		if (lost == null || found == null) {
+			return MatchScoreResult.ineligible("비교 대상이 없습니다.");
+		}
+		if (lost.isDeleted() || found.isDeleted()) {
+			return MatchScoreResult.ineligible("삭제된 게시글입니다.");
+		}
+		if (!isOpenLostStatus(lost.getStatus()) || !isOpenFoundStatus(found.getStatus())) {
+			return MatchScoreResult.ineligible("매칭 대상 상태가 아닙니다.");
+		}
+		if (hasConflictingCategory(lost, found)) {
+			return MatchScoreResult.ineligible("카테고리가 다릅니다.");
+		}
+		if (!isTimeEligible(lost, found)) {
+			return MatchScoreResult.ineligible("분실/습득 시간이 매칭 범위를 벗어났습니다.");
+		}
+
+		Set<String> lostLocationTokens = tokenizer.tokenize(lost.getLostArea(), lost.getLostPlace());
+		Set<String> lostKeywordTokens = tokenizer.tokenize(lost.getItemName());
+		Set<String> lostDetailTokens = tokenizer.tokenize(lost.getContent());
+		Optional<String> lostColor = normalizer.extractColor(lost.getItemName(), lost.getTitle(), lost.getContent());
+
+		List<String> reasons = new ArrayList<>();
+		BigDecimal categoryScore = categoryScore(lost, found, reasons);
+		BigDecimal timeScore = timeScore(lost, found, reasons);
+		BigDecimal locationScore = locationScore(lostLocationTokens, foundCtx.locationTokens(), reasons);
+		BigDecimal keywordScore = keywordScore(lostKeywordTokens, foundCtx.keywordTokens(), reasons);
+		BigDecimal colorScore = colorScore(lostColor, foundCtx.color(), reasons);
+		BigDecimal detailScore = detailScore(lostDetailTokens, foundCtx.detailTokens(), reasons);
+
+		BigDecimal total = categoryScore
+				.add(timeScore)
+				.add(locationScore)
+				.add(keywordScore)
+				.add(colorScore)
+				.add(detailScore)
+				.setScale(2, RoundingMode.HALF_UP);
+
+		return new MatchScoreResult(
+				true, total, categoryScore, timeScore, locationScore,
+				keywordScore, colorScore, detailScore, List.copyOf(reasons)
+		);
+	}
+
+	// ─── Private helpers ──────────────────────────────────────────────────────
 
 	private boolean isOpenLostStatus(String status) {
 		return status == null || status.equals("WAITING") || status.equals("MATCHING");
@@ -160,16 +250,13 @@ public class ItemMatchScorer {
 		return score;
 	}
 
-	private BigDecimal locationScore(LostItem lost, FoundItem found, List<String> reasons) {
-		Set<String> lostTokens = tokenizer.tokenize(lost.getLostArea(), lost.getLostPlace());
-		Set<String> foundTokens = tokenizer.tokenize(found.getFoundArea(), found.getFoundPlace(), found.getKeepPlace());
+	private BigDecimal locationScore(Set<String> lostTokens, Set<String> foundTokens, List<String> reasons) {
 		if (lostTokens.isEmpty() || foundTokens.isEmpty()) {
 			return BigDecimal.ZERO;
 		}
 
 		long commonCount = lostTokens.stream().filter(foundTokens::contains).count();
-		boolean transportCase = tokenizer.containsTransportTerm(lost.getLostArea(), lost.getLostPlace())
-				|| tokenizer.containsTransportTerm(found.getFoundArea(), found.getFoundPlace(), found.getKeepPlace());
+		boolean transportCase = lostTokens.contains("이동수단") || foundTokens.contains("이동수단");
 
 		BigDecimal score = BigDecimal.ZERO;
 		if (commonCount > 0) {
@@ -184,9 +271,7 @@ public class ItemMatchScorer {
 		return score.min(LOCATION_WEIGHT);
 	}
 
-	private BigDecimal keywordScore(LostItem lost, FoundItem found, List<String> reasons) {
-		Set<String> lostTokens = tokenizer.tokenize(lost.getItemName());
-		Set<String> foundTokens = tokenizer.tokenize(found.getItemName());
+	private BigDecimal keywordScore(Set<String> lostTokens, Set<String> foundTokens, List<String> reasons) {
 		if (lostTokens.isEmpty() || foundTokens.isEmpty()) {
 			return BigDecimal.ZERO;
 		}
@@ -198,10 +283,7 @@ public class ItemMatchScorer {
 		return score;
 	}
 
-	private BigDecimal colorScore(LostItem lost, FoundItem found, List<String> reasons) {
-		Optional<String> lostColor = normalizer.extractColor(lost.getItemName(), lost.getTitle(), lost.getContent());
-		Optional<String> foundColor = normalizer.extractColor(found.getColorName(), found.getItemName(), found.getTitle(), found.getContent());
-
+	private BigDecimal colorScore(Optional<String> lostColor, Optional<String> foundColor, List<String> reasons) {
 		if (lostColor.isPresent() && foundColor.isPresent()) {
 			if (lostColor.get().equals(foundColor.get())) {
 				reasons.add("색상 일치 (" + lostColor.get() + ")");
@@ -215,9 +297,7 @@ public class ItemMatchScorer {
 		return BigDecimal.ZERO;
 	}
 
-	private BigDecimal detailScore(LostItem lost, FoundItem found, List<String> reasons) {
-		Set<String> lostTokens = tokenizer.tokenize(lost.getContent());
-		Set<String> foundTokens = tokenizer.tokenize(found.getContent());
+	private BigDecimal detailScore(Set<String> lostTokens, Set<String> foundTokens, List<String> reasons) {
 		if (lostTokens.isEmpty() || foundTokens.isEmpty()) {
 			return BigDecimal.ZERO;
 		}
