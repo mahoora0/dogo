@@ -244,7 +244,46 @@ public class ItemMatchService {
 	@Transactional(readOnly = true)
 	public long getUnreadMatchCount(User user) {
 		if (user == null) return 0;
-		return itemMatchRepository.countByLostItemUserUserNoAndMatchStatus(user.getUserNo(), "CANDIDATE");
+		long count = itemMatchRepository.countByLostItemUserUserNoAndMatchStatus(user.getUserNo(), "CANDIDATE");
+		return Math.min(count, 3); // 최대 3개까지만 표시
+	}
+
+	@Transactional(readOnly = true)
+	public List<MatchCandidateView> getTopMatchesForNotification(User user) {
+		if (user == null) return List.of();
+		
+		return itemMatchRepository.findTop3ByLostItemUserUserNoAndMatchStatusOrderByFinalScoreDescMatchIdDesc(user.getUserNo(), "CANDIDATE")
+				.stream()
+				.map(match -> {
+					FoundItem found = match.getFoundItem();
+					String imageUrl = foundItemImageRepository
+							.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(found)
+							.map(FoundItemImage::getImageUrl)
+							.orElse(null);
+					return new MatchCandidateView(
+							found.getFoundId(),
+							"found",
+							found.getTitle(),
+							found.getItemName(),
+							found.getCategoryMain(),
+							found.getFoundArea(),
+							found.getFoundPlace(),
+							found.getFoundAt(),
+							found.getStatus(),
+							foundStatusLabel(found.getStatus()),
+							imageUrl,
+							match.displayScore(),
+							List.of() // 알림창에서는 사유 제외
+					);
+				})
+				.toList();
+	}
+
+	@Transactional
+	public void markAllAsRead(User user) {
+		if (user != null) {
+			itemMatchRepository.markAllAsReadByUserNo(user.getUserNo());
+		}
 	}
 
 	private SemanticFetchResult fetchSemanticScores(SemanticMatchItem query, List<SemanticMatchItem> candidates) {

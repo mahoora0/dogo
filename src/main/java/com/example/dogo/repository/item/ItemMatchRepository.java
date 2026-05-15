@@ -33,4 +33,11 @@ public interface ItemMatchRepository extends JpaRepository<ItemMatch, Long> {
 
 	// 사용자가 확인하지 않은 새로운 매칭 건수 조회
 	long countByLostItemUserUserNoAndMatchStatus(Long userNo, String matchStatus);
+
+	// 사용자가 확인하지 않은 상위 3개 매칭 결과 조회
+	List<ItemMatch> findTop3ByLostItemUserUserNoAndMatchStatusOrderByFinalScoreDescMatchIdDesc(Long userNo, String matchStatus);
+
+	@org.springframework.data.jpa.repository.Modifying
+	@org.springframework.data.jpa.repository.Query("UPDATE ItemMatch m SET m.matchStatus = 'READ', m.moddate = CURRENT_TIMESTAMP WHERE m.lostItem.user.userNo = :userNo AND m.matchStatus = 'CANDIDATE'")
+	void markAllAsReadByUserNo(@Param("userNo") Long userNo);
 }
