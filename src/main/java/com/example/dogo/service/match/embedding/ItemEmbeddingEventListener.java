@@ -4,8 +4,6 @@ import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.item.LostItemRepository;
-import com.example.dogo.service.match.FoundItemMatchRequestedEvent;
-import com.example.dogo.service.match.LostItemMatchRequestedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -33,8 +31,8 @@ public class ItemEmbeddingEventListener {
 	}
 
 	@Async("itemMatchTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleLostItemMatchRequested(LostItemMatchRequestedEvent event) {
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+	public void handleLostItemEmbeddingRequested(LostItemEmbeddingRequestedEvent event) {
 		try {
 			LostItem item = lostItemRepository.findById(event.lostId()).orElse(null);
 			if (item == null) return;
@@ -45,8 +43,8 @@ public class ItemEmbeddingEventListener {
 	}
 
 	@Async("itemMatchTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleFoundItemMatchRequested(FoundItemMatchRequestedEvent event) {
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+	public void handleFoundItemEmbeddingRequested(FoundItemEmbeddingRequestedEvent event) {
 		try {
 			FoundItem item = foundItemRepository.findById(event.foundId()).orElse(null);
 			if (item == null) return;

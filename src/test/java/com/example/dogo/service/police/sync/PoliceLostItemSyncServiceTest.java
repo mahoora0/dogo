@@ -6,11 +6,14 @@ import com.example.dogo.dto.police.PoliceLostItemResponse;
 import com.example.dogo.dto.police.PoliceLostItemSyncResult;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.repository.item.LostItemRepository;
+import com.example.dogo.service.match.embedding.LostItemEmbeddingRequestedEvent;
 import com.example.dogo.service.police.client.PoliceLostItemClient;
 import com.example.dogo.service.police.mapper.PoliceLostItemMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,6 +21,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -28,6 +32,7 @@ class PoliceLostItemSyncServiceTest {
 	private PoliceLostItemClient client;
 	private LostItemRepository lostItemRepository;
 	private PoliceLostItemImageService imageService;
+	private ApplicationEventPublisher eventPublisher;
 	private PoliceLostItemSyncService syncService;
 
 	@BeforeEach
@@ -35,12 +40,18 @@ class PoliceLostItemSyncServiceTest {
 		client = mock(PoliceLostItemClient.class);
 		lostItemRepository = mock(LostItemRepository.class);
 		imageService = mock(PoliceLostItemImageService.class);
-		when(lostItemRepository.save(any(LostItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		eventPublisher = mock(ApplicationEventPublisher.class);
+		when(lostItemRepository.save(any(LostItem.class))).thenAnswer(invocation -> {
+			LostItem saved = invocation.getArgument(0);
+			ReflectionTestUtils.setField(saved, "lostId", 100L);
+			return saved;
+		});
 		syncService = new PoliceLostItemSyncService(
 				client,
 				new PoliceLostItemMapper(),
 				lostItemRepository,
 				imageService,
+				eventPublisher,
 				100,
 				2,
 				1,
@@ -84,6 +95,8 @@ class PoliceLostItemSyncServiceTest {
 				"L202605090000001",
 				"https://example.com/lost/wallet.jpg"
 		));
+		verify(eventPublisher).publishEvent((Object) argThat(event ->
+				event instanceof LostItemEmbeddingRequestedEvent e && e.lostId().equals(100L)));
 	}
 
 	@Test

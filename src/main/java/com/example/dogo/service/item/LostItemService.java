@@ -13,6 +13,7 @@ import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.match.ItemMatchService;
 import com.example.dogo.service.match.LostItemMatchRequestedEvent;
+import com.example.dogo.service.match.embedding.LostItemEmbeddingRequestedEvent;
 import com.example.dogo.service.police.sync.PoliceLostItemDetailEnrichmentService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
@@ -163,6 +164,7 @@ public class LostItemService {
 
 		LostItem savedItem = lostItemRepository.save(lostItem);
 		saveImages(savedItem, request.getUploadImages());
+		eventPublisher.publishEvent(new LostItemEmbeddingRequestedEvent(savedItem.getLostId()));
 		eventPublisher.publishEvent(new LostItemMatchRequestedEvent(savedItem.getLostId()));
 
 		return savedItem.getLostId();
