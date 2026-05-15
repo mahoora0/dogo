@@ -6,6 +6,7 @@ import com.example.dogo.entity.item.FoundItemImage;
 import com.example.dogo.entity.item.ItemMatch;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.entity.item.LostItemImage;
+import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.item.FoundItemImageRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.item.ItemMatchRepository;
@@ -175,9 +176,14 @@ public class ItemMatchService {
 		log.info("습득물 매칭 완료: foundId={}, 후보={}건", foundItem.getFoundId(), topMatches.size());
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional
 	public List<MatchCandidateView> getMatchesForLostItem(Long lostId) {
-		return itemMatchRepository.findByLostIdWithFoundItem(lostId).stream()
+		List<ItemMatch> matches = itemMatchRepository.findByLostIdWithFoundItem(lostId);
+		
+		// 조회 시 자동으로 읽음 처리
+		matches.forEach(ItemMatch::markAsRead);
+		
+		return matches.stream()
 				.limit(MAX_CANDIDATES)
 				.map(match -> {
 					FoundItem found = match.getFoundItem();
@@ -233,6 +239,12 @@ public class ItemMatchService {
 					);
 				})
 				.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public long getUnreadMatchCount(User user) {
+		if (user == null) return 0;
+		return itemMatchRepository.countByLostItemUserUserNoAndMatchStatus(user.getUserNo(), "CANDIDATE");
 	}
 
 	private SemanticFetchResult fetchSemanticScores(SemanticMatchItem query, List<SemanticMatchItem> candidates) {

@@ -30,4 +30,7 @@ public interface ItemMatchRepository extends JpaRepository<ItemMatch, Long> {
 	void deleteByLostItemLostId(Long lostId);
 
 	void deleteByFoundItemFoundId(Long foundId);
+
+	// 사용자가 확인하지 않은 새로운 매칭 건수 조회
+	long countByLostItemUserUserNoAndMatchStatus(Long userNo, String matchStatus);
 }

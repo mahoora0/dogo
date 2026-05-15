@@ -25,6 +25,9 @@ public class KorailLostFoundCenter {
     @Column(name = "line_name", length = 50)
     private String lineName;
 
+    @Column(name = "sub_region", length = 100)
+    private String subRegion;
+
     @Column(name = "station_name", nullable = false, length = 100)
     private String stationName;
 

@@ -43,7 +43,7 @@ dependencies {
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'com.twilio.sdk:twilio:9.0.0'
-	implementation 'org.apache.commons:commons-text:1.10.0' //문자열 유사도 계산
+	implementation 'com.opencsv:opencsv:5.9'
 }
 
 tasks.named('test') {

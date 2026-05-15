@@ -17,4 +17,7 @@ public interface AreaRepository extends JpaRepository<Area, Long> {
 
   //지역 코드를 통해 특정 지역 정보를 조회
   Area findByAreaCode(String areaCode);
+
+  // 지역명을 통해 특정 지역 정보를 조회
+  java.util.Optional<Area> findByAreaName(String areaName);
 }
