@@ -2,10 +2,8 @@ package com.example.dogo.service.match;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 public class ItemMatchEventListener {
@@ -18,8 +16,7 @@ public class ItemMatchEventListener {
 		this.itemMatchService = itemMatchService;
 	}
 
-	@Async("itemMatchTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@EventListener
 	public void handleLostItemMatchRequested(LostItemMatchRequestedEvent event) {
 		try {
 			itemMatchService.matchForLostItemId(event.lostId());
@@ -28,8 +25,7 @@ public class ItemMatchEventListener {
 		}
 	}
 
-	@Async("itemMatchTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@EventListener
 	public void handleFoundItemMatchRequested(FoundItemMatchRequestedEvent event) {
 		try {
 			itemMatchService.matchForFoundItemId(event.foundId());

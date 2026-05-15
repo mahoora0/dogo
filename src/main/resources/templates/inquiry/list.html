@@ -102,7 +102,7 @@
                                 </svg>
                                 <span th:text="${inquiry.title}">비밀글입니다.</span>
                             </div>
-                            <a th:unless="${inquiry.isSecret}" th:href="@{/inquiry/{id}(id=${inquiry.id})}" th:text="${inquiry.title}" class="block truncate max-w-xs sm:max-w-md md:max-w-xl font-semibold">
+                            <a th:unless="${inquiry.isSecret}" th:href="@{${isAdmin ? '/admin/inquiry/' + inquiry.id : '/inquiry/' + inquiry.id}}" th:text="${inquiry.title}" class="block truncate max-w-xs sm:max-w-md md:max-w-xl font-semibold">
                                 문의 제목입니다.
                             </a>
                         </td>

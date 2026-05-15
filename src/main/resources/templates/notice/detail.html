@@ -45,7 +45,7 @@
                 
                 <!-- 왼쪽: 돌아가기 버튼 -->
                 <div>
-                    <a th:href="@{/notice}" class="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-semibold text-sm transition-colors">
+                    <a th:href="${isAdmin ? '/admin/notice' : '/notice'}" class="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-semibold text-sm transition-colors">
                         돌아가기
                     </a>
                 </div>

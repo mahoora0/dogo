@@ -11,7 +11,7 @@
                 <p class="text-slate-500 text-lg">분실물 센터 이용과 관련하여 궁금하신 점을 확인해 보세요.</p>
             </div>
             <div th:if="${isAdmin}">
-                <a href="/admin/faq/new" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">FAQ 등록</a>
+                <a th:href="${isAdmin ? '/admin/faq/new' : '/faq/new'}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">FAQ 등록</a>
             </div>
         </div>
 
