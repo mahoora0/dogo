@@ -44,6 +44,7 @@ def _load_model() -> SentenceTransformer:
         model_kwargs=model_kwargs or None,
     )
     _save_exported_onnx_model(model)
+    model.encode(["워밍업"], convert_to_tensor=False)
     elapsed = time.perf_counter() - t0
     logger.info(f"모델 로딩 완료 ({elapsed:.1f}s)")
     return model
