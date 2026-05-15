@@ -46,14 +46,11 @@
             
             <form th:action="@{/inquiry}" method="get" class="flex flex-wrap items-center gap-3">
                 <div>
-                    <label for="categoryFilter" class="sr-only">문의 종류</label>
-                    <select id="categoryFilter" name="category" onchange="this.form.submit()"
+                    <label for="viewModeFilter" class="sr-only">보기 설정</label>
+                    <select id="viewModeFilter" name="viewMode" onchange="this.form.submit()"
                             class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all duration-200">
-                        <option value="전체" th:selected="${currentCategory == '전체'}">전체 종류</option>
-                        <option value="분실물" th:selected="${currentCategory == '분실물'}">분실물 문의</option>
-                        <option value="습득물" th:selected="${currentCategory == '습득물'}">습득물 문의</option>
-                        <option value="서비스" th:selected="${currentCategory == '서비스'}">서비스 문의</option>
-                        <option value="기타" th:selected="${currentCategory == '기타'}">기타 문의</option>
+                        <option value="all" th:selected="${viewMode == 'all'}">전체 보기</option>
+                        <option value="my" th:selected="${viewMode == 'my'}">내 문의 목록</option>
                     </select>
                 </div>
                 
@@ -99,7 +96,13 @@
                         </td>
                         <!-- 제목 -->
                         <td class="py-4 px-6 font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
-                            <a th:href="@{/inquiry/{id}(id=${inquiry.id})}" th:text="${inquiry.title}" class="block truncate max-w-xs sm:max-w-md md:max-w-xl font-semibold">
+                            <div th:if="${inquiry.isSecret}" class="flex items-center gap-2 text-slate-400 cursor-not-allowed">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                <span th:text="${inquiry.title}">비밀글입니다.</span>
+                            </div>
+                            <a th:unless="${inquiry.isSecret}" th:href="@{/inquiry/{id}(id=${inquiry.id})}" th:text="${inquiry.title}" class="block truncate max-w-xs sm:max-w-md md:max-w-xl font-semibold">
                                 문의 제목입니다.
                             </a>
                         </td>
@@ -118,7 +121,7 @@
             <div th:if="${inquiries.totalPages > 0}">
                 <nav class="inline-flex rounded-md shadow-sm isolate" aria-label="Pagination">
                     <!-- 이전 페이지 -->
-                    <a th:href="@{/inquiry(category=${currentCategory}, status=${currentStatus}, page=${inquiries.number - 1})}"
+                    <a th:href="@{/inquiry(viewMode=${viewMode}, status=${currentStatus}, page=${inquiries.number - 1})}"
                        th:classappend="${inquiries.first ? 'pointer-events-none text-slate-300' : 'text-slate-500 hover:bg-slate-50'}"
                        class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium border border-slate-300 bg-white transition-colors">
                         <span class="sr-only">이전</span>
@@ -129,7 +132,7 @@
 
                     <!-- 페이지 번호 -->
                     <th:block th:each="p : ${#numbers.sequence(startPage, endPage)}">
-                        <a th:href="@{/inquiry(category=${currentCategory}, status=${currentStatus}, page=${p - 1})}"
+                        <a th:href="@{/inquiry(viewMode=${viewMode}, status=${currentStatus}, page=${p - 1})}"
                            th:text="${p}"
                            th:classappend="${p - 1 == inquiries.number ? 'z-10 bg-indigo-600 text-white font-semibold border-indigo-600' : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50 font-medium'}"
                            class="relative inline-flex items-center px-4 py-2 text-sm border transition-colors">
@@ -138,7 +141,7 @@
                     </th:block>
 
                     <!-- 다음 페이지 -->
-                    <a th:href="@{/inquiry(category=${currentCategory}, status=${currentStatus}, page=${inquiries.number + 1})}"
+                    <a th:href="@{/inquiry(viewMode=${viewMode}, status=${currentStatus}, page=${inquiries.number + 1})}"
                        th:classappend="${inquiries.last ? 'pointer-events-none text-slate-300' : 'text-slate-500 hover:bg-slate-50'}"
                        class="relative inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium border border-slate-300 bg-white transition-colors">
                         <span class="sr-only">다음</span>
