@@ -1,6 +1,6 @@
-package com.example.dogo.controller;
+package com.example.dogo.controller.Support;
 
-import com.example.dogo.service.InquiryService;
+import com.example.dogo.service.Support.InquiryService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

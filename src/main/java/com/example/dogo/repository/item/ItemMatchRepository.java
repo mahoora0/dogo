@@ -13,7 +13,7 @@ public interface ItemMatchRepository extends JpaRepository<ItemMatch, Long> {
 			SELECT m FROM ItemMatch m
 			JOIN FETCH m.foundItem
 			WHERE m.lostItem.lostId = :lostId
-			ORDER BY m.matchScore DESC
+			ORDER BY m.finalScore DESC, m.matchScore DESC
 			""")
 	List<ItemMatch> findByLostIdWithFoundItem(@Param("lostId") Long lostId);
 
@@ -21,7 +21,7 @@ public interface ItemMatchRepository extends JpaRepository<ItemMatch, Long> {
 			SELECT m FROM ItemMatch m
 			JOIN FETCH m.lostItem
 			WHERE m.foundItem.foundId = :foundId
-			ORDER BY m.matchScore DESC
+			ORDER BY m.finalScore DESC, m.matchScore DESC
 			""")
 	List<ItemMatch> findByFoundIdWithLostItem(@Param("foundId") Long foundId);
 

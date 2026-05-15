@@ -1,5 +1,6 @@
-package com.example.dogo.entity;
+package com.example.dogo.entity.Support;
 
+import com.example.dogo.entity.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,7 +14,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import com.example.dogo.entity.user.User;
 import java.time.LocalDateTime;
 
 @Entity

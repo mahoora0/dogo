@@ -10,6 +10,7 @@ import com.example.dogo.repository.item.LostItemImageRepository;
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.match.ItemMatchService;
+import com.example.dogo.service.match.LostItemMatchRequestedEvent;
 import com.example.dogo.service.police.sync.PoliceLostItemDetailEnrichmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -52,6 +54,9 @@ class LostItemServiceTest {
 	@Mock
 	private ItemMatchService itemMatchService;
 
+	@Mock
+	private ApplicationEventPublisher eventPublisher;
+
 	@TempDir
 	private Path uploadDir;
 
@@ -65,6 +70,7 @@ class LostItemServiceTest {
 				userRepository,
 				policeLostItemDetailEnrichmentService,
 				itemMatchService,
+				eventPublisher,
 				uploadDir.toString()
 		);
 	}
@@ -132,6 +138,10 @@ class LostItemServiceTest {
 		assertThat(captor.getValue().getLostArea()).isEqualTo("서울특별시 강남구");
 		assertThat(captor.getValue().getStatus()).isEqualTo("WAITING");
 		verify(lostItemImageRepository, never()).save(any());
+
+		ArgumentCaptor<LostItemMatchRequestedEvent> eventCaptor = ArgumentCaptor.forClass(LostItemMatchRequestedEvent.class);
+		verify(eventPublisher).publishEvent(eventCaptor.capture());
+		assertThat(eventCaptor.getValue().lostId()).isEqualTo(10L);
 	}
 
 	@Test

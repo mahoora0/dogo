@@ -1,5 +1,4 @@
-package com.example.dogo.entity;
-
+package com.example.dogo.entity.Support;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -58,4 +57,3 @@ public class InquiryFile {
         this.fileSize = fileSize;
     }
 }
-

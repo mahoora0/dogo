@@ -9,6 +9,7 @@ import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.item.FoundItemImageRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
+import com.example.dogo.service.match.FoundItemMatchRequestedEvent;
 import com.example.dogo.service.match.ItemMatchService;
 import com.example.dogo.service.police.sync.PoliceFoundItemDetailEnrichmentService;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +57,9 @@ class FoundItemServiceTest {
 	@Mock
 	private ItemMatchService itemMatchService;
 
+	@Mock
+	private ApplicationEventPublisher eventPublisher;
+
 	@TempDir
 	private Path uploadDir;
 
@@ -68,6 +73,7 @@ class FoundItemServiceTest {
 				userRepository,
 				policeFoundItemDetailEnrichmentService,
 				itemMatchService,
+				eventPublisher,
 				uploadDir.toString()
 		);
 	}
@@ -125,6 +131,10 @@ class FoundItemServiceTest {
 		assertThat(captor.getValue().getStatus()).isEqualTo("KEEPING");
 		verify(userRepository, never()).findByEmail(any());
 		verify(foundItemImageRepository, never()).save(any());
+
+		ArgumentCaptor<FoundItemMatchRequestedEvent> eventCaptor = ArgumentCaptor.forClass(FoundItemMatchRequestedEvent.class);
+		verify(eventPublisher).publishEvent(eventCaptor.capture());
+		assertThat(eventCaptor.getValue().foundId()).isEqualTo(10L);
 	}
 
 	@Test

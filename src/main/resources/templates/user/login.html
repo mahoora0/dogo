@@ -1,120 +1,188 @@
 <!DOCTYPE html>
 <html xmlns:th="http://thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>로그인 - 두고내림</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-      /* 소셜 브랜드 컬러 및 이미지 스타일링 */
-      .brand-naver { background-color: #03C75A; color: white; }
-      .brand-kakao { background-color: #FEE500; color: #3C1E1E; }
-      .brand-google { background-color: #ffffff; color: #1f2937; border: 1px solid #e5e7eb; }
+    /* SNS 로그인 전체 컨테이너 */
+    .sns-login-container {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 10px;
+    }
 
-      /* 이미지 느낌의 둥근 모서리 */
-      .rounded-custom { border-radius: 12px; }
+    /* SNS 버튼 공통 스타일 (원형) */
+    .sns-button {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      flex: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+
+    .sns-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+
+    .sns-button:active {
+      transform: translateY(-1px);
+    }
+
+    /* 개별 로고 이미지 스타일 */
+    .sns-logo {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+
+    /* 기업별 브랜드 컬러 매칭 */
+    .google-btn {
+      background-color: #FFFFFF;
+      border: 1px solid #f1f3f5 !important;
+    }
+
+    .naver-btn {
+      background-color: #03C75A;
+    }
+
+    .kakao-btn {
+      background-color: #FEE500;
+    }
+
+    /* 이미지 느낌의 둥근 모서리 */
+    .rounded-custom {
+      border-radius: 12px;
+    }
   </style>
 </head>
+
 <body class="bg-[#F8F9FA] flex items-center justify-center min-h-screen p-4">
 
-<div class="w-full max-w-[550px]">
+  <div class="w-full max-w-[550px]">
 
-  <div class="bg-white w-full py-6 mb-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center">
-    <a th:href="@{/}" class="flex items-center">
-      <img th:src="@{/images/logo.png}" class="w-10 h-10 object-contain" alt="로고">
-    </a>
+    <div class="bg-white w-full py-6 mb-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center">
+      <a th:href="@{/}" class="flex items-center">
+        <img th:src="@{/images/logo.png}" class="w-10 h-10 object-contain" alt="로고">
+      </a>
+    </div>
+
+    <div class="bg-white p-12 rounded-[24px] shadow-sm border border-gray-100">
+
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">로그인</h1>
+        <p class="text-gray-500 text-sm">분실물센터 계정으로 로그인하세요</p>
+      </div>
+
+      <!-- 에러 메시지 표시 -->
+      <div id="error-message-box"
+        th:class="${error == null ? 'mb-6 p-4 bg-red-50 border border-red-100 rounded-custom hidden' : 'mb-6 p-4 bg-red-50 border border-red-100 rounded-custom'}">
+        <p id="error-text" class="text-red-500 text-sm font-semibold text-center" th:text="${message}">에러 메시지</p>
+      </div>
+
+      <form id="loginForm" action="#" th:action="@{/loginProcess}" method="post" class="space-y-5">
+        <div class="space-y-2">
+          <label class="block text-sm font-bold text-gray-700 ml-1">아이디</label>
+          <input type="text" name="loginId" id="loginId" placeholder="아이디 입력"
+            class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400">
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-sm font-bold text-gray-700 ml-1">비밀번호</label>
+          <input type="password" name="password" id="password" placeholder="비밀번호 입력"
+            class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400">
+        </div>
+
+        <div class="flex justify-between items-center text-xs px-1">
+          <label class="flex items-center gap-2 text-gray-500 cursor-pointer">
+            <input type="checkbox" name="remember-me" class="rounded border-gray-300"> 로그인 상태 유지
+          </label>
+          <a href="#" class="text-gray-600 font-semibold border-b border-gray-400">아이디/비밀번호 찾기</a>
+        </div>
+
+        <button type="submit"
+          class="w-full bg-[#333333] text-white py-4 rounded-custom font-bold text-md hover:bg-black transition-all mt-4">
+          로그인
+        </button>
+      </form>
+
+      <script>
+        const loginForm = document.getElementById('loginForm');
+        const loginIdInput = document.getElementById('loginId');
+        const passwordInput = document.getElementById('password');
+        const errorMessageBox = document.getElementById('error-message-box');
+        const errorText = document.getElementById('error-text');
+
+        loginForm.addEventListener('submit', function (e) {
+          if (!loginIdInput.value.trim()) {
+            e.preventDefault();
+            errorMessageBox.classList.remove('hidden');
+            errorText.textContent = "아이디를 입력해주세요.";
+            loginIdInput.focus();
+            return;
+          }
+
+          if (!passwordInput.value.trim()) {
+            e.preventDefault();
+            errorMessageBox.classList.remove('hidden');
+            errorText.textContent = "비밀번호를 입력해주세요.";
+            passwordInput.focus();
+            return;
+          }
+        });
+      </script>
+
+      <div class="relative my-10">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-100"></div>
+        </div>
+        <div class="relative flex justify-center text-[11px] font-bold text-gray-400 uppercase tracking-tighter">
+          <span class="bg-white px-4">또는 SNS 계정으로 로그인</span>
+        </div>
+      </div>
+
+      <!-- SNS 로그인 전체 컨테이너 -->
+      <div class="sns-login-container">
+
+        <!-- 구글 로그인 버튼 -->
+        <a th:href="@{/oauth2/authorization/google}" class="sns-button google-btn" title="Google 로그인">
+          <img th:src="@{/images/google-svg.svg}" alt="Google" class="sns-logo">
+        </a>
+
+        <!-- 네이버 로그인 버튼 -->
+        <a th:href="@{/oauth2/authorization/naver}" class="sns-button naver-btn" title="네이버 로그인">
+          <img th:src="@{/images/naver-svg.svg}" alt="네이버" class="sns-logo">
+        </a>
+
+        <!-- 카카오 로그인 버튼 -->
+        <a th:href="@{/oauth2/authorization/kakao}" class="sns-button kakao-btn" title="카카오 로그인">
+          <img th:src="@{/images/kakao-svg.svg}" alt="카카오" class="sns-logo">
+        </a>
+
+      </div>
+
+      <div class="mt-10 text-center">
+        <p class="text-sm text-gray-500">
+          아직 회원이 아니신가요?
+          <a th:href="@{/join}" class="text-gray-900 font-bold ml-2 border-b-2 border-gray-900 pb-0.5">회원가입</a>
+        </p>
+      </div>
+    </div>
   </div>
-
-  <div class="bg-white p-12 rounded-[24px] shadow-sm border border-gray-100">
-
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-extrabold text-gray-900 mb-2">로그인</h1>
-      <p class="text-gray-500 text-sm">분실물센터 계정으로 로그인하세요</p>
-    </div>
-
-    <!-- 에러 메시지 표시 -->
-    <div id="error-message-box" th:class="${error == null ? 'mb-6 p-4 bg-red-50 border border-red-100 rounded-custom hidden' : 'mb-6 p-4 bg-red-50 border border-red-100 rounded-custom'}">
-      <p id="error-text" class="text-red-500 text-sm font-semibold text-center" th:text="${message}">에러 메시지</p>
-    </div>
-
-    <form id="loginForm" action="#" th:action="@{/loginProcess}" method="post" class="space-y-5">
-      <div class="space-y-2">
-        <label class="block text-sm font-bold text-gray-700 ml-1">아이디</label>
-        <input type="text" name="loginId" id="loginId" placeholder="아이디 입력"
-               class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400">
-      </div>
-
-      <div class="space-y-2">
-        <label class="block text-sm font-bold text-gray-700 ml-1">비밀번호</label>
-        <input type="password" name="password" id="password" placeholder="비밀번호 입력"
-               class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400">
-      </div>
-
-      <div class="flex justify-between items-center text-xs px-1">
-        <label class="flex items-center gap-2 text-gray-500 cursor-pointer">
-          <input type="checkbox" name="remember-me" class="rounded border-gray-300"> 로그인 상태 유지
-        </label>
-        <a href="#" class="text-gray-600 font-semibold border-b border-gray-400">아이디/비밀번호 찾기</a>
-      </div>
-
-      <button type="submit" class="w-full bg-[#333333] text-white py-4 rounded-custom font-bold text-md hover:bg-black transition-all mt-4">
-        로그인
-      </button>
-    </form>
-
-    <script>
-      const loginForm = document.getElementById('loginForm');
-      const loginIdInput = document.getElementById('loginId');
-      const passwordInput = document.getElementById('password');
-      const errorMessageBox = document.getElementById('error-message-box');
-      const errorText = document.getElementById('error-text');
-
-      loginForm.addEventListener('submit', function(e) {
-        if (!loginIdInput.value.trim()) {
-          e.preventDefault();
-          errorMessageBox.classList.remove('hidden');
-          errorText.textContent = "아이디를 입력해주세요.";
-          loginIdInput.focus();
-          return;
-        }
-        
-        if (!passwordInput.value.trim()) {
-          e.preventDefault();
-          errorMessageBox.classList.remove('hidden');
-          errorText.textContent = "비밀번호를 입력해주세요.";
-          passwordInput.focus();
-          return;
-        }
-      });
-    </script>
-
-    <div class="relative my-10">
-      <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-100"></div></div>
-      <div class="relative flex justify-center text-[11px] font-bold text-gray-400 uppercase tracking-tighter">
-        <span class="bg-white px-4">또는 SNS 계정으로 로그인</span>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-3 gap-3">
-      <a th:href="@{/oauth2/authorization/google}" class="brand-google flex flex-col items-center justify-center py-3 rounded-custom hover:bg-gray-50 transition-all">
-        <span class="text-sm font-bold flex items-center gap-1"><span class="text-blue-500">G</span> 구글</span>
-      </a>
-      <a th:href="@{/oauth2/authorization/naver}" class="brand-naver flex flex-col items-center justify-center py-3 rounded-custom hover:opacity-90 transition-all">
-        <span class="text-sm font-bold">N 네이버</span>
-      </a>
-      <a th:href="@{/oauth2/authorization/kakao}" class="brand-kakao flex flex-col items-center justify-center py-3 rounded-custom hover:opacity-90 transition-all">
-        <span class="text-sm font-bold">K 카카오</span>
-      </a>
-    </div>
-
-    <div class="mt-10 text-center">
-      <p class="text-sm text-gray-500">
-        아직 회원이 아니신가요?
-        <a th:href="@{/join}" class="text-gray-900 font-bold ml-2 border-b-2 border-gray-900 pb-0.5">회원가입</a>
-      </p>
-    </div>
-  </div>
-</div>
 
 </body>
+
 </html>

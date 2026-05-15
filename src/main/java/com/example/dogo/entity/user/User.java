@@ -79,6 +79,10 @@ public class User {
 		this.password = password;
 	}
 
+	public void setRole(String role) {
+		this.role = role;
+	}
+
 	public void withdraw() {
 		this.status = "WITHDRAWN";
 	}
