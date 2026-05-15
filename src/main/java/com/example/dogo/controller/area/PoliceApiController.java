@@ -24,12 +24,10 @@ public class PoliceApiController {
       @RequestParam String region,
       @RequestParam(required = false) String subRegion,
       @RequestParam(required = false) String neighborhood) {
-    log.info("getPoliceByRegion called: region={}, subRegion={}, neighborhood={}", region, subRegion, neighborhood);
+    // log.info("getPoliceByRegion called: region={}, subRegion={}, neighborhood={}", region, subRegion, neighborhood);
     String pnuPrefix = getPnuPrefixByRegion(region);
     if (pnuPrefix != null) {
-      log.info("Using PNU prefix: {}", pnuPrefix);
       List<PoliceStation> stations = policeStationRepository.findByPnuStartingWith(pnuPrefix);
-      log.info("Found {} stations for prefix {}", stations.size(), pnuPrefix);
       return stations.stream()
           .filter(s -> {
               if (subRegion == null || subRegion.isBlank()) return true;
@@ -58,13 +56,10 @@ public class PoliceApiController {
 
   @GetMapping("/sub-regions")
   public List<String> getSubRegions(@RequestParam String region) {
-    log.info("getSubRegions called for region: {}", region);
     String pnuPrefix = getPnuPrefixByRegion(region);
     
     if (pnuPrefix != null) {
-      log.info("Found prefix {} for region {}", pnuPrefix, region);
       List<PoliceStation> stations = policeStationRepository.findByPnuStartingWith(pnuPrefix);
-      log.info("Found {} stations for prefix {}", stations.size(), pnuPrefix);
 
       List<String> subRegions = stations.stream()
           .map(s -> {
@@ -93,8 +88,7 @@ public class PoliceApiController {
           .distinct()
           .sorted()
           .toList();
-          
-      log.info("Extracted {} unique sub-regions for region {}", subRegions.size(), region);
+
       return subRegions;
     }
     log.warn("No PNU prefix found for region: {}", region);
@@ -143,7 +137,6 @@ public class PoliceApiController {
           .sorted()
           .toList();
       
-      log.info("Extracted {} neighborhoods for {} - {}", neighborhoods.size(), region, subRegion);
       return neighborhoods;
     }
     return List.of();
