@@ -40,9 +40,8 @@ public class KorailApiController {
         String normalizedRegion = region.length() >= 2 ? region.substring(0, 2) : region;
         String areaCode = getAreaCodeByRegion(normalizedRegion);
 
-        return c -> containsAny((String) c.get("locationDetails"), region, normalizedRegion)
+        return c -> startsWithRegion((String) c.get("subRegion"), region, normalizedRegion)
             || containsAny((String) c.get("stationName"), region, normalizedRegion)
-            || containsAny((String) c.get("subRegion"), region, normalizedRegion)
             || telMatchesAreaCode((String) c.get("telNo"), areaCode);
     }
 
@@ -72,6 +71,15 @@ public class KorailApiController {
             }
         }
         return false;
+    }
+
+    private boolean startsWithRegion(String value, String region, String normalizedRegion) {
+        if (value == null || value.isBlank()) return false;
+        String trimmed = value.trim();
+        return trimmed.equals(region)
+            || trimmed.equals(normalizedRegion)
+            || trimmed.startsWith(region)
+            || trimmed.startsWith(normalizedRegion);
     }
 
     private boolean telMatchesAreaCode(String tel, String areaCode) {

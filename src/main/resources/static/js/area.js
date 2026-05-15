@@ -1,6 +1,7 @@
 let map;
 let markers = [];
 let currentInfowindow = null;
+let currentNeighborhoodSearchId = 0;
 
 function drawMap() {
   const mapContainer = document.getElementById('map');
@@ -33,9 +34,12 @@ function loadSubRegions() {
   
   // Clear and disable immediately to provide visual feedback
   subSel.innerHTML = '<option value="">시/군/구</option>';
+  subSel.value = '';
   subSel.disabled = true;
   neighborSel.innerHTML = '<option value="">읍/면/동</option>';
+  neighborSel.value = '';
   neighborSel.disabled = true;
+  currentNeighborhoodSearchId++;
 
   if (!region) {
     updateMap();
@@ -75,12 +79,15 @@ function loadNeighborhoods() {
 
   const region = sel.value;
   const subRegion = subSel.value;
+  const searchId = ++currentNeighborhoodSearchId;
   
   // Clear and disable immediately
-  neighborSel.innerHTML = '<option value="">읍/면/동</option>';
+  neighborSel.innerHTML = '<option value="">읍/면/동 불러오는 중...</option>';
+  neighborSel.value = '';
   neighborSel.disabled = true;
 
   if (!subRegion) {
+    neighborSel.innerHTML = '<option value="">읍/면/동</option>';
     updateMap();
     return;
   }
@@ -91,8 +98,10 @@ function loadNeighborhoods() {
         return res.json();
       })
       .then(data => {
+        if (searchId !== currentNeighborhoodSearchId) return;
         const list = Array.isArray(data) ? data : (data.value || []);
         neighborSel.innerHTML = '<option value="">읍/면/동</option>';
+        neighborSel.value = '';
         if (list.length > 0) {
           list.forEach(n => {
             neighborSel.innerHTML += `<option value="${n}">${n}</option>`;
@@ -104,7 +113,10 @@ function loadNeighborhoods() {
         updateMap();
       })
       .catch(err => {
+        if (searchId !== currentNeighborhoodSearchId) return;
         console.error('Error loading neighborhoods:', err);
+        neighborSel.innerHTML = '<option value="">읍/면/동</option>';
+        neighborSel.value = '';
         neighborSel.disabled = true;
         updateMap();
       });
@@ -189,12 +201,56 @@ function textMatchesSelection(item, subRegion, neighborhood) {
       || (!!shortSubRegion && target.includes(shortSubRegion));
 }
 
-function filterRailBySelection(data, policeData, subRegion, neighborhood) {
-  if (!subRegion && !neighborhood) return data;
+function textMatchesRegion(item, region) {
+  if (!region) return true;
+
+  const shortRegion = region.length >= 2 ? region.substring(0, 2) : region;
+  const startsWithRegion = value => {
+    const text = String(value || '').trim();
+    return text === region || text === shortRegion || text.startsWith(region) || text.startsWith(shortRegion);
+  };
+
+  if (startsWithRegion(item.region) || startsWithRegion(item.subRegion)) return true;
+
+  const stationName = String(item.stationName || '');
+  if (stationName.includes(region) || stationName.includes(shortRegion)) return true;
+
+  const tel = String(item.telNo || item.telno || item.tel || '').replace(/[^0-9]/g, '');
+  const areaCode = {
+    서울: '02',
+    부산: '051',
+    대구: '053',
+    인천: '032',
+    광주: '062',
+    대전: '042',
+    울산: '052',
+    세종: '044',
+    경기: '031',
+    강원: '033',
+    충북: '043',
+    충남: '041',
+    전북: '063',
+    전남: '061',
+    경북: '054',
+    경남: '055',
+    제주: '064'
+  }[shortRegion];
+
+  return !!areaCode && tel.startsWith(areaCode);
+}
+
+function filterRailBySelection(data, policeData, region, subRegion, neighborhood) {
   if (!Array.isArray(data)) return [];
 
+  const regionData = data.filter(item => textMatchesRegion(item, region));
+  if (!subRegion && !neighborhood) return regionData;
+
   const bounds = selectedPoliceBounds(policeData, subRegion, neighborhood);
-  return data.filter(item => textMatchesSelection(item, subRegion, neighborhood) || isInsideBounds(item, bounds));
+  return regionData.filter(item => {
+    if (textMatchesSelection(item, subRegion, neighborhood)) return true;
+    if (item.region || item.subRegion) return false;
+    return isInsideBounds(item, bounds);
+  });
 }
 
 let currentSearchId = 0;
@@ -218,7 +274,7 @@ function updateMap(keyword = '') {
 
   if (!region) {
     if (listContainer) {
-      listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">지역을 선택하시면 상세 목록이 표시됩니다.</div>';
+      listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">지역을 선택해 주세요.</div>';
     }
     return;
   }
@@ -228,8 +284,8 @@ function updateMap(keyword = '') {
   }
 
   const policeUrl = `/api/police?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion || '')}&neighborhood=${encodeURIComponent(neighborhood || '')}`;
-  const korailUrl = `/api/korail/lost-found?region=${encodeURIComponent(region)}`;
-  const subwayUrl = `/api/subway/list?region=${encodeURIComponent(region)}`;
+  const korailUrl = `/api/korail/lost-found?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion || '')}&neighborhood=${encodeURIComponent(neighborhood || '')}`;
+  const subwayUrl = `/api/subway/list?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion || '')}&neighborhood=${encodeURIComponent(neighborhood || '')}`;
 
 
   Promise.all([fetchJson(policeUrl), fetchJson(korailUrl), fetchJson(subwayUrl)])
@@ -240,12 +296,14 @@ function updateMap(keyword = '') {
         const kData = filterRailBySelection(
             Array.isArray(kDataRaw) ? kDataRaw : (kDataRaw.value || []),
             pData,
+            region,
             subRegion,
             neighborhood
         );
         const sData = filterRailBySelection(
             Array.isArray(sDataRaw) ? sDataRaw : (sDataRaw.value || []),
             pData,
+            region,
             subRegion,
             neighborhood
         );
@@ -344,24 +402,70 @@ function renderCenterList(data, keyword) {
   const filtered = data.filter(item => keyword === '' || item.name.includes(keyword));
 
   if (filtered.length === 0) {
-    centerList.innerHTML = '<p class="empty-msg">검색 결과가 없습니다.</p>';
+    centerList.innerHTML = '<div class="p-4 text-center text-gray-500">검색 결과가 없습니다.</div>';
     return;
   }
 
   filtered.forEach(item => {
-    const typeClass = item.type === 'POLICE' ? 'bg-blue-100 text-blue-800' : item.type === 'KORAIL' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800';
-    const typeLabel = item.type === 'POLICE' ? '경찰' : (item.type === 'KORAIL' ? '코레일' : '지하철');
+    const typeClass =
+        item.type === 'POLICE'
+            ? 'background:#dbeafe;color:#2563eb;'
+            : item.type === 'KORAIL'
+                ? 'background:#dcfce7;color:#16a34a;'
+                : 'background:#f3e8ff;color:#9333ea;';
+
+    const typeLabel =
+        item.type === 'POLICE'
+            ? '경찰'
+            : item.type === 'KORAIL'
+                ? '코레일'
+                : '지하철';
 
     centerList.innerHTML += `
-      <div class="center-card p-3 border-bottom hover-bg-light cursor-pointer">
-        <div class="d-flex justify-content-between align-items-start mb-1">
-          <h5 class="mb-0 fs-6 fw-bold">${item.name}</h5>
-          <span class="badge ${typeClass}" style="font-size: 10px;">${typeLabel}</span>
+      <div class="center-card" onclick="focusMarker(${item.latitude}, ${item.longitude})">
+        <div class="center-icon">📍</div>
+
+        <div class="center-info">
+          <div class="center-title">${item.name}</div>
+
+          <span class="center-badge" style="${typeClass}">
+            ${typeLabel}
+          </span>
+
+          <div class="center-address">
+            <span>📌</span>
+            <span>${item.address || '주소 정보 없음'}</span>
+          </div>
+
+          <div class="center-phone">
+            <span>📞</span>
+            <span>${item.tel || '전화번호 없음'}</span>
+          </div>
         </div>
-        <p class="mb-1 text-muted small">${item.address || '주소 정보 없음'}</p>
-        <p class="mb-0 text-primary small">${item.tel || '전화번호 없음'}</p>
+
+        <div class="center-arrow">›</div>
       </div>
     `;
+  });
+}
+
+function focusMarker(lat, lng) {
+  if (!map || !lat || !lng) return;
+  const pos = new kakao.maps.LatLng(lat, lng);
+  
+  // Center map and zoom in for better visibility
+  map.panTo(pos);
+  if (map.getLevel() > 5) {
+    map.setLevel(5);
+  }
+  
+  // Find the marker at this position and trigger its click event to show info window
+  markers.forEach(marker => {
+    const markerPos = marker.getPosition();
+    // Use Kakao's LatLng.equals() for reliable coordinate comparison
+    if (markerPos.equals(pos)) {
+      kakao.maps.event.trigger(marker, 'click');
+    }
   });
 }
 

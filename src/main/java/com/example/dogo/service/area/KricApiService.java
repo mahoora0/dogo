@@ -120,6 +120,8 @@ public class KricApiService {
             .id(entity.getId())
             .operatorName(entity.getOperatorName())
             .lineName(entity.getLineName())
+            .region(entity.getRegion())
+            .subRegion(entity.getSubRegion())
             .stationName(entity.getStationName())
             .latitude(entity.getLatitude())
             .longitude(entity.getLongitude())
@@ -133,10 +135,11 @@ public class KricApiService {
   private Predicate<SubwayLostCenter> matchesRegion(String region) {
     if (region == null || region.isBlank()) return s -> true;
     String normalizedRegion = region.length() >= 2 ? region.substring(0, 2) : region;
-    return s -> containsAny(s.getRegion(), region, normalizedRegion)
-        || containsAny(s.getSubRegion(), region, normalizedRegion)
-        || containsAny(s.getDetailLocation(), region, normalizedRegion)
-        || containsAny(s.getStationName(), region, normalizedRegion);
+    String areaCode = getAreaCodeByRegion(normalizedRegion);
+    return s -> startsWithRegion(s.getRegion(), region, normalizedRegion)
+        || startsWithRegion(s.getSubRegion(), region, normalizedRegion)
+        || containsAny(s.getStationName(), region, normalizedRegion)
+        || telMatchesAreaCode(s.getTelNo(), areaCode);
   }
 
   private Predicate<SubwayLostCenter> matchesSubRegion(String subRegion) {
@@ -162,5 +165,44 @@ public class KricApiService {
       }
     }
     return false;
+  }
+
+  private boolean startsWithRegion(String value, String region, String normalizedRegion) {
+    if (value == null || value.isBlank()) return false;
+    String trimmed = value.trim();
+    return trimmed.equals(region)
+        || trimmed.equals(normalizedRegion)
+        || trimmed.startsWith(region)
+        || trimmed.startsWith(normalizedRegion);
+  }
+
+  private boolean telMatchesAreaCode(String tel, String areaCode) {
+    if (tel == null || tel.isBlank() || areaCode == null || areaCode.isBlank()) return false;
+    return tel.replaceAll("[^0-9]", "").startsWith(areaCode);
+  }
+
+  private String getAreaCodeByRegion(String region) {
+    if (region == null) return null;
+    String r = region.length() >= 2 ? region.substring(0, 2) : region;
+    return switch (r) {
+      case "서울" -> "02";
+      case "부산" -> "051";
+      case "대구" -> "053";
+      case "인천" -> "032";
+      case "광주" -> "062";
+      case "대전" -> "042";
+      case "울산" -> "052";
+      case "세종" -> "044";
+      case "경기" -> "031";
+      case "강원" -> "033";
+      case "충북" -> "043";
+      case "충남" -> "041";
+      case "전북" -> "063";
+      case "전남" -> "061";
+      case "경북" -> "054";
+      case "경남" -> "055";
+      case "제주" -> "064";
+      default -> null;
+    };
   }
 }

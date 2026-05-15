@@ -12,6 +12,8 @@ public class SubwayLostCenterDTO {
   private Long id;
   private String operatorName;
   private String lineName;
+  private String region;
+  private String subRegion;
   private String stationName;
   private Double latitude;
   private Double longitude;

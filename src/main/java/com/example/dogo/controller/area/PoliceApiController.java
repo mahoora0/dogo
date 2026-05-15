@@ -130,12 +130,7 @@ public class PoliceApiController {
     if (pnuPrefix != null) {
       List<PoliceStation> stations = policeStationRepository.findByPnuStartingWith(pnuPrefix);
       List<String> neighborhoods = stations.stream()
-          .filter(s -> {
-              String rgn = s.getCmptncRgnNm();
-              String addr = s.getAddr();
-              return (rgn != null && (rgn.contains(subRegion) || subRegion.contains(rgn))) || 
-                     (addr != null && addr.contains(subRegion));
-          })
+          .filter(s -> matchesSubRegion(s, subRegion))
           .map(s -> {
               String n = extractFromAddr(s.getAddress1(), 2);
               if (n != null) return n;
@@ -152,6 +147,18 @@ public class PoliceApiController {
       return neighborhoods;
     }
     return List.of();
+  }
+
+  private boolean matchesSubRegion(PoliceStation station, String subRegion) {
+    if (subRegion == null || subRegion.isBlank()) return true;
+    return containsSubRegion(station.getCmptncRgnNm(), subRegion)
+        || containsSubRegion(station.getAddr(), subRegion)
+        || containsSubRegion(station.getAddress(), subRegion)
+        || containsSubRegion(station.getAddress1(), subRegion);
+  }
+
+  private boolean containsSubRegion(String value, String subRegion) {
+    return value != null && (value.contains(subRegion) || subRegion.contains(value));
   }
 
   private String extractFromAddr(String addr, int wordIndex) {
