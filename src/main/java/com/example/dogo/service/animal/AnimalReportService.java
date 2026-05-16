@@ -155,6 +155,8 @@ public class AnimalReportService {
 				report.getAgeUnit(),
 				ageUnitLabel(report.getAgeUnit()),
 				report.getWeightKg(),
+				ageDisplay(report.getAgeValue(), report.getAgeUnit()),
+				weightDisplay(report.getWeightKg()),
 				report.getFurColor(),
 				report.getDistinctiveMarks(),
 				report.getContent(),
@@ -394,6 +396,26 @@ public class AnimalReportService {
 			case "YEAR" -> "살";
 			default -> "";
 		};
+	}
+
+	private String ageDisplay(Integer ageValue, String ageUnit) {
+		if (ageValue == null) {
+			return "-";
+		}
+		if (ageValue == 0 && "YEAR".equals(ageUnit)) {
+			return "1년 미만";
+		}
+		return ageValue + ageUnitLabel(ageUnit);
+	}
+
+	private String weightDisplay(BigDecimal weightKg) {
+		if (weightKg == null) {
+			return null;
+		}
+		if (weightKg.compareTo(new BigDecimal("0.5")) == 0) {
+			return "1kg 미만";
+		}
+		return weightKg.stripTrailingZeros().toPlainString() + "kg";
 	}
 
 	private String careStatusLabel(String careStatus) {

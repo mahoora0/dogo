@@ -143,25 +143,27 @@
         <div class="grid gap-3 sm:grid-cols-2">
           <label class="block">
             <span class="text-sm font-semibold text-slate-700">나이</span>
-            <input type="number" min="0" name="ageValue" th:value="${request != null ? request.ageValue : ''}"
-                   class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
-          </label>
-          <label class="block">
-            <span class="text-sm font-semibold text-slate-700">단위</span>
-            <select name="ageUnit"
+            <select name="ageValue" id="ageValueSelect"
                     class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
-              <option value="">선택 안 함</option>
-              <option th:each="option : ${ageUnitOptions}" th:value="${option.value}" th:text="${option.label}"
-                      th:selected="${request != null && request.ageUnit == option.value}">살</option>
+              <option value="">모름</option>
+              <option value="0" th:selected="${request != null && request.ageValue == 0}">1년 미만</option>
+              <option th:each="i : ${#numbers.sequence(1, 20)}" th:value="${i}" th:text="${i + '살'}"
+                      th:selected="${request != null && request.ageValue == i}"></option>
+            </select>
+            <input type="hidden" name="ageUnit" id="ageUnitHidden" th:value="${request != null && request.ageUnit != null ? request.ageUnit : 'UNKNOWN'}">
+          </label>
+
+          <label class="block">
+            <span class="text-sm font-semibold text-slate-700">몸무게</span>
+            <select name="weightKg"
+                    class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+              <option value="">모름</option>
+              <option value="0.5" th:selected="${request != null && request.weightKg != null && request.weightKg.doubleValue() == 0.5}">1kg 미만</option>
+              <option th:each="i : ${#numbers.sequence(1, 30)}" th:value="${i}" th:text="${i + 'kg'}"
+                      th:selected="${request != null && request.weightKg != null && request.weightKg.doubleValue() == i}"></option>
             </select>
           </label>
         </div>
-
-        <label class="block">
-          <span class="text-sm font-semibold text-slate-700">몸무게(kg)</span>
-          <input type="number" min="0" step="0.1" name="weightKg" th:value="${request != null ? request.weightKg : ''}"
-                 class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
-        </label>
 
         <label class="block">
           <span class="text-sm font-semibold text-slate-700">털색</span>
@@ -257,6 +259,22 @@
           input.value = '';
           render();
         });
+      })();
+
+      (function() {
+        var ageSelect = document.getElementById('ageValueSelect');
+        var ageUnitHidden = document.getElementById('ageUnitHidden');
+        if (!ageSelect || !ageUnitHidden) return;
+
+        function syncAgeUnit() {
+          if (ageSelect.value === "") {
+            ageUnitHidden.value = "UNKNOWN";
+          } else {
+            ageUnitHidden.value = "YEAR";
+          }
+        }
+        ageSelect.addEventListener('change', syncAgeUnit);
+        syncAgeUnit();
       })();
 
       function formatPhoneNumber(input) {

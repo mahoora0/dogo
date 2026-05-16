@@ -51,9 +51,8 @@
             <div class="rounded-lg bg-slate-50 px-4 py-3">
               <span class="text-xs font-semibold text-slate-400">나이/몸무게</span>
               <p class="mt-1 font-bold text-slate-800">
-                <span th:if="${report.ageValue != null}" th:text="${report.ageValue + report.ageUnitLabel}">3살</span>
-                <span th:unless="${report.ageValue != null}">-</span>
-                <span th:if="${report.weightKg != null}" th:text="${' · ' + report.weightKg + 'kg'}"> · 4kg</span>
+                <span th:text="${report.ageDisplay}">3살</span>
+                <span th:if="${report.weightDisplay != null}" th:text="${' · ' + report.weightDisplay}"> · 4kg</span>
               </p>
             </div>
             <div class="rounded-lg bg-slate-50 px-4 py-3">

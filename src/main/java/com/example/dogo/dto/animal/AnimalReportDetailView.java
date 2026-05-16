@@ -32,6 +32,8 @@ public record AnimalReportDetailView(
 		String ageUnit,
 		String ageUnitLabel,
 		BigDecimal weightKg,
+		String ageDisplay,
+		String weightDisplay,
 		String furColor,
 		String distinctiveMarks,
 		String content,
