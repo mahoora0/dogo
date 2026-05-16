@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -83,7 +84,7 @@ class FoundItemServiceTest {
 	@Test
 	void searchReturnsListViewsWithFirstImage() {
 		FoundItem foundItem = foundItem(1L, "검정 지갑을 주웠습니다", "카드가 들어 있습니다");
-		when(foundItemRepository.search("지갑", "지갑", "강남", "KEEPING", PageRequest.of(0, 9)))
+		when(foundItemRepository.findAll(org.mockito.ArgumentMatchers.<Specification<FoundItem>>any(), any(PageRequest.class)))
 				.thenReturn(new PageImpl<>(List.of(foundItem)));
 		when(foundItemImageRepository.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(foundItem))
 				.thenReturn(Optional.of(image(foundItem, "/uploads/found-items/wallet.jpg")));

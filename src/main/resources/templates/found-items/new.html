@@ -109,8 +109,9 @@
 
         <label class="block">
           <span class="text-sm font-semibold text-slate-700">습득 일시 <span class="text-red-400">*</span></span>
-          <input type="datetime-local" name="foundAt"
+          <input type="datetime-local" name="foundAt" id="foundAtInput"
                  th:value="${request != null && request.foundAt != null ? #temporals.format(request.foundAt, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                 th:attr="max=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd''T''HH:mm')}"
                  required
                  class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
         </label>
@@ -159,11 +160,11 @@
 
       <div class="mt-8 flex justify-end gap-3 border-t border-slate-100 pt-6">
         <a th:href="@{/found-items}"
-           class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-300">
+           class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-300">
           취소
         </a>
         <button type="submit"
-                class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700 active:scale-[0.98]">
+                class="inline-flex items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-slate-700 hover:shadow-lg active:scale-[0.98]">
           등록하기
         </button>
       </div>
@@ -211,6 +212,28 @@
       areaProvince.addEventListener('change', renderAreaDistrict);
       renderCategorySub();
       renderAreaDistrict();
+
+      // 미래 날짜 선택 방지
+      const foundAtInput = document.getElementById('foundAtInput');
+      if (foundAtInput) {
+        const setMax = () => {
+          const now = new Date();
+          const offset = now.getTimezoneOffset() * 60000;
+          const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+          foundAtInput.setAttribute('max', localISOTime);
+          return localISOTime;
+        };
+        
+        setMax();
+        
+        foundAtInput.addEventListener('change', function() {
+          const maxVal = setMax();
+          if (this.value > maxVal) {
+            alert('미래의 시간은 선택할 수 없습니다.');
+            this.value = maxVal;
+          }
+        });
+      }
     })();
 
     (function() {

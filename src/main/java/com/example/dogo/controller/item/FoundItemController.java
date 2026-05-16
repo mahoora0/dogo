@@ -58,41 +58,60 @@ public class FoundItemController {
 		return registrationOptionService.getRegionDistrictOptions();
 	}
 
+	@ModelAttribute("keywordScopeOptions")
+	public List<Option> keywordScopeOptions() {
+		return List.of(
+				new Option("ALL", "전체"),
+				new Option("TITLE_PLACE", "제목+장소"),
+				new Option("ITEM_CATEGORY", "물품명+분류"),
+				new Option("CONTENT", "상세내용"),
+				new Option("COLOR", "색상")
+		);
+	}
+
+	private static final java.util.Set<String> FOUND_SORT_FIELDS = java.util.Set.of("regDate", "foundAt");
+
 	@GetMapping("/found-items")
 	public String list(
 			@RequestParam(required = false) String keyword,
+			@RequestParam(defaultValue = "ALL") String keywordScope,
 			@RequestParam(required = false) String category,
 			@RequestParam(required = false) String area,
 			@RequestParam(required = false) String status,
+			@RequestParam(defaultValue = "regDate") String sortBy,
+			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "9") int size,
 			Model model
 	) {
+		String safeField = FOUND_SORT_FIELDS.contains(sortBy) ? sortBy : "regDate";
+		Sort.Direction direction = "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
+		Sort sort = Sort.by(direction, safeField).and(Sort.by(Sort.Direction.DESC, "foundId"));
+
 		int safePage = Math.max(page, 0);
 		int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-		PageRequest pageRequest = PageRequest.of(
-				safePage,
-				safeSize,
-				Sort.by(Sort.Direction.DESC, "foundAt").and(Sort.by(Sort.Direction.DESC, "foundId"))
-		);
-		Page<?> foundItemPage = foundItemService.search(keyword, category, area, status, pageRequest);
+		PageRequest pageRequest = PageRequest.of(safePage, safeSize, sort);
+		String safeKeywordScope = keywordScopeOptions().stream()
+				.map(Option::value)
+				.filter(value -> value.equals(keywordScope))
+				.findFirst()
+				.orElse("ALL");
+		Page<?> foundItemPage = foundItemService.search(keyword, safeKeywordScope, category, area, status, pageRequest);
 		if (safePage > 0 && safePage >= foundItemPage.getTotalPages() && foundItemPage.getTotalPages() > 0) {
 			safePage = foundItemPage.getTotalPages() - 1;
-			pageRequest = PageRequest.of(
-					safePage,
-					safeSize,
-					Sort.by(Sort.Direction.DESC, "foundAt").and(Sort.by(Sort.Direction.DESC, "foundId"))
-			);
-			foundItemPage = foundItemService.search(keyword, category, area, status, pageRequest);
+			foundItemPage = foundItemService.search(keyword, safeKeywordScope, category, area, status, PageRequest.of(safePage, safeSize, sort));
 		}
 
 		model.addAttribute("foundItemPage", foundItemPage);
 		model.addAttribute("foundItems", foundItemPage.getContent());
 		model.addAttribute("searchCategories", foundItemService.getSearchCategoryNames());
 		model.addAttribute("keyword", keyword);
+		model.addAttribute("keywordScope", safeKeywordScope);
 		model.addAttribute("category", category);
 		model.addAttribute("area", area);
 		model.addAttribute("status", status);
+		model.addAttribute("sortBy", safeField);
+		model.addAttribute("sortDir", sortDir);
 		model.addAttribute("page", safePage);
 		model.addAttribute("size", safeSize);
 		model.addAttribute("currentUri", "/found-items");
@@ -133,5 +152,8 @@ public class FoundItemController {
 	public String notFound(IllegalArgumentException exception, Model model) {
 		model.addAttribute("message", exception.getMessage());
 		return "found-items/error";
+	}
+
+	public record Option(String value, String label) {
 	}
 }

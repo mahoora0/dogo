@@ -19,7 +19,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -68,14 +69,29 @@ public class LostItemService {
 
 	@Transactional(readOnly = true)
 	public List<LostItemView> search(String keyword, String category, String area, String status) {
-		return lostItemRepository.search(keyword, category, area, status).stream()
+		return lostItemRepository.findAll(
+						lostItemSearchSpec(keyword, "ALL", category, area, status),
+						Sort.by(Sort.Direction.DESC, "lostAt").and(Sort.by(Sort.Direction.DESC, "lostId"))
+				).stream()
 				.map(this::toListView)
 				.toList();
 	}
 
 	@Transactional(readOnly = true)
 	public Page<LostItemView> search(String keyword, String category, String area, String status, Pageable pageable) {
-		return lostItemRepository.search(keyword, category, area, status, pageable)
+		return search(keyword, "ALL", category, area, status, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<LostItemView> search(
+			String keyword,
+			String keywordScope,
+			String category,
+			String area,
+			String status,
+			Pageable pageable
+	) {
+		return lostItemRepository.findAll(lostItemSearchSpec(keyword, keywordScope, category, area, status), pageable)
 				.map(this::toListView);
 	}
 
@@ -103,6 +119,58 @@ public class LostItemService {
 	@Transactional(readOnly = true)
 	public List<String> getSearchCategoryNames() {
 		return lostItemRepository.findActiveCategoryNames();
+	}
+
+	private Specification<LostItem> lostItemSearchSpec(
+			String keyword,
+			String keywordScope,
+			String category,
+			String area,
+			String status
+	) {
+		return (root, query, criteriaBuilder) -> {
+			List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+			predicates.add(criteriaBuilder.isFalse(root.get("deleted")));
+
+			String normalizedCategory = blankToNull(category);
+			if (normalizedCategory != null) {
+				predicates.add(criteriaBuilder.equal(root.get("categoryMain"), normalizedCategory));
+			}
+
+			String normalizedArea = blankToNull(area);
+			if (normalizedArea != null) {
+				predicates.add(criteriaBuilder.like(
+						criteriaBuilder.lower(root.get("lostArea")),
+						"%" + normalizedArea.toLowerCase(Locale.ROOT) + "%"
+				));
+			}
+
+			String normalizedStatus = blankToNull(status);
+			if (normalizedStatus != null) {
+				predicates.add(criteriaBuilder.equal(root.get("status"), normalizedStatus));
+			}
+
+			String normalizedKeyword = blankToNull(keyword);
+			if (normalizedKeyword != null) {
+				String pattern = "%" + normalizedKeyword.toLowerCase(Locale.ROOT) + "%";
+				List<jakarta.persistence.criteria.Predicate> keywordPredicates = lostKeywordFields(keywordScope).stream()
+						.map(field -> criteriaBuilder.like(criteriaBuilder.lower(root.get(field)), pattern))
+						.toList();
+				predicates.add(criteriaBuilder.or(keywordPredicates.toArray(jakarta.persistence.criteria.Predicate[]::new)));
+			}
+
+			return criteriaBuilder.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
+		};
+	}
+
+	private List<String> lostKeywordFields(String keywordScope) {
+		return switch (defaultText(keywordScope, "ALL").trim()) {
+			case "TITLE_PLACE" -> List.of("title", "lostArea", "lostPlace");
+			case "ITEM_CATEGORY" -> List.of("itemName", "categoryMain", "categorySub");
+			case "CONTENT" -> List.of("content");
+			case "COLOR" -> List.of("colorName");
+			default -> List.of("title", "itemName", "categoryMain", "categorySub", "colorName", "content", "lostArea", "lostPlace");
+		};
 	}
 
 	@Transactional(readOnly = true)

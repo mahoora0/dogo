@@ -21,6 +21,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -80,7 +82,8 @@ class LostItemServiceTest {
 	@Test
 	void searchReturnsListViewsWithFirstImage() {
 		LostItem lostItem = lostItem(1L, "검정 지갑을 찾습니다", "카드가 들어있습니다");
-		when(lostItemRepository.search("지갑", "지갑", "서울", "WAITING")).thenReturn(List.of(lostItem));
+		when(lostItemRepository.findAll(org.mockito.ArgumentMatchers.<Specification<LostItem>>any(), any(Sort.class)))
+				.thenReturn(List.of(lostItem));
 		when(lostItemImageRepository.findFirstByLostItemOrderBySortOrderAscImageIdAsc(lostItem))
 				.thenReturn(Optional.of(image(lostItem, "/uploads/lost-items/wallet.jpg")));
 

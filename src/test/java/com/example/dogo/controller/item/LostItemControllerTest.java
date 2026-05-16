@@ -63,25 +63,27 @@ class LostItemControllerTest {
 				"010-1234-5678",
 				"/uploads/lost-items/wallet.jpg"
 		);
-		when(lostItemService.search(eq("지갑"), eq("지갑"), eq("강남"), eq("WAITING"), any(Pageable.class)))
+		when(lostItemService.search(eq("지갑"), eq("ITEM_CATEGORY"), eq("지갑"), eq("강남"), eq("WAITING"), any(Pageable.class)))
 				.thenReturn(new PageImpl<>(List.of(view)));
 
 		mockMvc.perform(get("/lost-items")
-						.param("keyword", "지갑")
-						.param("category", "지갑")
+							.param("keyword", "지갑")
+							.param("keywordScope", "ITEM_CATEGORY")
+							.param("category", "지갑")
 						.param("area", "강남")
 						.param("status", "WAITING"))
 				.andExpect(status().isOk())
 				.andExpect(view().name("lost-items/list"))
-				.andExpect(model().attribute("lostItems", hasSize(1)))
-				.andExpect(model().attribute("keyword", "지갑"))
-				.andExpect(model().attribute("category", "지갑"))
+					.andExpect(model().attribute("lostItems", hasSize(1)))
+					.andExpect(model().attribute("keyword", "지갑"))
+					.andExpect(model().attribute("keywordScope", "ITEM_CATEGORY"))
+					.andExpect(model().attribute("category", "지갑"))
 				.andExpect(model().attribute("area", "강남"))
 				.andExpect(model().attribute("status", "WAITING"))
 				.andExpect(model().attribute("categories", registrationOptionService.getCategoryMainOptions()))
 				.andExpect(model().attribute("searchCategories", List.of("가방", "전자기기")));
 
-		verify(lostItemService).search(eq("지갑"), eq("지갑"), eq("강남"), eq("WAITING"), any(Pageable.class));
+		verify(lostItemService).search(eq("지갑"), eq("ITEM_CATEGORY"), eq("지갑"), eq("강남"), eq("WAITING"), any(Pageable.class));
 		verify(lostItemService).getSearchCategoryNames();
 	}
 
