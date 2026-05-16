@@ -14,26 +14,44 @@
     <section class="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] items-start">
       <!-- Image Gallery Section -->
       <div class="flex flex-col gap-4 lg:sticky lg:top-24">
-        <div class="relative overflow-hidden rounded-3xl bg-black/5 shadow-inner">
-          <!-- Background Blur for aspect ratio safety -->
-          <div th:if="${foundItem.imageUrls != null && !foundItem.imageUrls.isEmpty()}"
-               class="absolute inset-0 bg-cover bg-center bg-no-repeat blur-xl opacity-50 transform scale-110"
+        <div class="relative overflow-hidden rounded-3xl bg-black/5 shadow-inner" th:if="${foundItem.imageUrls != null && !foundItem.imageUrls.isEmpty()}">
+          <div class="absolute left-4 top-4 z-20 rounded-full bg-slate-950/70 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
+            <span id="animalImageCurrent">1</span> / <span th:text="${#lists.size(foundItem.imageUrls)}">1</span>
+          </div>
+
+          <div id="animalMainImageBlur"
+               class="absolute inset-0 scale-110 bg-cover bg-center bg-no-repeat opacity-50 blur-xl"
                th:style="'background-image: url(' + ${foundItem.imageUrls[0]} + ');'"></div>
-               
-          <img th:if="${foundItem.imageUrls != null && !foundItem.imageUrls.isEmpty()}"
-               th:src="${foundItem.imageUrls[0]}" alt="대표 이미지"
-               class="relative z-10 h-80 w-full object-contain backdrop-blur-sm lg:h-[500px]">
-          
-          <div th:unless="${foundItem.imageUrls != null && !foundItem.imageUrls.isEmpty()}"
-               class="flex h-80 w-full items-center justify-center bg-slate-50 text-slate-300 lg:h-[500px]">
+
+          <button type="button" id="animalMainImageButton" class="group relative z-10 block w-full" aria-label="이미지 크게 보기">
+            <img id="animalMainImage" th:src="${foundItem.imageUrls[0]}" alt="대표 이미지"
+                 class="relative z-10 h-80 w-full object-contain backdrop-blur-sm transition group-hover:scale-[1.01] lg:h-[500px]">
+          </button>
+
+          <button type="button" id="animalPrevImage"
+                  class="absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-slate-950/55 text-white shadow-sm transition hover:bg-slate-950/75"
+                  aria-label="이전 이미지">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button type="button" id="animalNextImage"
+                  class="absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-slate-950/55 text-white shadow-sm transition hover:bg-slate-950/75"
+                  aria-label="다음 이미지">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        
+        <div class="relative overflow-hidden rounded-3xl bg-black/5 shadow-inner" th:unless="${foundItem.imageUrls != null && !foundItem.imageUrls.isEmpty()}">
+          <div class="flex h-80 w-full items-center justify-center bg-slate-50 text-slate-300 lg:h-[500px]">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           </div>
         </div>
-        
-        <div th:if="${foundItem.imageUrls != null && #lists.size(foundItem.imageUrls) > 1}"
-             class="grid grid-cols-5 gap-3">
-          <button th:each="imageUrl : ${foundItem.imageUrls}" 
-                  class="group relative aspect-square overflow-hidden rounded-xl border-2 border-transparent transition-all hover:border-slate-400 focus:outline-none focus:border-slate-500">
+
+        <div th:if="${foundItem.imageUrls != null && #lists.size(foundItem.imageUrls) > 1}" class="grid grid-cols-5 gap-3">
+          <button type="button" th:each="imageUrl, stat : ${foundItem.imageUrls}"
+                  class="animal-gallery-thumb group relative aspect-square overflow-hidden rounded-xl border-2 border-transparent transition-all hover:border-slate-400 focus:outline-none focus:border-slate-500"
+                  th:classappend="${stat.index == 0 ? ' is-active border-slate-900' : ''}"
+                  th:attr="data-image-url=${imageUrl}, data-image-index=${stat.index}"
+                  th:aria-label="${stat.index + 1} + '번 이미지 보기'">
             <img th:src="${imageUrl}" alt="썸네일" class="h-full w-full object-cover transition-transform group-hover:scale-110 group-focus:scale-110">
           </button>
         </div>
@@ -237,6 +255,150 @@
       </div>
     </div>
 
+    <div id="animalImageModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-md" aria-hidden="true" th:if="${foundItem.imageUrls != null && !foundItem.imageUrls.isEmpty()}">
+      <div class="absolute left-5 top-5 z-20 rounded-full bg-black/45 px-3 py-1.5 text-sm font-bold text-white">
+        <span id="animalModalCurrent">1</span> / <span th:text="${#lists.size(foundItem.imageUrls)}">1</span>
+      </div>
+      <button type="button" id="animalModalClose"
+              class="absolute right-5 top-5 z-20 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-black/45 px-4 text-sm font-bold text-white transition hover:bg-black/65"
+              onclick="document.getElementById('animalImageModal').classList.add('hidden'); document.getElementById('animalImageModal').setAttribute('aria-hidden', 'true'); document.body.classList.remove('overflow-hidden');"
+              onpointerdown="document.getElementById('animalImageModal').classList.add('hidden'); document.getElementById('animalImageModal').setAttribute('aria-hidden', 'true'); document.body.classList.remove('overflow-hidden');"
+              aria-label="이미지 크게 보기 닫기">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        <span>닫기</span>
+      </button>
+
+      <div class="flex h-full w-full items-center justify-center px-4 pb-28 pt-16 sm:px-16">
+        <img id="animalModalImage" th:src="${foundItem.imageUrls[0]}" alt="확대 이미지" class="max-h-full max-w-full object-contain shadow-2xl">
+      </div>
+
+      <button type="button" id="animalModalPrev"
+              class="absolute left-5 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition hover:bg-black/65"
+              aria-label="이전 이미지">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button type="button" id="animalModalNext"
+              class="absolute right-5 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition hover:bg-black/65"
+              aria-label="다음 이미지">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+
+      <div id="animalModalThumbsWrapper" th:if="${#lists.size(foundItem.imageUrls) > 1}" class="absolute inset-x-0 bottom-0 z-20 bg-black/35 px-4 py-4">
+        <div class="mx-auto flex max-w-3xl justify-center gap-3 overflow-x-auto">
+          <button type="button" th:each="imageUrl, stat : ${foundItem.imageUrls}"
+                  class="animal-modal-thumb h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 border-transparent transition hover:border-white/70 focus:outline-none focus:border-white"
+                  th:classappend="${stat.index == 0 ? ' is-active border-white' : ''}"
+                  th:attr="data-image-url=${imageUrl}, data-image-index=${stat.index}"
+                  th:aria-label="${stat.index + 1} + '번 확대 이미지 보기'">
+            <img th:src="${imageUrl}" alt="확대 썸네일" class="h-full w-full object-cover">
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script th:if="${foundItem.imageUrls != null && !foundItem.imageUrls.isEmpty()}">
+      (function() {
+        var mainImage = document.getElementById('animalMainImage');
+        var mainImageBlur = document.getElementById('animalMainImageBlur');
+        var mainImageButton = document.getElementById('animalMainImageButton');
+        var currentLabel = document.getElementById('animalImageCurrent');
+        var prevButton = document.getElementById('animalPrevImage');
+        var nextButton = document.getElementById('animalNextImage');
+        var modal = document.getElementById('animalImageModal');
+        var modalImage = document.getElementById('animalModalImage');
+        var modalCurrentLabel = document.getElementById('animalModalCurrent');
+        var modalClose = document.getElementById('animalModalClose');
+        var modalPrev = document.getElementById('animalModalPrev');
+        var modalNext = document.getElementById('animalModalNext');
+        var thumbs = Array.prototype.slice.call(document.querySelectorAll('.animal-gallery-thumb'));
+        var modalThumbs = Array.prototype.slice.call(document.querySelectorAll('.animal-modal-thumb'));
+        var imageUrls = thumbs.length > 0 ? thumbs.map(function(button) { return button.dataset.imageUrl; }) : [mainImage.src];
+        var currentIndex = 0;
+
+        function setButtonVisibility() {
+          var hidden = imageUrls.length <= 1;
+          [prevButton, nextButton, modalPrev, modalNext].forEach(function(button) {
+            if (!button) return;
+            button.style.display = hidden ? 'none' : 'flex';
+          });
+        }
+
+        function syncThumbs() {
+          thumbs.concat(modalThumbs).forEach(function(button) {
+            var isActive = Number(button.dataset.imageIndex) === currentIndex;
+            button.classList.toggle('is-active', isActive);
+            button.classList.toggle('border-slate-900', isActive && button.classList.contains('animal-gallery-thumb'));
+            button.classList.toggle('border-transparent', !isActive);
+            button.classList.toggle('border-white', isActive && button.classList.contains('animal-modal-thumb'));
+          });
+        }
+
+        function renderImage(index) {
+          currentIndex = (index + imageUrls.length) % imageUrls.length;
+          var imageUrl = imageUrls[currentIndex];
+          mainImage.src = imageUrl;
+          modalImage.src = imageUrl;
+          mainImageBlur.style.backgroundImage = "url('" + imageUrl.replace(/'/g, "\\'") + "')";
+          currentLabel.textContent = currentIndex + 1;
+          modalCurrentLabel.textContent = currentIndex + 1;
+          syncThumbs();
+        }
+
+        function move(delta) {
+          renderImage(currentIndex + delta);
+        }
+
+        function openModal() {
+          modal.classList.remove('hidden');
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.classList.add('overflow-hidden');
+        }
+
+        function closeModal() {
+          modal.classList.add('hidden');
+          modal.setAttribute('aria-hidden', 'true');
+          document.body.classList.remove('overflow-hidden');
+        }
+
+        function closeModalFromControl(event) {
+          if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          closeModal();
+        }
+
+        window.closeAnimalImageModal = closeModal;
+
+        thumbs.concat(modalThumbs).forEach(function(button) {
+          button.addEventListener('click', function() {
+            renderImage(Number(button.dataset.imageIndex));
+          });
+        });
+        prevButton.addEventListener('click', function() { move(-1); });
+        nextButton.addEventListener('click', function() { move(1); });
+        modalPrev.addEventListener('click', function() { move(-1); });
+        modalNext.addEventListener('click', function() { move(1); });
+        mainImageButton.addEventListener('click', openModal);
+        modalClose.addEventListener('click', closeModalFromControl);
+        modalClose.addEventListener('pointerdown', closeModalFromControl);
+        modal.addEventListener('click', function(event) {
+          if (event.target === modalImage || event.target.closest('button') || event.target.closest('#animalModalThumbsWrapper')) {
+            return;
+          }
+          closeModal();
+        });
+        document.addEventListener('keydown', function(event) {
+          if (modal.classList.contains('hidden')) return;
+          if (event.key === 'Escape') closeModal();
+          if (event.key === 'ArrowLeft') move(-1);
+          if (event.key === 'ArrowRight') move(1);
+        });
+
+        setButtonVisibility();
+        renderImage(0);
+      })();
+    </script>
     <script>
       const REMATCH_URL = '/api/found-items/' + window.location.pathname.split('/').pop() + '/rematch';
       const NO_IMG_SVG = '<div class="flex h-full w-full items-center justify-center text-slate-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>';
