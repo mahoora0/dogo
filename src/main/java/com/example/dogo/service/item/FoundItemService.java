@@ -19,6 +19,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -67,7 +68,19 @@ public class FoundItemService {
 
 	@Transactional(readOnly = true)
 	public Page<FoundItemView> search(String keyword, String category, String area, String status, Pageable pageable) {
-		return foundItemRepository.search(keyword, category, area, status, pageable)
+		return search(keyword, "ALL", category, area, status, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<FoundItemView> search(
+			String keyword,
+			String keywordScope,
+			String category,
+			String area,
+			String status,
+			Pageable pageable
+	) {
+		return foundItemRepository.findAll(foundItemSearchSpec(keyword, keywordScope, category, area, status), pageable)
 				.map(this::toListView);
 	}
 
@@ -95,6 +108,58 @@ public class FoundItemService {
 	@Transactional(readOnly = true)
 	public List<String> getSearchCategoryNames() {
 		return foundItemRepository.findActiveCategoryNames();
+	}
+
+	private Specification<FoundItem> foundItemSearchSpec(
+			String keyword,
+			String keywordScope,
+			String category,
+			String area,
+			String status
+	) {
+		return (root, query, criteriaBuilder) -> {
+			List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+			predicates.add(criteriaBuilder.isFalse(root.get("deleted")));
+
+			String normalizedCategory = blankToNull(category);
+			if (normalizedCategory != null) {
+				predicates.add(criteriaBuilder.equal(root.get("categoryMain"), normalizedCategory));
+			}
+
+			String normalizedArea = blankToNull(area);
+			if (normalizedArea != null) {
+				predicates.add(criteriaBuilder.like(
+						criteriaBuilder.lower(root.get("foundArea")),
+						"%" + normalizedArea.toLowerCase(Locale.ROOT) + "%"
+				));
+			}
+
+			String normalizedStatus = blankToNull(status);
+			if (normalizedStatus != null) {
+				predicates.add(criteriaBuilder.equal(root.get("status"), normalizedStatus));
+			}
+
+			String normalizedKeyword = blankToNull(keyword);
+			if (normalizedKeyword != null) {
+				String pattern = "%" + normalizedKeyword.toLowerCase(Locale.ROOT) + "%";
+				List<jakarta.persistence.criteria.Predicate> keywordPredicates = foundKeywordFields(keywordScope).stream()
+						.map(field -> criteriaBuilder.like(criteriaBuilder.lower(root.get(field)), pattern))
+						.toList();
+				predicates.add(criteriaBuilder.or(keywordPredicates.toArray(jakarta.persistence.criteria.Predicate[]::new)));
+			}
+
+			return criteriaBuilder.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
+		};
+	}
+
+	private List<String> foundKeywordFields(String keywordScope) {
+		return switch (defaultText(keywordScope, "ALL").trim()) {
+			case "TITLE_PLACE" -> List.of("title", "foundArea", "foundPlace", "keepPlace");
+			case "ITEM_CATEGORY" -> List.of("itemName", "categoryMain", "categorySub");
+			case "CONTENT" -> List.of("content");
+			case "COLOR" -> List.of("colorName");
+			default -> List.of("title", "itemName", "categoryMain", "categorySub", "colorName", "content", "foundArea", "foundPlace", "keepPlace");
+		};
 	}
 
 	@Transactional(readOnly = true)

@@ -14,6 +14,7 @@ import com.example.dogo.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -64,12 +65,16 @@ public class AnimalReportService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<AnimalReportView> search(String reportType, String animalType, String region, String keyword, Pageable pageable) {
-		return animalReportRepository.search(
-				blankToNull(reportType),
-				blankToNull(animalType),
-				blankToNull(region),
-				blankToNull(keyword),
+	public Page<AnimalReportView> search(
+			String reportType,
+			String animalType,
+			String region,
+			String keyword,
+			String keywordScope,
+			Pageable pageable
+	) {
+		return animalReportRepository.findAll(
+				animalReportSearchSpec(reportType, animalType, region, keyword, keywordScope),
 				pageable
 		).map(this::toListView);
 	}
@@ -266,6 +271,58 @@ public class AnimalReportService {
 		return areaRepository.findByAreaName(regionName.trim()).stream()
 				.filter(area -> area.getParentAreaId() == null)
 				.findFirst();
+	}
+
+	private Specification<AnimalReport> animalReportSearchSpec(
+			String reportType,
+			String animalType,
+			String region,
+			String keyword,
+			String keywordScope
+	) {
+		return (root, query, criteriaBuilder) -> {
+			List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+			predicates.add(criteriaBuilder.isFalse(root.get("deleted")));
+
+			String normalizedReportType = blankToNull(reportType);
+			if (normalizedReportType != null) {
+				predicates.add(criteriaBuilder.equal(root.get("reportType"), normalizedReportType));
+			}
+
+			String normalizedAnimalType = blankToNull(animalType);
+			if (normalizedAnimalType != null) {
+				predicates.add(criteriaBuilder.equal(root.get("animalType"), normalizedAnimalType));
+			}
+
+			String normalizedRegion = blankToNull(region);
+			if (normalizedRegion != null) {
+				predicates.add(criteriaBuilder.equal(root.get("regionName"), normalizedRegion));
+			}
+
+			String normalizedKeyword = blankToNull(keyword);
+			if (normalizedKeyword != null) {
+				String pattern = "%" + normalizedKeyword.toLowerCase(Locale.ROOT) + "%";
+				List<jakarta.persistence.criteria.Predicate> keywordPredicates = searchFields(keywordScope).stream()
+						.map(field -> criteriaBuilder.like(
+								criteriaBuilder.lower(root.get(field)),
+								pattern
+						))
+						.toList();
+				predicates.add(criteriaBuilder.or(keywordPredicates.toArray(jakarta.persistence.criteria.Predicate[]::new)));
+			}
+
+			return criteriaBuilder.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
+		};
+	}
+
+	private List<String> searchFields(String keywordScope) {
+		return switch (defaultText(keywordScope, "ALL").trim()) {
+			case "TITLE_PLACE" -> List.of("title", "detailPlace", "regionName");
+			case "BREED_FEATURE" -> List.of("breedName", "distinctiveMarks");
+			case "CONTENT" -> List.of("content");
+			case "COLOR" -> List.of("furColor");
+			default -> List.of("title", "breedName", "furColor", "distinctiveMarks", "content", "detailPlace", "regionName");
+		};
 	}
 
 	private User getOrCreateDevUser() {

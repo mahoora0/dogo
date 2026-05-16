@@ -71,6 +71,17 @@ public class AnimalReportController {
 		);
 	}
 
+	@ModelAttribute("keywordScopeOptions")
+	public List<Option> keywordScopeOptions() {
+		return List.of(
+				new Option("ALL", "전체"),
+				new Option("TITLE_PLACE", "제목+장소"),
+				new Option("BREED_FEATURE", "품종+특징"),
+				new Option("CONTENT", "상세내용"),
+				new Option("COLOR", "털색")
+		);
+	}
+
 	@ModelAttribute("regionOptions")
 	public List<String> regionOptions() {
 		return registrationOptionService.getRegionOptions();
@@ -82,6 +93,7 @@ public class AnimalReportController {
 			@RequestParam(required = false) String animalType,
 			@RequestParam(required = false) String region,
 			@RequestParam(required = false) String keyword,
+			@RequestParam(defaultValue = "ALL") String keywordScope,
 			@RequestParam(defaultValue = "regdate") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
@@ -95,10 +107,15 @@ public class AnimalReportController {
 		int safePage = Math.max(page, 0);
 		int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
 		PageRequest pageRequest = PageRequest.of(safePage, safeSize, sort);
-		Page<?> reportPage = animalReportService.search(reportType, animalType, region, keyword, pageRequest);
+		String safeKeywordScope = keywordScopeOptions().stream()
+				.map(Option::value)
+				.filter(value -> value.equals(keywordScope))
+				.findFirst()
+				.orElse("ALL");
+		Page<?> reportPage = animalReportService.search(reportType, animalType, region, keyword, safeKeywordScope, pageRequest);
 		if (safePage > 0 && safePage >= reportPage.getTotalPages() && reportPage.getTotalPages() > 0) {
 			safePage = reportPage.getTotalPages() - 1;
-			reportPage = animalReportService.search(reportType, animalType, region, keyword, PageRequest.of(safePage, safeSize, sort));
+			reportPage = animalReportService.search(reportType, animalType, region, keyword, safeKeywordScope, PageRequest.of(safePage, safeSize, sort));
 		}
 
 		model.addAttribute("reportPage", reportPage);
@@ -107,6 +124,7 @@ public class AnimalReportController {
 		model.addAttribute("animalType", animalType);
 		model.addAttribute("region", region);
 		model.addAttribute("keyword", keyword);
+		model.addAttribute("keywordScope", safeKeywordScope);
 		model.addAttribute("sortBy", safeField);
 		model.addAttribute("sortDir", sortDir);
 		model.addAttribute("page", safePage);
