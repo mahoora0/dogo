@@ -23,10 +23,16 @@
                class="absolute inset-0 scale-110 bg-cover bg-center bg-no-repeat opacity-50 blur-xl"
                th:style="'background-image: url(' + ${lostItem.imageUrls[0]} + ');'"></div>
 
-          <button type="button" id="animalMainImageButton" class="group relative z-10 block w-full" aria-label="이미지 크게 보기">
-            <img id="animalMainImage" th:src="${lostItem.imageUrls[0]}" alt="대표 이미지"
-                 class="relative z-10 h-80 w-full object-contain backdrop-blur-sm transition group-hover:scale-[1.01] lg:h-[500px]">
-          </button>
+          <div class="group relative z-10 block w-full overflow-hidden rounded-xl" aria-label="이미지 크게 보기">
+            <a th:each="img, stat : ${lostItem.imageUrls}" 
+               th:href="${img}" 
+               data-fancybox="lost-gallery"
+               class="animal-main-link block w-full"
+               th:style="${stat.index == 0 ? 'display:block;' : 'display:none;'}">
+              <img th:src="${img}" alt="대표 이미지"
+                   class="relative z-10 h-80 w-full shrink-0 object-contain backdrop-blur-sm transition-transform duration-300 ease-out group-hover:scale-[1.02] lg:h-[500px]">
+            </a>
+          </div>
 
           <button type="button" id="animalPrevImage"
                   class="absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-slate-950/55 text-white shadow-sm transition hover:bg-slate-950/75"
@@ -246,92 +252,50 @@
       </div>
     </div>
 
-    <div id="animalImageModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-md" aria-hidden="true" th:if="${lostItem.imageUrls != null && !lostItem.imageUrls.isEmpty()}">
-      <div class="absolute left-5 top-5 z-20 rounded-full bg-black/45 px-3 py-1.5 text-sm font-bold text-white">
-        <span id="animalModalCurrent">1</span> / <span th:text="${#lists.size(lostItem.imageUrls)}">1</span>
-      </div>
-      <button type="button" id="animalModalClose"
-              class="absolute right-5 top-5 z-20 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-black/45 px-4 text-sm font-bold text-white transition hover:bg-black/65"
-              onclick="document.getElementById('animalImageModal').classList.add('hidden'); document.getElementById('animalImageModal').setAttribute('aria-hidden', 'true'); document.body.classList.remove('overflow-hidden');"
-              onpointerdown="document.getElementById('animalImageModal').classList.add('hidden'); document.getElementById('animalImageModal').setAttribute('aria-hidden', 'true'); document.body.classList.remove('overflow-hidden');"
-              aria-label="이미지 크게 보기 닫기">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        <span>닫기</span>
-      </button>
+    <!-- Removed Custom Modal HTML -->
 
-      <div class="flex h-full w-full items-center justify-center px-4 pb-28 pt-16 sm:px-16">
-        <img id="animalModalImage" th:src="${lostItem.imageUrls[0]}" alt="확대 이미지" class="max-h-full max-w-full object-contain shadow-2xl">
-      </div>
-
-      <button type="button" id="animalModalPrev"
-              class="absolute left-5 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition hover:bg-black/65"
-              aria-label="이전 이미지">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-      </button>
-      <button type="button" id="animalModalNext"
-              class="absolute right-5 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition hover:bg-black/65"
-              aria-label="다음 이미지">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-      </button>
-
-      <div id="animalModalThumbsWrapper" th:if="${#lists.size(lostItem.imageUrls) > 1}" class="absolute inset-x-0 bottom-0 z-20 bg-black/35 px-4 py-4">
-        <div class="mx-auto flex max-w-3xl justify-center gap-3 overflow-x-auto">
-          <button type="button" th:each="imageUrl, stat : ${lostItem.imageUrls}"
-                  class="animal-modal-thumb h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 border-transparent transition hover:border-white/70 focus:outline-none focus:border-white"
-                  th:classappend="${stat.index == 0 ? ' is-active border-white' : ''}"
-                  th:attr="data-image-url=${imageUrl}, data-image-index=${stat.index}"
-                  th:aria-label="${stat.index + 1} + '번 확대 이미지 보기'">
-            <img th:src="${imageUrl}" alt="확대 썸네일" class="h-full w-full object-cover">
-          </button>
-        </div>
-      </div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
     <script th:if="${lostItem.imageUrls != null && !lostItem.imageUrls.isEmpty()}">
       (function() {
-        var mainImage = document.getElementById('animalMainImage');
+        var mainLinks = document.querySelectorAll('.animal-main-link');
         var mainImageBlur = document.getElementById('animalMainImageBlur');
-        var mainImageButton = document.getElementById('animalMainImageButton');
         var currentLabel = document.getElementById('animalImageCurrent');
         var prevButton = document.getElementById('animalPrevImage');
         var nextButton = document.getElementById('animalNextImage');
-        var modal = document.getElementById('animalImageModal');
-        var modalImage = document.getElementById('animalModalImage');
-        var modalCurrentLabel = document.getElementById('animalModalCurrent');
-        var modalClose = document.getElementById('animalModalClose');
-        var modalPrev = document.getElementById('animalModalPrev');
-        var modalNext = document.getElementById('animalModalNext');
         var thumbs = Array.prototype.slice.call(document.querySelectorAll('.animal-gallery-thumb'));
-        var modalThumbs = Array.prototype.slice.call(document.querySelectorAll('.animal-modal-thumb'));
-        var imageUrls = thumbs.length > 0 ? thumbs.map(function(button) { return button.dataset.imageUrl; }) : [mainImage.src];
+        var imageUrls = thumbs.length > 0 ? thumbs.map(function(button) { return button.dataset.imageUrl; }) : (mainLinks.length > 0 ? [mainLinks[0].href] : []);
         var currentIndex = 0;
 
         function setButtonVisibility() {
           var hidden = imageUrls.length <= 1;
-          [prevButton, nextButton, modalPrev, modalNext].forEach(function(button) {
-            if (!button) return;
-            button.style.display = hidden ? 'none' : 'flex';
-          });
+          if (prevButton) prevButton.style.display = hidden ? 'none' : 'flex';
+          if (nextButton) nextButton.style.display = hidden ? 'none' : 'flex';
         }
 
         function syncThumbs() {
-          thumbs.concat(modalThumbs).forEach(function(button) {
+          thumbs.forEach(function(button) {
             var isActive = Number(button.dataset.imageIndex) === currentIndex;
             button.classList.toggle('is-active', isActive);
-            button.classList.toggle('border-slate-900', isActive && button.classList.contains('animal-gallery-thumb'));
+            button.classList.toggle('border-slate-900', isActive);
             button.classList.toggle('border-transparent', !isActive);
-            button.classList.toggle('border-white', isActive && button.classList.contains('animal-modal-thumb'));
           });
         }
 
         function renderImage(index) {
           currentIndex = (index + imageUrls.length) % imageUrls.length;
           var imageUrl = imageUrls[currentIndex];
-          mainImage.src = imageUrl;
-          modalImage.src = imageUrl;
-          mainImageBlur.style.backgroundImage = "url('" + imageUrl.replace(/'/g, "\\'") + "')";
-          currentLabel.textContent = currentIndex + 1;
-          modalCurrentLabel.textContent = currentIndex + 1;
+          
+          mainLinks.forEach(function(link, i) {
+            link.style.display = (i === currentIndex) ? 'block' : 'none';
+          });
+          
+          if (mainImageBlur) {
+            mainImageBlur.style.backgroundImage = "url('" + imageUrl.replace(/'/g, "\\'") + "')";
+          }
+          if (currentLabel) {
+            currentLabel.textContent = currentIndex + 1;
+          }
           syncThumbs();
         }
 
@@ -339,51 +303,34 @@
           renderImage(currentIndex + delta);
         }
 
-        function openModal() {
-          modal.classList.remove('hidden');
-          modal.setAttribute('aria-hidden', 'false');
-          document.body.classList.add('overflow-hidden');
-        }
-
-        function closeModal() {
-          modal.classList.add('hidden');
-          modal.setAttribute('aria-hidden', 'true');
-          document.body.classList.remove('overflow-hidden');
-        }
-
-        function closeModalFromControl(event) {
-          if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          closeModal();
-        }
-
-        window.closeAnimalImageModal = closeModal;
-
-        thumbs.concat(modalThumbs).forEach(function(button) {
+        thumbs.forEach(function(button) {
           button.addEventListener('click', function() {
             renderImage(Number(button.dataset.imageIndex));
           });
         });
-        prevButton.addEventListener('click', function() { move(-1); });
-        nextButton.addEventListener('click', function() { move(1); });
-        modalPrev.addEventListener('click', function() { move(-1); });
-        modalNext.addEventListener('click', function() { move(1); });
-        mainImageButton.addEventListener('click', openModal);
-        modalClose.addEventListener('click', closeModalFromControl);
-        modalClose.addEventListener('pointerdown', closeModalFromControl);
-        modal.addEventListener('click', function(event) {
-          if (event.target === modalImage || event.target.closest('button') || event.target.closest('#animalModalThumbsWrapper')) {
-            return;
+
+        if (prevButton) prevButton.addEventListener('click', function() { move(-1); });
+        if (nextButton) nextButton.addEventListener('click', function() { move(1); });
+
+        // Initialize Fancybox
+        Fancybox.bind('[data-fancybox="lost-gallery"]', {
+          Images: {
+            zoom: true,
+          },
+          Toolbar: {
+            display: {
+              left: ["infobar"],
+              middle: [],
+              right: ["zoom", "close"],
+            },
+          },
+          on: {
+            "Carousel.change": function(fancybox, carousel) {
+              if (carousel && carousel.page !== undefined) {
+                renderImage(carousel.page);
+              }
+            }
           }
-          closeModal();
-        });
-        document.addEventListener('keydown', function(event) {
-          if (modal.classList.contains('hidden')) return;
-          if (event.key === 'Escape') closeModal();
-          if (event.key === 'ArrowLeft') move(-1);
-          if (event.key === 'ArrowRight') move(1);
         });
 
         setButtonVisibility();
