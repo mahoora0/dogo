@@ -24,14 +24,15 @@
                th:style="'background-image: url(' + ${foundItem.imageUrls[0]} + ');'"></div>
 
           <div class="group relative z-10 block w-full overflow-hidden rounded-xl" aria-label="이미지 크게 보기">
-            <a th:each="img, stat : ${foundItem.imageUrls}" 
-               th:href="${img}" 
-               data-fancybox="found-gallery"
-               class="animal-main-link block w-full"
-               th:style="${stat.index == 0 ? 'display:block;' : 'display:none;'}">
-              <img th:src="${img}" alt="대표 이미지"
-                   class="relative z-10 h-80 w-full shrink-0 object-contain backdrop-blur-sm transition-transform duration-300 ease-out group-hover:scale-[1.02] lg:h-[500px]">
-            </a>
+            <div id="animalMainImageTrack" class="flex w-full transition-transform duration-500 ease-in-out">
+              <a th:each="img, stat : ${foundItem.imageUrls}" 
+                 th:href="${img}" 
+                 data-fancybox="found-gallery"
+                 class="animal-main-link block w-full shrink-0">
+                <img th:src="${img}" alt="대표 이미지"
+                     class="relative z-10 h-80 w-full object-contain backdrop-blur-sm transition-transform duration-300 ease-out group-hover:scale-[1.02] lg:h-[500px]">
+              </a>
+            </div>
           </div>
 
           <button type="button" id="animalPrevImage"
@@ -267,6 +268,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
     <script th:if="${foundItem.imageUrls != null && !foundItem.imageUrls.isEmpty()}">
       (function() {
+        var mainTrack = document.getElementById('animalMainImageTrack');
         var mainLinks = document.querySelectorAll('.animal-main-link');
         var mainImageBlur = document.getElementById('animalMainImageBlur');
         var currentLabel = document.getElementById('animalImageCurrent');
@@ -295,9 +297,9 @@
           currentIndex = (index + imageUrls.length) % imageUrls.length;
           var imageUrl = imageUrls[currentIndex];
           
-          mainLinks.forEach(function(link, i) {
-            link.style.display = (i === currentIndex) ? 'block' : 'none';
-          });
+          if (mainTrack) {
+            mainTrack.style.transform = 'translateX(-' + (currentIndex * 100) + '%)';
+          }
           
           if (mainImageBlur) {
             mainImageBlur.style.backgroundImage = "url('" + imageUrl.replace(/'/g, "\\'") + "')";
