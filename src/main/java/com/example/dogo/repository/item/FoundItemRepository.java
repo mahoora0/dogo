@@ -23,11 +23,12 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long> {
 				AND (:keyword IS NULL OR :keyword = ''
 					OR LOWER(item.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
 					OR LOWER(item.itemName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-					OR LOWER(item.content) LIKE LOWER(CONCAT('%', :keyword, '%')))
+					OR LOWER(item.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
+					OR LOWER(item.foundArea) LIKE LOWER(CONCAT('%', :keyword, '%'))
+					OR LOWER(item.foundPlace) LIKE LOWER(CONCAT('%', :keyword, '%')))
 				AND (:category IS NULL OR :category = '' OR item.categoryMain = :category)
 				AND (:area IS NULL OR :area = ''
-					OR LOWER(item.foundArea) LIKE LOWER(CONCAT('%', :area, '%'))
-					OR LOWER(item.foundPlace) LIKE LOWER(CONCAT('%', :area, '%')))
+					OR LOWER(item.foundArea) LIKE LOWER(CONCAT('%', :area, '%')))
 				AND (:status IS NULL OR :status = '' OR item.status = :status)
 			""")
 	Page<FoundItem> search(

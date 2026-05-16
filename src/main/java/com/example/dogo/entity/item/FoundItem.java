@@ -109,6 +109,9 @@ public class FoundItem {
 	@Column(name = "IS_DELETED", nullable = false)
 	private boolean deleted;
 
+	@Column(name = "REGDATE", updatable = false)
+	private LocalDateTime regDate;
+
 	public FoundItem(
 			User user,
 			String title,

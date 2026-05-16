@@ -23,11 +23,12 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
 				AND (:keyword IS NULL OR :keyword = ''
 					OR LOWER(item.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
 					OR LOWER(item.itemName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-					OR LOWER(item.content) LIKE LOWER(CONCAT('%', :keyword, '%')))
+					OR LOWER(item.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
+					OR LOWER(item.lostArea) LIKE LOWER(CONCAT('%', :keyword, '%'))
+					OR LOWER(item.lostPlace) LIKE LOWER(CONCAT('%', :keyword, '%')))
 				AND (:category IS NULL OR :category = '' OR item.categoryMain = :category)
 				AND (:area IS NULL OR :area = ''
-					OR LOWER(item.lostArea) LIKE LOWER(CONCAT('%', :area, '%'))
-					OR LOWER(item.lostPlace) LIKE LOWER(CONCAT('%', :area, '%')))
+					OR LOWER(item.lostArea) LIKE LOWER(CONCAT('%', :area, '%')))
 				AND (:status IS NULL OR :status = '' OR item.status = :status)
 			ORDER BY item.lostAt DESC, item.lostId DESC
 			""")
@@ -45,11 +46,12 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
 				AND (:keyword IS NULL OR :keyword = ''
 					OR LOWER(item.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
 					OR LOWER(item.itemName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-					OR LOWER(item.content) LIKE LOWER(CONCAT('%', :keyword, '%')))
+					OR LOWER(item.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
+					OR LOWER(item.lostArea) LIKE LOWER(CONCAT('%', :keyword, '%'))
+					OR LOWER(item.lostPlace) LIKE LOWER(CONCAT('%', :keyword, '%')))
 				AND (:category IS NULL OR :category = '' OR item.categoryMain = :category)
 				AND (:area IS NULL OR :area = ''
-					OR LOWER(item.lostArea) LIKE LOWER(CONCAT('%', :area, '%'))
-					OR LOWER(item.lostPlace) LIKE LOWER(CONCAT('%', :area, '%')))
+					OR LOWER(item.lostArea) LIKE LOWER(CONCAT('%', :area, '%')))
 				AND (:status IS NULL OR :status = '' OR item.status = :status)
 			""")
 	Page<LostItem> search(

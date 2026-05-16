@@ -27,6 +27,7 @@ import java.util.List;
 public class AnimalReportController {
 
 	private static final int MAX_PAGE_SIZE = 30;
+	private static final java.util.Set<String> SORT_FIELDS = java.util.Set.of("regdate", "eventDate");
 
 	private final AnimalReportService animalReportService;
 	private final RegistrationOptionService registrationOptionService;
@@ -81,30 +82,23 @@ public class AnimalReportController {
 			@RequestParam(required = false) String animalType,
 			@RequestParam(required = false) String region,
 			@RequestParam(required = false) String keyword,
+			@RequestParam(defaultValue = "regdate") String sortBy,
+			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "9") int size,
 			Model model
 	) {
+		String safeField = SORT_FIELDS.contains(sortBy) ? sortBy : "regdate";
+		Sort.Direction direction = "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
+		Sort sort = Sort.by(direction, safeField).and(Sort.by(Sort.Direction.DESC, "reportId"));
+
 		int safePage = Math.max(page, 0);
 		int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-		PageRequest pageRequest = PageRequest.of(
-				safePage,
-				safeSize,
-				Sort.by(Sort.Direction.DESC, "eventDate")
-						.and(Sort.by(Sort.Direction.DESC, "eventTime"))
-						.and(Sort.by(Sort.Direction.DESC, "reportId"))
-		);
+		PageRequest pageRequest = PageRequest.of(safePage, safeSize, sort);
 		Page<?> reportPage = animalReportService.search(reportType, animalType, region, keyword, pageRequest);
 		if (safePage > 0 && safePage >= reportPage.getTotalPages() && reportPage.getTotalPages() > 0) {
 			safePage = reportPage.getTotalPages() - 1;
-			pageRequest = PageRequest.of(
-					safePage,
-					safeSize,
-					Sort.by(Sort.Direction.DESC, "eventDate")
-							.and(Sort.by(Sort.Direction.DESC, "eventTime"))
-							.and(Sort.by(Sort.Direction.DESC, "reportId"))
-			);
-			reportPage = animalReportService.search(reportType, animalType, region, keyword, pageRequest);
+			reportPage = animalReportService.search(reportType, animalType, region, keyword, PageRequest.of(safePage, safeSize, sort));
 		}
 
 		model.addAttribute("reportPage", reportPage);
@@ -113,6 +107,8 @@ public class AnimalReportController {
 		model.addAttribute("animalType", animalType);
 		model.addAttribute("region", region);
 		model.addAttribute("keyword", keyword);
+		model.addAttribute("sortBy", safeField);
+		model.addAttribute("sortDir", sortDir);
 		model.addAttribute("page", safePage);
 		model.addAttribute("size", safeSize);
 		model.addAttribute("currentUri", "/animal-reports");
