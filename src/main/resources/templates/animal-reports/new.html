@@ -27,11 +27,12 @@
           <span class="text-sm font-semibold text-slate-700">구분 <span class="text-red-400">*</span></span>
           <div class="mt-2 grid gap-3 sm:grid-cols-2">
             <label th:each="option : ${reportTypeOptions}"
-                   class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition has-[:checked]:border-slate-900 has-[:checked]:bg-slate-900 has-[:checked]:text-white">
+                   class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-1 text-sm font-semibold text-slate-700 transition has-[:checked]:border-slate-900 has-[:checked]:bg-slate-900">
               <input type="radio" name="reportType" th:value="${option.value}"
                      th:checked="${(request == null || request.reportType == null) ? option.value == 'MISSING' : request.reportType == option.value}"
-                     class="sr-only report-type-radio">
-              <span th:text="${option.label}">실종</span>
+                     class="peer sr-only report-type-radio">
+              <span th:text="${option.label}"
+                    class="flex w-full items-center justify-center rounded-md px-3 py-2 text-slate-700 transition peer-checked:bg-slate-900 peer-checked:text-white">실종</span>
             </label>
           </div>
         </div>
@@ -43,20 +44,19 @@
                  class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
         </label>
 
-        <label class="block">
-          <span class="text-sm font-semibold text-slate-700">날짜 <span class="text-red-400">*</span></span>
-          <input type="date" name="eventDate"
-                 th:value="${request != null && request.eventDate != null ? #temporals.format(request.eventDate, 'yyyy-MM-dd') : ''}"
-                 required
-                 class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
-        </label>
-
-        <label class="block">
-          <span class="text-sm font-semibold text-slate-700">시간</span>
-          <input type="time" name="eventTime"
-                 th:value="${request != null && request.eventTime != null ? #temporals.format(request.eventTime, 'HH:mm') : ''}"
-                 class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
-        </label>
+        <div class="block">
+          <label class="block">
+            <span class="text-sm font-semibold text-slate-700"><span id="eventDateTimeLabel">발생 일시</span> <span class="text-red-400">*</span></span>
+            <input type="datetime-local" id="eventDateTimeCombined"
+                   th:attr="max=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd''T''HH:mm')}"
+                   th:value="${request != null && request.eventDate != null ? #temporals.format(request.eventDate, 'yyyy-MM-dd') + 'T' + (request.eventTime != null ? #temporals.format(request.eventTime, 'HH:mm') : '00:00') : ''}"
+                   required
+                   class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+          </label>
+          <!-- 서버 전송을 위한 숨겨진 필드 -->
+          <input type="hidden" name="eventDate" id="eventDateHidden">
+          <input type="hidden" name="eventTime" id="eventTimeHidden">
+        </div>
 
         <label class="block">
           <span class="text-sm font-semibold text-slate-700">지역 <span class="text-red-400">*</span></span>
@@ -69,29 +69,29 @@
         </label>
 
         <label class="block">
-          <span class="text-sm font-semibold text-slate-700">구체적인 장소 <span class="text-red-400">*</span></span>
+          <span class="text-sm font-semibold text-slate-700"><span id="detailPlaceLabel">구체적인 장소</span> <span class="text-red-400">*</span></span>
           <input name="detailPlace" th:value="${request != null ? request.detailPlace : ''}" required
+                 id="detailPlaceInput"
                  placeholder="예: 한강공원 3주차장 근처"
                  class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
         </label>
 
-        <label class="block">
-          <span class="text-sm font-semibold text-slate-700">연락처</span>
+        <div class="block">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-sm font-semibold text-slate-700">연락처</span>
+            <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 transition has-[:checked]:border-slate-900 has-[:checked]:bg-slate-900 has-[:checked]:text-white">
+              <input type="checkbox" name="contactPublic" value="true"
+                     th:checked="${request == null || request.contactPublic}"
+                     class="sr-only">
+              <span>공개</span>
+            </label>
+          </div>
           <input type="tel" name="contactPhone" th:value="${request != null ? request.contactPhone : ''}"
                  placeholder="010-0000-0000" maxlength="13" oninput="formatPhoneNumber(this)"
                  class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
-        </label>
-
-        <div class="flex items-end">
-          <label class="flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
-            <span>연락처 공개</span>
-            <input type="checkbox" name="contactPublic" value="true"
-                   th:checked="${request == null || request.contactPublic}"
-                   class="h-4 w-4 rounded border-slate-300 text-slate-900">
-          </label>
         </div>
 
-        <label id="careStatusField" class="block md:col-span-2">
+        <label id="careStatusField" class="block">
           <span class="text-sm font-semibold text-slate-700">목격 상태</span>
           <select name="sightingCareStatus"
                   class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
@@ -180,7 +180,7 @@
 
         <label class="block md:col-span-2">
           <span class="text-sm font-semibold text-slate-700">상세한 내용</span>
-          <textarea name="content" rows="5" th:text="${request != null ? request.content : ''}"
+          <textarea name="content" id="contentInput" rows="5" th:text="${request != null ? request.content : ''}"
                     placeholder="상황, 이동 방향, 성격, 구조 여부 등 추가 정보를 적어주세요."
                     class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"></textarea>
         </label>
@@ -213,13 +213,98 @@
     <script>
       (function() {
         var careStatusField = document.getElementById('careStatusField');
+        var careStatusSelect = careStatusField ? careStatusField.querySelector('select') : null;
+        var eventDateTimeLabel = document.getElementById('eventDateTimeLabel');
+        var detailPlaceLabel = document.getElementById('detailPlaceLabel');
+        var detailPlaceInput = document.getElementById('detailPlaceInput');
+        var contentInput = document.getElementById('contentInput');
         var radios = document.querySelectorAll('.report-type-radio');
-        function syncCareStatus() {
+        var copyByType = {
+          MISSING: {
+            eventDateTimeLabel: '실종 일시',
+            detailPlaceLabel: '실종 장소',
+            detailPlacePlaceholder: '예: 한강공원 3주차장 근처',
+            contentPlaceholder: '마지막으로 본 상황, 이동 방향, 성격, 특징 등을 적어주세요.'
+          },
+          SIGHTING: {
+            eventDateTimeLabel: '목격 일시',
+            detailPlaceLabel: '목격 장소',
+            detailPlacePlaceholder: '예: 한강공원 3주차장 근처',
+            contentPlaceholder: '목격 상황, 이동 방향, 구조 여부, 보호 상태 등을 적어주세요.'
+          }
+        };
+
+        function syncReportTypeFields() {
           var selected = document.querySelector('.report-type-radio:checked');
-          careStatusField.style.display = selected && selected.value === 'SIGHTING' ? 'block' : 'none';
+          var selectedType = selected ? selected.value : 'MISSING';
+          var copy = copyByType[selectedType] || copyByType.MISSING;
+          if (careStatusField) {
+            var isSighting = selectedType === 'SIGHTING';
+            careStatusField.style.display = isSighting ? 'block' : 'none';
+            careStatusField.setAttribute('aria-hidden', isSighting ? 'false' : 'true');
+            if (careStatusSelect) {
+              careStatusSelect.disabled = !isSighting;
+            }
+          }
+          if (eventDateTimeLabel) eventDateTimeLabel.textContent = copy.eventDateTimeLabel;
+          if (detailPlaceLabel) detailPlaceLabel.textContent = copy.detailPlaceLabel;
+          if (detailPlaceInput) detailPlaceInput.placeholder = copy.detailPlacePlaceholder;
+          if (contentInput) contentInput.placeholder = copy.contentPlaceholder;
         }
-        radios.forEach(function(radio) { radio.addEventListener('change', syncCareStatus); });
-        syncCareStatus();
+
+        if (radios.length > 0) {
+          radios.forEach(function(radio) { radio.addEventListener('change', syncReportTypeFields); });
+          syncReportTypeFields();
+        }
+
+        // 날짜/시간 통합 처리 및 미래 날짜 제한
+        const combinedInput = document.getElementById('eventDateTimeCombined');
+        const dateHidden = document.getElementById('eventDateHidden');
+        const timeHidden = document.getElementById('eventTimeHidden');
+
+        if (combinedInput) {
+          const setMax = () => {
+            const now = new Date();
+            const offset = now.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+            combinedInput.setAttribute('max', localISOTime);
+            return localISOTime;
+          };
+          
+          setMax();
+
+          // 값이 변경될 때마다 숨겨진 필드(date, time) 업데이트 및 미래 시간 체크
+          combinedInput.addEventListener('change', function() {
+            const maxVal = setMax();
+            if (this.value > maxVal) {
+              alert('미래의 시간은 선택할 수 없습니다.');
+              this.value = maxVal;
+            }
+
+            if (this.value) {
+              const [date, time] = this.value.split('T');
+              dateHidden.value = date;
+              timeHidden.value = time;
+            } else {
+              dateHidden.value = '';
+              timeHidden.value = '';
+            }
+          });
+
+          syncDateTimeHiddenFields();
+        }
+
+        function syncDateTimeHiddenFields() {
+          if (!combinedInput || !dateHidden || !timeHidden) return;
+          if (combinedInput.value) {
+            const parts = combinedInput.value.split('T');
+            dateHidden.value = parts[0] || '';
+            timeHidden.value = parts[1] || '';
+          } else {
+            dateHidden.value = '';
+            timeHidden.value = '';
+          }
+        }
       })();
 
       (function() {

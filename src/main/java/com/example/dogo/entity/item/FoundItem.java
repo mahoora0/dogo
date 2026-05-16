@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -209,5 +210,12 @@ public class FoundItem {
 		this.custodyStatus = custodyStatus;
 		this.receiveType = receiveType;
 		this.status = status;
+	}
+
+	@PrePersist
+	void prePersist() {
+		if (this.regDate == null) {
+			this.regDate = LocalDateTime.now();
+		}
 	}
 }
