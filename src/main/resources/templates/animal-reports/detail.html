@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{layout/base :: setContent(~{this::content})}">
+  <th:block th:fragment="content">
+    <div class="mb-6">
+      <a th:href="@{/animal-reports}" class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+        목록으로 돌아가기
+      </a>
+    </div>
+
+    <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div class="grid gap-0 lg:grid-cols-2">
+        <div class="bg-slate-100">
+          <img th:src="${report.imageUrls[0]}" alt="대표 이미지" class="h-full min-h-[320px] w-full object-cover">
+        </div>
+        <div class="p-6 sm:p-8">
+          <div class="mb-4 flex flex-wrap gap-2">
+            <span th:text="${report.reportTypeLabel}"
+                  th:classappend="${report.reportType == 'MISSING' ? ' bg-rose-100 text-rose-700 ring-rose-200' : ' bg-indigo-100 text-indigo-700 ring-indigo-200'}"
+                  class="rounded-full px-3 py-1 text-xs font-bold ring-1">실종</span>
+            <span th:text="${report.statusLabel}" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">진행중</span>
+            <span th:if="${report.sightingCareStatusLabel}" th:text="${report.sightingCareStatusLabel}"
+                  class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200">보호 중</span>
+          </div>
+
+          <h1 th:text="${report.title}" class="text-3xl font-extrabold leading-tight tracking-tight text-slate-900">제목</h1>
+          <p class="mt-3 text-sm text-slate-500">
+            <span th:text="${#temporals.format(report.eventDate, 'yyyy년 MM월 dd일')}">2026년 05월 16일</span>
+            <span th:if="${report.eventTime != null}" th:text="${#temporals.format(report.eventTime, ' HH:mm')}"> 12:00</span>
+            <span class="mx-2">·</span>
+            <span th:text="${report.regionName}">서울특별시</span>
+          </p>
+
+          <div class="mt-6 grid gap-3 sm:grid-cols-2">
+            <div class="rounded-lg bg-slate-50 px-4 py-3">
+              <span class="text-xs font-semibold text-slate-400">동물 종류</span>
+              <p th:text="${report.animalTypeLabel}" class="mt-1 font-bold text-slate-800">개</p>
+            </div>
+            <div class="rounded-lg bg-slate-50 px-4 py-3">
+              <span class="text-xs font-semibold text-slate-400">품종</span>
+              <p th:text="${report.breedName ?: '-'}" class="mt-1 font-bold text-slate-800">-</p>
+            </div>
+            <div class="rounded-lg bg-slate-50 px-4 py-3">
+              <span class="text-xs font-semibold text-slate-400">성별</span>
+              <p th:text="${report.genderLabel}" class="mt-1 font-bold text-slate-800">모름</p>
+            </div>
+            <div class="rounded-lg bg-slate-50 px-4 py-3">
+              <span class="text-xs font-semibold text-slate-400">중성화</span>
+              <p th:text="${report.neuteredStatusLabel}" class="mt-1 font-bold text-slate-800">모름</p>
+            </div>
+            <div class="rounded-lg bg-slate-50 px-4 py-3">
+              <span class="text-xs font-semibold text-slate-400">나이/몸무게</span>
+              <p class="mt-1 font-bold text-slate-800">
+                <span th:if="${report.ageValue != null}" th:text="${report.ageValue + report.ageUnitLabel}">3살</span>
+                <span th:unless="${report.ageValue != null}">-</span>
+                <span th:if="${report.weightKg != null}" th:text="${' · ' + report.weightKg + 'kg'}"> · 4kg</span>
+              </p>
+            </div>
+            <div class="rounded-lg bg-slate-50 px-4 py-3">
+              <span class="text-xs font-semibold text-slate-400">털색</span>
+              <p th:text="${report.furColor ?: '-'}" class="mt-1 font-bold text-slate-800">-</p>
+            </div>
+            <div class="rounded-lg bg-slate-50 px-4 py-3 sm:col-span-2">
+              <span class="text-xs font-semibold text-slate-400">장소</span>
+              <p th:text="${report.detailPlace}" class="mt-1 font-bold text-slate-800">장소</p>
+            </div>
+            <div class="rounded-lg bg-slate-50 px-4 py-3 sm:col-span-2">
+              <span class="text-xs font-semibold text-slate-400">연락처</span>
+              <p th:text="${report.displayContact}" class="mt-1 font-bold text-slate-800">비공개</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-100 p-6 sm:p-8">
+        <div th:if="${#lists.size(report.imageUrls) > 1}" class="mb-8 grid grid-cols-3 gap-3 sm:grid-cols-5">
+          <img th:each="imageUrl : ${report.imageUrls}" th:src="${imageUrl}" alt="" class="h-24 w-full rounded-lg border border-slate-200 object-cover">
+        </div>
+
+        <section class="grid gap-6 lg:grid-cols-2">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">특징</h2>
+            <p th:text="${report.distinctiveMarks ?: '등록된 특징이 없습니다.'}" class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600">특징</p>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">상세한 내용</h2>
+            <p th:text="${report.content ?: '등록된 상세 내용이 없습니다.'}" class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600">내용</p>
+          </div>
+        </section>
+      </div>
+    </article>
+  </th:block>
+</th:block>
+</html>
