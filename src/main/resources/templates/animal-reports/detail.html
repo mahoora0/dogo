@@ -178,6 +178,43 @@
       </div>
     </section>
 
+    <section th:if="${matchCandidates != null && !matchCandidates.isEmpty()}" class="mt-12">
+      <h2 class="mb-1 text-xl font-extrabold text-slate-900">
+        <span th:text="${report.reportType == 'MISSING' ? '목격 매칭 후보' : '실종 매칭 후보'}">매칭 후보</span>
+      </h2>
+      <p class="mb-6 text-sm text-slate-500">사진 유사도를 기반으로 찾은 후보 게시글입니다. 직접 확인 후 연락해보세요.</p>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <a th:each="candidate : ${matchCandidates}"
+           th:href="@{/animal-reports/{id}(id=${candidate.reportId})}"
+           class="group flex gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md">
+          <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+            <img th:src="${candidate.imageUrl}" alt="후보 이미지"
+                 class="h-full w-full object-cover transition group-hover:scale-105">
+          </div>
+          <div class="flex min-w-0 flex-col justify-between">
+            <div>
+              <div class="mb-1 flex flex-wrap gap-1">
+                <span th:text="${candidate.reportTypeLabel}"
+                      th:classappend="${candidate.reportType == 'MISSING' ? ' bg-rose-100 text-rose-700' : ' bg-indigo-100 text-indigo-700'}"
+                      class="rounded-full px-2 py-0.5 text-xs font-bold">실종</span>
+                <span th:text="${candidate.statusLabel}"
+                      class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">진행중</span>
+              </div>
+              <p th:text="${candidate.title}" class="truncate text-sm font-bold text-slate-800 group-hover:text-slate-900">제목</p>
+              <p class="mt-0.5 text-xs text-slate-500">
+                <span th:text="${candidate.animalTypeLabel}">개</span>
+                <span th:if="${candidate.breedName}" th:text="${' · ' + candidate.breedName}"> · 말티즈</span>
+              </p>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-400" th:text="${candidate.regionName + ' · ' + #temporals.format(candidate.eventDate, 'MM/dd')}">지역 · 날짜</span>
+              <span class="text-xs font-bold text-indigo-600" th:text="${#numbers.formatDecimal(candidate.score, 1, 1) + '점'}">유사도</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
     <!-- Removed Custom Modal HTML -->
 
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>

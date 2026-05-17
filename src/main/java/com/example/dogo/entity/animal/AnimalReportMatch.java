@@ -64,4 +64,18 @@ public class AnimalReportMatch {
 
 	@Column(name = "MODDATE", nullable = false)
 	private LocalDateTime moddate = LocalDateTime.now();
+
+	public AnimalReportMatch(
+			AnimalReport missingReport,
+			AnimalReport sightingReport,
+			BigDecimal imageScore,
+			String modelName
+	) {
+		this.missingReport = missingReport;
+		this.sightingReport = sightingReport;
+		this.semanticScore = imageScore;
+		this.finalScore = imageScore;
+		this.matchVersion = "clip-image-v1";
+		this.modelName = modelName;
+	}
 }

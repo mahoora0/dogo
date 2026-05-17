@@ -162,7 +162,9 @@ public class AnimalReportController {
 
 	@GetMapping("/animal-reports/{id}")
 	public String detail(@PathVariable Long id, Model model) {
-		model.addAttribute("report", animalReportService.getDetail(id));
+		var report = animalReportService.getDetail(id);
+		model.addAttribute("report", report);
+		model.addAttribute("matchCandidates", animalReportService.getMatchCandidates(id, report.reportType()));
 		model.addAttribute("currentUri", "/animal-reports");
 		return "animal-reports/detail";
 	}

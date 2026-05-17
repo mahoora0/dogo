@@ -1,9 +1,17 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile, File
 
+from app.clip_embedding import CLIP_MODEL_NAME, _load_clip_model, encode_image
 from app.logger import get_logger
-from app.schemas import EmbeddingsRequest, EmbeddingsResponse, HealthResponse, SimilarityRequest, SimilarityResponse
+from app.schemas import (
+    EmbeddingsRequest,
+    EmbeddingsResponse,
+    HealthResponse,
+    PetImageEmbeddingResponse,
+    SimilarityRequest,
+    SimilarityResponse,
+)
 from app.similarity import MODEL_BACKEND, MODEL_NAME, _load_model, compute_embeddings, compute_similarity
 
 logger = get_logger("main")
@@ -13,7 +21,8 @@ logger = get_logger("main")
 async def lifespan(app: FastAPI):
     logger.info("dogo-python-match 서버 시작")
     _load_model()
-    logger.info(f"서버 준비 완료 | 모델={MODEL_NAME} | backend={MODEL_BACKEND}")
+    _load_clip_model()
+    logger.info(f"서버 준비 완료 | 텍스트 모델={MODEL_NAME} | CLIP 모델={CLIP_MODEL_NAME} | backend={MODEL_BACKEND}")
     yield
     logger.info("서버 종료")
 
@@ -37,3 +46,10 @@ def similarity(request: SimilarityRequest) -> SimilarityResponse:
 def embeddings(request: EmbeddingsRequest) -> EmbeddingsResponse:
     vectors = compute_embeddings(request.items)
     return EmbeddingsResponse(model=MODEL_NAME, embeddings=vectors)
+
+
+@app.post("/pet-image-embedding", response_model=PetImageEmbeddingResponse)
+async def pet_image_embedding(image: UploadFile = File(...)) -> PetImageEmbeddingResponse:
+    image_bytes = await image.read()
+    vector = encode_image(image_bytes)
+    return PetImageEmbeddingResponse(vector=vector, model=CLIP_MODEL_NAME)
