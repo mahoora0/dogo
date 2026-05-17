@@ -121,13 +121,14 @@ public class KorailDataInitializer implements CommandLineRunner {
                         String sName = clean(line[2]);
                         if (sName.endsWith("역")) sName = sName.substring(0, sName.length() - 1);
                         String details = line.length > 6 ? clean(line[6]) : null;
-                        String subRegion = extractSubRegion(details, sName);
+                        String telNo = line.length > 8 ? clean(line[8]) : null;
+                        String subRegion = extractSubRegion(details, sName, telNo);
 
                         jdbcTemplate.update(
                             "INSERT INTO korail_lost_found_center (operator_name, line_name, station_name, sub_region, location_details, operating_hours, tel_no) VALUES (?, ?, ?, ?, ?, ?, ?)",
                             opName, lName, sName, subRegion, details,
                             line.length > 7 ? clean(line[7]) : null,
-                            line.length > 8 ? clean(line[8]) : null
+                            telNo
                         );
                         count++;
                     }
@@ -143,9 +144,8 @@ public class KorailDataInitializer implements CommandLineRunner {
     }
 
 
-    private String extractSubRegion(String details, String stationName) {
-        // 1. Priority: Hardcoded mappings for known major stations to ensure consistency
-        // Format: "Province District" to ensure both filters work
+    private String extractSubRegion(String details, String stationName, String telNo) {
+        // 1. Priority: Hardcoded mappings for known major stations
         if (stationName.contains("부산")) return "부산 동구";
         if (stationName.contains("부전")) return "부산 진구";
         if (stationName.contains("서울")) return "서울 중구";
@@ -168,15 +168,38 @@ public class KorailDataInitializer implements CommandLineRunner {
         if (stationName.contains("강릉")) return "강원 강릉시";
         if (stationName.contains("춘천")) return "강원 춘천시";
         if (stationName.contains("원주")) return "강원 원주시";
+        if (stationName.contains("대구")) return "대구 동구";
+        if (stationName.contains("인천")) return "인천 중구";
+
+        // 2. Use Tel No area code to determine region
+        if (telNo != null && !telNo.isBlank()) {
+            String cleanTel = telNo.replaceAll("[^0-9]", "");
+            if (cleanTel.startsWith("02")) return "서울";
+            if (cleanTel.startsWith("031")) return "경기";
+            if (cleanTel.startsWith("032")) return "인천";
+            if (cleanTel.startsWith("033")) return "강원";
+            if (cleanTel.startsWith("041")) return "충남";
+            if (cleanTel.startsWith("042")) return "대전";
+            if (cleanTel.startsWith("043")) return "충북";
+            if (cleanTel.startsWith("044")) return "세종";
+            if (cleanTel.startsWith("051")) return "부산";
+            if (cleanTel.startsWith("052")) return "울산";
+            if (cleanTel.startsWith("053")) return "대구";
+            if (cleanTel.startsWith("054")) return "경북";
+            if (cleanTel.startsWith("055")) return "경남";
+            if (cleanTel.startsWith("061")) return "전남";
+            if (cleanTel.startsWith("062")) return "광주";
+            if (cleanTel.startsWith("063")) return "전북";
+            if (cleanTel.startsWith("064")) return "제주";
+        }
 
         if (details == null || details.isBlank()) return null;
 
-        // 2. Fallback: Parse from location details address
+        // 3. Fallback: Parse from location details address
         String[] parts = details.split("\\s+");
         String result = null;
         
         for (String part : parts) {
-            // Priority: District (구) > City (시) > County (군)
             if (part.endsWith("구")) return part;
             if (part.endsWith("시") && !part.equals(parts[0])) result = part; 
             if (part.endsWith("군") && result == null) result = part;
