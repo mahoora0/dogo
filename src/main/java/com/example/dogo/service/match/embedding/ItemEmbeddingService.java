@@ -112,7 +112,7 @@ public class ItemEmbeddingService {
 				if (req == null) {
 					return;
 				}
-				saveOrUpdate(itemType, id, req.text(), vector, existingById.get(id));
+				saveOrUpdate(itemType, id, req.text(), vector);
 				result.put(id, vector);
 			});
 		}
@@ -140,7 +140,7 @@ public class ItemEmbeddingService {
 			return new float[0];
 		}
 
-		saveOrUpdate(itemType, item.id(), text, vector, existing.orElse(null));
+		saveOrUpdate(itemType, item.id(), text, vector);
 		return vector;
 	}
 
@@ -168,7 +168,7 @@ public class ItemEmbeddingService {
 		vectors.forEach((id, vector) -> {
 			String text = textById.get(id);
 			if (text != null) {
-				saveOrUpdate(itemType, id, text, vector, existingById.get(id));
+				saveOrUpdate(itemType, id, text, vector);
 			}
 		});
 		return vectors.size();
@@ -189,23 +189,12 @@ public class ItemEmbeddingService {
 			return;
 		}
 
-		byte[] blob = VectorUtils.toBytes(vector);
-		if (existing.isPresent()) {
-			existing.get().update(text, hash, SemanticMatchTextBuilder.TEXT_VERSION, blob);
-		} else {
-			embeddingRepository.save(new ItemEmbedding(
-					itemType, itemId, text, hash, SemanticMatchTextBuilder.TEXT_VERSION, blob));
-		}
+		saveOrUpdate(itemType, itemId, text, vector);
 	}
 
-	private void saveOrUpdate(String itemType, Long itemId, String text, float[] vector, ItemEmbedding existing) {
+	private void saveOrUpdate(String itemType, Long itemId, String text, float[] vector) {
 		String hash = textBuilder.hash(text);
 		byte[] blob = VectorUtils.toBytes(vector);
-		if (existing != null) {
-			existing.update(text, hash, SemanticMatchTextBuilder.TEXT_VERSION, blob);
-		} else {
-			embeddingRepository.save(new ItemEmbedding(
-					itemType, itemId, text, hash, SemanticMatchTextBuilder.TEXT_VERSION, blob));
-		}
+		embeddingRepository.upsert(itemType, itemId, text, hash, SemanticMatchTextBuilder.TEXT_VERSION, blob);
 	}
 }

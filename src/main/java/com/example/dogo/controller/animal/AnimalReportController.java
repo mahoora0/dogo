@@ -150,7 +150,7 @@ public class AnimalReportController {
 	) {
 		try {
 			Long reportId = animalReportService.create(request, userDetails != null ? userDetails.getUser() : null);
-			return "redirect:/animal-reports/" + reportId;
+			return "redirect:/animal-reports/" + reportId + "?created=true";
 		} catch (IllegalArgumentException exception) {
 			model.addAttribute("errorMessage", exception.getMessage());
 			model.addAttribute("currentUri", "/animal-reports/new");
@@ -187,10 +187,14 @@ public class AnimalReportController {
 	}
 
 	@GetMapping("/animal-reports/{id}")
-	public String detail(@PathVariable Long id, Model model) {
+	public String detail(@PathVariable Long id,
+						 @RequestParam(defaultValue = "false") boolean created,
+						 Model model) {
 		var report = animalReportService.getDetail(id);
+		var matchCandidates = animalReportService.getMatchCandidates(id, report.reportType());
 		model.addAttribute("report", report);
-		model.addAttribute("matchCandidates", animalReportService.getMatchCandidates(id, report.reportType()));
+		model.addAttribute("matchCandidates", matchCandidates);
+		model.addAttribute("matchingInProgress", created && matchCandidates.isEmpty());
 		model.addAttribute("currentUri", "/animal-reports");
 		return "animal-reports/detail";
 	}

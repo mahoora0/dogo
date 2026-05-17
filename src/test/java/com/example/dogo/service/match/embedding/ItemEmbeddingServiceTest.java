@@ -17,6 +17,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -89,9 +91,14 @@ class ItemEmbeddingServiceTest {
 		String expectedText = textBuilder.build(item);
 		assertThat(captor.getValue()).extracting(EmbeddingItem::text).containsExactly(expectedText);
 		assertThat(result.get(10L)).containsExactly(freshVector);
-		assertThat(existing.getEmbeddingText()).isEqualTo(expectedText);
-		assertThat(existing.getTextHash()).isEqualTo(textBuilder.hash(expectedText));
-		assertThat(existing.getModelName()).isEqualTo(SemanticMatchTextBuilder.TEXT_VERSION);
+		verify(embeddingRepository).upsert(
+				eq("FOUND"),
+				eq(10L),
+				eq(expectedText),
+				eq(textBuilder.hash(expectedText)),
+				eq(SemanticMatchTextBuilder.TEXT_VERSION),
+				any(byte[].class)
+		);
 	}
 
 	@Test
@@ -139,9 +146,14 @@ class ItemEmbeddingServiceTest {
 
 		String expectedText = textBuilder.build(item);
 		assertThat(result).containsExactly(freshVector);
-		assertThat(existing.getEmbeddingText()).isEqualTo(expectedText);
-		assertThat(existing.getTextHash()).isEqualTo(textBuilder.hash(expectedText));
-		assertThat(existing.getModelName()).isEqualTo(SemanticMatchTextBuilder.TEXT_VERSION);
+		verify(embeddingRepository).upsert(
+				eq("FOUND"),
+				eq(10L),
+				eq(expectedText),
+				eq(textBuilder.hash(expectedText)),
+				eq(SemanticMatchTextBuilder.TEXT_VERSION),
+				any(byte[].class)
+		);
 	}
 
 	private SemanticMatchItem item(Long id, String itemName) {

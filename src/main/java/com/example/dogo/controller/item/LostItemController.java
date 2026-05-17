@@ -130,7 +130,7 @@ public class LostItemController {
 						 Model model) {
 		try {
 			Long lostItemId = lostItemService.create(request, userDetails != null ? userDetails.getUser() : null);
-			return "redirect:/lost-items/" + lostItemId;
+			return "redirect:/lost-items/" + lostItemId + "?created=true";
 		} catch (IllegalArgumentException exception) {
 			model.addAttribute("errorMessage", exception.getMessage());
 			return "lost-items/new";
@@ -141,9 +141,13 @@ public class LostItemController {
 	}
 
 	@GetMapping("/lost-items/{id}")
-	public String detail(@PathVariable Long id, Model model) {
+	public String detail(@PathVariable Long id,
+						 @RequestParam(defaultValue = "false") boolean created,
+						 Model model) {
+		var matchCandidates = lostItemService.getMatchCandidates(id);
 		model.addAttribute("lostItem", lostItemService.getDetail(id));
-		model.addAttribute("matchCandidates", lostItemService.getMatchCandidates(id));
+		model.addAttribute("matchCandidates", matchCandidates);
+		model.addAttribute("matchingInProgress", created && matchCandidates.isEmpty());
 		return "lost-items/detail";
 	}
 
