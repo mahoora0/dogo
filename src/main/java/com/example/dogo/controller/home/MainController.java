@@ -40,7 +40,12 @@ public class MainController {
 
     model.addAttribute("currentUri", "/");
     model.addAttribute("searchCategories", lostItemService.getSearchCategoryNames());
-    model.addAttribute("recentItems", recentItems.subList(0, Math.min(RECENT_ITEM_LIMIT, recentItems.size())));
     return "index";
+  }
+
+  @GetMapping("/guide")
+  public String guide(Model model) {
+    model.addAttribute("currentUri", "/guide");
+    return "guide/index";
   }
 }
