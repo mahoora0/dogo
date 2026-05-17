@@ -102,6 +102,19 @@ seed/dogo_seed_YYYYMMDD.sql.gz
 
 ## 4. 개발 DB에 import
 
+기존 `dogo_seed` DB에서 경찰 데이터 최신일 기준 최근 15일만 뽑아 개발 DB를 새로 만들려면 아래 스크립트 하나만 실행합니다.
+이 스크립트는 경찰청 API를 호출하지 않고, 개발 DB를 reset한 뒤 `seed/dogo_seed_recent15.sql.gz`를 import합니다.
+
+```bash
+scripts/import_recent15_seed_to_dev.sh
+```
+
+기간을 바꾸려면:
+
+```bash
+scripts/import_recent15_seed_to_dev.sh --days 7
+```
+
 Windows PowerShell에서는 덤프 파일을 생략하면 `seed/*.sql.gz` 중 최신 파일을 Python/PyMySQL로 import합니다:
 
 ```powershell

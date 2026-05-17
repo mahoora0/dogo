@@ -1,4 +1,5 @@
 HELP.md
+.DS_Store
 .env
 .gradle
 build/
@@ -43,4 +44,15 @@ out/
 
 ### Seed artifacts ###
 .venv-seed/
-seed/
+
+### Python ###
+__pycache__/
+**/__pycache__/
+.venv/
+**/.venv/
+.pytest_cache/
+**/.pytest_cache/
+python-match/.onnx/
+python-match/*.pt
+*.py[cod]
+python-match/logs/match.log

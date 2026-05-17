@@ -36,7 +36,7 @@
               </svg>
               <span class="chat-text">채팅</span>
             </a>
-            <a th:href="@{/userpage}"
+            <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}"
                class="flex items-center gap-2 text-slate-700 font-bold mr-2 hover:text-blue-600 transition-colors group">
               <!-- 프로필 이미지 (있으면 표시, 없으면 기본 아이콘) -->
               <img th:if="${#authentication.principal.user.profileImageUrl != null}"
@@ -106,10 +106,11 @@
       </nav>
     </aside>
 
-      <main class="content px-5 py-8">
+      <main class="content px-5 py-5">
         <th:block th:replace="${content}"></th:block>
       </main>
     </div>
+    <script th:src="@{/js/place-modal.js}"></script>
   </body>
 </th:block>
 

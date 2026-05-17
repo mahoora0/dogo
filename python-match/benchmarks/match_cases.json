@@ -1,0 +1,365 @@
+{
+  "description": "Small labeled benchmark for lost/found semantic matching. Each case has one lost-item query, found-item candidates, and expected matching candidate ids.",
+  "cases": [
+    {
+      "id": "black_card_wallet_station",
+      "query": {
+        "id": 1,
+        "type": "LOST",
+        "itemName": "검정 카드지갑",
+        "title": "강남역에서 검정 카드지갑을 잃어버렸어요",
+        "category": "지갑",
+        "color": "검정",
+        "area": "서울특별시 강남구",
+        "place": "강남역 2번 출구"
+      },
+      "candidates": [
+        {
+          "id": 101,
+          "type": "FOUND",
+          "itemName": "검은색 카드 케이스",
+          "title": "강남역 카드지갑 습득",
+          "category": "지갑",
+          "color": "검정",
+          "area": "서울특별시 강남구",
+          "place": "강남역"
+        },
+        {
+          "id": 102,
+          "type": "FOUND",
+          "itemName": "검정 장우산",
+          "title": "강남역 우산 보관",
+          "category": "우산",
+          "color": "검정"
+        },
+        {
+          "id": 103,
+          "type": "FOUND",
+          "itemName": "갈색 반지갑",
+          "title": "서울역 지갑 습득",
+          "category": "지갑",
+          "color": "갈색"
+        },
+        {
+          "id": 104,
+          "type": "FOUND",
+          "itemName": "카드 목걸이",
+          "title": "사원증 목걸이 습득",
+          "category": "카드"
+        }
+      ],
+      "expectedIds": [101],
+      "hardNegativeIds": [102, 103, 104]
+    },
+    {
+      "id": "airpods_pro_case",
+      "query": {
+        "id": 2,
+        "type": "LOST",
+        "itemName": "에어팟 프로",
+        "title": "흰색 에어팟 프로 케이스 분실",
+        "category": "전자기기",
+        "color": "흰색"
+      },
+      "candidates": [
+        {
+          "id": 201,
+          "type": "FOUND",
+          "itemName": "애플 무선 이어폰",
+          "title": "에어팟 프로 습득",
+          "category": "전자기기",
+          "color": "흰색"
+        },
+        {
+          "id": 202,
+          "type": "FOUND",
+          "itemName": "갤럭시 버즈",
+          "title": "무선 이어폰 케이스 보관",
+          "category": "전자기기"
+        },
+        {
+          "id": 203,
+          "type": "FOUND",
+          "itemName": "흰색 충전기",
+          "title": "휴대폰 충전기 습득",
+          "category": "전자기기",
+          "color": "흰색"
+        },
+        {
+          "id": 204,
+          "type": "FOUND",
+          "itemName": "이어폰 파우치",
+          "title": "작은 파우치 습득"
+        }
+      ],
+      "expectedIds": [201],
+      "hardNegativeIds": [202, 203, 204]
+    },
+    {
+      "id": "student_id_card",
+      "query": {
+        "id": 3,
+        "type": "LOST",
+        "itemName": "학생증",
+        "title": "대학교 학생증 분실",
+        "category": "카드"
+      },
+      "candidates": [
+        {
+          "id": 301,
+          "type": "FOUND",
+          "itemName": "대학 학생증",
+          "title": "캠퍼스에서 학생증 습득",
+          "category": "카드"
+        },
+        {
+          "id": 302,
+          "type": "FOUND",
+          "itemName": "신용카드",
+          "title": "체크카드 습득",
+          "category": "카드"
+        },
+        {
+          "id": 303,
+          "type": "FOUND",
+          "itemName": "사원증",
+          "title": "회사 출입증 습득",
+          "category": "카드"
+        },
+        {
+          "id": 304,
+          "type": "FOUND",
+          "itemName": "운전면허증",
+          "title": "신분증 보관",
+          "category": "신분증"
+        }
+      ],
+      "expectedIds": [301],
+      "hardNegativeIds": [302, 303, 304]
+    },
+    {
+      "id": "blue_tumbler",
+      "query": {
+        "id": 4,
+        "type": "LOST",
+        "itemName": "파란색 텀블러",
+        "title": "카페에서 파란 텀블러를 두고 나왔습니다",
+        "category": "생활용품",
+        "color": "파랑"
+      },
+      "candidates": [
+        {
+          "id": 401,
+          "type": "FOUND",
+          "itemName": "블루 스테인리스 물병",
+          "title": "카페 테이블 위 텀블러 습득",
+          "category": "생활용품",
+          "color": "파랑"
+        },
+        {
+          "id": 402,
+          "type": "FOUND",
+          "itemName": "파란 우산",
+          "title": "접이식 우산 습득",
+          "category": "우산",
+          "color": "파랑"
+        },
+        {
+          "id": 403,
+          "type": "FOUND",
+          "itemName": "보온병",
+          "title": "검정 보온병 보관",
+          "category": "생활용품",
+          "color": "검정"
+        },
+        {
+          "id": 404,
+          "type": "FOUND",
+          "itemName": "커피 쿠폰",
+          "title": "카페 쿠폰 카드 습득"
+        }
+      ],
+      "expectedIds": [401],
+      "hardNegativeIds": [402, 403, 404]
+    },
+    {
+      "id": "black_iphone",
+      "query": {
+        "id": 5,
+        "type": "LOST",
+        "itemName": "검정 아이폰",
+        "title": "아이폰 14 검정색 분실",
+        "category": "휴대폰",
+        "color": "검정"
+      },
+      "candidates": [
+        {
+          "id": 501,
+          "type": "FOUND",
+          "itemName": "아이폰 휴대폰",
+          "title": "검은색 아이폰 습득",
+          "category": "휴대폰",
+          "color": "검정"
+        },
+        {
+          "id": 502,
+          "type": "FOUND",
+          "itemName": "갤럭시 스마트폰",
+          "title": "검정 휴대폰 보관",
+          "category": "휴대폰",
+          "color": "검정"
+        },
+        {
+          "id": 503,
+          "type": "FOUND",
+          "itemName": "아이폰 충전 케이블",
+          "title": "충전선 습득",
+          "category": "전자기기"
+        },
+        {
+          "id": 504,
+          "type": "FOUND",
+          "itemName": "검정 폰케이스",
+          "title": "휴대폰 케이스 습득"
+        }
+      ],
+      "expectedIds": [501],
+      "hardNegativeIds": [502, 503, 504]
+    },
+    {
+      "id": "laptop_bag",
+      "query": {
+        "id": 6,
+        "type": "LOST",
+        "itemName": "노트북 가방",
+        "title": "검은색 노트북 파우치 분실",
+        "category": "가방",
+        "color": "검정"
+      },
+      "candidates": [
+        {
+          "id": 601,
+          "type": "FOUND",
+          "itemName": "노트북 파우치",
+          "title": "검정 랩톱 가방 습득",
+          "category": "가방",
+          "color": "검정"
+        },
+        {
+          "id": 602,
+          "type": "FOUND",
+          "itemName": "검정 백팩",
+          "title": "책가방 보관",
+          "category": "가방",
+          "color": "검정"
+        },
+        {
+          "id": 603,
+          "type": "FOUND",
+          "itemName": "노트북 충전기",
+          "title": "어댑터 습득",
+          "category": "전자기기"
+        },
+        {
+          "id": 604,
+          "type": "FOUND",
+          "itemName": "태블릿 파우치",
+          "title": "아이패드 케이스 습득"
+        }
+      ],
+      "expectedIds": [601],
+      "hardNegativeIds": [602, 603, 604]
+    },
+    {
+      "id": "red_cap",
+      "query": {
+        "id": 7,
+        "type": "LOST",
+        "itemName": "빨간 모자",
+        "title": "야구모자 분실",
+        "category": "의류",
+        "color": "빨강"
+      },
+      "candidates": [
+        {
+          "id": 701,
+          "type": "FOUND",
+          "itemName": "붉은색 야구캡",
+          "title": "빨간 캡모자 습득",
+          "category": "의류",
+          "color": "빨강"
+        },
+        {
+          "id": 702,
+          "type": "FOUND",
+          "itemName": "빨간 장갑",
+          "title": "겨울 장갑 습득",
+          "category": "의류",
+          "color": "빨강"
+        },
+        {
+          "id": 703,
+          "type": "FOUND",
+          "itemName": "검정 모자",
+          "title": "검은색 야구모자 보관",
+          "category": "의류",
+          "color": "검정"
+        },
+        {
+          "id": 704,
+          "type": "FOUND",
+          "itemName": "빨간 쇼핑백",
+          "title": "종이가방 습득"
+        }
+      ],
+      "expectedIds": [701],
+      "hardNegativeIds": [702, 703, 704]
+    },
+    {
+      "id": "brown_glasses",
+      "query": {
+        "id": 8,
+        "type": "LOST",
+        "itemName": "갈색 안경",
+        "title": "갈색 뿔테 안경을 잃어버렸습니다",
+        "category": "안경",
+        "color": "갈색"
+      },
+      "candidates": [
+        {
+          "id": 801,
+          "type": "FOUND",
+          "itemName": "갈색 뿔테안경",
+          "title": "안경 습득",
+          "category": "안경",
+          "color": "갈색"
+        },
+        {
+          "id": 802,
+          "type": "FOUND",
+          "itemName": "선글라스",
+          "title": "검정 선글라스 보관",
+          "category": "안경",
+          "color": "검정"
+        },
+        {
+          "id": 803,
+          "type": "FOUND",
+          "itemName": "갈색 지갑",
+          "title": "가죽 지갑 습득",
+          "category": "지갑",
+          "color": "갈색"
+        },
+        {
+          "id": 804,
+          "type": "FOUND",
+          "itemName": "안경 케이스",
+          "title": "케이스만 습득",
+          "category": "안경"
+        }
+      ],
+      "expectedIds": [801],
+      "hardNegativeIds": [802, 803, 804]
+    }
+  ]
+}
