@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,10 @@ public class AnimalImageEmbeddingService {
 
 	private static final Logger log = LoggerFactory.getLogger(AnimalImageEmbeddingService.class);
 	private static final String ANIMAL_UPLOAD_SUBDIR = "animal-reports";
+	private static final float IMAGE_SEARCH_THRESHOLD = 0.5f;
+	private static final int IMAGE_SEARCH_MAX_RESULTS = 20;
+
+	public record ImageSearchHit(Long reportId, float score) {}
 
 	private final AnimalReportImageRepository imageRepository;
 	private final AnimalReportImageEmbeddingRepository embeddingRepository;
@@ -74,6 +79,24 @@ public class AnimalImageEmbeddingService {
 				() -> embeddingRepository.save(new AnimalReportImageEmbedding(report, image, blob, modelName))
 		);
 		log.info("[pet-embedding] 저장 완료: reportId={}", report.getReportId());
+	}
+
+	@Transactional(readOnly = true)
+	public List<ImageSearchHit> searchByImage(byte[] imageBytes, String filename) {
+		float[] queryVector = embeddingClient.embed(imageBytes, filename);
+		if (queryVector.length == 0) {
+			log.warn("[pet-image-search] 빈 쿼리 벡터 반환");
+			return List.of();
+		}
+		return embeddingRepository.findAll().stream()
+				.map(e -> new ImageSearchHit(
+						e.getReport().getReportId(),
+						VectorUtils.cosineSimilarity(queryVector, VectorUtils.fromBytes(e.getVectorBlob()))
+				))
+				.filter(h -> h.score() >= IMAGE_SEARCH_THRESHOLD)
+				.sorted(Comparator.comparingDouble(ImageSearchHit::score).reversed())
+				.limit(IMAGE_SEARCH_MAX_RESULTS)
+				.toList();
 	}
 
 	@Transactional(readOnly = true)
