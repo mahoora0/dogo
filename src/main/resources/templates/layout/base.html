@@ -36,7 +36,7 @@
               </svg>
               <span class="chat-text">채팅</span>
             </a>
-            <a th:href="@{/userpage}"
+            <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}"
                class="flex items-center gap-2 text-slate-700 font-bold mr-2 hover:text-blue-600 transition-colors group">
               <!-- 프로필 이미지 (있으면 표시, 없으면 기본 아이콘) -->
               <img th:if="${#authentication.principal.user.profileImageUrl != null}"
@@ -67,12 +67,20 @@
             <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}">
               <a th:href="@{/lost-items}">분실물 검색</a>
             </li>
+            <li th:classappend="${currentUri == '/lost-items/new' ? 'active' : ''}">
+              <a th:href="@{/lost-items/new}">분실물 등록</a>
+            </li>
           </ul>
         </div>
         <div class="category">
           <h3>습득물</h3>
           <ul>
-            <li>습득물 등록</li>
+            <li th:classappend="${currentUri == '/found-items' ? 'active' : ''}">
+              <a th:href="@{/found-items}">습득물 검색</a>
+            </li>
+            <li th:classappend="${currentUri == '/found-items/new' ? 'active' : ''}">
+              <a th:href="@{/found-items/new}">습득물 등록</a>
+            </li>
             <li th:classappend="${currentUri == '/areas/areaList' ? 'active' : ''}">
               <a th:href="@{/areas/list}">서비스센터 찾기</a>
             </li>
@@ -82,22 +90,27 @@
           <h3>고객지원</h3>
           <ul>
             <li th:classappend="${currentUri == '/faq' ? 'active' : ''}">
-              <a th:href="@{/faq}">FAQ</a>
+              <a th:href="@{/faq}">자주묻는질문</a>
             </li>
             <li th:classappend="${currentUri == '/inquiry' ? 'active' : ''}">
               <a th:href="@{/inquiry}">문의하기</a>
             </li>
-            <li>공지사항</li>
-            <li>이용가이드</li>
+            <li th:classappend="${currentUri == '/notice' ? 'active' : ''}">
+              <a th:href="@{/notice}">공지사항</a>
+            </li>
+            <li th:classappend="${currentUri == '/guide' ? 'active' : ''}">
+              <a th:href="@{/guide}">이용가이드</a>
+            </li>
           </ul>
         </div>
       </nav>
     </aside>
 
-      <main class="content px-5 py-8">
+      <main class="content px-5 py-5">
         <th:block th:replace="${content}"></th:block>
       </main>
     </div>
+    <script th:src="@{/js/place-modal.js}"></script>
   </body>
 </th:block>
 

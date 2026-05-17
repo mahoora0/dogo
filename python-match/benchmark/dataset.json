@@ -1,0 +1,322 @@
+[
+  {
+    "id": "pos_001",
+    "description": "검정 지갑 → 검은색 지갑 (색상 동의어)",
+    "difficulty": "easy",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "검정 지갑"},
+    "candidate": {"id": 2, "type": "found", "itemName": "검은색 지갑"}
+  },
+  {
+    "id": "pos_002",
+    "description": "아이폰 → 아이폰 (동일)",
+    "difficulty": "easy",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "아이폰"},
+    "candidate": {"id": 2, "type": "found", "itemName": "아이폰"}
+  },
+  {
+    "id": "pos_003",
+    "description": "에어팟 → 에어팟 (동일)",
+    "difficulty": "easy",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "에어팟"},
+    "candidate": {"id": 2, "type": "found", "itemName": "에어팟"}
+  },
+  {
+    "id": "pos_004",
+    "description": "노트북 → 랩탑 (동의어)",
+    "difficulty": "easy",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "노트북"},
+    "candidate": {"id": 2, "type": "found", "itemName": "랩탑"}
+  },
+  {
+    "id": "pos_005",
+    "description": "열쇠 → 키 (동의어)",
+    "difficulty": "easy",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "열쇠"},
+    "candidate": {"id": 2, "type": "found", "itemName": "키"}
+  },
+  {
+    "id": "pos_006",
+    "description": "파란색 우산 → 파란 우산 (표기 변형)",
+    "difficulty": "easy",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "파란색 우산"},
+    "candidate": {"id": 2, "type": "found", "itemName": "파란 우산"}
+  },
+  {
+    "id": "pos_007",
+    "description": "핸드폰 → 스마트폰 (동의어)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "핸드폰"},
+    "candidate": {"id": 2, "type": "found", "itemName": "스마트폰"}
+  },
+  {
+    "id": "pos_008",
+    "description": "무선 이어폰 → 블루투스 이어폰 (동의어)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "무선 이어폰"},
+    "candidate": {"id": 2, "type": "found", "itemName": "블루투스 이어폰"}
+  },
+  {
+    "id": "pos_009",
+    "description": "지갑 → 카드지갑 (상하위 관계)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "지갑"},
+    "candidate": {"id": 2, "type": "found", "itemName": "카드지갑"}
+  },
+  {
+    "id": "pos_010",
+    "description": "가방 → 배낭 (상하위 관계)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "가방"},
+    "candidate": {"id": 2, "type": "found", "itemName": "배낭"}
+  },
+  {
+    "id": "pos_011",
+    "description": "삼성 갤럭시 → 갤럭시 스마트폰 (부분 일치)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "삼성 갤럭시"},
+    "candidate": {"id": 2, "type": "found", "itemName": "갤럭시 스마트폰"}
+  },
+  {
+    "id": "pos_012",
+    "description": "충전기 → USB 충전기 (부분 일치)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "충전기"},
+    "candidate": {"id": 2, "type": "found", "itemName": "USB 충전기"}
+  },
+  {
+    "id": "pos_013",
+    "description": "아이패드 → 아이패드 미니 (모델 변형)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "아이패드"},
+    "candidate": {"id": 2, "type": "found", "itemName": "아이패드 미니"}
+  },
+  {
+    "id": "pos_014",
+    "description": "운동화 → 스니커즈 (동의어)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "운동화"},
+    "candidate": {"id": 2, "type": "found", "itemName": "스니커즈"}
+  },
+  {
+    "id": "pos_015",
+    "description": "노트북 가방 → 랩탑 백 (복합 동의어)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "노트북 가방"},
+    "candidate": {"id": 2, "type": "found", "itemName": "랩탑 백"}
+  },
+  {
+    "id": "pos_016",
+    "description": "아이폰 14 → 아이폰 (모델 포함)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "아이폰 14"},
+    "candidate": {"id": 2, "type": "found", "itemName": "아이폰"}
+  },
+  {
+    "id": "pos_017",
+    "description": "검정 백팩 → 검은 배낭 (동의어 + 색상)",
+    "difficulty": "medium",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "검정 백팩"},
+    "candidate": {"id": 2, "type": "found", "itemName": "검은 배낭"}
+  },
+  {
+    "id": "pos_018",
+    "description": "갤럭시 버즈 → 삼성 무선 이어폰 (브랜드/제네릭)",
+    "difficulty": "hard",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "갤럭시 버즈"},
+    "candidate": {"id": 2, "type": "found", "itemName": "삼성 무선 이어폰"}
+  },
+  {
+    "id": "pos_019",
+    "description": "자전거 헬멧 → 헬멧 (부분 일치)",
+    "difficulty": "hard",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "자전거 헬멧"},
+    "candidate": {"id": 2, "type": "found", "itemName": "헬멧"}
+  },
+  {
+    "id": "pos_020",
+    "description": "롤러스케이트 → 인라인 스케이트 (동의어)",
+    "difficulty": "hard",
+    "expected": true,
+    "query": {"id": 1, "type": "lost", "itemName": "롤러스케이트"},
+    "candidate": {"id": 2, "type": "found", "itemName": "인라인 스케이트"}
+  },
+  {
+    "id": "neg_001",
+    "description": "지갑 → 자전거 (완전 다른 카테고리)",
+    "difficulty": "easy",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "지갑"},
+    "candidate": {"id": 2, "type": "found", "itemName": "자전거"}
+  },
+  {
+    "id": "neg_002",
+    "description": "우산 → 스마트폰 (완전 다른 카테고리)",
+    "difficulty": "easy",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "우산"},
+    "candidate": {"id": 2, "type": "found", "itemName": "스마트폰"}
+  },
+  {
+    "id": "neg_003",
+    "description": "노트북 → 운동화 (완전 다른 카테고리)",
+    "difficulty": "easy",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "노트북"},
+    "candidate": {"id": 2, "type": "found", "itemName": "운동화"}
+  },
+  {
+    "id": "neg_004",
+    "description": "가방 → 열쇠 (완전 다른 카테고리)",
+    "difficulty": "easy",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "가방"},
+    "candidate": {"id": 2, "type": "found", "itemName": "열쇠"}
+  },
+  {
+    "id": "neg_005",
+    "description": "충전기 → 이어폰 (다른 카테고리)",
+    "difficulty": "easy",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "충전기"},
+    "candidate": {"id": 2, "type": "found", "itemName": "이어폰"}
+  },
+  {
+    "id": "neg_006",
+    "description": "핸드폰 → 충전기 (관련 있지만 다른 아이템)",
+    "difficulty": "easy",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "핸드폰"},
+    "candidate": {"id": 2, "type": "found", "itemName": "충전기"}
+  },
+  {
+    "id": "neg_007",
+    "description": "강아지 → 고양이 (다른 동물)",
+    "difficulty": "easy",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "강아지"},
+    "candidate": {"id": 2, "type": "found", "itemName": "고양이"}
+  },
+  {
+    "id": "neg_008",
+    "description": "아이폰 → 삼성 갤럭시 (같은 카테고리 다른 브랜드)",
+    "difficulty": "medium",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "아이폰"},
+    "candidate": {"id": 2, "type": "found", "itemName": "삼성 갤럭시"}
+  },
+  {
+    "id": "neg_009",
+    "description": "검은색 우산 → 흰색 우산 (동일 아이템 다른 색상)",
+    "difficulty": "medium",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "검은색 우산"},
+    "candidate": {"id": 2, "type": "found", "itemName": "흰색 우산"}
+  },
+  {
+    "id": "neg_010",
+    "description": "검정 지갑 → 빨간 지갑 (동일 아이템 다른 색상)",
+    "difficulty": "medium",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "검정 지갑"},
+    "candidate": {"id": 2, "type": "found", "itemName": "빨간 지갑"}
+  },
+  {
+    "id": "neg_011",
+    "description": "에어팟 → 갤럭시 버즈 (같은 카테고리 다른 브랜드)",
+    "difficulty": "medium",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "에어팟"},
+    "candidate": {"id": 2, "type": "found", "itemName": "갤럭시 버즈"}
+  },
+  {
+    "id": "neg_012",
+    "description": "노트북 → 태블릿 (유사하지만 다른 아이템)",
+    "difficulty": "medium",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "노트북"},
+    "candidate": {"id": 2, "type": "found", "itemName": "태블릿"}
+  },
+  {
+    "id": "neg_013",
+    "description": "노란 우산 → 파란 우산 (동일 아이템 다른 색상)",
+    "difficulty": "medium",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "노란 우산"},
+    "candidate": {"id": 2, "type": "found", "itemName": "파란 우산"}
+  },
+  {
+    "id": "neg_014",
+    "description": "빨간 백팩 → 파란 백팩 (동일 아이템 다른 색상)",
+    "difficulty": "medium",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "빨간 백팩"},
+    "candidate": {"id": 2, "type": "found", "itemName": "파란 백팩"}
+  },
+  {
+    "id": "neg_015",
+    "description": "선글라스 → 안경 (유사하지만 다른 아이템)",
+    "difficulty": "hard",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "선글라스"},
+    "candidate": {"id": 2, "type": "found", "itemName": "안경"}
+  },
+  {
+    "id": "neg_016",
+    "description": "현대 자동차 키 → BMW 자동차 키 (같은 종류 다른 브랜드)",
+    "difficulty": "hard",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "현대 자동차 키"},
+    "candidate": {"id": 2, "type": "found", "itemName": "BMW 자동차 키"}
+  },
+  {
+    "id": "neg_017",
+    "description": "아이폰 13 → 아이폰 15 (같은 브랜드 다른 모델)",
+    "difficulty": "hard",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "아이폰 13"},
+    "candidate": {"id": 2, "type": "found", "itemName": "아이폰 15"}
+  },
+  {
+    "id": "neg_018",
+    "description": "남성 지갑 → 여성 지갑 (같은 종류 다른 타겟)",
+    "difficulty": "hard",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "남성 지갑"},
+    "candidate": {"id": 2, "type": "found", "itemName": "여성 지갑"}
+  },
+  {
+    "id": "neg_019",
+    "description": "지갑 → 파우치 (유사하지만 다른 아이템)",
+    "difficulty": "hard",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "지갑"},
+    "candidate": {"id": 2, "type": "found", "itemName": "파우치"}
+  },
+  {
+    "id": "neg_020",
+    "description": "큰 검정 가방 → 작은 검정 가방 (동일 아이템 다른 크기)",
+    "difficulty": "hard",
+    "expected": false,
+    "query": {"id": 1, "type": "lost", "itemName": "큰 검정 가방"},
+    "candidate": {"id": 2, "type": "found", "itemName": "작은 검정 가방"}
+  }
+]

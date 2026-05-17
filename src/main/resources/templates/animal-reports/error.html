@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{layout/base :: setContent(~{this::content})}">
+  <th:block th:fragment="content">
+    <div class="flex min-h-[360px] flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white px-5 py-20 text-center shadow-sm">
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900">동물 신고 정보를 찾을 수 없습니다</h1>
+      <p th:text="${message ?: '요청한 게시글이 없거나 삭제되었습니다.'}" class="mt-3 text-sm text-slate-500">
+        요청한 게시글이 없거나 삭제되었습니다.
+      </p>
+      <a th:href="@{/animal-reports}" class="mt-6 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700">
+        목록으로 이동
+      </a>
+    </div>
+  </th:block>
+</th:block>
+</html>

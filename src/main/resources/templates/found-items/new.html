@@ -9,10 +9,10 @@
       </a>
     </div>
 
-    <div class="mb-6">
-      <p class="text-sm font-semibold text-teal-700">내가 주웠어요</p>
-      <h1 class="mt-1 text-2xl font-bold tracking-tight">습득물 등록</h1>
-      <p class="mt-1 text-sm text-slate-500">주운 물건의 정보를 상세히 입력할수록 주인을 찾을 확률이 높아집니다.</p>
+    <div class="mb-8">
+      <span class="mb-2 inline-block text-sm font-semibold text-slate-500">내가 주웠어요</span>
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">습득물 등록</h1>
+      <p class="mt-2 text-sm text-slate-500">주운 물건의 정보를 상세히 입력할수록 주인을 찾을 확률이 높아집니다.</p>
     </div>
 
     <div th:if="${errorMessage}"
@@ -22,113 +22,220 @@
     </div>
 
     <form th:action="@{/found-items}" method="post" enctype="multipart/form-data"
-          class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
 
       <fieldset class="grid gap-5 md:grid-cols-2">
         <legend class="sr-only">습득물 기본 정보</legend>
 
         <label class="block md:col-span-2">
-          <span class="text-sm font-semibold text-slate-700">제목</span>
-          <input name="title" th:value="${request != null ? request.title : ''}"
+          <span class="text-sm font-semibold text-slate-700">제목 <span class="text-red-400">*</span></span>
+          <input name="title" th:value="${request != null ? request.title : ''}" required
                  placeholder="예: 검정 카드지갑을 주웠습니다"
-                 class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
+                 class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
         </label>
 
         <label class="block">
           <span class="text-sm font-semibold text-slate-700">물품명 <span class="text-red-400">*</span></span>
           <input name="itemName" th:value="${request != null ? request.itemName : ''}" required
                  placeholder="예: 카드지갑"
-                 class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
+                 class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
         </label>
 
-        <label class="block">
+        <label class="block relative">
           <span class="text-sm font-semibold text-slate-700">카테고리 <span class="text-red-400">*</span></span>
-          <select name="categoryMain" required
-                  class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
-            <option value="">선택</option>
-            <option th:each="categoryOption : ${categories}"
-                    th:value="${categoryOption}" th:text="${categoryOption}"
-                    th:selected="${request != null && request.categoryMain == categoryOption}">지갑</option>
-          </select>
+          <div class="relative mt-1.5">
+            <select id="categoryMain" name="categoryMain" required
+                    class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+              <option value="">선택</option>
+              <option th:each="categoryOption : ${categories}"
+                      th:value="${categoryOption}" th:text="${categoryOption}"
+                      th:selected="${request != null && request.categoryMain == categoryOption}">지갑</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </label>
+
+        <label class="block relative">
+          <span class="text-sm font-semibold text-slate-700">세부 카테고리</span>
+          <div class="relative mt-1.5">
+            <select id="categorySub" name="categorySub"
+                    th:attr="data-current=${request != null ? request.categorySub : ''}"
+                    class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+              <option value="">선택 안 함</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </label>
+
+        <label class="block relative">
+          <span class="text-sm font-semibold text-slate-700">습득 지역 <span class="text-red-400">*</span></span>
+          <div class="relative mt-1.5">
+            <select id="foundAreaProvince" name="foundAreaProvince" required
+                    class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+              <option value="">시/도 선택</option>
+              <option th:each="regionOption : ${regionOptions}"
+                      th:value="${regionOption}" th:text="${regionOption}"
+                      th:selected="${request != null && request.foundAreaProvince == regionOption}">서울특별시</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </label>
+
+        <label class="block relative">
+          <span class="text-sm font-semibold text-slate-700">시/군/구 <span class="text-red-400">*</span></span>
+          <div class="relative mt-1.5">
+            <select id="foundAreaDistrict" name="foundAreaDistrict" required
+                    th:attr="data-current=${request != null ? request.foundAreaDistrict : ''}"
+                    class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+              <option value="">시/군/구 선택</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
         </label>
 
         <label class="block">
-          <span class="text-sm font-semibold text-slate-700">습득 지역</span>
-          <input name="foundArea" th:value="${request != null ? request.foundArea : ''}"
-                 placeholder="예: 서울 강남구"
-                 class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
-        </label>
-
-        <label class="block">
-          <span class="text-sm font-semibold text-slate-700">습득 장소</span>
-          <input name="foundPlace" th:value="${request != null ? request.foundPlace : ''}"
+          <span class="text-sm font-semibold text-slate-700">습득 장소 <span class="text-red-400">*</span></span>
+          <input name="foundPlace" th:value="${request != null ? request.foundPlace : ''}" required
                  placeholder="예: 강남역 11번 출구"
-                 class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
+                 class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
         </label>
 
         <label class="block">
           <span class="text-sm font-semibold text-slate-700">보관 장소</span>
           <input name="keepPlace" th:value="${request != null ? request.keepPlace : ''}"
                  placeholder="예: 강남경찰서"
-                 class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
+                 class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
         </label>
 
         <label class="block">
           <span class="text-sm font-semibold text-slate-700">습득 일시 <span class="text-red-400">*</span></span>
-          <input type="datetime-local" name="foundAt"
+          <input type="datetime-local" name="foundAt" id="foundAtInput"
                  th:value="${request != null && request.foundAt != null ? #temporals.format(request.foundAt, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                 th:attr="max=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd''T''HH:mm')}"
                  required
-                 class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
+                 class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
         </label>
 
-        <label class="block">
+        <label class="block relative">
           <span class="text-sm font-semibold text-slate-700">색상</span>
-          <input name="colorName" th:value="${request != null ? request.colorName : ''}"
-                 placeholder="예: 검정"
-                 class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
+          <div class="relative mt-1.5">
+            <select name="colorName"
+                    class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+              <option value="">선택 안 함</option>
+              <option th:each="colorOption : ${colorOptions}"
+                      th:value="${colorOption}" th:text="${colorOption}"
+                      th:selected="${request != null && request.colorName == colorOption}">검정</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
         </label>
 
         <div class="block md:col-span-2">
           <span class="text-sm font-semibold text-slate-700">사진</span>
-          <div id="imageDropZone" class="relative mt-1.5 flex w-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 transition hover:border-teal-400 hover:bg-teal-50/30">
+          <div id="imageDropZone" class="relative mt-1.5 flex w-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 transition hover:border-slate-400 hover:bg-slate-100/50">
             <div class="text-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              <p class="mt-2 text-sm text-slate-500">클릭하여 이미지를 선택하세요</p>
+              <p class="mt-2 text-sm font-medium text-slate-600">클릭하여 이미지를 선택하세요</p>
               <p class="mt-1 text-xs text-slate-400">JPG, PNG (여러 장 가능)</p>
               <input type="file" id="imageInput" name="images" accept="image/*" multiple class="absolute inset-0 cursor-pointer opacity-0">
             </div>
           </div>
           <div id="imagePreview" class="mt-3 hidden">
             <div class="flex items-center gap-2 mb-2">
-              <span id="imageCount" class="text-sm font-medium text-teal-700"></span>
-              <button type="button" id="imageClear" class="text-xs text-red-500 hover:text-red-700 transition">전체 삭제</button>
+              <span id="imageCount" class="text-sm font-medium text-slate-700"></span>
+              <button type="button" id="imageClear" class="text-xs font-semibold text-red-500 transition hover:text-red-700">전체 삭제</button>
             </div>
-            <div id="imageList" class="grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-6"></div>
+            <div id="imageList" class="grid grid-cols-4 gap-3 sm:grid-cols-5 lg:grid-cols-6"></div>
           </div>
         </div>
       </fieldset>
 
-      <label class="mt-5 block">
+      <label class="mt-6 block">
         <span class="text-sm font-semibold text-slate-700">상세 설명</span>
         <textarea name="content" rows="5"
                   placeholder="색상, 브랜드, 특징, 습득 상황 등을 적어주세요."
                   th:text="${request != null ? request.content : ''}"
-                  class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"></textarea>
+                  class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"></textarea>
       </label>
 
-      <div class="mt-6 flex justify-end gap-2 border-t border-slate-100 pt-5">
+      <div class="mt-8 flex justify-end gap-3 border-t border-slate-100 pt-6">
         <a th:href="@{/found-items}"
-           class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+           class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-300">
           취소
         </a>
         <button type="submit"
-                class="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 active:scale-[0.97]">
+                class="inline-flex items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-slate-700 hover:shadow-lg active:scale-[0.98]">
           등록하기
         </button>
       </div>
     </form>
 
-    <script>
+    <script th:inline="javascript">
+    (function() {
+      var categorySubOptions = /*[[${categorySubOptions}]]*/ {};
+      var regionDistrictOptions = /*[[${regionDistrictOptions}]]*/ {};
+      var categoryMain = document.getElementById('categoryMain');
+      var categorySub = document.getElementById('categorySub');
+      var areaProvince = document.getElementById('foundAreaProvince');
+      var areaDistrict = document.getElementById('foundAreaDistrict');
+
+      function fillSelect(select, values, placeholder, currentValue) {
+        select.innerHTML = '';
+        var empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = placeholder;
+        select.appendChild(empty);
+        values.forEach(function(value) {
+          var option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          if (value === currentValue) {
+            option.selected = true;
+          }
+          select.appendChild(option);
+        });
+      }
+
+      function renderCategorySub() {
+        var currentValue = categorySub.getAttribute('data-current') || categorySub.value;
+        fillSelect(categorySub, categorySubOptions[categoryMain.value] || [], '선택 안 함', currentValue);
+        categorySub.removeAttribute('data-current');
+      }
+
+      function renderAreaDistrict() {
+        var currentValue = areaDistrict.getAttribute('data-current') || areaDistrict.value;
+        fillSelect(areaDistrict, regionDistrictOptions[areaProvince.value] || [], '시/군/구 선택', currentValue);
+        areaDistrict.removeAttribute('data-current');
+      }
+
+      categoryMain.addEventListener('change', renderCategorySub);
+      areaProvince.addEventListener('change', renderAreaDistrict);
+      renderCategorySub();
+      renderAreaDistrict();
+
+      // 미래 날짜 선택 방지
+      const foundAtInput = document.getElementById('foundAtInput');
+      if (foundAtInput) {
+        const setMax = () => {
+          const now = new Date();
+          const offset = now.getTimezoneOffset() * 60000;
+          const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+          foundAtInput.setAttribute('max', localISOTime);
+          return localISOTime;
+        };
+        
+        setMax();
+        
+        foundAtInput.addEventListener('change', function() {
+          const maxVal = setMax();
+          if (this.value > maxVal) {
+            alert('미래의 시간은 선택할 수 없습니다.');
+            this.value = maxVal;
+          }
+        });
+      }
+    })();
+
     (function() {
       var input = document.getElementById('imageInput');
       var preview = document.getElementById('imagePreview');

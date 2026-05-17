@@ -1,14 +1,17 @@
 package com.example.dogo.config;
 
-import com.example.dogo.service.CustomOAuth2UserService;
+import com.example.dogo.service.user.CustomOAuth2UserService;
+import com.example.dogo.service.CustomUserDetailsService;
+import com.example.dogo.security.CustomAuthenticationFailureHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -22,7 +25,18 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+    private final UserDetailsService userDetailsService;
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider;
+
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setHideUserNotFoundExceptions(false); // 아이디가 없을 때 UsernameNotFoundException을 던지도록 함
+        return provider;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -34,13 +48,19 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) // 로컬 테스트를 위해 CSRF 비활성화 (필요시 활성화)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/join", "/api/user/**", "/api/mail/**", "/api/sms/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/areas/**", "/error", "/uploads/**").permitAll()
-                .anyRequest().authenticated()
+
+                // 비로그인 사용자도 공지사항 목록 및 상세조회가 가능하도록 /notice/** 경로 허용 추가
+                .requestMatchers("/inquiry", "/inqiry").permitAll() // 목록 페이지는 누구나 접근 가능
+                .requestMatchers("/inquiry/**", "/inqiry/**").authenticated() // 상세조회, 등록 등은 로그인 필요
+                .requestMatchers("/", "/login", "/join", "/api/user/**", "/api/mail/**", "/api/sms/**", "/api/place/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/animal-reports/**", "/areas/**", "/api/areas/**", "/api/police/**", "/api/korail/**", "/api/subway/**", "/api/lost-items/*/rematch", "/api/found-items/*/rematch", "/api/lost-items/*/stream", "/api/found-items/*/stream", "/api/animal-reports/*/stream", "/faq", "/faq/**", "/notice/**", "/guide", "/error", "/uploads/**", "/admin/**")
+                .permitAll().anyRequest().authenticated()
+
             )
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/loginProcess")
                 .usernameParameter("loginId")
+                .failureHandler(customAuthenticationFailureHandler)
                 .defaultSuccessUrl("/", true)
                 .permitAll()
             )

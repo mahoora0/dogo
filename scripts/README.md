@@ -27,7 +27,7 @@ scripts/collect_seed.sh --help
 ## 2. dogo_seed 수집
 
 ```bash
-export POLICE_LOST_ITEM_SERVICE_KEY='발급받은_서비스키'
+export POLICE_SERVICE_KEY='발급받은_서비스키'
 export SEED_DB_PASSWORD='mysql_password'
 
 python scripts/police_seed_collector.py \
@@ -102,6 +102,19 @@ seed/dogo_seed_YYYYMMDD.sql.gz
 
 ## 4. 개발 DB에 import
 
+기존 `dogo_seed` DB에서 경찰 데이터 최신일 기준 최근 15일만 뽑아 개발 DB를 새로 만들려면 아래 스크립트 하나만 실행합니다.
+이 스크립트는 경찰청 API를 호출하지 않고, 개발 DB를 reset한 뒤 `seed/dogo_seed_recent15.sql.gz`를 import합니다.
+
+```bash
+scripts/import_recent15_seed_to_dev.sh
+```
+
+기간을 바꾸려면:
+
+```bash
+scripts/import_recent15_seed_to_dev.sh --days 7
+```
+
 Windows PowerShell에서는 덤프 파일을 생략하면 `seed/*.sql.gz` 중 최신 파일을 Python/PyMySQL로 import합니다:
 
 ```powershell
@@ -142,7 +155,7 @@ DEV_DB_NAME=dogo scripts/import_seed_to_dev.sh seed/dogo_seed_YYYYMMDD.sql.gz
 ## 주요 환경변수
 
 ```text
-POLICE_LOST_ITEM_SERVICE_KEY  경찰청 API 키
+POLICE_SERVICE_KEY            경찰청 API 키
 SEED_DB_NAME                  seed DB 이름, 기본 dogo_seed
 SEED_DB_HOST                  기본 127.0.0.1
 SEED_DB_PORT                  기본 3306

@@ -1,0 +1,383 @@
+{
+  "metrics": {
+    "threshold": 50.0,
+    "total": 40,
+    "accuracy": 0.7,
+    "precision": 0.625,
+    "recall": 1.0,
+    "f1": 0.7692307692307693,
+    "tp": 20,
+    "fp": 12,
+    "tn": 8,
+    "fn": 0,
+    "pos_avg": 78.41,
+    "pos_min": 50.8,
+    "pos_max": 100.0,
+    "neg_avg": 53.12050000000001,
+    "neg_min": 12.57,
+    "neg_max": 83.73,
+    "separation": 25.28949999999999
+  },
+  "cases": [
+    {
+      "id": "neg_001",
+      "description": "지갑 → 자전거 (완전 다른 카테고리)",
+      "difficulty": "easy",
+      "expected": false,
+      "score": 12.57,
+      "predicted": false,
+      "correct": true
+    },
+    {
+      "id": "neg_002",
+      "description": "우산 → 스마트폰 (완전 다른 카테고리)",
+      "difficulty": "easy",
+      "expected": false,
+      "score": 17.68,
+      "predicted": false,
+      "correct": true
+    },
+    {
+      "id": "neg_003",
+      "description": "노트북 → 운동화 (완전 다른 카테고리)",
+      "difficulty": "easy",
+      "expected": false,
+      "score": 12.73,
+      "predicted": false,
+      "correct": true
+    },
+    {
+      "id": "neg_004",
+      "description": "가방 → 열쇠 (완전 다른 카테고리)",
+      "difficulty": "easy",
+      "expected": false,
+      "score": 48.7,
+      "predicted": false,
+      "correct": true
+    },
+    {
+      "id": "neg_005",
+      "description": "충전기 → 이어폰 (다른 카테고리)",
+      "difficulty": "easy",
+      "expected": false,
+      "score": 36.33,
+      "predicted": false,
+      "correct": true
+    },
+    {
+      "id": "neg_006",
+      "description": "핸드폰 → 충전기 (관련 있지만 다른 아이템)",
+      "difficulty": "easy",
+      "expected": false,
+      "score": 61.75,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_007",
+      "description": "강아지 → 고양이 (다른 동물)",
+      "difficulty": "easy",
+      "expected": false,
+      "score": 15.14,
+      "predicted": false,
+      "correct": true
+    },
+    {
+      "id": "neg_008",
+      "description": "아이폰 → 삼성 갤럭시 (같은 카테고리 다른 브랜드)",
+      "difficulty": "medium",
+      "expected": false,
+      "score": 46.81,
+      "predicted": false,
+      "correct": true
+    },
+    {
+      "id": "neg_009",
+      "description": "검은색 우산 → 흰색 우산 (동일 아이템 다른 색상)",
+      "difficulty": "medium",
+      "expected": false,
+      "score": 62.68,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_010",
+      "description": "검정 지갑 → 빨간 지갑 (동일 아이템 다른 색상)",
+      "difficulty": "medium",
+      "expected": false,
+      "score": 73.74,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_011",
+      "description": "에어팟 → 갤럭시 버즈 (같은 카테고리 다른 브랜드)",
+      "difficulty": "medium",
+      "expected": false,
+      "score": 40.57,
+      "predicted": false,
+      "correct": true
+    },
+    {
+      "id": "neg_012",
+      "description": "노트북 → 태블릿 (유사하지만 다른 아이템)",
+      "difficulty": "medium",
+      "expected": false,
+      "score": 62.06,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_013",
+      "description": "노란 우산 → 파란 우산 (동일 아이템 다른 색상)",
+      "difficulty": "medium",
+      "expected": false,
+      "score": 66.95,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_014",
+      "description": "빨간 백팩 → 파란 백팩 (동일 아이템 다른 색상)",
+      "difficulty": "medium",
+      "expected": false,
+      "score": 69.37,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_015",
+      "description": "선글라스 → 안경 (유사하지만 다른 아이템)",
+      "difficulty": "hard",
+      "expected": false,
+      "score": 75.43,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_016",
+      "description": "현대 자동차 키 → BMW 자동차 키 (같은 종류 다른 브랜드)",
+      "difficulty": "hard",
+      "expected": false,
+      "score": 83.73,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_017",
+      "description": "아이폰 13 → 아이폰 15 (같은 브랜드 다른 모델)",
+      "difficulty": "hard",
+      "expected": false,
+      "score": 70.58,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_018",
+      "description": "남성 지갑 → 여성 지갑 (같은 종류 다른 타겟)",
+      "difficulty": "hard",
+      "expected": false,
+      "score": 70.0,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_019",
+      "description": "지갑 → 파우치 (유사하지만 다른 아이템)",
+      "difficulty": "hard",
+      "expected": false,
+      "score": 54.02,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "neg_020",
+      "description": "큰 검정 가방 → 작은 검정 가방 (동일 아이템 다른 크기)",
+      "difficulty": "hard",
+      "expected": false,
+      "score": 81.57,
+      "predicted": true,
+      "correct": false
+    },
+    {
+      "id": "pos_001",
+      "description": "검정 지갑 → 검은색 지갑 (색상 동의어)",
+      "difficulty": "easy",
+      "expected": true,
+      "score": 91.99,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_002",
+      "description": "아이폰 → 아이폰 (동일)",
+      "difficulty": "easy",
+      "expected": true,
+      "score": 100.0,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_003",
+      "description": "에어팟 → 에어팟 (동일)",
+      "difficulty": "easy",
+      "expected": true,
+      "score": 100.0,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_004",
+      "description": "노트북 → 랩탑 (동의어)",
+      "difficulty": "easy",
+      "expected": true,
+      "score": 65.15,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_005",
+      "description": "열쇠 → 키 (동의어)",
+      "difficulty": "easy",
+      "expected": true,
+      "score": 50.8,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_006",
+      "description": "파란색 우산 → 파란 우산 (표기 변형)",
+      "difficulty": "easy",
+      "expected": true,
+      "score": 96.22,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_007",
+      "description": "핸드폰 → 스마트폰 (동의어)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 88.84,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_008",
+      "description": "무선 이어폰 → 블루투스 이어폰 (동의어)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 93.73,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_009",
+      "description": "지갑 → 카드지갑 (상하위 관계)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 68.46,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_010",
+      "description": "가방 → 배낭 (상하위 관계)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 68.65,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_011",
+      "description": "삼성 갤럭시 → 갤럭시 스마트폰 (부분 일치)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 85.85,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_012",
+      "description": "충전기 → USB 충전기 (부분 일치)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 84.37,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_013",
+      "description": "아이패드 → 아이패드 미니 (모델 변형)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 91.36,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_014",
+      "description": "운동화 → 스니커즈 (동의어)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 68.63,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_015",
+      "description": "노트북 가방 → 랩탑 백 (복합 동의어)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 70.64,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_016",
+      "description": "아이폰 14 → 아이폰 (모델 포함)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 70.73,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_017",
+      "description": "검정 백팩 → 검은 배낭 (동의어 + 색상)",
+      "difficulty": "medium",
+      "expected": true,
+      "score": 72.61,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_018",
+      "description": "갤럭시 버즈 → 삼성 무선 이어폰 (브랜드/제네릭)",
+      "difficulty": "hard",
+      "expected": true,
+      "score": 53.57,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_019",
+      "description": "자전거 헬멧 → 헬멧 (부분 일치)",
+      "difficulty": "hard",
+      "expected": true,
+      "score": 74.92,
+      "predicted": true,
+      "correct": true
+    },
+    {
+      "id": "pos_020",
+      "description": "롤러스케이트 → 인라인 스케이트 (동의어)",
+      "difficulty": "hard",
+      "expected": true,
+      "score": 71.68,
+      "predicted": true,
+      "correct": true
+    }
+  ]
+}
