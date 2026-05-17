@@ -26,16 +26,23 @@ public class KricApiService {
   private String apiKey;
 
   public void loadSubwayData() {
-
     repository.deleteAll();
 
-    List<String> stationNames = List.of("서울", "부산", "대전", "동대구");
+    List<String> stationNames = List.of(
+        "서울", "용산", "영등포", "청량리", "수서", "시청", "강남", "잠실", "홍대입구",
+        "부산", "서면", "해운대", "남포",
+        "동대구", "대구", "반월당",
+        "대전", "서대전",
+        "광주", "광주송정", "상무",
+        "인천", "부평", "인천시청",
+        "수원", "안양", "부천", "의정부", "일산", "판교"
+    );
 
     for (String stationName : stationNames) {
       try {
         loadSingleStation(stationName);
       } catch (Exception e) {
-        System.out.println("실패: " + stationName);
+        // Skip failures
       }
     }
   }
@@ -48,64 +55,93 @@ public class KricApiService {
         "https://openapi.kric.go.kr/openapi/convenientInfo/stationInfo"
             + "?serviceKey=" + apiKey
             + "&format=json"
-            + "&railOprIsttCd=KR"
-            + "&lnCd=1"
             + "&stinNm=" + encodedName;
 
     String stationResponse = restTemplate.getForObject(stationUrl, String.class);
 
     JSONObject stationJson = new JSONObject(stationResponse);
-    JSONArray stationArray = stationJson
-        .getJSONObject("response")
-        .getJSONObject("body")
-        .getJSONObject("items")
-        .getJSONArray("item");
+    if (!stationJson.has("response") || stationJson.getJSONObject("response").isNull("body")) return;
+    
+    JSONObject body = stationJson.getJSONObject("response").getJSONObject("body");
+    if (!body.has("items") || body.isNull("items")) return;
+    
+    JSONArray stationArray = body.getJSONObject("items").getJSONArray("item");
 
     if (stationArray.isEmpty()) return;
 
-    JSONObject station = stationArray.getJSONObject(0);
+    for (int i = 0; i < Math.min(stationArray.length(), 5); i++) {
+        JSONObject station = stationArray.getJSONObject(i);
 
-    String railCode = station.optString("railOprIsttCd");
-    String lineCode = station.optString("lnCd");
-    String stationCode = station.optString("stinCd");
+        String railCode = station.optString("railOprIsttCd");
+        String lineCode = station.optString("lnCd");
+        String stationCode = station.optString("stinCd");
 
-    Double lat = station.optDouble("stinLocLat");
-    Double lng = station.optDouble("stinLocLon");
+        Double lat = station.optDouble("stinLocLat");
+        Double lng = station.optDouble("stinLocLon");
 
-    String lostUrl =
-        "https://openapi.kric.go.kr/openapi/convenientInfo/stationLostPropertyOffice"
-            + "?serviceKey=" + apiKey
-            + "&format=json"
-            + "&railOprIsttCd=" + railCode
-            + "&lnCd=" + lineCode
-            + "&stinCd=" + stationCode;
+        String lostUrl =
+            "https://openapi.kric.go.kr/openapi/convenientInfo/stationLostPropertyOffice"
+                + "?serviceKey=" + apiKey
+                + "&format=json"
+                + "&railOprIsttCd=" + railCode
+                + "&lnCd=" + lineCode
+                + "&stinCd=" + stationCode;
 
-    String lostResponse = restTemplate.getForObject(lostUrl, String.class);
+        try {
+            String lostResponse = restTemplate.getForObject(lostUrl, String.class);
+            JSONObject lostJson = new JSONObject(lostResponse);
+            if (!lostJson.has("response") || lostJson.getJSONObject("response").isNull("body")) continue;
+            
+            JSONObject lostBody = lostJson.getJSONObject("response").getJSONObject("body");
+            if (!lostBody.has("items") || lostBody.isNull("items")) continue;
+            
+            JSONArray lostArray = lostBody.getJSONObject("items").getJSONArray("item");
 
-    JSONObject lostJson = new JSONObject(lostResponse);
-    JSONArray lostArray = lostJson
-        .getJSONObject("response")
-        .getJSONObject("body")
-        .getJSONObject("items")
-        .getJSONArray("item");
+            if (lostArray.isEmpty()) continue;
 
-    if (lostArray.isEmpty()) return;
+            JSONObject lost = lostArray.getJSONObject(0);
+            String operatorName = lost.optString("railOprIsttNm");
+            String telNo = lost.optString("telNo");
+            String region = determineRegion(operatorName, telNo, stationName);
 
-    JSONObject lost = lostArray.getJSONObject(0);
+            SubwayLostCenter center = SubwayLostCenter.builder()
+                .operatorName(operatorName)
+                .lineName(lost.optString("lnNm"))
+                .region(region)
+                .stationName(stationName)
+                .latitude(lat)
+                .longitude(lng)
+                .detailLocation(lost.optString("dtlLoc"))
+                .availableTime(lost.optString("utlPsbHr"))
+                .telNo(telNo)
+                .build();
 
-    SubwayLostCenter center = SubwayLostCenter.builder()
-        .operatorName(lost.optString("railOprIsttNm"))
-        .lineName(lost.optString("lnNm"))
-        .region(stationName) // Using stationName as region (서울, 부산 등)
-        .stationName(stationName)
-        .latitude(lat)
-        .longitude(lng)
-        .detailLocation(lost.optString("dtlLoc"))
-        .availableTime(lost.optString("utlPsbHr"))
-        .telNo(lost.optString("telNo"))
-        .build();
+            repository.save(center);
+        } catch (Exception e) {
+            // Ignore individual failures
+        }
+    }
+  }
 
-    repository.save(center);
+  private String determineRegion(String operatorName, String telNo, String stationName) {
+      if (operatorName.contains("서울") || (telNo != null && telNo.startsWith("02"))) return "서울";
+      if (operatorName.contains("부산") || (telNo != null && telNo.startsWith("051"))) return "부산";
+      if (operatorName.contains("대구") || (telNo != null && telNo.startsWith("053"))) return "대구";
+      if (operatorName.contains("인천") || (telNo != null && telNo.startsWith("032"))) return "인천";
+      if (operatorName.contains("대전") || (telNo != null && telNo.startsWith("042"))) return "대전";
+      if (operatorName.contains("광주") || (telNo != null && telNo.startsWith("062"))) return "광주";
+      
+      if (telNo != null) {
+          if (telNo.startsWith("031")) return "경기";
+          if (telNo.startsWith("033")) return "강원";
+          if (telNo.startsWith("041")) return "충남";
+          if (telNo.startsWith("043")) return "충북";
+          if (telNo.startsWith("054")) return "경북";
+          if (telNo.startsWith("055")) return "경남";
+          if (telNo.startsWith("061")) return "전남";
+          if (telNo.startsWith("063")) return "전북";
+      }
+      return stationName; 
   }
 
   public List<SubwayLostCenterDTO> getSubwayList(String region, String subRegion, String neighborhood) {

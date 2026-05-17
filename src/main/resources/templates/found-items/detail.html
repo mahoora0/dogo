@@ -135,7 +135,13 @@
               </div>
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-slate-400">보관 장소</span>
-                <span th:text="${foundItem.keepPlace ?: '-'}" class="font-bold text-slate-800">-</span>
+                <span th:if="${foundItem.keepPlace != null and foundItem.keepPlace != '-'}"
+                      th:text="${foundItem.keepPlace}"
+                      th:data-place="${foundItem.keepPlace}"
+                      onclick="openPlaceModal(this.dataset.place)"
+                      class="font-bold text-blue-600 cursor-pointer hover:underline"></span>
+                <span th:unless="${foundItem.keepPlace != null and foundItem.keepPlace != '-'}"
+                      class="font-bold text-slate-800">-</span>
               </div>
             </li>
             <li th:if="${foundItem.colorName}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
@@ -451,6 +457,7 @@
           });
       }
     </script>
+    <div th:replace="~{area/place-modal :: placeModal}"></div>
   </th:block>
 </th:block>
 </html>
