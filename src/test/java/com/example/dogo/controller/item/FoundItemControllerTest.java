@@ -107,7 +107,7 @@ class FoundItemControllerTest {
 						.param("colorName", "검정")
 						.param("content", "카드가 들어 있습니다"))
 				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/found-items/7"));
+				.andExpect(redirectedUrl("/found-items/7?created=true"));
 
 		verify(foundItemService).create(any(FoundItemCreateRequest.class), isNull());
 	}
@@ -121,7 +121,7 @@ class FoundItemControllerTest {
 		String viewName = foundItemController.create(new FoundItemCreateRequest(), new CustomUserDetails(user), model);
 
 		verify(foundItemService).create(any(FoundItemCreateRequest.class), eq(user));
-		org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("redirect:/found-items/8");
+		org.assertj.core.api.Assertions.assertThat(viewName).isEqualTo("redirect:/found-items/8?created=true");
 	}
 
 	@Test

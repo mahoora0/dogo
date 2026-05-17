@@ -101,7 +101,7 @@ class LostItemControllerTest {
 						.param("contact", "010-1234-5678")
 						.param("content", "카드가 들어있습니다"))
 				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/lost-items/7"));
+				.andExpect(redirectedUrl("/lost-items/7?created=true"));
 
 		verify(lostItemService).create(any(LostItemCreateRequest.class), isNull());
 	}

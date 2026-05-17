@@ -19,7 +19,8 @@ class ItemMatchScorerTest {
 	@BeforeEach
 	void setUp() {
 		MatchTextNormalizer normalizer = new MatchTextNormalizer();
-		scorer = new ItemMatchScorer(normalizer, new MatchTextTokenizer(normalizer));
+		MatchDictionary dictionary = new MatchDictionary();
+		scorer = new ItemMatchScorer(normalizer, new MatchTextTokenizer(normalizer, dictionary), dictionary);
 	}
 
 	@Test
@@ -67,6 +68,56 @@ class ItemMatchScorerTest {
 		assertThat(result.eligible()).isTrue();
 		assertThat(result.totalScore()).isGreaterThanOrEqualTo(MatchTestNumbers.MIN_STORE_SCORE);
 		assertThat(result.reasons()).anyMatch(reason -> reason.contains("색상 일치 (검정)"));
+		assertThat(result.reasons()).anyMatch(reason -> reason.contains("물품 키워드 일치"));
+	}
+
+	@Test
+	void scoreMatchesCompactAndSpacedPhoneModelNames() {
+		LostItem lost = lostItem(
+				"아이폰15프로",
+				"휴대폰",
+				LocalDateTime.of(2026, 5, 10, 18, 0),
+				"서울",
+				"강남역"
+		);
+		FoundItem found = foundItem(
+				"아이폰 15 프로",
+				"휴대폰",
+				LocalDateTime.of(2026, 5, 10, 20, 0),
+				"서울",
+				"강남역",
+				null
+		);
+
+		MatchScoreResult result = scorer.score(lost, found);
+
+		assertThat(result.eligible()).isTrue();
+		assertThat(result.keywordScore()).isGreaterThan(new BigDecimal("20.00"));
+		assertThat(result.reasons()).anyMatch(reason -> reason.contains("물품 키워드 일치"));
+	}
+
+	@Test
+	void scoreMatchesCompactGalaxyModelNames() {
+		LostItem lost = lostItem(
+				"갤럭시s24울트라",
+				"휴대폰",
+				LocalDateTime.of(2026, 5, 10, 18, 0),
+				"서울",
+				"강남역"
+		);
+		FoundItem found = foundItem(
+				"갤럭시 S24 울트라",
+				"휴대폰",
+				LocalDateTime.of(2026, 5, 10, 20, 0),
+				"서울",
+				"강남역",
+				null
+		);
+
+		MatchScoreResult result = scorer.score(lost, found);
+
+		assertThat(result.eligible()).isTrue();
+		assertThat(result.keywordScore()).isGreaterThan(new BigDecimal("20.00"));
 		assertThat(result.reasons()).anyMatch(reason -> reason.contains("물품 키워드 일치"));
 	}
 

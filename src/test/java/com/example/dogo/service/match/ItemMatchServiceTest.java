@@ -56,7 +56,8 @@ class ItemMatchServiceTest {
 	@BeforeEach
 	void setUp() {
 		MatchTextNormalizer normalizer = new MatchTextNormalizer();
-		ItemMatchScorer scorer = new ItemMatchScorer(normalizer, new MatchTextTokenizer(normalizer));
+		MatchDictionary dictionary = new MatchDictionary();
+		ItemMatchScorer scorer = new ItemMatchScorer(normalizer, new MatchTextTokenizer(normalizer, dictionary), dictionary);
 		itemMatchService = new ItemMatchService(
 				itemMatchRepository,
 				foundItemRepository,
