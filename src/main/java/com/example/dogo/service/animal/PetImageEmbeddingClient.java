@@ -12,7 +12,6 @@ import org.springframework.web.client.RestClient;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @ConditionalOnProperty(name = "match.pet.embedding.enabled", havingValue = "true")
@@ -31,7 +30,11 @@ public class PetImageEmbeddingClient {
 				.build();
 	}
 
-	public float[] embed(byte[] imageBytes, String filename) {
+	public EmbeddingResult embed(byte[] imageBytes, String filename) {
+		return embed(imageBytes, filename, null);
+	}
+
+	public EmbeddingResult embed(byte[] imageBytes, String filename, String animalType) {
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		body.add("image", new ByteArrayResource(imageBytes) {
 			@Override
@@ -39,6 +42,9 @@ public class PetImageEmbeddingClient {
 				return filename;
 			}
 		});
+		if (animalType != null && !animalType.isBlank()) {
+			body.add("animalType", animalType);
+		}
 
 		PetImageEmbeddingResponse response = restClient.post()
 				.uri("/pet-image-embedding")
@@ -48,13 +54,11 @@ public class PetImageEmbeddingClient {
 				.body(PetImageEmbeddingResponse.class);
 
 		if (response == null || response.vector() == null || response.vector().isEmpty()) {
-			return new float[0];
+			return new EmbeddingResult(new float[0],
+					response == null ? null : response.model(),
+					response == null ? null : response.cropType());
 		}
-		return toFloatArray(response.vector());
-	}
-
-	public String modelName() {
-		return "openai/clip-vit-base-patch32";
+		return new EmbeddingResult(toFloatArray(response.vector()), response.model(), response.cropType());
 	}
 
 	private float[] toFloatArray(List<Float> list) {
@@ -63,5 +67,11 @@ public class PetImageEmbeddingClient {
 		return arr;
 	}
 
-	record PetImageEmbeddingResponse(List<Float> vector, String model) {}
+	public record EmbeddingResult(float[] vector, String modelName, String cropType) {
+		public boolean hasVector() {
+			return vector != null && vector.length > 0;
+		}
+	}
+
+	record PetImageEmbeddingResponse(List<Float> vector, String model, String cropType) {}
 }

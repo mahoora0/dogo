@@ -126,7 +126,7 @@ public class AnimalMatchService {
 	private void saveMatch(AnimalReport missing, AnimalReport sighting, double score) {
 		if (matchRepository.existsByMissingReportAndSightingReport(missing, sighting)) return;
 		BigDecimal finalScore = BigDecimal.valueOf(score).setScale(2, RoundingMode.HALF_UP);
-		matchRepository.save(new AnimalReportMatch(missing, sighting, finalScore, "openai/clip-vit-base-patch32"));
+		matchRepository.save(new AnimalReportMatch(missing, sighting, finalScore, embeddingService.currentModelName()));
 	}
 
 	private record ScoredCandidate(AnimalReport report, double score) {}

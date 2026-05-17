@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 
 from app.clip_embedding import CLIP_MODEL_NAME, _load_clip_model, encode_image
 from app.logger import get_logger
@@ -20,8 +20,14 @@ logger = get_logger("main")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("dogo-python-match 서버 시작")
-    _load_model()
-    _load_clip_model()
+    try:
+        _load_model()
+    except Exception:
+        logger.exception("텍스트 모델 사전 로딩 실패")
+    try:
+        _load_clip_model()
+    except Exception:
+        logger.exception("CLIP 모델 사전 로딩 실패")
     logger.info(f"서버 준비 완료 | 텍스트 모델={MODEL_NAME} | CLIP 모델={CLIP_MODEL_NAME} | backend={MODEL_BACKEND}")
     yield
     logger.info("서버 종료")
@@ -49,7 +55,10 @@ def embeddings(request: EmbeddingsRequest) -> EmbeddingsResponse:
 
 
 @app.post("/pet-image-embedding", response_model=PetImageEmbeddingResponse)
-async def pet_image_embedding(image: UploadFile = File(...)) -> PetImageEmbeddingResponse:
+async def pet_image_embedding(
+    image: UploadFile = File(...),
+    animalType: str | None = Form(None),
+) -> PetImageEmbeddingResponse:
     image_bytes = await image.read()
-    vector = encode_image(image_bytes)
-    return PetImageEmbeddingResponse(vector=vector, model=CLIP_MODEL_NAME)
+    vector, model, crop_type = encode_image(image_bytes)
+    return PetImageEmbeddingResponse(vector=vector, model=model, cropType=crop_type)

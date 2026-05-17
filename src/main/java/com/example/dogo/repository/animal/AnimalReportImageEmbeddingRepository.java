@@ -12,6 +12,14 @@ public interface AnimalReportImageEmbeddingRepository extends JpaRepository<Anim
 
 	Optional<AnimalReportImageEmbedding> findByReportReportId(Long reportId);
 
+	List<AnimalReportImageEmbedding> findByModelName(String modelName);
+
 	@Query("SELECT e FROM AnimalReportImageEmbedding e WHERE e.report.reportId IN :reportIds")
 	List<AnimalReportImageEmbedding> findByReportIds(@Param("reportIds") List<Long> reportIds);
+
+	@Query("SELECT e FROM AnimalReportImageEmbedding e WHERE e.report.reportId IN :reportIds AND e.modelName = :modelName")
+	List<AnimalReportImageEmbedding> findByReportIdsAndModelName(
+			@Param("reportIds") List<Long> reportIds,
+			@Param("modelName") String modelName
+	);
 }

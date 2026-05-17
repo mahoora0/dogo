@@ -33,65 +33,79 @@ public class AnimalImageEmbeddingService {
 	private static final int IMAGE_SEARCH_MAX_RESULTS = 20;
 
 	public record ImageSearchHit(Long reportId, float score) {}
+	public enum EmbedStatus { SAVED, SKIPPED, FAILED }
 
 	private final AnimalReportImageRepository imageRepository;
 	private final AnimalReportImageEmbeddingRepository embeddingRepository;
 	private final PetImageEmbeddingClient embeddingClient;
 	private final Path uploadDir;
+	private final String currentModelName;
 
 	public AnimalImageEmbeddingService(
 			AnimalReportImageRepository imageRepository,
 			AnimalReportImageEmbeddingRepository embeddingRepository,
 			PetImageEmbeddingClient embeddingClient,
-			@Value("${file.upload-dir}") String uploadDir
+			@Value("${file.upload-dir}") String uploadDir,
+			@Value("${match.pet.embedding.model-name:AvitoTech/CLIP-ViT-base-for-animal-identification}") String currentModelName
 	) {
 		this.imageRepository = imageRepository;
 		this.embeddingRepository = embeddingRepository;
 		this.embeddingClient = embeddingClient;
 		this.uploadDir = Paths.get(uploadDir);
+		this.currentModelName = currentModelName;
 	}
 
 	@Transactional
-	public void embedAndSave(AnimalReport report) {
+	public EmbedStatus embedAndSave(AnimalReport report) {
 		Optional<AnimalReportImage> firstImage =
 				imageRepository.findFirstByAnimalReportOrderBySortOrderAscImageIdAsc(report);
 
 		if (firstImage.isEmpty()) {
 			log.debug("[pet-embedding] 이미지 없음, 스킵: reportId={}", report.getReportId());
-			return;
+			return EmbedStatus.SKIPPED;
 		}
 
 		AnimalReportImage image = firstImage.get();
 		byte[] imageBytes = readImageBytes(image.getStoredName());
-		if (imageBytes == null) return;
+		if (imageBytes == null) return EmbedStatus.FAILED;
 
-		float[] vector = embeddingClient.embed(imageBytes, image.getStoredName());
-		if (vector.length == 0) {
-			log.warn("[pet-embedding] 빈 벡터 반환, 스킵: reportId={}", report.getReportId());
-			return;
+		Optional<AnimalReportImageEmbedding> existing = embeddingRepository.findByReportReportId(report.getReportId());
+		if (existing.isPresent() && currentModelName.equals(existing.get().getModelName())) {
+			log.debug("[pet-embedding] 현재 모델 벡터 존재, 스킵: reportId={}, model={}",
+					report.getReportId(), currentModelName);
+			return EmbedStatus.SKIPPED;
 		}
 
-		byte[] blob = VectorUtils.toBytes(vector);
-		String modelName = embeddingClient.modelName();
+		PetImageEmbeddingClient.EmbeddingResult result =
+				embeddingClient.embed(imageBytes, image.getStoredName(), report.getAnimalType());
+		if (!result.hasVector()) {
+			log.warn("[pet-embedding] 빈 벡터 반환, 스킵: reportId={}", report.getReportId());
+			return EmbedStatus.FAILED;
+		}
 
-		embeddingRepository.findByReportReportId(report.getReportId()).ifPresentOrElse(
-				existing -> existing.update(image, blob, modelName),
+		byte[] blob = VectorUtils.toBytes(result.vector());
+		String modelName = normalizeModelName(result.modelName());
+
+		existing.ifPresentOrElse(
+				saved -> saved.update(image, blob, modelName),
 				() -> embeddingRepository.save(new AnimalReportImageEmbedding(report, image, blob, modelName))
 		);
-		log.info("[pet-embedding] 저장 완료: reportId={}", report.getReportId());
+		log.info("[pet-embedding] 저장 완료: reportId={}, model={}", report.getReportId(), modelName);
+		return EmbedStatus.SAVED;
 	}
 
 	@Transactional(readOnly = true)
 	public List<ImageSearchHit> searchByImage(byte[] imageBytes, String filename) {
-		float[] queryVector = embeddingClient.embed(imageBytes, filename);
-		if (queryVector.length == 0) {
+		PetImageEmbeddingClient.EmbeddingResult result = embeddingClient.embed(imageBytes, filename);
+		if (!result.hasVector()) {
 			log.warn("[pet-image-search] 빈 쿼리 벡터 반환");
 			return List.of();
 		}
-		return embeddingRepository.findAll().stream()
+		String modelName = normalizeModelName(result.modelName());
+		return embeddingRepository.findByModelName(modelName).stream()
 				.map(e -> new ImageSearchHit(
 						e.getReport().getReportId(),
-						VectorUtils.cosineSimilarity(queryVector, VectorUtils.fromBytes(e.getVectorBlob()))
+						VectorUtils.cosineSimilarity(result.vector(), VectorUtils.fromBytes(e.getVectorBlob()))
 				))
 				.filter(h -> h.score() >= IMAGE_SEARCH_THRESHOLD)
 				.sorted(Comparator.comparingDouble(ImageSearchHit::score).reversed())
@@ -101,10 +115,15 @@ public class AnimalImageEmbeddingService {
 
 	@Transactional(readOnly = true)
 	public Map<Long, float[]> loadVectors(List<Long> reportIds) {
+		if (reportIds.isEmpty()) return Map.of();
 		Map<Long, float[]> result = new HashMap<>();
-		embeddingRepository.findByReportIds(reportIds)
+		embeddingRepository.findByReportIdsAndModelName(reportIds, currentModelName)
 				.forEach(e -> result.put(e.getReport().getReportId(), VectorUtils.fromBytes(e.getVectorBlob())));
 		return result;
+	}
+
+	public String currentModelName() {
+		return currentModelName;
 	}
 
 	private byte[] readImageBytes(String storedName) {
@@ -119,5 +138,12 @@ public class AnimalImageEmbeddingService {
 			log.warn("[pet-embedding] 이미지 파일 읽기 실패: {} - {}", storedName, e.getMessage());
 			return null;
 		}
+	}
+
+	private String normalizeModelName(String modelName) {
+		if (modelName == null || modelName.isBlank()) {
+			return currentModelName;
+		}
+		return modelName;
 	}
 }
