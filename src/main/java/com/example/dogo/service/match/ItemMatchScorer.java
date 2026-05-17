@@ -10,8 +10,10 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Component
 public class ItemMatchScorer {
@@ -28,13 +30,16 @@ public class ItemMatchScorer {
 	private static final BigDecimal COLOR_MATCH_SCORE = new BigDecimal("10");
 	private static final BigDecimal COLOR_PARTIAL_SCORE = new BigDecimal("2");
 	static final BigDecimal TRANSPORT_LOCATION_FLOOR_SCORE = new BigDecimal("6");
+	private static final Pattern MODEL_TOKEN_PATTERN = Pattern.compile("[a-z]+\\d+[a-z0-9]*|\\d+[a-z]+[a-z0-9]*|\\d{2,}");
 
 	private final MatchTextNormalizer normalizer;
 	private final MatchTextTokenizer tokenizer;
+	private final MatchDictionary dictionary;
 
-	public ItemMatchScorer(MatchTextNormalizer normalizer, MatchTextTokenizer tokenizer) {
+	public ItemMatchScorer(MatchTextNormalizer normalizer, MatchTextTokenizer tokenizer, MatchDictionary dictionary) {
 		this.normalizer = normalizer;
 		this.tokenizer = tokenizer;
+		this.dictionary = dictionary;
 	}
 
 	// ─── Pre-computed context records ────────────────────────────────────────
@@ -310,12 +315,44 @@ public class ItemMatchScorer {
 	}
 
 	private BigDecimal weightedTokenScore(Set<String> leftTokens, Set<String> rightTokens, BigDecimal weight) {
-		long commonCount = leftTokens.stream().filter(rightTokens::contains).count();
-		if (commonCount == 0) {
+		double commonWeight = leftTokens.stream()
+				.filter(rightTokens::contains)
+				.mapToDouble(this::tokenWeight)
+				.sum();
+		if (commonWeight == 0.0) {
 			return BigDecimal.ZERO;
 		}
-		double ratio = (double) commonCount / Math.max(leftTokens.size(), rightTokens.size());
+		double denominator = Math.max(totalTokenWeight(leftTokens), totalTokenWeight(rightTokens));
+		double ratio = commonWeight / denominator;
 		return weight.multiply(BigDecimal.valueOf(ratio)).setScale(2, RoundingMode.HALF_UP);
+	}
+
+	private double totalTokenWeight(Set<String> tokens) {
+		return tokens.stream().mapToDouble(this::tokenWeight).sum();
+	}
+
+	private double tokenWeight(String token) {
+		if (!StringUtils.hasText(token)) {
+			return 0.0;
+		}
+		OptionalDouble configuredWeight = dictionary.configuredWeight(token);
+		if (configuredWeight.isPresent()) {
+			return configuredWeight.getAsDouble();
+		}
+		if (MODEL_TOKEN_PATTERN.matcher(token).matches()) {
+			return 1.4;
+		}
+		if (isMixedCompactToken(token)) {
+			return 0.7;
+		}
+		return 1.0;
+	}
+
+	private boolean isMixedCompactToken(String token) {
+		boolean hasKorean = token.chars().anyMatch(ch -> ch >= '가' && ch <= '힣');
+		boolean hasAsciiLetter = token.chars().anyMatch(ch -> ch >= 'a' && ch <= 'z');
+		boolean hasDigit = token.chars().anyMatch(Character::isDigit);
+		return hasKorean && (hasAsciiLetter || hasDigit);
 	}
 
 	private String commonTerms(Set<String> leftTokens, Set<String> rightTokens) {

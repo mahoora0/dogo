@@ -3,43 +3,28 @@ package com.example.dogo.service.match;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class MatchTextTokenizer {
 
-	private static final Map<String, List<String>> TERM_EXPANSIONS = new LinkedHashMap<>();
+	private static final Pattern TOKEN_PART_PATTERN = Pattern.compile("[가-힣]+|[a-z]+|\\d+");
+	private static final Pattern ALNUM_MODEL_PATTERN = Pattern.compile("[a-z]+\\d+[a-z0-9]*|\\d+[a-z]+[a-z0-9]*");
 	private static final Set<String> TRANSPORT_TERMS = Set.of(
 			"버스", "지하철", "택시", "기차", "열차", "ktx", "터미널", "공항", "비행기"
 	);
 
-	static {
-		TERM_EXPANSIONS.put("지갑", List.of("지갑"));
-		TERM_EXPANSIONS.put("반지갑", List.of("반지갑", "지갑"));
-		TERM_EXPANSIONS.put("카드지갑", List.of("카드지갑", "지갑"));
-		TERM_EXPANSIONS.put("장지갑", List.of("장지갑", "지갑"));
-		TERM_EXPANSIONS.put("루에브르", List.of("루에브르"));
-		TERM_EXPANSIONS.put("아이폰", List.of("아이폰", "iphone"));
-		TERM_EXPANSIONS.put("iphone", List.of("아이폰", "iphone"));
-		TERM_EXPANSIONS.put("갤럭시", List.of("갤럭시", "galaxy"));
-		TERM_EXPANSIONS.put("galaxy", List.of("갤럭시", "galaxy"));
-		TERM_EXPANSIONS.put("에어팟", List.of("에어팟", "airpods", "이어폰"));
-		TERM_EXPANSIONS.put("airpods", List.of("에어팟", "airpods", "이어폰"));
-		TERM_EXPANSIONS.put("노트북", List.of("노트북", "랩탑", "laptop"));
-		TERM_EXPANSIONS.put("laptop", List.of("노트북", "랩탑", "laptop"));
-		TERM_EXPANSIONS.put("백팩", List.of("백팩", "가방"));
-		TERM_EXPANSIONS.put("배낭", List.of("배낭", "가방"));
-	}
-
 	private final MatchTextNormalizer normalizer;
+	private final MatchDictionary dictionary;
 
-	public MatchTextTokenizer(MatchTextNormalizer normalizer) {
+	public MatchTextTokenizer(MatchTextNormalizer normalizer, MatchDictionary dictionary) {
 		this.normalizer = normalizer;
+		this.dictionary = dictionary;
 	}
 
 	public Set<String> tokenize(String... values) {
@@ -51,14 +36,14 @@ public class MatchTextTokenizer {
 
 		Arrays.stream(text.split("[\\s]+"))
 				.map(String::trim)
-				.filter(token -> token.length() >= 2)
-				.forEach(tokens::add);
+				.forEach(token -> {
+					addToken(tokens, token);
+					addPatternTokens(tokens, token, TOKEN_PART_PATTERN);
+					addPatternTokens(tokens, token, ALNUM_MODEL_PATTERN);
+				});
 
-		for (Map.Entry<String, List<String>> entry : TERM_EXPANSIONS.entrySet()) {
-			if (text.contains(entry.getKey())) {
-				tokens.addAll(entry.getValue());
-			}
-		}
+		dictionary.findDomainNouns(text).forEach(token -> addExpandedToken(tokens, token));
+		new ArrayList<>(tokens).forEach(token -> dictionary.expand(token).forEach(expanded -> addToken(tokens, expanded)));
 
 		for (String term : TRANSPORT_TERMS) {
 			if (text.contains(term)) {
@@ -68,6 +53,27 @@ public class MatchTextTokenizer {
 		}
 
 		return tokens;
+	}
+
+	private void addExpandedToken(Set<String> tokens, String token) {
+		addToken(tokens, token);
+		dictionary.expand(token).forEach(expanded -> addToken(tokens, expanded));
+	}
+
+	private void addPatternTokens(Set<String> tokens, String value, Pattern pattern) {
+		Matcher matcher = pattern.matcher(value);
+		while (matcher.find()) {
+			addToken(tokens, matcher.group());
+		}
+	}
+
+	private void addToken(Set<String> tokens, String token) {
+		if (!StringUtils.hasText(token)) {
+			return;
+		}
+		if (token.length() >= 2 || token.chars().allMatch(Character::isDigit)) {
+			tokens.add(token);
+		}
 	}
 
 	public boolean containsTransportTerm(String... values) {
