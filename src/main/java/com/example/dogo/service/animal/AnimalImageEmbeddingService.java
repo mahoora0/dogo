@@ -31,6 +31,8 @@ public class AnimalImageEmbeddingService {
 	private static final String ANIMAL_UPLOAD_SUBDIR = "animal-reports";
 	private static final float IMAGE_SEARCH_THRESHOLD = 0.5f;
 	private static final int IMAGE_SEARCH_MAX_RESULTS = 20;
+	private static final String ANIMAL_CROP = "ANIMAL_CROP";
+	private static final String ORIGINAL_FALLBACK = "ORIGINAL_FALLBACK";
 
 	public record ImageSearchHit(Long reportId, float score) {}
 	public enum EmbedStatus { SAVED, SKIPPED, FAILED }
@@ -40,19 +42,22 @@ public class AnimalImageEmbeddingService {
 	private final PetImageEmbeddingClient embeddingClient;
 	private final Path uploadDir;
 	private final String currentModelName;
+	private final String currentCropType;
 
 	public AnimalImageEmbeddingService(
 			AnimalReportImageRepository imageRepository,
 			AnimalReportImageEmbeddingRepository embeddingRepository,
 			PetImageEmbeddingClient embeddingClient,
 			@Value("${file.upload-dir}") String uploadDir,
-			@Value("${match.pet.embedding.model-name:AvitoTech/CLIP-ViT-base-for-animal-identification}") String currentModelName
+			@Value("${match.pet.embedding.model-name:AvitoTech/CLIP-ViT-base-for-animal-identification}") String currentModelName,
+			@Value("${match.pet.embedding.crop-type:ANIMAL_CROP}") String currentCropType
 	) {
 		this.imageRepository = imageRepository;
 		this.embeddingRepository = embeddingRepository;
 		this.embeddingClient = embeddingClient;
 		this.uploadDir = Paths.get(uploadDir);
 		this.currentModelName = currentModelName;
+		this.currentCropType = currentCropType;
 	}
 
 	@Transactional
@@ -70,9 +75,11 @@ public class AnimalImageEmbeddingService {
 		if (imageBytes == null) return EmbedStatus.FAILED;
 
 		Optional<AnimalReportImageEmbedding> existing = embeddingRepository.findByReportReportId(report.getReportId());
-		if (existing.isPresent() && currentModelName.equals(existing.get().getModelName())) {
-			log.debug("[pet-embedding] 현재 모델 벡터 존재, 스킵: reportId={}, model={}",
-					report.getReportId(), currentModelName);
+		if (existing.isPresent()
+				&& currentModelName.equals(existing.get().getModelName())
+				&& acceptedCropTypes().contains(existing.get().getCropType())) {
+			log.debug("[pet-embedding] 현재 모델/crop 벡터 존재, 스킵: reportId={}, model={}, cropType={}",
+					report.getReportId(), currentModelName, existing.get().getCropType());
 			return EmbedStatus.SKIPPED;
 		}
 
@@ -85,12 +92,14 @@ public class AnimalImageEmbeddingService {
 
 		byte[] blob = VectorUtils.toBytes(result.vector());
 		String modelName = normalizeModelName(result.modelName());
+		String cropType = normalizeCropType(result.cropType());
 
 		existing.ifPresentOrElse(
-				saved -> saved.update(image, blob, modelName),
-				() -> embeddingRepository.save(new AnimalReportImageEmbedding(report, image, blob, modelName))
+				saved -> saved.update(image, blob, modelName, cropType),
+				() -> embeddingRepository.save(new AnimalReportImageEmbedding(report, image, blob, modelName, cropType))
 		);
-		log.info("[pet-embedding] 저장 완료: reportId={}, model={}", report.getReportId(), modelName);
+		log.info("[pet-embedding] 저장 완료: reportId={}, model={}, cropType={}",
+				report.getReportId(), modelName, cropType);
 		return EmbedStatus.SAVED;
 	}
 
@@ -102,7 +111,8 @@ public class AnimalImageEmbeddingService {
 			return List.of();
 		}
 		String modelName = normalizeModelName(result.modelName());
-		return embeddingRepository.findByModelName(modelName).stream()
+		String cropType = normalizeCropType(result.cropType());
+		return embeddingRepository.findByModelNameAndCropType(modelName, cropType).stream()
 				.map(e -> new ImageSearchHit(
 						e.getReport().getReportId(),
 						VectorUtils.cosineSimilarity(result.vector(), VectorUtils.fromBytes(e.getVectorBlob()))
@@ -117,13 +127,17 @@ public class AnimalImageEmbeddingService {
 	public Map<Long, float[]> loadVectors(List<Long> reportIds) {
 		if (reportIds.isEmpty()) return Map.of();
 		Map<Long, float[]> result = new HashMap<>();
-		embeddingRepository.findByReportIdsAndModelName(reportIds, currentModelName)
+		embeddingRepository.findByReportIdsAndModelNameAndCropTypes(reportIds, currentModelName, acceptedCropTypes())
 				.forEach(e -> result.put(e.getReport().getReportId(), VectorUtils.fromBytes(e.getVectorBlob())));
 		return result;
 	}
 
 	public String currentModelName() {
 		return currentModelName;
+	}
+
+	public String currentCropType() {
+		return currentCropType;
 	}
 
 	private byte[] readImageBytes(String storedName) {
@@ -145,5 +159,19 @@ public class AnimalImageEmbeddingService {
 			return currentModelName;
 		}
 		return modelName;
+	}
+
+	private String normalizeCropType(String cropType) {
+		if (cropType == null || cropType.isBlank()) {
+			return currentCropType;
+		}
+		return cropType;
+	}
+
+	private List<String> acceptedCropTypes() {
+		if (ANIMAL_CROP.equals(currentCropType)) {
+			return List.of(ANIMAL_CROP, ORIGINAL_FALLBACK);
+		}
+		return List.of(currentCropType);
 	}
 }

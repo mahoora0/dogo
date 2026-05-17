@@ -41,23 +41,34 @@ public class AnimalReportImageEmbedding {
 	@Column(name = "MODEL_NAME", nullable = false)
 	private String modelName;
 
+	@Column(name = "CROP_TYPE", nullable = false)
+	private String cropType;
+
 	@Column(name = "CREATED_AT", nullable = false, updatable = false)
 	private LocalDateTime createdAt = LocalDateTime.now();
 
 	@Column(name = "UPDATED_AT", nullable = false)
 	private LocalDateTime updatedAt = LocalDateTime.now();
 
-	public AnimalReportImageEmbedding(AnimalReport report, AnimalReportImage image, byte[] vectorBlob, String modelName) {
+	public AnimalReportImageEmbedding(
+			AnimalReport report,
+			AnimalReportImage image,
+			byte[] vectorBlob,
+			String modelName,
+			String cropType
+	) {
 		this.report = report;
 		this.image = image;
 		this.vectorBlob = vectorBlob;
 		this.modelName = modelName;
+		this.cropType = cropType;
 	}
 
-	public void update(AnimalReportImage image, byte[] vectorBlob, String modelName) {
+	public void update(AnimalReportImage image, byte[] vectorBlob, String modelName, String cropType) {
 		this.image = image;
 		this.vectorBlob = vectorBlob;
 		this.modelName = modelName;
+		this.cropType = cropType;
 		this.updatedAt = LocalDateTime.now();
 	}
 }

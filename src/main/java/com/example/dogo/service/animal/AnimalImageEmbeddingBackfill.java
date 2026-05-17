@@ -41,8 +41,8 @@ public class AnimalImageEmbeddingBackfill {
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
 		if (!backfillOnStartup) return;
-		log.info("[pet-embedding-backfill] 시작 예약 (batchSize={}, model={})",
-				batchSize, embeddingService.currentModelName());
+		log.info("[pet-embedding-backfill] 시작 예약 (batchSize={}, model={}, cropType={})",
+				batchSize, embeddingService.currentModelName(), embeddingService.currentCropType());
 		CompletableFuture.runAsync(this::runBackfill);
 	}
 

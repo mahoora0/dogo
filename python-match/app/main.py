@@ -60,5 +60,5 @@ async def pet_image_embedding(
     animalType: str | None = Form(None),
 ) -> PetImageEmbeddingResponse:
     image_bytes = await image.read()
-    vector, model, crop_type = encode_image(image_bytes)
+    vector, model, crop_type = encode_image(image_bytes, animalType)
     return PetImageEmbeddingResponse(vector=vector, model=model, cropType=crop_type)
