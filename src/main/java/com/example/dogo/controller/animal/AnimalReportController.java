@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -148,7 +150,7 @@ public class AnimalReportController {
 	) {
 		try {
 			Long reportId = animalReportService.create(request, userDetails != null ? userDetails.getUser() : null);
-			return "redirect:/animal-reports/" + reportId;
+			return "redirect:/animal-reports/" + reportId + "?created=true";
 		} catch (IllegalArgumentException exception) {
 			model.addAttribute("errorMessage", exception.getMessage());
 			model.addAttribute("currentUri", "/animal-reports/new");
@@ -160,9 +162,39 @@ public class AnimalReportController {
 		}
 	}
 
+	@PostMapping("/animal-reports/image-search")
+	public String imageSearch(@RequestParam("image") MultipartFile image, Model model) {
+		model.addAttribute("currentUri", "/animal-reports");
+		if (!animalReportService.isImageSearchAvailable()) {
+			model.addAttribute("error", "이미지 검색 기능이 현재 비활성화되어 있습니다.");
+			model.addAttribute("results", List.of());
+			return "animal-reports/image-search";
+		}
+		if (image == null || image.isEmpty()) {
+			model.addAttribute("error", "이미지를 선택해주세요.");
+			model.addAttribute("results", List.of());
+			return "animal-reports/image-search";
+		}
+		try {
+			var results = animalReportService.searchByImage(image.getBytes(), image.getOriginalFilename());
+			model.addAttribute("results", results);
+			return "animal-reports/image-search";
+		} catch (IOException e) {
+			model.addAttribute("error", "이미지를 읽는 중 오류가 발생했습니다.");
+			model.addAttribute("results", List.of());
+			return "animal-reports/image-search";
+		}
+	}
+
 	@GetMapping("/animal-reports/{id}")
-	public String detail(@PathVariable Long id, Model model) {
-		model.addAttribute("report", animalReportService.getDetail(id));
+	public String detail(@PathVariable Long id,
+						 @RequestParam(defaultValue = "false") boolean created,
+						 Model model) {
+		var report = animalReportService.getDetail(id);
+		var matchCandidates = animalReportService.getMatchCandidates(id, report.reportType());
+		model.addAttribute("report", report);
+		model.addAttribute("matchCandidates", matchCandidates);
+		model.addAttribute("matchingInProgress", created && matchCandidates.isEmpty());
 		model.addAttribute("currentUri", "/animal-reports");
 		return "animal-reports/detail";
 	}

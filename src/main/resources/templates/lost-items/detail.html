@@ -194,7 +194,7 @@
         </div>
       </div>
 
-      <!-- 로딩 배너 -->
+      <!-- 로딩 배너 (rematch 버튼용) -->
       <div id="match-loading" class="mb-4 hidden items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
         <svg class="h-4 w-4 animate-spin text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -205,7 +205,20 @@
 
       <!-- 매칭 결과 영역 -->
       <div id="match-results">
-        <div th:if="${matchCandidates != null && !matchCandidates.isEmpty()}" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <!-- SSE 대기 중: 분석 중 애니메이션 -->
+        <div th:if="${matchingInProgress}" class="rounded-3xl border border-amber-200 bg-amber-50/60 px-6 py-16 text-center">
+          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
+            <svg class="h-8 w-8 animate-spin text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+            </svg>
+          </div>
+          <p class="text-base font-bold text-amber-700">AI가 유사한 습득물을 분석 중입니다...</p>
+          <p class="mt-2 text-sm text-amber-600">잠시 후 자동으로 결과가 표시됩니다.</p>
+        </div>
+
+        <!-- 결과 있음 -->
+        <div th:if="${!matchingInProgress && matchCandidates != null && !matchCandidates.isEmpty()}" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <a th:each="match : ${matchCandidates}" th:href="@{'/found-items/' + ${match.id()}}"
                class="group block rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-md">
@@ -234,7 +247,8 @@
           </div>
         </div>
 
-        <div th:if="${matchCandidates == null || matchCandidates.isEmpty()}" class="rounded-3xl border border-dashed border-slate-300 bg-slate-50/50 px-6 py-16 text-center backdrop-blur-sm">
+        <!-- 결과 없음 (SSE 대기 중 아닐 때) -->
+        <div th:if="${!matchingInProgress && (matchCandidates == null || matchCandidates.isEmpty())}" class="rounded-3xl border border-dashed border-slate-300 bg-slate-50/50 px-6 py-16 text-center backdrop-blur-sm">
           <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </div>
@@ -330,7 +344,7 @@
         renderImage(0);
       })();
     </script>
-    <script>
+    <script th:inline="javascript">
       const REMATCH_URL = '/api/lost-items/' + window.location.pathname.split('/').pop() + '/rematch';
       const NO_IMG_SVG = '<div class="flex h-full w-full items-center justify-center text-slate-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>';
       const BTN_DEFAULT_HTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> 매칭 실행';
@@ -371,6 +385,24 @@
         return '<div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">' +
           '<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">' + matches.map(buildMatchCard).join('') + '</div></div>';
       }
+
+      /* SSE: 게시글 등록 직후 매칭 결과를 실시간으로 수신 */
+      (function() {
+        var inProgress = /*[[${matchingInProgress}]]*/ false;
+        if (!inProgress) return;
+        var id = window.location.pathname.split('/').pop();
+        var es = new EventSource('/api/lost-items/' + id + '/stream');
+        es.addEventListener('match-ready', function(e) {
+          es.close();
+          document.getElementById('match-results').innerHTML = e.data;
+          var matched = document.querySelectorAll('#match-results a').length;
+          document.getElementById('match-count').textContent = matched > 0 ? matched + '건의 매칭' : '';
+          history.replaceState(null, '', window.location.pathname);
+        });
+        es.onerror = function() {
+          es.close();
+        };
+      })();
 
       function runRematch(btn) {
         const loading = document.getElementById('match-loading');

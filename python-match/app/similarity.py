@@ -84,6 +84,24 @@ def _save_exported_onnx_model(model: SentenceTransformer) -> None:
     save_dir.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(str(save_dir))
     logger.info(f"Saved ONNX model for reuse: {save_dir}")
+    _quantize_onnx_model(save_dir)
+
+
+def _quantize_onnx_model(save_dir: Path) -> None:
+    from onnxruntime.quantization import QuantType, quantize_dynamic
+
+    onnx_dir = save_dir / "onnx"
+    model_path = onnx_dir / "model.onnx"
+    int8_path = onnx_dir / "model_int8.onnx"
+
+    if not model_path.exists() or int8_path.exists():
+        return
+
+    logger.info("ONNX int8 동적 양자화 시작...")
+    t0 = time.perf_counter()
+    quantize_dynamic(str(model_path), str(int8_path), weight_type=QuantType.QInt8)
+    elapsed = time.perf_counter() - t0
+    logger.info(f"양자화 완료 ({elapsed:.1f}s) → {int8_path}")
 
 
 def _has_saved_onnx_model() -> bool:

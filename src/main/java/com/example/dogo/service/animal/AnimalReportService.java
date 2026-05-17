@@ -1,17 +1,22 @@
 package com.example.dogo.service.animal;
 
+import com.example.dogo.dto.animal.AnimalImageSearchResult;
+import com.example.dogo.dto.animal.AnimalMatchCandidateView;
 import com.example.dogo.dto.animal.AnimalReportCreateRequest;
 import com.example.dogo.dto.animal.AnimalReportDetailView;
 import com.example.dogo.dto.animal.AnimalReportView;
 import com.example.dogo.entity.animal.AnimalReport;
 import com.example.dogo.entity.animal.AnimalReportImage;
+import com.example.dogo.entity.animal.AnimalReportMatch;
 import com.example.dogo.entity.area.Area;
 import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.animal.AnimalReportImageRepository;
+import com.example.dogo.repository.animal.AnimalReportMatchRepository;
 import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.area.AreaRepository;
 import com.example.dogo.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,9 +33,11 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AnimalReportService {
@@ -46,21 +53,30 @@ public class AnimalReportService {
 
 	private final AnimalReportRepository animalReportRepository;
 	private final AnimalReportImageRepository animalReportImageRepository;
+	private final AnimalReportMatchRepository animalReportMatchRepository;
 	private final AreaRepository areaRepository;
 	private final UserRepository userRepository;
+	private final ApplicationEventPublisher eventPublisher;
 	private final Path animalReportUploadPath;
+	private final Optional<AnimalImageEmbeddingService> imageEmbeddingService;
 
 	public AnimalReportService(
 			AnimalReportRepository animalReportRepository,
 			AnimalReportImageRepository animalReportImageRepository,
+			AnimalReportMatchRepository animalReportMatchRepository,
 			AreaRepository areaRepository,
 			UserRepository userRepository,
+			ApplicationEventPublisher eventPublisher,
+			Optional<AnimalImageEmbeddingService> imageEmbeddingService,
 			@Value("${file.upload-dir}") String uploadDir
 	) {
 		this.animalReportRepository = animalReportRepository;
 		this.animalReportImageRepository = animalReportImageRepository;
+		this.animalReportMatchRepository = animalReportMatchRepository;
 		this.areaRepository = areaRepository;
 		this.userRepository = userRepository;
+		this.eventPublisher = eventPublisher;
+		this.imageEmbeddingService = imageEmbeddingService;
 		this.animalReportUploadPath = Path.of(uploadDir, "animal-reports").toAbsolutePath().normalize();
 	}
 
@@ -116,6 +132,7 @@ public class AnimalReportService {
 
 		AnimalReport savedReport = animalReportRepository.save(report);
 		saveImages(savedReport, request.getUploadImages());
+		eventPublisher.publishEvent(new AnimalReportCreatedEvent(savedReport.getReportId()));
 		return savedReport.getReportId();
 	}
 
@@ -483,5 +500,59 @@ public class AnimalReportService {
 			case "UNKNOWN" -> "확인 필요";
 			default -> null;
 		};
+	}
+
+	public boolean isImageSearchAvailable() {
+		return imageEmbeddingService.isPresent();
+	}
+
+	@Transactional(readOnly = true)
+	public List<AnimalImageSearchResult> searchByImage(byte[] imageBytes, String filename) {
+		if (imageEmbeddingService.isEmpty()) return List.of();
+		List<AnimalImageEmbeddingService.ImageSearchHit> hits = imageEmbeddingService.get().searchByImage(imageBytes, filename);
+		if (hits.isEmpty()) return List.of();
+		List<Long> reportIds = hits.stream().map(AnimalImageEmbeddingService.ImageSearchHit::reportId).toList();
+		Map<Long, AnimalReport> reportMap = animalReportRepository.findAllById(reportIds).stream()
+				.filter(r -> !r.isDeleted())
+				.collect(Collectors.toMap(AnimalReport::getReportId, r -> r));
+		return hits.stream()
+				.filter(hit -> reportMap.containsKey(hit.reportId()))
+				.map(hit -> new AnimalImageSearchResult(
+						toListView(reportMap.get(hit.reportId())),
+						Math.round(hit.score() * 100)
+				))
+				.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<AnimalMatchCandidateView> getMatchCandidates(Long reportId, String reportType) {
+		List<AnimalReportMatch> matches = reportType.equals("MISSING")
+				? animalReportMatchRepository.findByMissingReportId(reportId)
+				: animalReportMatchRepository.findBySightingReportId(reportId);
+
+		return matches.stream().map(m -> {
+			AnimalReport candidate = reportType.equals("MISSING") ? m.getSightingReport() : m.getMissingReport();
+			String imageUrl = animalReportImageRepository
+					.findFirstByAnimalReportOrderBySortOrderAscImageIdAsc(candidate)
+					.map(AnimalReportImage::getImageUrl)
+					.orElse(PLACEHOLDER_IMAGE);
+			return new AnimalMatchCandidateView(
+					candidate.getReportId(),
+					candidate.getReportType(),
+					reportTypeLabel(candidate.getReportType()),
+					candidate.getTitle(),
+					candidate.getAnimalType(),
+					animalTypeLabel(candidate.getAnimalType()),
+					candidate.getBreedName(),
+					candidate.getFurColor(),
+					candidate.getRegionName(),
+					candidate.getDetailPlace(),
+					candidate.getEventDate(),
+					candidate.getStatus(),
+					statusLabel(candidate.getStatus()),
+					m.getFinalScore(),
+					imageUrl
+			);
+		}).toList();
 	}
 }

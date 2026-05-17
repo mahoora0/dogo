@@ -51,3 +51,9 @@ class EmbeddingsRequest(BaseModel):
 class EmbeddingsResponse(BaseModel):
     model: str
     embeddings: list[EmbeddingVector]
+
+
+class PetImageEmbeddingResponse(BaseModel):
+    vector: list[float]
+    model: str
+    cropType: str = "ORIGINAL_FALLBACK"
