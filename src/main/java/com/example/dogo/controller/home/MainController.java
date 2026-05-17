@@ -42,10 +42,4 @@ public class MainController {
     model.addAttribute("searchCategories", lostItemService.getSearchCategoryNames());
     return "index";
   }
-
-  @GetMapping("/guide")
-  public String guide(Model model) {
-    model.addAttribute("currentUri", "/guide");
-    return "guide/index";
-  }
 }
