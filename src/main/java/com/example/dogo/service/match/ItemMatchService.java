@@ -251,8 +251,10 @@ public class ItemMatchService {
 	@Transactional(readOnly = true)
 	public List<MatchCandidateView> getTopMatchesForNotification(User user) {
 		if (user == null) return List.of();
-		
-		return itemMatchRepository.findTop3ByLostItemUserUserNoAndMatchStatusOrderByFinalScoreDescMatchIdDesc(user.getUserNo(), "CANDIDATE")
+
+		// 읽음 여부와 상관없이 점수 상위 3개를 반환 → 종 아이콘 클릭 후 페이지를 이동해도 내용이 사라지지 않음
+		// (배지 숫자는 CANDIDATE 상태만 카운트하므로, 클릭 후에는 숫자는 사라지고 내용은 유지됨)
+		return itemMatchRepository.findTop3ByLostItemUserUserNoOrderByFinalScoreDescMatchIdDesc(user.getUserNo())
 				.stream()
 				.map(match -> {
 					FoundItem found = match.getFoundItem();
@@ -273,7 +275,7 @@ public class ItemMatchService {
 							foundStatusLabel(found.getStatus()),
 							imageUrl,
 							match.displayScore(),
-							List.of() // 알림창에서는 사유 제외
+							List.of() // 알림창에서는 매칭 사유 제외
 					);
 				})
 				.toList();
