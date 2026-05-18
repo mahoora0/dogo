@@ -50,6 +50,9 @@ public class User {
 	@Column(name = "REGDATE", nullable = false, updatable = false)
 	private java.time.LocalDateTime regDate;
 
+	@Column(name = "WITHDRAWN_AT")
+	private java.time.LocalDateTime withdrawnAt;
+
 	public User(String email, String nickname, String phone) {
 		this.email = email;
 		this.nickname = nickname;
@@ -85,6 +88,18 @@ public class User {
 
 	public void withdraw() {
 		this.status = "WITHDRAWN";
+		this.withdrawnAt = java.time.LocalDateTime.now();
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+		if ("WITHDRAWN".equals(status)) {
+			if (this.withdrawnAt == null) {
+				this.withdrawnAt = java.time.LocalDateTime.now();
+			}
+		} else {
+			this.withdrawnAt = null;
+		}
 	}
 
 	@PrePersist

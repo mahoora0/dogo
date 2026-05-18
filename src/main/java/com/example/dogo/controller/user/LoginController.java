@@ -91,6 +91,7 @@ public class LoginController {
 
     List<com.example.dogo.entity.item.LostItem> lostItems = lostItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
     List<com.example.dogo.entity.item.FoundItem> foundItems = foundItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
+    List<com.example.dogo.entity.Support.Inquiry> inquiries = inquiryRepository.findByUserOrderByRegdateDescInquiryIdDesc(user);
 
     List<RecentItemView> userActivities = new ArrayList<>();
 
@@ -129,6 +130,27 @@ public class LoginController {
           item.getStatus(),
           foundStatusLabel(item.getStatus()),
           imageUrl
+      ));
+    }
+
+    for (com.example.dogo.entity.Support.Inquiry inquiry : inquiries) {
+      String statusLabel = switch (inquiry.getStatus()) {
+        case "ANSWERED" -> "답변완료";
+        case "CHECKING" -> "검토중";
+        default -> "답변대기";
+      };
+
+      userActivities.add(new RecentItemView(
+          inquiry.getInquiryId(),
+          "INQUIRY",
+          "1:1 문의",
+          inquiry.getTitle(),
+          inquiry.getCategory(),
+          "고객센터",
+          inquiry.getRegdate() != null ? inquiry.getRegdate() : java.time.LocalDateTime.now(),
+          inquiry.getStatus(),
+          statusLabel,
+          "/images/noImageSize.png"
       ));
     }
 
@@ -183,35 +205,11 @@ public class LoginController {
   public String withdraw(@AuthenticationPrincipal CustomUserDetails userDetails,
                          HttpServletRequest request) throws Exception {
     com.example.dogo.entity.user.User user = userDetails.getUser();
-    
     com.example.dogo.entity.user.User dbUser = userRepository.findById(user.getUserNo()).orElseThrow();
     
-    // 소셜 연동 해제 (카카오/네이버 등)
-    oauth2Service.unlink(dbUser);
-
-    // 분실물/습득물 매칭 결과 삭제 → 분실물/습득물 삭제
-    itemMatchRepository.deleteByLostItemUser(dbUser);
-    itemMatchRepository.deleteByFoundItemUser(dbUser);
-    lostItemRepository.deleteByUser(dbUser);
-    foundItemRepository.deleteByUser(dbUser);
-
-    // 동물 신고 매칭 결과 삭제 → 동물 신고 삭제 (이미지/임베딩은 CASCADE)
-    animalReportMatchRepository.deleteByMissingReportUser(dbUser);
-    animalReportMatchRepository.deleteBySightingReportUser(dbUser);
-    animalReportRepository.deleteByUser(dbUser);
-
-    // 문의글 삭제
-    inquiryRepository.deleteByUser(dbUser);
-
-    // 채팅 메시지 → 채팅방 삭제
-    chatMessageRepository.deleteByParticipant(dbUser);
-    chatRoomRepository.deleteByParticipant(dbUser);
-
-    // 소셜 계정 연결 정보 삭제
-    userSocialAccountRepository.deleteByUser(dbUser);
-
-    // 계정 정보 완전 삭제 (Hard Delete)
-    userRepository.delete(dbUser);
+    // 즉시 하드 삭제하지 않고, 상태를 'WITHDRAWN'으로 전환하여 7일간 보존함 (7일 후 스케줄러가 하드 삭제)
+    dbUser.withdraw();
+    userRepository.save(dbUser);
     
     // 로그아웃 처리
     request.logout();

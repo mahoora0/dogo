@@ -24,6 +24,8 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
 
     void deleteByUser(com.example.dogo.entity.user.User user);
 
+    List<Inquiry> findByUserOrderByRegdateDescInquiryIdDesc(User user);
+
     // 사용자용 본인 글 조회
     Page<Inquiry> findByUserOrderByRegdateDescInquiryIdDesc(User user, Pageable pageable);
     Page<Inquiry> findByUserAndCategoryOrderByRegdateDescInquiryIdDesc(User user, String category, Pageable pageable);
