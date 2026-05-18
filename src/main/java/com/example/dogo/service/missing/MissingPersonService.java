@@ -91,6 +91,8 @@ public class MissingPersonService {
 			if (normalizedKeyword != null) {
 				String pattern = "%" + normalizedKeyword.toLowerCase(Locale.ROOT) + "%";
 				predicates.add(criteriaBuilder.or(
+						criteriaBuilder.like(criteriaBuilder.lower(root.get("personName")), pattern),
+						criteriaBuilder.like(criteriaBuilder.lower(root.get("gender")), pattern),
 						criteriaBuilder.like(criteriaBuilder.lower(root.get("nationality")), pattern),
 						criteriaBuilder.like(criteriaBuilder.lower(root.get("occurredPlace")), pattern),
 						criteriaBuilder.like(criteriaBuilder.lower(root.get("bodyType")), pattern),
@@ -184,10 +186,13 @@ public class MissingPersonService {
 
 	private User getOrCreateDevUser() {
 		return userRepository.findByEmail(DEV_USER_EMAIL)
-				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발용 사용자", "010-0000-0000")));
+				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발자 사용자", "010-0000-0000")));
 	}
 
 	private String summary(MissingPersonReport report) {
+		if (StringUtils.hasText(report.getPersonName())) {
+			return report.getPersonName() + " (" + report.getAge() + "세)";
+		}
 		return report.getAge() + "세 " + report.getNationality() + " 실종";
 	}
 
