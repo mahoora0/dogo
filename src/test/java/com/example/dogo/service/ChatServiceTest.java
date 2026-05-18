@@ -1,6 +1,7 @@
 package com.example.dogo.service;
 
 import com.example.dogo.dto.ChatMessageDto;
+import com.example.dogo.dto.ChatRoomDto;
 import com.example.dogo.entity.ChatRoom;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.entity.user.User;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -102,5 +104,64 @@ class ChatServiceTest {
         Transactional transactional = method.getAnnotation(Transactional.class);
 
         assertTrue(transactional != null && transactional.readOnly());
+    }
+
+    @Test
+    @DisplayName("채팅방 목록은 상대가 보낸 읽지 않은 메시지 수를 포함한다")
+    void getChatRoomsIncludesUnreadMessagesFromOtherParticipant() {
+        User user = mock(User.class);
+        User owner = mock(User.class);
+        User inquirer = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(user.getUserNo()).thenReturn(1L);
+        when(inquirer.getUserNo()).thenReturn(1L);
+        when(owner.getUserNo()).thenReturn(2L);
+        when(room.getInquirer()).thenReturn(inquirer);
+        when(room.getOwner()).thenReturn(owner);
+        when(chatRoomRepository.findByParticipant(user)).thenReturn(List.of(room));
+        when(chatMessageRepository.countByChatRoomAndSenderNotAndReadFalse(room, user)).thenReturn(3);
+        when(owner.getNickname()).thenReturn("상대방");
+
+        List<ChatRoomDto> rooms = chatService.getChatRooms(user);
+
+        assertEquals(3, rooms.get(0).getUnreadCount());
+    }
+
+    @Test
+    @DisplayName("전체 미확인 채팅 수는 참여 중인 모든 채팅방에서 상대 메시지만 합산한다")
+    void getUnreadCountSumsUnreadMessagesFromOtherParticipants() {
+        User user = mock(User.class);
+        ChatRoom room1 = mock(ChatRoom.class);
+        ChatRoom room2 = mock(ChatRoom.class);
+
+        when(chatRoomRepository.findByParticipant(user)).thenReturn(List.of(room1, room2));
+        when(chatMessageRepository.countByChatRoomInAndSenderNotAndReadFalse(List.of(room1, room2), user)).thenReturn(120);
+
+        assertEquals(120, chatService.getUnreadCount(user));
+    }
+
+    @Test
+    @DisplayName("읽지 않은 채팅이 없는 사용자는 전체 미확인 채팅 수가 0이다")
+    void getUnreadCountReturnsZeroWithoutChatRooms() {
+        User user = mock(User.class);
+
+        when(chatRoomRepository.findByParticipant(user)).thenReturn(List.of());
+
+        assertEquals(0, chatService.getUnreadCount(user));
+        verify(chatMessageRepository, never()).countByChatRoomInAndSenderNotAndReadFalse(any(), any());
+    }
+
+    @Test
+    @DisplayName("채팅방 메시지를 확인하면 상대가 보낸 메시지만 읽음 처리한다")
+    void markRoomMessagesAsReadMarksOnlyOtherParticipantMessages() {
+        User user = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(chatRoomRepository.findById(7L)).thenReturn(Optional.of(room));
+
+        chatService.markRoomMessagesAsRead(7L, user);
+
+        verify(chatMessageRepository).markRoomMessagesAsRead(room, user);
     }
 }

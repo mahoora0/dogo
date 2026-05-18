@@ -111,10 +111,20 @@ public class ChatService {
                     .otherParticipantNickname(other.getNickname())
                     .otherParticipantProfileImage(other.getProfileImageUrl())
                     .otherParticipantNo(other.getUserNo())
+                    .unreadCount(chatMessageRepository.countByChatRoomAndSenderNotAndReadFalse(room, user))
                     .itemId(itemId)
                     .itemType(type)
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public int getUnreadCount(User user) {
+        List<ChatRoom> rooms = chatRoomRepository.findByParticipant(user);
+        if (rooms.isEmpty()) {
+            return 0;
+        }
+        return chatMessageRepository.countByChatRoomInAndSenderNotAndReadFalse(rooms, user);
     }
 
     @Transactional(readOnly = true)
@@ -131,6 +141,12 @@ public class ChatService {
                 .createdAt(msg.getCreatedAt())
                 .clientMessageId(null)
                 .build()).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void markRoomMessagesAsRead(Long roomId, User reader) {
+        ChatRoom room = chatRoomRepository.findById(roomId).orElseThrow();
+        chatMessageRepository.markRoomMessagesAsRead(room, reader);
     }
 
     @Transactional(readOnly = true)

@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ChatTemplateJavascriptInlineTest {
 
     private static final Path TEMPLATE = Path.of("src/main/resources/templates/chat/index.html");
+    private static final Path LAYOUT = Path.of("src/main/resources/templates/layout/base.html");
     private static final Path CSS = Path.of("src/main/resources/static/css/chat.css");
 
     @Test
@@ -18,6 +19,17 @@ class ChatTemplateJavascriptInlineTest {
 
         assertThat(html).doesNotContain("/images/placeholder.png");
         assertThat(html).contains("/images/noImageSize.png");
+    }
+
+    @Test
+    void chatWaitingPanelUsesImageFallbacksBeforeRoomSelection() throws Exception {
+        String html = Files.readString(TEMPLATE);
+
+        assertThat(html).contains("id=\"item-info-img\" th:src=\"@{/images/noImageSize.png}\"");
+        assertThat(html).contains("id=\"participant-img\" th:src=\"@{/images/logoNoName.png}\"");
+        assertThat(html).contains("setImageWithFallback(document.getElementById('item-info-img'), room.itemThumbnail, DEFAULT_ITEM_IMAGE)");
+        assertThat(html).contains("setImageWithFallback(document.getElementById('participant-img'), room.otherParticipantProfileImage, DEFAULT_PROFILE_IMAGE)");
+        assertThat(html).contains("function setImageWithFallback(img, src, fallbackSrc)");
     }
 
     @Test
@@ -64,5 +76,16 @@ class ChatTemplateJavascriptInlineTest {
         assertThat(html).contains("fetch(`/chat/room/${currentRoomId}/messages`");
         assertThat(html).contains("method: 'POST'");
         assertThat(html).contains("savedMessage");
+    }
+
+    @Test
+    void chatUnreadBadgesCapCountsOverNinetyNine() throws Exception {
+        String chat = Files.readString(TEMPLATE);
+        String layout = Files.readString(LAYOUT);
+
+        assertThat(chat).contains("room.unreadCount > 99 ? '99+' : room.unreadCount");
+        assertThat(layout).contains("unreadChatCount > 99 ? '99+' : unreadChatCount");
+        assertThat(layout).contains("th:if=\"${unreadChatCount != null && unreadChatCount > 0}\"");
+        assertThat(layout).contains("class=\"notification-badge chat-notification-badge\"");
     }
 }

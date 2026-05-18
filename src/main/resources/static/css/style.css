@@ -624,3 +624,8 @@ textarea {
     border-radius: 999px;
     padding: 2px 5px;
 }
+
+.chat-notification-badge {
+    min-width: 16px;
+    text-align: center;
+}
