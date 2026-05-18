@@ -16,7 +16,8 @@ logger = get_logger("clip_embedding")
 
 CLIP_MODEL_NAME = os.getenv("CLIP_MODEL_NAME", "AvitoTech/Zer0int-CLIP-L-for-animal-identification")
 CLIP_PROCESSOR_NAME = os.getenv("CLIP_PROCESSOR_NAME", "zer0int/CLIP-GmP-ViT-L-14")
-CLIP_MODEL_BACKEND = os.getenv("CLIP_MODEL_BACKEND", "torch").strip().lower()
+CLIP_ONNX_ENABLED = os.getenv("CLIP_ONNX_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+CLIP_MODEL_BACKEND = os.getenv("CLIP_MODEL_BACKEND", "onnx-int8" if CLIP_ONNX_ENABLED else "torch").strip().lower()
 CLIP_ONNX_MODEL_PATH = os.getenv("CLIP_ONNX_MODEL_PATH", ".onnx/pet-image/pet-image-qint8.onnx")
 CLIP_EMBEDDING_MODEL_NAME = os.getenv(
     "CLIP_EMBEDDING_MODEL_NAME",

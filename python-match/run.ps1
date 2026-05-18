@@ -2,13 +2,13 @@ $env:MATCH_MODEL_BACKEND = "onnx"
 $env:MATCH_ONNX_SAVE_DIR = ".onnx\kosimcse"
 $env:MATCH_ONNX_FILE_NAME = "model_int8.onnx"
 
-if (-not $env:CLIP_MODEL_BACKEND) {
-    $env:CLIP_MODEL_BACKEND = "onnx-int8"
+if (-not $env:CLIP_ONNX_ENABLED) {
+    $env:CLIP_ONNX_ENABLED = "false"
 }
 if (-not $env:CLIP_ONNX_MODEL_PATH) {
     $env:CLIP_ONNX_MODEL_PATH = ".onnx\pet-image\pet-image-qint8.onnx"
 }
-if (-not $env:CLIP_EMBEDDING_MODEL_NAME) {
+if (-not $env:CLIP_EMBEDDING_MODEL_NAME -and $env:CLIP_ONNX_ENABLED -in @("1", "true", "yes", "on")) {
     $env:CLIP_EMBEDDING_MODEL_NAME = "AvitoTech/Zer0int-CLIP-L-for-animal-identification:onnx-int8"
 }
 
