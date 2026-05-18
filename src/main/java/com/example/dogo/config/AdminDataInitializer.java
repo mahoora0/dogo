@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
@@ -27,6 +28,11 @@ public class AdminDataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        if (!StringUtils.hasText(adminPassword)) {
+            log.warn("admin.password가 비어 있어 관리자 계정 자동 생성을 건너뜁니다.");
+            return;
+        }
+
         // 이미 해당 아이디의 계정이 존재하는지 확인
         if (userRepository.findByLoginId(adminId).isPresent()) {
             log.info("관리자 계정('{}')이 이미 존재합니다. 자동 생성을 건너뜁니다.", adminId);

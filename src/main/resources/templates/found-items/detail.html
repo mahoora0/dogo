@@ -175,7 +175,12 @@
         </div>
 
         <!-- Sticky Bottom CTA (Mobile) / Regular CTA (Desktop) -->
-        <div class="mt-4 flex flex-col sm:flex-row gap-3">
+        <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <div th:if="${chatError}"
+               th:text="${chatError}"
+               class="sm:col-span-2 w-full rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+            채팅 신청이 불가능합니다.
+          </div>
           <form th:action="@{/chat/room}" method="post" class="flex-1">
             <input type="hidden" name="itemId" th:value="${foundItem.id}">
             <input type="hidden" name="itemType" value="FOUND">

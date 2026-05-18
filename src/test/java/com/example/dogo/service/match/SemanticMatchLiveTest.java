@@ -3,6 +3,7 @@ package com.example.dogo.service.match;
 import com.example.dogo.entity.item.ItemMatch;
 import com.example.dogo.repository.item.ItemMatchRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
@@ -19,6 +20,7 @@ import java.util.List;
  * 실행: .\gradlew.bat test --tests "*.SemanticMatchLiveTest" -PuseMysql
  */
 @SpringBootTest
+@EnabledIfSystemProperty(named = "useMysql", matches = "true")
 @TestPropertySource(properties = {
         "spring.datasource.url=jdbc:mysql://localhost:3306/dogo?createDatabaseIfNotExist=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8",
         "spring.datasource.username=root",

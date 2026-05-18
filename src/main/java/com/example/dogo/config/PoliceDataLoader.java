@@ -4,6 +4,7 @@ import com.example.dogo.entity.area.PoliceStation;
 import com.example.dogo.repository.area.PoliceStationRepository;
 import com.opencsv.CSVReader;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import java.io.InputStreamReader;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PoliceDataLoader implements CommandLineRunner {
 
   private final PoliceStationRepository repository;
@@ -62,6 +64,6 @@ public class PoliceDataLoader implements CommandLineRunner {
     }
 
     reader.close();
-    System.out.println("경찰관서 데이터 저장 완료");
+    log.info("경찰관서 데이터 저장 완료");
   }
 }

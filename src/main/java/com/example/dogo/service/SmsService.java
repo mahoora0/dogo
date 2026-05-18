@@ -4,6 +4,7 @@ import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class SmsService {
 
     @Value("${twilio.account-sid}")
@@ -51,11 +53,8 @@ public class SmsService {
         // Save code for 5 minutes
         verificationCodes.put(toPhoneNumber, new VerificationInfo(code, TimeUnit.MINUTES.toMillis(5)));
 
-        // [DEVELOPMENT MODE] Log to console instead of sending real SMS
-        System.out.println("\n[SMS Verification]");
-        System.out.println("To: " + toPhoneNumber);
-        System.out.println("Verification Code: [" + code + "]");
-        System.out.println("==================\n");
+        // [DEVELOPMENT MODE] Log instead of sending real SMS
+        log.info("[SMS Verification] to={}, code={}", toPhoneNumber, code);
 
         /* Twilio sending logic commented out for development
         String formattedNumber = formatToE164(toPhoneNumber);

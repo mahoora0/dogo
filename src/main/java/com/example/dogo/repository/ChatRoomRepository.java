@@ -1,7 +1,7 @@
 package com.example.dogo.repository;
 
 import com.example.dogo.entity.ChatRoom;
-import com.example.dogo.entity.User;
+import com.example.dogo.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
