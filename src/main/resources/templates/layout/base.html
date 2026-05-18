@@ -164,6 +164,9 @@
           <div class="category">
             <h3>실종자</h3>
             <ul>
+              <li th:classappend="${currentUri == '/missing-alerts' ? 'active' : ''}">
+                <a th:href="@{/missing-alerts}"><span class="sidebar-icon sidebar-icon--missing-alert"></span>실종 경보</a>
+              </li>
               <li th:classappend="${currentUri == '/missing-persons' ? 'active' : ''}">
                 <a th:href="@{/missing-persons}"><span class="sidebar-icon sidebar-icon--person-search"></span>실종자 검색</a>
               </li>
