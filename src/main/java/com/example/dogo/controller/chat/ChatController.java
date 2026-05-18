@@ -59,7 +59,11 @@ public class ChatController {
 
     @GetMapping("/chat/room/{roomId}/messages")
     @ResponseBody
-    public List<ChatMessageDto> getMessages(@PathVariable Long roomId) {
+    public List<ChatMessageDto> getMessages(@PathVariable Long roomId,
+                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails != null) {
+            chatService.markRoomMessagesAsRead(roomId, userDetails.getUser());
+        }
         return chatService.getChatMessages(roomId);
     }
 

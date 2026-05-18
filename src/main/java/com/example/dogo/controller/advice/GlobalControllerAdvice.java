@@ -2,6 +2,7 @@ package com.example.dogo.controller.advice;
 
 import com.example.dogo.dto.match.MatchCandidateView;
 import com.example.dogo.security.CustomUserDetails;
+import com.example.dogo.service.ChatService;
 import com.example.dogo.service.item.LostItemService;
 import com.example.dogo.service.match.ItemMatchService;
 
@@ -19,6 +20,7 @@ public class GlobalControllerAdvice {
 
     private final ItemMatchService itemMatchService;
     private final LostItemService lostItemService;
+    private final ChatService chatService;
 
     @ModelAttribute
     public void addAttributes(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -50,8 +52,7 @@ public class GlobalControllerAdvice {
             // 4. [TODO] 채팅 읽지 않은 알림 수
             //    채팅방 구현 완료 후 여기서 실제 DB 조회로 교체 예정
             //    현재는 0으로 고정 (채팅 배지 비표시)
-            // int unreadChatCount = chatService.getUnreadCount(userDetails.getUser());
-            model.addAttribute("unreadChatCount", 0);
+            model.addAttribute("unreadChatCount", chatService.getUnreadCount(userDetails.getUser()));
         }
     }
 }

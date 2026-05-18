@@ -36,6 +36,9 @@ public class ChatMessage {
     @Column(name = "CREATED_AT", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "IS_READ", nullable = false)
+    private boolean read = false;
+
     public enum MessageType {
         ENTER, TALK
     }

@@ -108,6 +108,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
               </svg>
               <span class="chat-text">채팅</span>
+              <span th:if="${unreadChatCount != null && unreadChatCount > 0}"
+                    th:text="${unreadChatCount > 99 ? '99+' : unreadChatCount}"
+                    class="notification-badge chat-notification-badge">0</span>
             </a>
             <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="profile-link">
               <img th:if="${#authentication.principal.user.profileImageUrl != null}"
@@ -161,6 +164,9 @@
           <div class="category">
             <h3>실종자</h3>
             <ul>
+              <li th:classappend="${currentUri == '/missing-alerts' ? 'active' : ''}">
+                <a th:href="@{/missing-alerts}"><span class="sidebar-icon sidebar-icon--missing-alert"></span>실종 경보</a>
+              </li>
               <li th:classappend="${currentUri == '/missing-persons' ? 'active' : ''}">
                 <a th:href="@{/missing-persons}"><span class="sidebar-icon sidebar-icon--person-search"></span>실종자 검색</a>
               </li>

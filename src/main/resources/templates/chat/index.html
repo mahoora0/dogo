@@ -30,7 +30,7 @@
                                 <div class="chat-room-last-msg" th:text="${room.lastMessage}">마지막 메시지 내용</div>
                                 <div th:if="${room.unreadCount != null && room.unreadCount > 0}" 
                                      class="chat-room-unread" 
-                                     th:text="${room.unreadCount}">2</div>
+                                     th:text="${room.unreadCount > 99 ? '99+' : room.unreadCount}">2</div>
                             </div>
                         </div>
                     </div>
@@ -81,7 +81,7 @@
                 </div>
 
                 <div class="item-card">
-                    <img id="item-info-img" src="" class="item-img" alt="">
+                    <img id="item-info-img" th:src="@{/images/noImageSize.png}" class="item-img" alt="">
                     <div class="item-details">
                         <div class="chat-item-title-row">
                             <h4 id="item-info-title" class="item-title">아이템 제목</h4>
@@ -97,7 +97,7 @@
                 <div class="mt-4">
                     <h5 class="text-xs font-bold text-slate-400 mb-2">대화 중인 사용자</h5>
                     <div class="participant-info mb-4">
-                        <img id="participant-img" src="" class="participant-avatar" alt="">
+                        <img id="participant-img" th:src="@{/images/logoNoName.png}" class="participant-avatar" alt="">
                         <div>
                             <div id="participant-name" class="font-bold text-sm">상대방 이름</div>
                             <div class="text-[10px] text-slate-400">습득자</div>
@@ -150,9 +150,9 @@
                 
                 document.getElementById('current-room-name').innerText = room.itemTitle;
                 document.getElementById('item-info-title').innerText = room.itemTitle;
-                document.getElementById('item-info-img').src = room.itemThumbnail || DEFAULT_ITEM_IMAGE;
+                setImageWithFallback(document.getElementById('item-info-img'), room.itemThumbnail, DEFAULT_ITEM_IMAGE);
                 document.getElementById('participant-name').innerText = room.otherParticipantNickname;
-                document.getElementById('participant-img').src = room.otherParticipantProfileImage || DEFAULT_PROFILE_IMAGE;
+                setImageWithFallback(document.getElementById('participant-img'), room.otherParticipantProfileImage, DEFAULT_PROFILE_IMAGE);
 
                 // Load Messages
                 fetch(`/chat/room/${roomId}/messages`)
@@ -274,6 +274,16 @@
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#39;');
+            }
+
+            function setImageWithFallback(img, src, fallbackSrc) {
+                img.onerror = function () {
+                    if (img.src.endsWith(fallbackSrc)) {
+                        return;
+                    }
+                    img.src = fallbackSrc;
+                };
+                img.src = src || fallbackSrc;
             }
 
             connect();

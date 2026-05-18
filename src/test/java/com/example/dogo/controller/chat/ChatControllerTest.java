@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -90,5 +92,27 @@ class ChatControllerTest {
         assertThat(response).isEqualTo(saved);
         verify(messagingTemplate).convertAndSend("/sub/chat/room/7", saved);
         verify(messagingTemplate).convertAndSend(eq("/sub/users/2/messages"), eq(saved));
+    }
+
+    @Test
+    @DisplayName("채팅방 메시지 조회 시 현재 사용자의 상대 메시지를 읽음 처리한다")
+    void getMessagesMarksRoomMessagesAsReadForCurrentUser() {
+        User user = new User("reader@example.com", "읽는사람", "010-0000-0000");
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+        List<com.example.dogo.dto.ChatMessageDto> messages = List.of(
+                com.example.dogo.dto.ChatMessageDto.builder()
+                        .roomId(7L)
+                        .senderNo(2L)
+                        .content("새 메시지")
+                        .type("TALK")
+                        .build()
+        );
+
+        when(chatService.getChatMessages(7L)).thenReturn(messages);
+
+        List<com.example.dogo.dto.ChatMessageDto> response = controller.getMessages(7L, userDetails);
+
+        assertThat(response).isEqualTo(messages);
+        verify(chatService).markRoomMessagesAsRead(7L, user);
     }
 }
