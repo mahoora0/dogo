@@ -4,6 +4,7 @@ import os
 import tempfile
 import time
 from functools import lru_cache
+from pathlib import Path
 
 import torch
 from PIL import Image
@@ -15,6 +16,12 @@ logger = get_logger("clip_embedding")
 
 CLIP_MODEL_NAME = os.getenv("CLIP_MODEL_NAME", "AvitoTech/Zer0int-CLIP-L-for-animal-identification")
 CLIP_PROCESSOR_NAME = os.getenv("CLIP_PROCESSOR_NAME", "zer0int/CLIP-GmP-ViT-L-14")
+CLIP_MODEL_BACKEND = os.getenv("CLIP_MODEL_BACKEND", "torch").strip().lower()
+CLIP_ONNX_MODEL_PATH = os.getenv("CLIP_ONNX_MODEL_PATH", ".onnx/pet-image/pet-image-qint8.onnx")
+CLIP_EMBEDDING_MODEL_NAME = os.getenv(
+    "CLIP_EMBEDDING_MODEL_NAME",
+    f"{CLIP_MODEL_NAME}:{CLIP_MODEL_BACKEND}" if CLIP_MODEL_BACKEND != "torch" else CLIP_MODEL_NAME,
+)
 CLIP_TRUST_REMOTE_CODE = os.getenv("CLIP_TRUST_REMOTE_CODE", "false").strip().lower() in {"1", "true", "yes", "on"}
 PET_CROP_ENABLED = os.getenv("PET_CROP_ENABLED", "true").strip().lower() in {"1", "true", "yes", "on"}
 PET_CROP_YOLO_MODEL = os.getenv("PET_CROP_YOLO_MODEL", "yolo11n.pt")
@@ -34,8 +41,18 @@ def _load_clip_model():
     logger.info(f"CLIP 모델 로딩 중: model={CLIP_MODEL_NAME}, processor={CLIP_PROCESSOR_NAME}")
     t0 = time.perf_counter()
     processor = AutoProcessor.from_pretrained(CLIP_PROCESSOR_NAME)
-    model = AutoModel.from_pretrained(CLIP_MODEL_NAME, trust_remote_code=CLIP_TRUST_REMOTE_CODE)
-    model.eval()
+    if CLIP_MODEL_BACKEND in {"onnx", "onnx-int8"}:
+        import onnxruntime as ort
+
+        onnx_path = Path(CLIP_ONNX_MODEL_PATH)
+        if not onnx_path.exists():
+            raise FileNotFoundError(f"CLIP ONNX model not found: {onnx_path}")
+        model = ort.InferenceSession(str(onnx_path), providers=["CPUExecutionProvider"])
+    elif CLIP_MODEL_BACKEND == "torch":
+        model = AutoModel.from_pretrained(CLIP_MODEL_NAME, trust_remote_code=CLIP_TRUST_REMOTE_CODE)
+        model.eval()
+    else:
+        raise ValueError(f"Unsupported CLIP_MODEL_BACKEND: {CLIP_MODEL_BACKEND}")
     # warmup
     dummy = Image.new("RGB", (224, 224))
     inputs = processor(images=dummy, return_tensors="pt")
@@ -43,6 +60,7 @@ def _load_clip_model():
         _extract_image_features(model, inputs)
     elapsed = time.perf_counter() - t0
     logger.info(f"CLIP 모델 로딩 완료 ({elapsed:.1f}s)")
+    logger.info(f"CLIP backend ready: backend={CLIP_MODEL_BACKEND}, embeddingModel={CLIP_EMBEDDING_MODEL_NAME}")
     return model, processor
 
 
@@ -57,7 +75,7 @@ def encode_image(image_bytes: bytes, animal_type: str | None = None) -> tuple[li
         features = features / features.norm(dim=-1, keepdim=True)
     elapsed = (time.perf_counter() - t0) * 1000
     logger.debug(f"CLIP 인코딩 완료 ({elapsed:.1f}ms, cropType={crop_type})")
-    return features[0].tolist(), CLIP_MODEL_NAME, crop_type
+    return features[0].tolist(), CLIP_EMBEDDING_MODEL_NAME, crop_type
 
 
 def encode_images(image_items: list[tuple[bytes, str | None]]) -> tuple[list[list[float]], str, list[str]]:
@@ -83,7 +101,7 @@ def encode_images(image_items: list[tuple[bytes, str | None]]) -> tuple[list[lis
         (t_encode - t_preprocess) * 1000,
         (t_encode - t0) * 1000,
     )
-    return features.tolist(), CLIP_MODEL_NAME, crop_types
+    return features.tolist(), CLIP_EMBEDDING_MODEL_NAME, crop_types
 
 
 def crop_pet(image: Image.Image, animal_type: str | None = None) -> tuple[Image.Image, str]:
@@ -126,6 +144,10 @@ def crop_pets(images: list[Image.Image], animal_types: list[str | None]) -> tupl
 
 
 def _extract_image_features(model, inputs):
+    if hasattr(model, "run") and hasattr(model, "get_inputs"):
+        pixel_values = inputs["pixel_values"].detach().cpu().numpy()
+        return torch.from_numpy(model.run(None, {"pixel_values": pixel_values})[0])
+
     if hasattr(model, "get_image_features"):
         return model.get_image_features(**inputs)
 
