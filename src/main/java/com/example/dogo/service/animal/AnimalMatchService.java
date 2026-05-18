@@ -42,11 +42,18 @@ public class AnimalMatchService {
 
 	@Transactional
 	public void matchForReport(AnimalReport report) {
+		clearMatchesForReport(report.getReportId());
 		if (report.getReportType().equals("MISSING")) {
 			matchMissing(report);
 		} else {
 			matchSighting(report);
 		}
+	}
+
+	private void clearMatchesForReport(Long reportId) {
+		matchRepository.deleteByMissingReport_ReportId(reportId);
+		matchRepository.deleteBySightingReport_ReportId(reportId);
+		matchRepository.flush();
 	}
 
 	private void matchMissing(AnimalReport missing) {

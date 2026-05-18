@@ -189,14 +189,58 @@ public class AnimalReportController {
 	@GetMapping("/animal-reports/{id}")
 	public String detail(@PathVariable Long id,
 						 @RequestParam(defaultValue = "false") boolean created,
+						 @RequestParam(defaultValue = "false") boolean rematching,
+						 @AuthenticationPrincipal CustomUserDetails userDetails,
 						 Model model) {
 		var report = animalReportService.getDetail(id);
 		var matchCandidates = animalReportService.getMatchCandidates(id, report.reportType());
+		Long currentUserNo = userDetails != null ? userDetails.getUser().getUserNo() : null;
+		boolean matchingInProgress = (created || rematching) && matchCandidates.isEmpty();
 		model.addAttribute("report", report);
 		model.addAttribute("matchCandidates", matchCandidates);
-		model.addAttribute("matchingInProgress", created && matchCandidates.isEmpty());
+		model.addAttribute("matchingInProgress", matchingInProgress);
 		model.addAttribute("currentUri", "/animal-reports");
+		model.addAttribute("isOwner", currentUserNo != null && currentUserNo.equals(report.userNo()));
 		return "animal-reports/detail";
+	}
+
+	@GetMapping("/animal-reports/{id}/edit")
+	public String editForm(@PathVariable Long id,
+						   @AuthenticationPrincipal CustomUserDetails userDetails,
+						   Model model) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			model.addAttribute("editData", animalReportService.getForEdit(id, userDetails.getUser()));
+			model.addAttribute("currentUri", "/animal-reports");
+			return "animal-reports/edit";
+		} catch (IllegalArgumentException e) {
+			model.addAttribute("message", e.getMessage());
+			return "animal-reports/error";
+		}
+	}
+
+	@PostMapping("/animal-reports/{id}/edit")
+	public String edit(@PathVariable Long id,
+					   @ModelAttribute("request") AnimalReportCreateRequest request,
+					   @AuthenticationPrincipal CustomUserDetails userDetails,
+					   Model model) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			animalReportService.update(id, request, userDetails.getUser());
+			return "redirect:/animal-reports/" + id + "?rematching=true";
+		} catch (IllegalArgumentException e) {
+			try {
+				model.addAttribute("editData", animalReportService.getForEdit(id, userDetails.getUser()));
+			} catch (Exception ignored) {
+			}
+			model.addAttribute("errorMessage", e.getMessage());
+			model.addAttribute("currentUri", "/animal-reports");
+			return "animal-reports/edit";
+		}
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)

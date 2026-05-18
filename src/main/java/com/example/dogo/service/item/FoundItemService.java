@@ -2,6 +2,7 @@ package com.example.dogo.service.item;
 
 import com.example.dogo.dto.item.FoundItemCreateRequest;
 import com.example.dogo.dto.item.FoundItemDetailView;
+import com.example.dogo.dto.item.FoundItemEditData;
 import com.example.dogo.dto.item.FoundItemView;
 import com.example.dogo.dto.match.MatchCandidateView;
 import com.example.dogo.dto.item.RecentItemView;
@@ -197,8 +198,90 @@ public class FoundItemService {
 				foundItem.getContent(),
 				foundItem.getContact(),
 				foundItem.getColorName(),
+				imageUrls,
+				foundItem.getUser() != null ? foundItem.getUser().getUserNo() : null
+		);
+	}
+
+	@Transactional(readOnly = true)
+	public FoundItemEditData getForEdit(Long id, User loginUser) {
+		FoundItem item = foundItemRepository.findById(id)
+				.filter(i -> !i.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("습득물 게시글을 찾을 수 없습니다."));
+		checkOwnership(item, loginUser);
+
+		List<String> imageUrls = foundItemImageRepository.findByFoundItemOrderBySortOrderAscImageIdAsc(item).stream()
+				.map(FoundItemImage::getImageUrl)
+				.toList();
+
+		String area = defaultText(item.getFoundArea(), "");
+		String[] parts = area.split(" ", 2);
+		String province = parts.length > 0 ? parts[0] : "";
+		String district = parts.length > 1 ? parts[1] : "";
+
+		return new FoundItemEditData(
+				item.getFoundId(),
+				item.getTitle(),
+				item.getItemName(),
+				item.getCategoryMain(),
+				item.getCategorySub(),
+				item.getColorName(),
+				item.getFoundAt(),
+				province,
+				district,
+				item.getFoundPlace(),
+				item.getKeepPlace(),
+				item.getContent(),
 				imageUrls
 		);
+	}
+
+	@Transactional
+	public void update(Long id, FoundItemCreateRequest request, User loginUser) {
+		validateCreateRequest(request);
+		FoundItem item = foundItemRepository.findById(id)
+				.filter(i -> !i.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("습득물 게시글을 찾을 수 없습니다."));
+		checkOwnership(item, loginUser);
+
+		item.update(
+				defaultText(request.getTitle(), request.getItemName()),
+				blankToNull(request.getContent()),
+				request.getItemName(),
+				request.getCategoryMain(),
+				blankToNull(request.getCategorySub()),
+				blankToNull(request.getColorName()),
+				defaultFoundAt(request.getFoundAt()),
+				normalizedArea(request.getFoundAreaProvince(), request.getFoundAreaDistrict(), request.getFoundArea()),
+				blankToNull(request.getFoundPlace()),
+				blankToNull(request.getKeepPlace())
+		);
+
+		List<MultipartFile> newImages = request.getUploadImages();
+		if (!newImages.isEmpty()) {
+			List<FoundItemImage> oldImages = foundItemImageRepository.findByFoundItemOrderBySortOrderAscImageIdAsc(item);
+			for (FoundItemImage old : oldImages) {
+				try {
+					Files.deleteIfExists(foundItemUploadPath.resolve(old.getStoredName()));
+				} catch (IOException ignored) {
+				}
+			}
+			foundItemImageRepository.deleteAll(oldImages);
+			saveImages(item, newImages);
+		}
+
+		itemMatchService.clearMatchesForFoundItem(item.getFoundId());
+		eventPublisher.publishEvent(new FoundItemEmbeddingRequestedEvent(item.getFoundId()));
+		eventPublisher.publishEvent(new FoundItemMatchRequestedEvent(item.getFoundId()));
+	}
+
+	private void checkOwnership(FoundItem item, User loginUser) {
+		if (!"USER".equals(item.getSourceType())) {
+			throw new IllegalArgumentException("수정 권한이 없습니다.");
+		}
+		if (loginUser == null || item.getUser() == null || !item.getUser().getUserNo().equals(loginUser.getUserNo())) {
+			throw new IllegalArgumentException("수정 권한이 없습니다.");
+		}
 	}
 
 	@Transactional

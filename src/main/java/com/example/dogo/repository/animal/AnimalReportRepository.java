@@ -40,4 +40,5 @@ public interface AnimalReportRepository extends JpaRepository<AnimalReport, Long
 			@Param("from") LocalDate from,
 			@Param("to") LocalDate to
 	);
+	List<AnimalReport> findByDeletedFalseOrderByRegdateDesc();
 }

@@ -2,14 +2,21 @@ package com.example.dogo.controller.item;
 
 import com.example.dogo.dto.item.LostItemCreateRequest;
 import com.example.dogo.dto.item.LostItemDetailView;
+import com.example.dogo.dto.item.LostItemEditData;
 import com.example.dogo.dto.item.LostItemView;
+import com.example.dogo.entity.user.User;
+import com.example.dogo.security.CustomUserDetails;
 import com.example.dogo.service.item.LostItemService;
 import com.example.dogo.service.item.RegistrationOptionService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -44,6 +51,11 @@ class LostItemControllerTest {
 		mockMvc = MockMvcBuilders.standaloneSetup(new LostItemController(lostItemService, registrationOptionService))
 				.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
 				.build();
+	}
+
+	@AfterEach
+	void tearDown() {
+		SecurityContextHolder.clearContext();
 	}
 
 	@Test
@@ -121,7 +133,8 @@ class LostItemControllerTest {
 				"블랙(검정)",
 				"카드가 들어있습니다",
 				"010-1234-5678",
-				List.of("/uploads/lost-items/wallet.jpg")
+				List.of("/uploads/lost-items/wallet.jpg"),
+				42L
 		);
 		when(lostItemService.getDetail(7L)).thenReturn(detail);
 
@@ -131,5 +144,71 @@ class LostItemControllerTest {
 				.andExpect(model().attribute("lostItem", detail));
 
 		verify(lostItemService).getDetail(7L);
+	}
+
+	@Test
+	void editFormRedirectsToLoginWhenUnauthenticated() throws Exception {
+		mockMvc.perform(get("/lost-items/7/edit"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/login"));
+	}
+
+	@Test
+	void editFormShowsEditViewForOwner() throws Exception {
+		authenticateAs(owner());
+		LostItemEditData editData = new LostItemEditData(7L, "제목", "지갑", "지갑", null, "검정",
+				null, "서울특별시", "강남구", "강남역", "010-1234-5678", null, List.of());
+		when(lostItemService.getForEdit(eq(7L), any())).thenReturn(editData);
+
+		mockMvc.perform(get("/lost-items/7/edit"))
+				.andExpect(status().isOk())
+				.andExpect(view().name("lost-items/edit"))
+				.andExpect(model().attribute("editData", editData));
+	}
+
+	@Test
+	void editFormShowsErrorWhenNotOwner() throws Exception {
+		authenticateAs(owner());
+		when(lostItemService.getForEdit(eq(7L), any()))
+				.thenThrow(new IllegalArgumentException("수정 권한이 없습니다."));
+
+		mockMvc.perform(get("/lost-items/7/edit"))
+				.andExpect(status().isOk())
+				.andExpect(view().name("lost-items/error"))
+				.andExpect(model().attribute("message", "수정 권한이 없습니다."));
+	}
+
+	@Test
+	void editRedirectsToLoginWhenUnauthenticated() throws Exception {
+		mockMvc.perform(post("/lost-items/7/edit")
+						.param("itemName", "지갑")
+						.param("lostPlace", "강남역"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/login"));
+	}
+
+	@Test
+	void editRedirectsToDetailOnSuccess() throws Exception {
+		authenticateAs(owner());
+
+		mockMvc.perform(post("/lost-items/7/edit")
+						.param("itemName", "지갑")
+						.param("lostPlace", "강남역"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/lost-items/7?rematching=true"));
+
+		verify(lostItemService).update(eq(7L), any(), any());
+	}
+
+	private User owner() {
+		User user = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(user, "userNo", 1L);
+		return user;
+	}
+
+	private void authenticateAs(User user) {
+		CustomUserDetails details = new CustomUserDetails(user);
+		SecurityContextHolder.getContext().setAuthentication(
+				new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities()));
 	}
 }

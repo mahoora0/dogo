@@ -48,4 +48,8 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long>, Jpa
 	List<FoundItem> findByUserAndDeletedFalseOrderByRegDateDesc(com.example.dogo.entity.user.User user);
 
 	List<FoundItem> findByDeletedFalseOrderByFoundAtDescFoundIdDesc(Pageable pageable);
+
+	List<FoundItem> findByDeletedFalseOrderByRegDateDesc();
+
+	List<FoundItem> findBySourceTypeAndDeletedFalseOrderByRegDateDesc(String sourceType);
 }

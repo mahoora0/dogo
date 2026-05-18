@@ -143,12 +143,55 @@ public class FoundItemController {
 	@GetMapping("/found-items/{id}")
 	public String detail(@PathVariable Long id,
 						 @RequestParam(defaultValue = "false") boolean created,
+						 @RequestParam(defaultValue = "false") boolean rematching,
+						 @AuthenticationPrincipal CustomUserDetails userDetails,
 						 Model model) {
+		var foundItem = foundItemService.getDetail(id);
 		var matchCandidates = foundItemService.getMatchCandidates(id);
-		model.addAttribute("foundItem", foundItemService.getDetail(id));
+		Long currentUserNo = userDetails != null ? userDetails.getUser().getUserNo() : null;
+		boolean matchingInProgress = (created || rematching) && matchCandidates.isEmpty();
+		model.addAttribute("foundItem", foundItem);
 		model.addAttribute("matchCandidates", matchCandidates);
-		model.addAttribute("matchingInProgress", created && matchCandidates.isEmpty());
+		model.addAttribute("matchingInProgress", matchingInProgress);
+		model.addAttribute("isOwner", currentUserNo != null && currentUserNo.equals(foundItem.userNo()));
 		return "found-items/detail";
+	}
+
+	@GetMapping("/found-items/{id}/edit")
+	public String editForm(@PathVariable Long id,
+						   @AuthenticationPrincipal CustomUserDetails userDetails,
+						   Model model) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			model.addAttribute("editData", foundItemService.getForEdit(id, userDetails.getUser()));
+			return "found-items/edit";
+		} catch (IllegalArgumentException e) {
+			model.addAttribute("message", e.getMessage());
+			return "found-items/error";
+		}
+	}
+
+	@PostMapping("/found-items/{id}/edit")
+	public String edit(@PathVariable Long id,
+					   @ModelAttribute("request") FoundItemCreateRequest request,
+					   @AuthenticationPrincipal CustomUserDetails userDetails,
+					   Model model) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			foundItemService.update(id, request, userDetails.getUser());
+			return "redirect:/found-items/" + id + "?rematching=true";
+		} catch (IllegalArgumentException e) {
+			try {
+				model.addAttribute("editData", foundItemService.getForEdit(id, userDetails.getUser()));
+			} catch (Exception ignored) {
+			}
+			model.addAttribute("errorMessage", e.getMessage());
+			return "found-items/edit";
+		}
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)

@@ -17,6 +17,7 @@ public record FoundItemDetailView(
 		String description,
 		String contact,
 		String colorName,
-		List<String> imageUrls
+		List<String> imageUrls,
+		Long userNo
 ) {
 }

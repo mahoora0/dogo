@@ -178,6 +178,95 @@ class FoundItemServiceTest {
 		verify(foundItemRepository, never()).save(any());
 	}
 
+	@Test
+	void getForEditThrowsForPoliceSourcedItem() {
+		FoundItem policeItem = FoundItem.fromPolice("FD001", null, "경찰 습득물", null,
+				"지갑", "지갑", null, null,
+				LocalDateTime.of(2026, 5, 8, 12, 0), "서울", "강남역", "강남경찰서", null, null, null, "KEEPING");
+		ReflectionTestUtils.setField(policeItem, "foundId", 6L);
+		when(foundItemRepository.findById(6L)).thenReturn(Optional.of(policeItem));
+
+		User loginUser = new User("user@dogo.local", "사용자", "010-0000-0001");
+		ReflectionTestUtils.setField(loginUser, "userNo", 1L);
+
+		assertThatThrownBy(() -> foundItemService.getForEdit(6L, loginUser))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("수정 권한이 없습니다.");
+	}
+
+	@Test
+	void getForEditThrowsWhenOwnershipMismatch() {
+		FoundItem item = foundItemWithOwner(7L, 1L, "서울특별시 강남구");
+		when(foundItemRepository.findById(7L)).thenReturn(Optional.of(item));
+
+		User otherUser = new User("other@dogo.local", "다른사용자", "010-9999-9999");
+		ReflectionTestUtils.setField(otherUser, "userNo", 2L);
+
+		assertThatThrownBy(() -> foundItemService.getForEdit(7L, otherUser))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("수정 권한이 없습니다.");
+	}
+
+	@Test
+	void getForEditSplitsAreaAndReturnsEditData() {
+		FoundItem item = foundItemWithOwner(8L, 1L, "서울특별시 강남구");
+		when(foundItemRepository.findById(8L)).thenReturn(Optional.of(item));
+		when(foundItemImageRepository.findByFoundItemOrderBySortOrderAscImageIdAsc(item)).thenReturn(List.of());
+
+		User loginUser = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(loginUser, "userNo", 1L);
+
+		var result = foundItemService.getForEdit(8L, loginUser);
+
+		assertThat(result.id()).isEqualTo(8L);
+		assertThat(result.foundAreaProvince()).isEqualTo("서울특별시");
+		assertThat(result.foundAreaDistrict()).isEqualTo("강남구");
+	}
+
+	@Test
+	void updateChangesItemFields() {
+		FoundItem item = foundItemWithOwner(9L, 1L, "서울특별시 강남구");
+		when(foundItemRepository.findById(9L)).thenReturn(Optional.of(item));
+
+		User loginUser = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(loginUser, "userNo", 1L);
+
+		FoundItemCreateRequest req = request("수정된 제목", "수정된 지갑", null);
+		req.setFoundAreaProvince("부산광역시");
+		req.setFoundAreaDistrict("해운대구");
+
+		foundItemService.update(9L, req, loginUser);
+
+		assertThat(item.getTitle()).isEqualTo("수정된 제목");
+		assertThat(item.getItemName()).isEqualTo("수정된 지갑");
+		assertThat(item.getFoundArea()).isEqualTo("부산광역시 해운대구");
+	}
+
+	@Test
+	void updateReplacesImagesWhenNewImagesUploaded() throws Exception {
+		FoundItem item = foundItemWithOwner(10L, 1L, "서울");
+		FoundItemImage oldImage = image(item, "/uploads/found-items/old.jpg");
+		ReflectionTestUtils.setField(oldImage, "storedName", "old.jpg");
+
+		Path foundDir = uploadDir.resolve("found-items");
+		java.nio.file.Files.createDirectories(foundDir);
+		java.nio.file.Files.writeString(foundDir.resolve("old.jpg"), "old-data");
+
+		when(foundItemRepository.findById(10L)).thenReturn(Optional.of(item));
+		when(foundItemImageRepository.findByFoundItemOrderBySortOrderAscImageIdAsc(item)).thenReturn(List.of(oldImage));
+
+		User loginUser = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(loginUser, "userNo", 1L);
+
+		MockMultipartFile newImage = new MockMultipartFile("image", "new.jpg", "image/jpeg", "new-data".getBytes());
+		FoundItemCreateRequest req = request("제목", "지갑", newImage);
+
+		foundItemService.update(10L, req, loginUser);
+
+		verify(foundItemImageRepository).deleteAll(List.of(oldImage));
+		assertThat(java.nio.file.Files.exists(foundDir.resolve("old.jpg"))).isFalse();
+	}
+
 	private FoundItem foundItem(Long id, String title, String content) {
 		FoundItem foundItem = new FoundItem(
 				new User("tester@dogo.local", "테스터", "010-1111-2222"),
@@ -207,6 +296,16 @@ class FoundItemServiceTest {
 				100L,
 				0
 		);
+	}
+
+	private FoundItem foundItemWithOwner(Long id, Long ownerUserNo, String foundArea) {
+		User owner = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(owner, "userNo", ownerUserNo);
+		FoundItem item = new FoundItem(owner, "검정 지갑을 주웠습니다", "검정 지갑",
+				"지갑", null, LocalDateTime.of(2026, 5, 8, 12, 0),
+				foundArea, "강남역", "강남경찰서", "검정", null, null);
+		ReflectionTestUtils.setField(item, "foundId", id);
+		return item;
 	}
 
 	private FoundItemCreateRequest request(String title, String itemName, MockMultipartFile image) {

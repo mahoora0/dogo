@@ -4,6 +4,7 @@ import com.example.dogo.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -13,4 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByLoginId(String loginId);
 	boolean existsByNickname(String nickname);
 	boolean existsByLoginId(String loginId);
+	List<User> findAllByOrderByUserNoDesc();
+	List<User> findByStatusAndWithdrawnAtBefore(String status, java.time.LocalDateTime dateTime);
 }

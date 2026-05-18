@@ -164,8 +164,63 @@ public class AnimalReport {
 		this.content = content;
 	}
 
+	public void update(
+			String reportType,
+			String title,
+			LocalDate eventDate,
+			LocalTime eventTime,
+			Area regionArea,
+			String regionName,
+			String detailPlace,
+			String contactPhone,
+			boolean contactPublic,
+			String sightingCareStatus,
+			String animalType,
+			String breedName,
+			String gender,
+			String neuteredStatus,
+			Integer ageValue,
+			String ageUnit,
+			java.math.BigDecimal weightKg,
+			String furColor,
+			String distinctiveMarks,
+			String content
+	) {
+		this.reportType = reportType;
+		this.title = title;
+		this.eventDate = eventDate;
+		this.eventTime = eventTime;
+		this.regionArea = regionArea;
+		this.regionName = regionName;
+		this.detailPlace = detailPlace;
+		this.contactPhone = contactPhone;
+		this.contactPublic = contactPublic;
+		this.sightingCareStatus = sightingCareStatus;
+		this.animalType = animalType;
+		this.breedName = breedName;
+		this.gender = gender;
+		this.neuteredStatus = neuteredStatus;
+		this.ageValue = ageValue;
+		this.ageUnit = ageUnit;
+		this.weightKg = weightKg;
+		this.furColor = furColor;
+		this.distinctiveMarks = distinctiveMarks;
+		this.content = content;
+		this.moddate = LocalDateTime.now();
+	}
+
 	public void increaseViewCount() {
 		this.viewCount++;
+		this.moddate = LocalDateTime.now();
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+		this.moddate = LocalDateTime.now();
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
 		this.moddate = LocalDateTime.now();
 	}
 }

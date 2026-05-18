@@ -180,6 +180,30 @@ public class FoundItem {
 		return foundItem;
 	}
 
+	public void update(
+			String title,
+			String content,
+			String itemName,
+			String categoryMain,
+			String categorySub,
+			String colorName,
+			LocalDateTime foundAt,
+			String foundArea,
+			String foundPlace,
+			String keepPlace
+	) {
+		this.title = title;
+		this.content = content;
+		this.itemName = itemName;
+		this.categoryMain = categoryMain;
+		this.categorySub = categorySub;
+		this.colorName = colorName;
+		this.foundAt = foundAt;
+		this.foundArea = foundArea;
+		this.foundPlace = foundPlace;
+		this.keepPlace = keepPlace;
+	}
+
 	public void updatePoliceDetail(
 			String title,
 			String content,
@@ -217,5 +241,13 @@ public class FoundItem {
 		if (this.regDate == null) {
 			this.regDate = LocalDateTime.now();
 		}
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
 	}
 }

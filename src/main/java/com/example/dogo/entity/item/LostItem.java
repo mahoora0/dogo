@@ -142,6 +142,30 @@ public class LostItem {
 		return lostItem;
 	}
 
+	public void update(
+			String title,
+			String content,
+			String itemName,
+			String categoryMain,
+			String categorySub,
+			String colorName,
+			LocalDateTime lostAt,
+			String lostArea,
+			String lostPlace,
+			String contact
+	) {
+		this.title = title;
+		this.content = content;
+		this.itemName = itemName;
+		this.categoryMain = categoryMain;
+		this.categorySub = categorySub;
+		this.colorName = colorName;
+		this.lostAt = lostAt;
+		this.lostArea = lostArea;
+		this.lostPlace = lostPlace;
+		this.contact = contact;
+	}
+
 	public void updatePoliceDetail(
 			String title,
 			String content,
@@ -171,5 +195,13 @@ public class LostItem {
 		if (this.regDate == null) {
 			this.regDate = LocalDateTime.now();
 		}
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
 	}
 }

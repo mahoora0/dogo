@@ -2,16 +2,21 @@ package com.example.dogo.controller.item;
 
 import com.example.dogo.dto.item.FoundItemCreateRequest;
 import com.example.dogo.dto.item.FoundItemDetailView;
+import com.example.dogo.dto.item.FoundItemEditData;
 import com.example.dogo.dto.item.FoundItemView;
 import com.example.dogo.entity.user.User;
 import com.example.dogo.security.CustomUserDetails;
 import com.example.dogo.service.item.FoundItemService;
 import com.example.dogo.service.item.RegistrationOptionService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.test.web.servlet.MockMvc;
@@ -50,6 +55,11 @@ class FoundItemControllerTest {
 		mockMvc = MockMvcBuilders.standaloneSetup(foundItemController)
 				.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
 				.build();
+	}
+
+	@AfterEach
+	void tearDown() {
+		SecurityContextHolder.clearContext();
 	}
 
 	@Test
@@ -140,7 +150,8 @@ class FoundItemControllerTest {
 				"카드가 들어 있습니다",
 				"서울역(한국철도공사) / 02-3149-2531",
 				"검정",
-				List.of("/uploads/found-items/wallet.jpg")
+				List.of("/uploads/found-items/wallet.jpg"),
+				42L
 		);
 		when(foundItemService.getDetail(7L)).thenReturn(detail);
 
@@ -150,5 +161,50 @@ class FoundItemControllerTest {
 				.andExpect(model().attribute("foundItem", detail));
 
 		verify(foundItemService).getDetail(7L);
+	}
+
+	@Test
+	void editFormRedirectsToLoginWhenUnauthenticated() throws Exception {
+		mockMvc.perform(get("/found-items/7/edit"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/login"));
+	}
+
+	@Test
+	void editFormShowsEditViewForOwner() throws Exception {
+		authenticateAs(owner());
+		FoundItemEditData editData = new FoundItemEditData(7L, "제목", "지갑", "지갑", null, "검정",
+				null, "서울특별시", "강남구", "강남역", "강남경찰서", null, List.of());
+		when(foundItemService.getForEdit(eq(7L), any())).thenReturn(editData);
+
+		mockMvc.perform(get("/found-items/7/edit"))
+				.andExpect(status().isOk())
+				.andExpect(view().name("found-items/edit"))
+				.andExpect(model().attribute("editData", editData));
+	}
+
+	@Test
+	void editRedirectsToDetailOnSuccess() throws Exception {
+		authenticateAs(owner());
+
+		mockMvc.perform(post("/found-items/7/edit")
+						.param("itemName", "지갑")
+						.param("foundPlace", "강남역"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/found-items/7?rematching=true"));
+
+		verify(foundItemService).update(eq(7L), any(), any());
+	}
+
+	private User owner() {
+		User user = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(user, "userNo", 1L);
+		return user;
+	}
+
+	private void authenticateAs(User user) {
+		CustomUserDetails details = new CustomUserDetails(user);
+		SecurityContextHolder.getContext().setAuthentication(
+				new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities()));
 	}
 }

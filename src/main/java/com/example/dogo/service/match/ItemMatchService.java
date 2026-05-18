@@ -81,6 +81,8 @@ public class ItemMatchService {
 
 	@Transactional
 	public void matchForLostItem(LostItem lostItem) {
+		clearMatchesForLostItem(lostItem.getLostId());
+
 		List<FoundItem> candidates = foundItemRepository.findMatchCandidatesForLost(
 				lostItem.getCategoryMain(),
 				lostItem.getLostAt().minusDays(LOST_DATE_MARGIN_DAYS),
@@ -126,6 +128,12 @@ public class ItemMatchService {
 	}
 
 	@Transactional
+	public void clearMatchesForLostItem(Long lostId) {
+		itemMatchRepository.deleteByLostItemLostId(lostId);
+		itemMatchRepository.flush();
+	}
+
+	@Transactional
 	public void matchForFoundItemId(Long foundId) {
 		FoundItem foundItem = foundItemRepository.findById(foundId)
 				.orElseThrow(() -> new IllegalArgumentException("습득물을 찾을 수 없습니다. foundId=" + foundId));
@@ -134,6 +142,8 @@ public class ItemMatchService {
 
 	@Transactional
 	public void matchForFoundItem(FoundItem foundItem) {
+		clearMatchesForFoundItem(foundItem.getFoundId());
+
 		List<LostItem> candidates = lostItemRepository.findMatchCandidatesForFound(
 				foundItem.getCategoryMain(),
 				foundItem.getFoundAt().minusDays(MAX_MATCH_DAYS),
@@ -179,12 +189,16 @@ public class ItemMatchService {
 	}
 
 	@Transactional
+	public void clearMatchesForFoundItem(Long foundId) {
+		itemMatchRepository.deleteByFoundItemFoundId(foundId);
+		itemMatchRepository.flush();
+	}
+
+	@Transactional
 	public List<MatchCandidateView> getMatchesForLostItem(Long lostId) {
 		List<ItemMatch> matches = itemMatchRepository.findByLostIdWithFoundItem(lostId);
-		
-		// 조회 시 자동으로 읽음 처리
 		matches.forEach(ItemMatch::markAsRead);
-		
+
 		return matches.stream()
 				.limit(MAX_CANDIDATES)
 				.map(match -> {
@@ -211,6 +225,55 @@ public class ItemMatchService {
 					);
 				})
 				.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public long getUnreadMatchCount(User user) {
+		if (user == null) {
+			return 0;
+		}
+		long count = itemMatchRepository.countByLostItemUserUserNoAndMatchStatus(user.getUserNo(), "CANDIDATE");
+		return Math.min(count, 3);
+	}
+
+	@Transactional(readOnly = true)
+	public List<MatchCandidateView> getTopMatchesForNotification(User user) {
+		if (user == null) {
+			return List.of();
+		}
+
+		return itemMatchRepository.findTop3ByLostItemUserUserNoOrderByFinalScoreDescMatchIdDesc(user.getUserNo())
+				.stream()
+				.map(match -> {
+					FoundItem found = match.getFoundItem();
+					String imageUrl = foundItemImageRepository
+							.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(found)
+							.map(FoundItemImage::getImageUrl)
+							.orElse(null);
+					return new MatchCandidateView(
+							found.getFoundId(),
+							"found",
+							found.getTitle(),
+							found.getItemName(),
+							found.getCategoryMain(),
+							found.getFoundArea(),
+							found.getFoundPlace(),
+							found.getFoundAt(),
+							found.getStatus(),
+							foundStatusLabel(found.getStatus()),
+							imageUrl,
+							match.displayScore(),
+							List.of()
+					);
+				})
+				.toList();
+	}
+
+	@Transactional
+	public void markAllAsRead(User user) {
+		if (user != null) {
+			itemMatchRepository.markAllAsReadByUserNo(user.getUserNo());
+		}
 	}
 
 	@Transactional(readOnly = true)
@@ -241,53 +304,6 @@ public class ItemMatchService {
 					);
 				})
 				.toList();
-	}
-
-	@Transactional(readOnly = true)
-	public long getUnreadMatchCount(User user) {
-		if (user == null) return 0;
-		long count = itemMatchRepository.countByLostItemUserUserNoAndMatchStatus(user.getUserNo(), "CANDIDATE");
-		return Math.min(count, 3); // 최대 3개까지만 표시
-	}
-
-	@Transactional(readOnly = true)
-	public List<MatchCandidateView> getTopMatchesForNotification(User user) {
-		if (user == null) return List.of();
-
-		// 읽음 여부와 상관없이 점수 상위 3개를 반환 → 종 아이콘 클릭 후 페이지를 이동해도 내용이 사라지지 않음
-		// (배지 숫자는 CANDIDATE 상태만 카운트하므로, 클릭 후에는 숫자는 사라지고 내용은 유지됨)
-		return itemMatchRepository.findTop3ByLostItemUserUserNoOrderByFinalScoreDescMatchIdDesc(user.getUserNo())
-				.stream()
-				.map(match -> {
-					FoundItem found = match.getFoundItem();
-					String imageUrl = foundItemImageRepository
-							.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(found)
-							.map(FoundItemImage::getImageUrl)
-							.orElse(null);
-					return new MatchCandidateView(
-							found.getFoundId(),
-							"found",
-							found.getTitle(),
-							found.getItemName(),
-							found.getCategoryMain(),
-							found.getFoundArea(),
-							found.getFoundPlace(),
-							found.getFoundAt(),
-							found.getStatus(),
-							foundStatusLabel(found.getStatus()),
-							imageUrl,
-							match.displayScore(),
-							List.of() // 알림창에서는 매칭 사유 제외
-					);
-				})
-				.toList();
-	}
-
-	@Transactional
-	public void markAllAsRead(User user) {
-		if (user != null) {
-			itemMatchRepository.markAllAsReadByUserNo(user.getUserNo());
-		}
 	}
 
 	private SemanticFetchResult fetchSemanticScores(SemanticMatchItem query, List<SemanticMatchItem> candidates) {
@@ -481,24 +497,21 @@ public class ItemMatchService {
 		};
 	}
 
-	/**
-	 * 로그인한 사용자의 모든 활성 분실물(대기중/매칭중 상태)에 대해 실시간 매칭을 일괄 수행합니다.
-	 * 사용자가 로그인하여 서비스에 접속했을 때, 최신 매칭 상태를 갱신하기 위해 트리거됩니다.
-	 */
 	@Transactional
 	public void matchForUserLostItems(User user) {
-		if (user == null) return;
-		
-		// 1. 로그인 회원이 등록한 분실물 중 아직 매칭이 종료되지 않은 활성 상태('WAITING', 'MATCHING')의 분실물 목록 조회
+		if (user == null) {
+			return;
+		}
+
 		List<LostItem> activeLostItems = lostItemRepository.findByUserAndDeletedFalseAndStatusIn(
 				user, List.of("WAITING", "MATCHING"));
-				
-		// 2. 각 활성 분실물에 대해 매칭 알고리즘을 개별적으로 수행하여 최신 유사 습득물 매칭 리스트를 생성 및 갱신
+
 		for (LostItem lostItem : activeLostItems) {
 			try {
 				matchForLostItem(lostItem);
 			} catch (Exception e) {
-				log.error("로그인 회원의 분실물 실시간 매칭 계산 실패 (lostItemId={}): {}", lostItem.getLostId(), e.getMessage());
+				log.error("Failed to refresh matches for user lost item. lostItemId={}",
+						lostItem.getLostId(), e);
 			}
 		}
 	}

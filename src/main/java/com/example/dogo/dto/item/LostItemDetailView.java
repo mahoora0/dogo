@@ -16,6 +16,7 @@ public record LostItemDetailView(
 		String colorName,
 		String description,
 		String contact,
-		List<String> imageUrls
+		List<String> imageUrls,
+		Long userNo
 ) {
 }

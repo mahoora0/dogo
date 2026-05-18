@@ -29,6 +29,12 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
         } else if (exception instanceof BadCredentialsException) {
             errorMessage = "비밀번호가 일치하지 않습니다.";
             exceptionType = "badCredentials";
+        } else if (exception instanceof org.springframework.security.authentication.DisabledException) {
+            errorMessage = "이용 정지되었거나 탈퇴 처리된 계정입니다. 고객센터에 문의해 주세요.";
+            exceptionType = "disabled";
+        } else if (exception instanceof org.springframework.security.oauth2.core.OAuth2AuthenticationException) {
+            errorMessage = exception.getMessage();
+            exceptionType = "oauth2Error";
         } else {
             errorMessage = "알 수 없는 이유로 로그인에 실패하였습니다.";
             exceptionType = "unknown";
