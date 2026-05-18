@@ -13,9 +13,13 @@ DB_PASSWORD=본인_mysql_비밀번호
 
 ### 2. DB와 테이블 생성
 
-앱을 실행하면 `application.properties`의 MySQL 접속 정보로 `dogo` 데이터베이스에 연결합니다.
+로컬 개발에서는 `local` 프로필로 앱을 실행하면 `application.properties`의 MySQL 접속 정보로 `dogo` 데이터베이스에 연결합니다.
 
-`dogo` 데이터베이스가 없으면 자동으로 생성되고, 이후 `src/main/resources/schema.sql`을 실행해 필요한 테이블을 생성합니다.
+```bash
+./gradlew bootRun --args='--spring.profiles.active=local'
+```
+
+`dogo` 데이터베이스가 없으면 자동으로 생성되고, 이후 `src/main/resources/schema.sql`을 실행해 필요한 테이블을 생성합니다. 기본 프로필에서는 안전을 위해 SQL 자동 초기화를 실행하지 않습니다.
 
 MySQL 계정에 `CREATE DATABASE`, `CREATE TABLE` 권한이 있어야 합니다.
 

@@ -160,10 +160,20 @@
         </div>
 
         <!-- Sticky Bottom CTA (Mobile) / Regular CTA (Desktop) -->
-        <div class="mt-4 flex flex-col sm:flex-row gap-3">
-          <button class="flex-1 rounded-full bg-slate-900 px-6 py-4 text-center font-bold text-white shadow-md transition hover:bg-slate-700 hover:shadow-lg active:scale-[0.98]">
-            채팅으로 연락하기
-          </button>
+        <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <div th:if="${chatError}"
+               th:text="${chatError}"
+               class="sm:col-span-2 w-full rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+            채팅 신청이 불가능합니다.
+          </div>
+          <form th:action="@{/chat/room}" method="post" class="flex-1">
+            <input type="hidden" name="itemId" th:value="${lostItem.id}">
+            <input type="hidden" name="itemType" value="LOST">
+            <button type="submit"
+                    class="w-full rounded-full bg-slate-900 px-6 py-4 text-center font-bold text-white shadow-md transition hover:bg-slate-700 hover:shadow-lg active:scale-[0.98]">
+              채팅으로 연락하기
+            </button>
+          </form>
           <a th:href="@{/lost-items}" class="flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-8 py-4 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95">
             목록
           </a>
