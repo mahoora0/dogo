@@ -39,7 +39,7 @@ def _load_clip_model():
     # warmup
     dummy = Image.new("RGB", (224, 224))
     inputs = processor(images=dummy, return_tensors="pt")
-    with torch.no_grad():
+    with torch.inference_mode():
         _extract_image_features(model, inputs)
     elapsed = time.perf_counter() - t0
     logger.info(f"CLIP 모델 로딩 완료 ({elapsed:.1f}s)")
@@ -52,7 +52,7 @@ def encode_image(image_bytes: bytes, animal_type: str | None = None) -> tuple[li
     cropped_image, crop_type = crop_pet(image, animal_type)
     inputs = processor(images=cropped_image, return_tensors="pt")
     t0 = time.perf_counter()
-    with torch.no_grad():
+    with torch.inference_mode():
         features = _extract_image_features(model, inputs)
         features = features / features.norm(dim=-1, keepdim=True)
     elapsed = (time.perf_counter() - t0) * 1000
@@ -62,21 +62,27 @@ def encode_image(image_bytes: bytes, animal_type: str | None = None) -> tuple[li
 
 def encode_images(image_items: list[tuple[bytes, str | None]]) -> tuple[list[list[float]], str, list[str]]:
     model, processor = _load_clip_model()
-    cropped_images = []
-    crop_types = []
-    for image_bytes, animal_type in image_items:
-        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        cropped_image, crop_type = crop_pet(image, animal_type)
-        cropped_images.append(cropped_image)
-        crop_types.append(crop_type)
-
-    inputs = processor(images=cropped_images, return_tensors="pt")
     t0 = time.perf_counter()
-    with torch.no_grad():
+    images = [Image.open(io.BytesIO(image_bytes)).convert("RGB") for image_bytes, _ in image_items]
+    animal_types = [animal_type for _, animal_type in image_items]
+    t_decode = time.perf_counter()
+    cropped_images, crop_types = crop_pets(images, animal_types)
+    t_crop = time.perf_counter()
+    inputs = processor(images=cropped_images, return_tensors="pt")
+    t_preprocess = time.perf_counter()
+    with torch.inference_mode():
         features = _extract_image_features(model, inputs)
         features = features / features.norm(dim=-1, keepdim=True)
-    elapsed = (time.perf_counter() - t0) * 1000
-    logger.debug(f"CLIP batch encoding complete ({elapsed:.1f}ms, count={len(image_items)})")
+    t_encode = time.perf_counter()
+    logger.info(
+        "CLIP batch complete: count=%d, decode=%.1fms, crop=%.1fms, preprocess=%.1fms, encode=%.1fms, total=%.1fms",
+        len(image_items),
+        (t_decode - t0) * 1000,
+        (t_crop - t_decode) * 1000,
+        (t_preprocess - t_crop) * 1000,
+        (t_encode - t_preprocess) * 1000,
+        (t_encode - t0) * 1000,
+    )
     return features.tolist(), CLIP_MODEL_NAME, crop_types
 
 
@@ -94,6 +100,29 @@ def crop_pet(image: Image.Image, animal_type: str | None = None) -> tuple[Image.
     except Exception:
         logger.exception("반려동물 crop 실패, 원본 이미지로 fallback")
         return image, ORIGINAL_FALLBACK
+
+
+def crop_pets(images: list[Image.Image], animal_types: list[str | None]) -> tuple[list[Image.Image], list[str]]:
+    if not PET_CROP_ENABLED:
+        return images, [ORIGINAL_FALLBACK] * len(images)
+
+    try:
+        detector = _load_pet_detector()
+        results = detector.predict(source=images, verbose=False)
+        cropped_images = []
+        crop_types = []
+        for image, result, animal_type in zip(images, results, animal_types):
+            bbox = _select_pet_bbox([result], image.size, animal_type)
+            if bbox is None:
+                cropped_images.append(image)
+                crop_types.append(ORIGINAL_FALLBACK)
+                continue
+            cropped_images.append(image.crop(_expand_to_square(bbox, image.size)))
+            crop_types.append(ANIMAL_CROP)
+        return cropped_images, crop_types
+    except Exception:
+        logger.exception("Batch pet crop failed, falling back to original images")
+        return images, [ORIGINAL_FALLBACK] * len(images)
 
 
 def _extract_image_features(model, inputs):

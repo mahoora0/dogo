@@ -158,7 +158,9 @@ public class AnimalImageEmbeddingService {
 			return new BatchEmbedStatus(0, skipped, failed);
 		}
 
+		long t0 = System.nanoTime();
 		Map<Long, PetImageEmbeddingClient.EmbeddingResult> results = embeddingClient.embedBatch(requests);
+		long elapsedMs = (System.nanoTime() - t0) / 1_000_000;
 		int saved = 0;
 		for (Map.Entry<Long, PendingEmbedding> entry : pending.entrySet()) {
 			PetImageEmbeddingClient.EmbeddingResult result = results.get(entry.getKey());
@@ -180,6 +182,8 @@ public class AnimalImageEmbeddingService {
 
 		log.info("[pet-embedding] 배치 저장 완료: requested={}, saved={}, skipped={}, failed={}",
 				reports.size(), saved, skipped, failed);
+		log.info("[pet-embedding] batch request complete: requested={}, sent={}, elapsed={}ms",
+				reports.size(), requests.size(), elapsedMs);
 		return new BatchEmbedStatus(saved, skipped, failed);
 	}
 
