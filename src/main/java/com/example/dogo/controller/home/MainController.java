@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MainController {
 
-  private static final int RECENT_ITEM_LIMIT = 6;
+  private static final int RECENT_ITEM_LIMIT = 4;
 
   private final LostItemService lostItemService;
   private final FoundItemService foundItemService;
