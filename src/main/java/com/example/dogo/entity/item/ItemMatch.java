@@ -127,6 +127,13 @@ public class ItemMatch {
 		return matchScore;
 	}
 
+	public void markAsRead() {
+		if ("CANDIDATE".equals(this.matchStatus)) {
+			this.matchStatus = "READ";
+			this.moddate = LocalDateTime.now();
+		}
+	}
+
 	private String serializeReasons(List<String> reasons) {
 		if (reasons == null || reasons.isEmpty()) {
 			return null;
