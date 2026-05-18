@@ -40,6 +40,26 @@ public class AdminController {
         model.addAttribute("foundItems", foundItemRepository.count());
         model.addAttribute("matchSuccess", animalReportRepository.count() + missingPersonRepository.count());
 
+        // 실시간 대표 유실물 분포 비율 연산
+        long totalLostCount = lostItemRepository.countByDeletedFalse();
+        double electronicsRatio = 42.0;
+        double walletRatio = 35.0;
+        double otherRatio = 23.0;
+
+        if (totalLostCount > 0) {
+            long electronicsCount = lostItemRepository.countByDeletedFalseAndCategoryMainIn(java.util.List.of("전자기기", "휴대폰"));
+            long walletCount = lostItemRepository.countByDeletedFalseAndCategoryMainIn(java.util.List.of("지갑", "카드/증명서"));
+            long otherCount = Math.max(0, totalLostCount - (electronicsCount + walletCount));
+
+            electronicsRatio = Math.round((double) electronicsCount / totalLostCount * 100);
+            walletRatio = Math.round((double) walletCount / totalLostCount * 100);
+            otherRatio = Math.max(0, 100 - (electronicsRatio + walletRatio));
+        }
+
+        model.addAttribute("electronicsRatio", (int) electronicsRatio);
+        model.addAttribute("walletRatio", (int) walletRatio);
+        model.addAttribute("otherRatio", (int) otherRatio);
+
         // 최근 활동 내역 (실제 데이터베이스 실시간 조회)
         List<Map<String, String>> recentActivities = new ArrayList<>();
         

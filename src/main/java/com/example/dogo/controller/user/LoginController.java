@@ -91,6 +91,7 @@ public class LoginController {
 
     List<com.example.dogo.entity.item.LostItem> lostItems = lostItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
     List<com.example.dogo.entity.item.FoundItem> foundItems = foundItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
+    List<com.example.dogo.entity.Support.Inquiry> inquiries = inquiryRepository.findByUserOrderByRegdateDescInquiryIdDesc(user);
 
     List<RecentItemView> userActivities = new ArrayList<>();
 
@@ -129,6 +130,27 @@ public class LoginController {
           item.getStatus(),
           foundStatusLabel(item.getStatus()),
           imageUrl
+      ));
+    }
+
+    for (com.example.dogo.entity.Support.Inquiry inquiry : inquiries) {
+      String statusLabel = switch (inquiry.getStatus()) {
+        case "ANSWERED" -> "답변완료";
+        case "CHECKING" -> "검토중";
+        default -> "답변대기";
+      };
+
+      userActivities.add(new RecentItemView(
+          inquiry.getInquiryId(),
+          "INQUIRY",
+          "1:1 문의",
+          inquiry.getTitle(),
+          inquiry.getCategory(),
+          "고객센터",
+          inquiry.getRegdate() != null ? inquiry.getRegdate() : java.time.LocalDateTime.now(),
+          inquiry.getStatus(),
+          statusLabel,
+          "/images/noImageSize.png"
       ));
     }
 

@@ -61,4 +61,8 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long>, JpaSp
 	List<LostItem> findByDeletedFalseOrderByRegDateDesc();
 
 	List<LostItem> findBySourceTypeAndDeletedFalseOrderByRegDateDesc(String sourceType);
+
+	long countByDeletedFalseAndCategoryMainIn(List<String> categories);
+
+	long countByDeletedFalse();
 }
