@@ -105,6 +105,12 @@ public class LostItemService {
 	}
 
 	@Transactional(readOnly = true)
+	public boolean hasLostItems(User user) {
+		if (user == null) return false;
+		return lostItemRepository.existsByUserAndDeletedFalse(user);
+	}
+
+	@Transactional(readOnly = true)
 	public List<MatchCandidateView> getMatchCandidates(Long lostId) {
 		return itemMatchService.getMatchesForLostItem(lostId);
 	}

@@ -6,6 +6,11 @@ import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.Support.InquiryFileRepository;
 import com.example.dogo.repository.Support.InquiryRepository;
 import com.example.dogo.repository.user.UserRepository;
+import com.example.dogo.dto.Support.InquirySummary;
+import com.example.dogo.dto.Support.InquiryDetail;
+import com.example.dogo.dto.Support.InquiryFileView;
+import com.example.dogo.dto.Support.AdminInquiryRow;
+import com.example.dogo.dto.Support.AdminInquiryDetail;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -268,61 +273,5 @@ public class InquiryService {
             case "ANSWERED" -> "답변완료";
             default -> "접수";
         };
-    }
-
-    public record InquirySummary(
-            Long id,
-            String category,
-            String categoryLabel,
-            String title,
-            String content,
-            String createdAt,
-            String status,
-            boolean isSecret
-    ) {
-    }
-
-    public record InquiryDetail(
-            Long id,
-            String categoryLabel,
-            String title,
-            String content,
-            String status,
-            String answer,
-            String createdAt,
-            String answeredAt,
-            List<InquiryFileView> files,
-            String writerEmail
-    ) {
-    }
-
-    public record InquiryFileView(
-            Long fileId,
-            String originalName,
-            String fileUrl,
-            Long fileSize
-    ) {
-    }
-
-    public record AdminInquiryRow(
-            Long id,
-            String title,
-            Long userId,
-            String status
-    ) {
-    }
-
-    public record AdminInquiryDetail(
-            Long id,
-            String category,
-            String categoryLabel,
-            String title,
-            String content,
-            Long userId,
-            String status,
-            String answer,
-            String createdAt,
-            String answeredAt
-    ) {
     }
 }

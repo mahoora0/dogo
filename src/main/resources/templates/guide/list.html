@@ -16,134 +16,176 @@
             <p class="mt-2 text-slate-500 text-base max-w-xl mx-auto">도고 분실물 센터를 최적으로 이용하기 위한 단계별 안내 및 가이드를 확인해보세요.</p>
         </div>
 
-        <!-- 카테고리 탭 네비게이션 -->
+        <!-- 카테고리 탭 네비게이션 (선택 시 ?category=파라미터 전달하여 새로고침) -->
         <div class="flex justify-center mb-8">
             <div class="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/60 shadow-inner">
-                <a th:href="@{${isAdmin ? '/admin/guide' : '/guide'}(category='전체')}"
-                   th:classappend="${currentCategory == '전체' ? 'bg-white text-indigo-700 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-950 font-semibold'}"
-                   class="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all duration-200">
-                    전체 가이드
-                </a>
-                <a th:href="@{${isAdmin ? '/admin/guide' : '/guide'}(category='분실자')}"
+                <a th:href="@{/guide(category='분실자')}"
                    th:classappend="${currentCategory == '분실자' ? 'bg-white text-indigo-700 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-950 font-semibold'}"
-                   class="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all duration-200">
+                   class="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm transition-all duration-200">
                     분실자 가이드
                 </a>
-                <a th:href="@{${isAdmin ? '/admin/guide' : '/guide'}(category='습득자')}"
+                <a th:href="@{/guide(category='습득자')}"
                    th:classappend="${currentCategory == '습득자' ? 'bg-white text-indigo-700 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-950 font-semibold'}"
-                   class="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all duration-200">
+                   class="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm transition-all duration-200">
                     습득자 가이드
                 </a>
-                <a th:href="@{${isAdmin ? '/admin/guide' : '/guide'}(category='기타')}"
+                <a th:href="@{/guide(category='기타')}"
                    th:classappend="${currentCategory == '기타' ? 'bg-white text-indigo-700 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-950 font-semibold'}"
-                   class="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all duration-200">
+                   class="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm transition-all duration-200">
                     기타 안내
                 </a>
             </div>
         </div>
 
-        <!-- 가이드 카드 그리드 리스트 -->
-        <div class="grid gap-6 md:grid-cols-2" th:if="${!guides.isEmpty()}">
-            <div th:each="guide : ${guides}" class="relative bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between">
-                <div>
-                    <!-- 카테고리 태그 및 작성자 -->
-                    <div class="flex items-center justify-between mb-4">
-                        <span th:text="${guide.category}"
-                              th:classappend="${guide.category == '분실자' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : (guide.category == '습득자' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-700 border-slate-200')}"
-                              class="text-xs font-bold px-2.5 py-1 rounded-md border">
-                            분실자
-                        </span>
-                        <span class="text-xs text-slate-400 font-medium" th:text="${#temporals.format(guide.createdAt, 'yyyy-MM-dd')}">2026-05-18</span>
-                    </div>
-
-                    <!-- 제목 -->
-                    <h3 class="text-lg font-extrabold text-slate-900 mb-2 line-clamp-1">
-                        <a th:href="@{${isAdmin ? '/admin/guide/' + guide.id : '/guide/' + guide.id}}" th:text="${guide.title}" class="hover:text-indigo-600 transition-colors">
-                            가이드 제목입니다.
-                        </a>
-                    </h3>
-
-                    <!-- 본문 일부 미리보기 (HTML 태그 제거 후 텍스트만 표시) -->
-                    <p class="text-sm text-slate-500 leading-relaxed line-clamp-3 mb-6" th:text="${#strings.abbreviate(guide.content, 120)}">
-                        여기에 가이드 본문의 일부가 표시됩니다. 본문 내용을 압축하여 보여주고 더 읽어보기 클릭 유도합니다.
-                    </p>
-                </div>
-
-                <!-- 자세히 보기 링크 -->
-                <div class="flex items-center justify-between border-t border-slate-100 pt-4 mt-auto">
-                    <a th:href="@{${isAdmin ? '/admin/guide/' + guide.id : '/guide/' + guide.id}}" class="inline-flex items-center text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors group">
-                        가이드 자세히 읽기
-                        <svg class="w-3.5 h-3.5 ml-1 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </a>
-                    <span class="text-xs text-slate-400 font-semibold" th:text="${guide.writer}">작성자</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 가이드 데이터가 비어있을 때 -->
-        <div th:if="${guides.isEmpty()}" class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
-            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100 text-slate-400">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                </svg>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800">등록된 이용가이드가 없습니다.</h3>
-            <p class="mt-1 text-slate-500 text-sm">해당 카테고리에 등록된 이용가이드가 아직 존재하지 않습니다.</p>
-        </div>
-
-        <!-- 하단 영역: 페이징 및 관리자 전용 작성 버튼 -->
-        <div class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200/80 pt-6">
+        <!-- ==========================================
+             1. 분실자 가이드 탭 활성화 시 노출 영역
+             ========================================== -->
+        <div th:if="${currentCategory == '분실자'}" class="flex flex-col gap-10 max-w-3xl mx-auto">
             
-            <!-- 관리자용 등록버튼 -->
-            <div class="w-full sm:w-auto order-2 sm:order-1">
-                <a th:if="${isAdmin}" th:href="@{/admin/guide/new}"
-                   class="w-full sm:w-auto inline-flex justify-center items-center px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-colors shadow-sm active:scale-[0.98]">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    가이드 등록
-                </a>
+            <!-- 💡 가이드 카드 1단계 -->
+            <div class="relative bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-4">
+                <!-- 1. 상단 타이틀 영역 -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-md border bg-indigo-50 text-indigo-700 border-indigo-100">분실자 가이드</span>
+                    </div>
+                    <!-- ✍️ 여기에 [분실물 1단계 제목]을 작성하세요 -->
+                    <h4 class="text-base sm:text-lg font-bold text-slate-800 leading-snug">
+                        1단계: 분실물 신고서 등록하기
+                    </h4>
+                </div>
+
+                <!-- 2. 중간 이미지 영역 -->
+                <!-- ✍️ src 속성에 [1단계 이미지 파일 경로]를 입력하세요 (예: /images/guide/lost_01.png) -->
+                <div class="w-full aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/7] rounded-xl overflow-hidden bg-slate-50 border border-slate-100 relative">
+                    <img src="/images/guide/lost_step1.png" alt="분실물 가이드 1단계" class="w-full h-full object-cover" onerror="this.src='/images/placeholder.png';">
+                </div>
+
+                <!-- 3. 하단 주석 및 설명 글 영역 (주석처럼 은은하고 작게 연출) -->
+                <!-- ✍️ 여기에 [1단계 상세 캡션/설명]을 작성하세요 -->
+                <p class="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed whitespace-pre-line">
+                    ※ 도고(DOGO) 홈페이지 로그인 후 상단 [분실물 신고] 메뉴로 이동하여 잃어버린 물품의 사진, 카테고리, 분실 장소를 기입해 등록하세요.
+                </p>
             </div>
 
-            <!-- 페이징 바 -->
-            <div th:if="${guides.totalPages > 0}" class="order-1 sm:order-2">
-                <nav class="inline-flex rounded-xl shadow-sm isolate" aria-label="Pagination">
-                    <!-- 이전 페이지 -->
-                    <a th:href="@{${isAdmin ? '/admin/guide' : '/guide'}(category=${currentCategory}, page=${guides.number - 1})}"
-                       th:classappend="${guides.first ? 'pointer-events-none text-slate-300 bg-slate-50/50' : 'text-slate-500 hover:bg-slate-50 bg-white'}"
-                       class="relative inline-flex items-center rounded-l-xl px-3 py-2.5 text-sm font-medium border border-slate-300 transition-colors">
-                        <span class="sr-only">이전</span>
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </a>
+            <!-- 💡 가이드 카드 2단계 (추가 가이드가 필요하면 이 카드 단위를 통째로 복사해서 사용해 보세요!) -->
+            <div class="relative bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-4">
+                <!-- 1. 상단 타이틀 영역 -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-md border bg-indigo-50 text-indigo-700 border-indigo-100">분실자 가이드</span>
+                    </div>
+                    <!-- ✍️ 여기에 [분실물 2단계 제목]을 작성하세요 -->
+                    <h4 class="text-base sm:text-lg font-bold text-slate-800 leading-snug">
+                        2단계: 유사 물품 추천 알림 확인
+                    </h4>
+                </div>
 
-                    <!-- 페이지 번호 블록 -->
-                    <th:block th:each="p : ${#numbers.sequence(startPage, endPage)}">
-                        <a th:href="@{${isAdmin ? '/admin/guide' : '/guide'}(category=${currentCategory}, page=${p - 1})}"
-                           th:text="${p}"
-                           th:classappend="${p - 1 == guides.number ? 'z-10 bg-indigo-600 text-white font-bold border-indigo-600' : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50 font-medium'}"
-                           class="relative inline-flex items-center px-4 py-2.5 text-sm border transition-colors">
-                            1
-                        </a>
-                    </th:block>
+                <!-- 2. 중간 이미지 영역 -->
+                <!-- ✍️ src 속성에 [2단계 이미지 파일 경로]를 입력하세요 -->
+                <div class="w-full aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/7] rounded-xl overflow-hidden bg-slate-50 border border-slate-100 relative">
+                    <img src="/images/guide/lost_step2.png" alt="분실물 가이드 2단계" class="w-full h-full object-cover" onerror="this.src='/images/placeholder.png';">
+                </div>
 
-                    <!-- 다음 페이지 -->
-                    <a th:href="@{${isAdmin ? '/admin/guide' : '/guide'}(category=${currentCategory}, page=${guides.number + 1})}"
-                       th:classappend="${guides.last ? 'pointer-events-none text-slate-300 bg-slate-50/50' : 'text-slate-500 hover:bg-slate-50 bg-white'}"
-                       class="relative inline-flex items-center rounded-r-xl px-3 py-2.5 text-sm font-medium border border-slate-300 transition-colors">
-                        <span class="sr-only">다음</span>
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </a>
-                </nav>
+                <!-- 3. 하단 주석 및 설명 글 영역 -->
+                <!-- ✍️ 여기에 [2단계 상세 캡션/설명]을 작성하세요 -->
+                <p class="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed whitespace-pre-line">
+                    ※ 데이터베이스에 매칭되는 습득물이 등록될 경우 카카오톡 알림톡 또는 이메일을 통해 매칭 알림을 신속히 발송해 드립니다.
+                </p>
             </div>
 
-            <!-- 레이아웃 비율 유지를 위한 빈 공간 -->
-            <div class="hidden sm:block w-24 order-3" th:if="${isAdmin}"></div>
+        </div>
+
+        <!-- ==========================================
+             2. 습득자 가이드 탭 활성화 시 노출 영역
+             ========================================== -->
+        <div th:if="${currentCategory == '습득자'}" class="flex flex-col gap-10 max-w-3xl mx-auto">
+            
+            <!-- 💡 습득자 가이드 카드 1단계 -->
+            <div class="relative bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-4">
+                <!-- 1. 상단 타이틀 영역 -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-md border bg-emerald-50 text-emerald-700 border-emerald-100">습득물 가이드</span>
+                    </div>
+                    <!-- ✍️ 여기에 [습득자 1단계 제목]을 작성하세요 -->
+                    <h4 class="text-base sm:text-lg font-bold text-slate-800 leading-snug">
+                        1단계: 주운 물건(습득물) 등록 절차
+                    </h4>
+                </div>
+
+                <!-- 2. 중간 이미지 영역 -->
+                <!-- ✍️ src 속성에 [습득자 1단계 이미지 경로]를 입력하세요 -->
+                <div class="w-full aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/7] rounded-xl overflow-hidden bg-slate-50 border border-slate-100 relative">
+                    <img src="/images/guide/found_step1.png" alt="습득물 가이드 1단계" class="w-full h-full object-cover" onerror="this.src='/images/placeholder.png';">
+                </div>
+
+                <!-- 3. 하단 주석 및 설명 글 영역 -->
+                <!-- ✍️ 여기에 [습득자 1단계 상세 캡션/설명]을 작성하세요 -->
+                <p class="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed whitespace-pre-line">
+                    ※ 길가나 매장에서 주운 분실물이 있다면 [습득물 등록] 메뉴를 통해 주운 위치와 날짜, 물품의 사진을 선명하게 찍어 등록해 주세요.
+                </p>
+            </div>
+
+            <!-- 💡 습득자 가이드 카드 2단계 -->
+            <div class="relative bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-4">
+                <!-- 1. 상단 타이틀 영역 -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-md border bg-emerald-50 text-emerald-700 border-emerald-100">습득물 가이드</span>
+                    </div>
+                    <!-- ✍️ 여기에 [습득자 2단계 제목]을 작성하세요 -->
+                    <h4 class="text-base sm:text-lg font-bold text-slate-800 leading-snug">
+                        2단계: 분실자와의 매칭 및 인계 완료
+                    </h4>
+                </div>
+
+                <!-- 2. 중간 이미지 영역 -->
+                <!-- ✍️ src 속성에 [습득자 2단계 이미지 경로]를 입력하세요 -->
+                <div class="w-full aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/7] rounded-xl overflow-hidden bg-slate-50 border border-slate-100 relative">
+                    <img src="/images/guide/found_step2.png" alt="습득물 가이드 2단계" class="w-full h-full object-cover" onerror="this.src='/images/placeholder.png';">
+                </div>
+
+                <!-- 3. 하단 주석 및 설명 글 영역 -->
+                <!-- ✍️ 여기에 [습득자 2단계 상세 캡션/설명]을 작성하세요 -->
+                <p class="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed whitespace-pre-line">
+                    ※ 매칭 성공 알림을 받은 원주인과 연락하여 인계 장소를 협의하거나, 가까운 지하철/경찰 유실물 센터에 대리 전달하여 접수번호를 넘겨줍니다.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             3. 기타 안내 탭 활성화 시 노출 영역
+             ========================================== -->
+        <div th:if="${currentCategory == '기타'}" class="flex flex-col gap-10 max-w-3xl mx-auto">
+            
+            <!-- 💡 기타 가이드 카드 1단계 -->
+            <div class="relative bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-4">
+                <!-- 1. 상단 타이틀 영역 -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-md border bg-slate-50 text-slate-700 border-slate-200">기타 안내</span>
+                    </div>
+                    <!-- ✍️ 여기에 [기타 안내 제목]을 작성하세요 -->
+                    <h4 class="text-base sm:text-lg font-bold text-slate-800 leading-snug">
+                        경찰청 유실물 통합 포털(LOST112) 데이터 자동 매칭 안내
+                    </h4>
+                </div>
+
+                <!-- 2. 중간 이미지 영역 -->
+                <!-- ✍️ src 속성에 [기타 안내 이미지 경로]를 입력하세요 -->
+                <div class="w-full aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/7] rounded-xl overflow-hidden bg-slate-50 border border-slate-100 relative">
+                    <img src="/images/guide/other_step1.png" alt="기타 안내 1단계" class="w-full h-full object-cover" onerror="this.src='/images/placeholder.png';">
+                </div>
+
+                <!-- 3. 하단 주석 및 설명 글 영역 -->
+                <!-- ✍️ 여기에 [기타 안내 상세 캡션/설명]을 작성하세요 -->
+                <p class="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed whitespace-pre-line">
+                    ※ 도고(DOGO)는 대한민국 경찰청 유실물 포털(LOST112) 데이터와 매시간 연동되어 동작합니다. 개인 간 접수물품 뿐만 아니라 관할 관공서에 보관 중인 물품까지 인공지능 기반으로 찾아 드립니다.
+                </p>
+            </div>
+
         </div>
 
     </div>

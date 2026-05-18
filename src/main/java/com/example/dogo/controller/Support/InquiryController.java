@@ -2,6 +2,8 @@ package com.example.dogo.controller.Support;
 
 import com.example.dogo.service.Support.InquiryService;
 import com.example.dogo.security.CustomUserDetails;
+import com.example.dogo.dto.Support.InquirySummary;
+import com.example.dogo.dto.Support.InquiryDetail;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -31,7 +33,7 @@ public class InquiryController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         
         // viewMode에 따라 본인 글만 볼지, 전체를 볼지 결정
-        Page<InquiryService.InquirySummary> inquiries = inquiryService.getInquiryPage(
+        Page<InquirySummary> inquiries = inquiryService.getInquiryPage(
                 viewMode, status, page, 5, 
                 userDetails != null ? userDetails.getUser() : null, 
                 isAdmin);
@@ -73,7 +75,7 @@ public class InquiryController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         
         try {
-            InquiryService.InquiryDetail detail = inquiryService.getInquiryDetail(
+            InquiryDetail detail = inquiryService.getInquiryDetail(
                     id, 
                     userDetails != null ? userDetails.getUser() : null, 
                     isAdmin);

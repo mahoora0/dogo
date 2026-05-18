@@ -477,6 +477,28 @@ public class ItemMatchService {
 		};
 	}
 
+	/**
+	 * 로그인한 사용자의 모든 활성 분실물(대기중/매칭중 상태)에 대해 실시간 매칭을 일괄 수행합니다.
+	 * 사용자가 로그인하여 서비스에 접속했을 때, 최신 매칭 상태를 갱신하기 위해 트리거됩니다.
+	 */
+	@Transactional
+	public void matchForUserLostItems(User user) {
+		if (user == null) return;
+		
+		// 1. 로그인 회원이 등록한 분실물 중 아직 매칭이 종료되지 않은 활성 상태('WAITING', 'MATCHING')의 분실물 목록 조회
+		List<LostItem> activeLostItems = lostItemRepository.findByUserAndDeletedFalseAndStatusIn(
+				user, List.of("WAITING", "MATCHING"));
+				
+		// 2. 각 활성 분실물에 대해 매칭 알고리즘을 개별적으로 수행하여 최신 유사 습득물 매칭 리스트를 생성 및 갱신
+		for (LostItem lostItem : activeLostItems) {
+			try {
+				matchForLostItem(lostItem);
+			} catch (Exception e) {
+				log.error("로그인 회원의 분실물 실시간 매칭 계산 실패 (lostItemId={}): {}", lostItem.getLostId(), e.getMessage());
+			}
+		}
+	}
+
 	private record RuleCandidate(LostItem lost, FoundItem found, MatchScoreResult score) {
 	}
 
