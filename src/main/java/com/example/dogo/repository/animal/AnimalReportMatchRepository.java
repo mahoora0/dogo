@@ -12,6 +12,10 @@ public interface AnimalReportMatchRepository extends JpaRepository<AnimalReportM
 
 	boolean existsByMissingReportAndSightingReport(AnimalReport missingReport, AnimalReport sightingReport);
 
+	void deleteByMissingReportUser(com.example.dogo.entity.user.User user);
+
+	void deleteBySightingReportUser(com.example.dogo.entity.user.User user);
+
 	@Query("""
 		SELECT m FROM AnimalReportMatch m
 		JOIN FETCH m.sightingReport

@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface AnimalReportRepository extends JpaRepository<AnimalReport, Long>, JpaSpecificationExecutor<AnimalReport> {
 
+	void deleteByUser(com.example.dogo.entity.user.User user);
+
 	@Query("""
 		SELECT r FROM AnimalReport r
 		WHERE r.reportType = 'SIGHTING'

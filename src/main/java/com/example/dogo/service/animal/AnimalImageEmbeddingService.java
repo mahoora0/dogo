@@ -31,7 +31,6 @@ public class AnimalImageEmbeddingService {
 	private static final String ANIMAL_UPLOAD_SUBDIR = "animal-reports";
 	private static final float IMAGE_SEARCH_THRESHOLD = 0.5f;
 	private static final int IMAGE_SEARCH_MAX_RESULTS = 20;
-	private static final String ANIMAL_CROP = "ANIMAL_CROP";
 	private static final String ORIGINAL_FALLBACK = "ORIGINAL_FALLBACK";
 
 	public record ImageSearchHit(Long reportId, float score) {}
@@ -50,7 +49,7 @@ public class AnimalImageEmbeddingService {
 			PetImageEmbeddingClient embeddingClient,
 			@Value("${file.upload-dir}") String uploadDir,
 			@Value("${match.pet.embedding.model-name:AvitoTech/CLIP-ViT-base-for-animal-identification}") String currentModelName,
-			@Value("${match.pet.embedding.crop-type:ANIMAL_CROP}") String currentCropType
+			@Value("${match.pet.embedding.crop-type:ANIMAL_CROP_V2}") String currentCropType
 	) {
 		this.imageRepository = imageRepository;
 		this.embeddingRepository = embeddingRepository;
@@ -169,8 +168,8 @@ public class AnimalImageEmbeddingService {
 	}
 
 	private List<String> acceptedCropTypes() {
-		if (ANIMAL_CROP.equals(currentCropType)) {
-			return List.of(ANIMAL_CROP, ORIGINAL_FALLBACK);
+		if (currentCropType.startsWith("ANIMAL_CROP")) {
+			return List.of(currentCropType, ORIGINAL_FALLBACK);
 		}
 		return List.of(currentCropType);
 	}

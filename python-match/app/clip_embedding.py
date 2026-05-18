@@ -1,4 +1,5 @@
 import io
+import math
 import os
 import tempfile
 import time
@@ -19,7 +20,7 @@ PET_CROP_ENABLED = os.getenv("PET_CROP_ENABLED", "true").strip().lower() in {"1"
 PET_CROP_YOLO_MODEL = os.getenv("PET_CROP_YOLO_MODEL", "yolo11n.pt")
 PET_CROP_MIN_CONFIDENCE = float(os.getenv("PET_CROP_MIN_CONFIDENCE", "0.35"))
 PET_CROP_PADDING_RATIO = float(os.getenv("PET_CROP_PADDING_RATIO", "0.18"))
-ANIMAL_CROP = "ANIMAL_CROP"
+ANIMAL_CROP = "ANIMAL_CROP_V2"
 ORIGINAL_FALLBACK = "ORIGINAL_FALLBACK"
 _TARGET_CLASS_BY_ANIMAL_TYPE = {
     "CAT": "cat",
@@ -149,15 +150,16 @@ def _select_pet_bbox(results, image_size: tuple[int, int], animal_type: str | No
 def _expand_to_square(bbox, image_size: tuple[int, int]) -> tuple[int, int, int, int]:
     width, height = image_size
     x1, y1, x2, y2 = bbox
-    box_width = x2 - x1
-    box_height = y2 - y1
-    side = max(box_width, box_height) * (1.0 + PET_CROP_PADDING_RATIO * 2.0)
+    box_width = max(0.0, x2 - x1)
+    box_height = max(0.0, y2 - y1)
+    side = math.ceil(max(box_width, box_height) * (1.0 + PET_CROP_PADDING_RATIO * 2.0))
+    side = max(1, min(side, width, height))
     cx = (x1 + x2) / 2
     cy = (y1 + y2) / 2
-    half = side / 2
 
-    left = max(0, int(round(cx - half)))
-    top = max(0, int(round(cy - half)))
-    right = min(width, int(round(cx + half)))
-    bottom = min(height, int(round(cy + half)))
-    return left, top, right, bottom
+    left = int(round(cx - side / 2))
+    top = int(round(cy - side / 2))
+    left = max(0, min(left, width - side))
+    top = max(0, min(top, height - side))
+
+    return left, top, left + side, top + side

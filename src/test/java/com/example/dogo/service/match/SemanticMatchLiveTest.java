@@ -18,6 +18,7 @@ import java.util.List;
  *
  * 실행: .\gradlew.bat test --tests "*.SemanticMatchLiveTest" -PuseMysql
  */
+@org.junit.jupiter.api.Disabled("수동 실행 전용 — MySQL + Python 서버 필요. 실행: .\\gradlew.bat test --tests \"*.SemanticMatchLiveTest\" -PuseMysql")
 @SpringBootTest
 @TestPropertySource(properties = {
         "spring.datasource.url=jdbc:mysql://localhost:3306/dogo?createDatabaseIfNotExist=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8",

@@ -30,4 +30,8 @@ public interface ItemMatchRepository extends JpaRepository<ItemMatch, Long> {
 	void deleteByLostItemLostId(Long lostId);
 
 	void deleteByFoundItemFoundId(Long foundId);
+
+	void deleteByLostItemUser(com.example.dogo.entity.user.User user);
+
+	void deleteByFoundItemUser(com.example.dogo.entity.user.User user);
 }
