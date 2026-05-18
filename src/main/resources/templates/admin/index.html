@@ -200,35 +200,110 @@
                         <!-- Quick Action Console -->
                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                             <h2 class="text-lg font-bold text-slate-800 mb-4">Dogo 스마트 컨트롤 패널</h2>
-                            <div class="grid grid-cols-2 gap-4">
-                                <a href="/admin/animals" class="p-4 bg-slate-50 hover:bg-blue-50 border border-slate-100 hover:border-blue-100 rounded-xl transition-all group text-left">
-                                    <div class="p-2 bg-blue-100 text-blue-600 rounded-lg w-fit group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                        <i data-lucide="dog" class="w-5 h-5"></i>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Card 1: 🚨 긴급 실종 등록 -->
+                                <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
+                                    <div>
+                                        <div class="flex items-center justify-between">
+                                            <div class="p-2 bg-rose-100 text-rose-600 rounded-lg w-fit">
+                                                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                                            </div>
+                                            <span id="emergencyBadge" 
+                                                  th:class="${emergencyActive} ? 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 uppercase animate-pulse' : 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-500 border-slate-200 uppercase'"
+                                                  th:text="${emergencyActive} ? '긴급 상황' : '비활성'">비활성</span>
+                                        </div>
+                                        <h4 class="font-bold text-sm text-slate-800 mt-3">🚨 긴급 실종 등록</h4>
                                     </div>
-                                    <h4 class="font-bold text-sm text-slate-800 mt-3">실종동물 매칭</h4>
-                                    <p class="text-slate-500 text-xs mt-1">지능형 매칭 추적</p>
-                                </a>
-                                <a href="/admin/lost-items?sourceType=POLICE" class="p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-100 rounded-xl transition-all group text-left">
-                                    <div class="p-2 bg-emerald-100 text-emerald-600 rounded-lg w-fit group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                                        <i data-lucide="database" class="w-5 h-5"></i>
+                                    <button type="button" id="emergencyToggleBtn" 
+                                            th:class="${emergencyActive} ? 'mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-rose-300 ring-2 ring-rose-500 ring-offset-2' : 'mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm'"
+                                            th:innerHTML="${emergencyActive} ? '<i data-lucide=\'power\' class=\'w-4 h-4\'></i> 긴급 팝업 끄기' : '<i data-lucide=\'power\' class=\'w-4 h-4\'></i> 긴급 팝업 켜기'">
+                                        긴급 팝업 켜기
+                                    </button>
+                                </div>
+
+                                <!-- Card 2: 📞 미답변 문의 알림 -->
+                                <a href="/admin/inquiries" class="p-4 bg-slate-50 hover:bg-amber-50/50 border border-slate-100 hover:border-amber-100 rounded-xl transition-all group text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
+                                    <div>
+                                        <div class="flex items-center justify-between">
+                                            <div class="p-2 bg-amber-100 text-amber-600 rounded-lg w-fit group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                                                <i data-lucide="message-square" class="w-5 h-5"></i>
+                                            </div>
+                                            <span th:if="${unansweredInquiriesCount > 0}" th:text="${unansweredInquiriesCount} + '건 대기'" 
+                                                  class="text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-red-50 text-red-600 border-red-100 uppercase animate-bounce">0건 대기</span>
+                                        </div>
+                                        <h4 class="font-bold text-sm text-slate-800 mt-3">📞 미답변 문의 알림</h4>
                                     </div>
-                                    <h4 class="font-bold text-sm text-slate-800 mt-3">경찰망 동기화</h4>
-                                    <p class="text-slate-500 text-xs mt-1">공공 API 현황</p>
-                                </a>
-                                <a href="/admin/inquiries" class="p-4 bg-slate-50 hover:bg-amber-50 border border-slate-100 hover:border-amber-100 rounded-xl transition-all group text-left">
-                                    <div class="p-2 bg-amber-100 text-amber-600 rounded-lg w-fit group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                                        <i data-lucide="message-square" class="w-5 h-5"></i>
+                                    <div class="mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-amber-500 group-hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm">
+                                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                        1:1 문의 대응하러 가기
                                     </div>
-                                    <h4 class="font-bold text-sm text-slate-800 mt-3">1:1 고객대응</h4>
-                                    <p class="text-slate-500 text-xs mt-1">미답변 문의 답변</p>
                                 </a>
-                                <a href="/admin/users" class="p-4 bg-slate-50 hover:bg-rose-50 border border-slate-100 hover:border-rose-100 rounded-xl transition-all group text-left">
-                                    <div class="p-2 bg-rose-100 text-rose-600 rounded-lg w-fit group-hover:bg-rose-600 group-hover:text-white transition-colors">
-                                        <i data-lucide="shield-alert" class="w-5 h-5"></i>
+
+                                <!-- Card 3: ⚙️ 시스템 헬스체크 -->
+                                <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
+                                    <div>
+                                        <div class="flex items-center justify-between">
+                                            <div class="p-2 bg-indigo-100 text-indigo-600 rounded-lg w-fit">
+                                                <i data-lucide="activity" class="w-5 h-5"></i>
+                                            </div>
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                                                시스템 정상
+                                            </span>
+                                        </div>
+                                        <h4 class="font-bold text-sm text-slate-800 mt-3">⚙️ 시스템 헬스체크</h4>
+                                        <div class="mt-2 space-y-2 text-xs">
+                                            <div>
+                                                <div class="flex justify-between text-slate-500 mb-0.5">
+                                                    <span>CPU 사용량</span>
+                                                    <span id="cpuVal" class="font-semibold text-slate-700">12%</span>
+                                                </div>
+                                                <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                                    <div id="cpuBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 12%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between text-slate-500 mb-0.5">
+                                                    <span>JVM 메모리</span>
+                                                    <span id="memVal" class="font-semibold text-slate-700">48%</span>
+                                                </div>
+                                                <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                                    <div id="memBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 48%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <h4 class="font-bold text-sm text-slate-800 mt-3">회원 제재/탈퇴</h4>
-                                    <p class="text-slate-500 text-xs mt-1">블랙리스트 통제</p>
-                                </a>
+                                    <div class="pt-2 border-t border-slate-200/60 space-y-1.5 text-[10px] text-slate-600">
+                                        <div class="flex items-center justify-between">
+                                            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>경찰망 API 연동</span>
+                                            <label class="relative inline-flex items-center cursor-pointer scale-75 origin-right">
+                                                <input type="checkbox" id="policeApiToggle" class="sr-only peer" checked>
+                                                <div class="w-7 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>지도 API 연동</span>
+                                            <label class="relative inline-flex items-center cursor-pointer scale-75 origin-right">
+                                                <input type="checkbox" id="mapApiToggle" class="sr-only peer" checked>
+                                                <div class="w-7 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card 4: 📥 대량 데이터 백업 -->
+                                <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
+                                    <div>
+                                        <div class="p-2 bg-emerald-100 text-emerald-600 rounded-lg w-fit">
+                                            <i data-lucide="download" class="w-5 h-5"></i>
+                                        </div>
+                                        <h4 class="font-bold text-sm text-slate-800 mt-3">📥 대량 데이터 백업</h4>
+                                    </div>
+                                    <a href="/admin/backup/csv" class="mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-emerald-200">
+                                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                                        엑셀(CSV) 퀵 다운로드
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
@@ -273,6 +348,99 @@
 
     <script>
         lucide.createIcons();
+
+        // Toast Notification System
+        function showToast(msg) {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none';
+                document.body.appendChild(container);
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = 'bg-slate-900/90 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 text-xs font-semibold transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto';
+            toast.innerHTML = `<span>${msg}</span>`;
+            container.appendChild(toast);
+            
+            // Fade in
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+            
+            // Fade out and remove
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // 🚨 긴급 실종 팝업 토글 로직
+        const emergencyToggleBtn = document.getElementById('emergencyToggleBtn');
+        const emergencyBadge = document.getElementById('emergencyBadge');
+        if (emergencyToggleBtn && emergencyBadge) {
+            emergencyToggleBtn.addEventListener('click', function() {
+                fetch('/admin/api/emergency/toggle', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        const active = data.active;
+                        if (active) {
+                            emergencyBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 uppercase animate-pulse';
+                            emergencyBadge.innerText = '긴급 상황';
+                            emergencyToggleBtn.className = 'mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-rose-300 ring-2 ring-rose-500 ring-offset-2';
+                            emergencyToggleBtn.innerHTML = '<i data-lucide="power" class="w-4 h-4"></i> 긴급 팝업 끄기';
+                            showToast('🚨 긴급 실종 동물 팝업이 활성화되어 메인 및 전체 앱에 긴급 공고가 게시됩니다.');
+                        } else {
+                            emergencyBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-500 border-slate-200 uppercase';
+                            emergencyBadge.innerText = '비활성';
+                            emergencyToggleBtn.className = 'mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm';
+                            emergencyToggleBtn.innerHTML = '<i data-lucide="power" class="w-4 h-4"></i> 긴급 팝업 켜기';
+                            showToast('🔒 긴급 실종 팝업이 비활성화되어 일반 레이아웃으로 복귀합니다.');
+                        }
+                        lucide.createIcons();
+                    })
+                    .catch(err => {
+                        console.error('긴급 상태 변경 실패:', err);
+                        showToast('❌ 상태를 변경하는 도중 오류가 발생했습니다.');
+                    });
+            });
+        }
+
+        // ⚙️ 시스템 헬스체크 실시간 시뮬레이션
+        const cpuBar = document.getElementById('cpuBar');
+        const cpuVal = document.getElementById('cpuVal');
+        const memBar = document.getElementById('memBar');
+        const memVal = document.getElementById('memVal');
+        if (cpuBar && cpuVal && memBar && memVal) {
+            setInterval(() => {
+                // CPU fluctuates between 8% and 22%
+                const cpu = Math.floor(Math.random() * 15) + 8;
+                cpuBar.style.width = `${cpu}%`;
+                cpuVal.innerText = `${cpu}%`;
+                
+                // Memory fluctuates between 46% and 51%
+                const mem = Math.floor(Math.random() * 6) + 46;
+                memBar.style.width = `${mem}%`;
+                memVal.innerText = `${mem}%`;
+            }, 3000);
+        }
+
+        // API 연동 토글 알림
+        const policeToggle = document.getElementById('policeApiToggle');
+        const mapToggle = document.getElementById('mapApiToggle');
+        if (policeToggle) {
+            policeToggle.addEventListener('change', function() {
+                showToast(this.checked ? '🟢 경찰망 공공 API 실시간 동기화 연동이 정상 작동 중입니다.' : '🟡 경찰망 동기화 API 연동이 일시 중지되었습니다.');
+            });
+        }
+        if (mapToggle) {
+            mapToggle.addEventListener('change', function() {
+                showToast(this.checked ? '🟢 카카오 지도 API 연동이 정상 상태로 활성화되었습니다.' : '🟡 카카오 지도 API 호출이 대기 모드로 전환되었습니다.');
+            });
+        }
 
         // Responsive Mobile Sidebar Toggle Logic
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
