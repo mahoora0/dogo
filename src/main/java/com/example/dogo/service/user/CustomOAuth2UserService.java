@@ -95,6 +95,17 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             userSocialAccountRepository.save(newSocialAccount);
         }
 
+        // 소셜 로그인 회원 상태 검증 (정지 BANNED 또는 탈퇴 WITHDRAWN인 경우 로그인 제한)
+        if (!"ACTIVE".equals(user.getStatus())) {
+            String message = "BANNED".equals(user.getStatus()) 
+                    ? "이용 정지된 계정입니다. 고객센터에 문의해 주세요." 
+                    : "탈퇴 유예 처리된 계정입니다.";
+            throw new org.springframework.security.oauth2.core.OAuth2AuthenticationException(
+                    new org.springframework.security.oauth2.core.OAuth2Error("inactive_user"),
+                    message
+            );
+        }
+
         return new CustomUserDetails(user, attributes);
     }
 }
