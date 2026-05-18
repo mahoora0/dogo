@@ -56,3 +56,4 @@ python-match/.onnx/
 python-match/*.pt
 *.py[cod]
 python-match/logs/match.log
+python-match/Ultralytics/
