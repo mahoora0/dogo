@@ -27,17 +27,25 @@
                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                     대시보드
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                <a href="/admin/users" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                     <i data-lucide="users" class="w-5 h-5"></i>
                     회원 관리
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                <a href="/admin/lost-items" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                     <i data-lucide="file-text" class="w-5 h-5"></i>
                     분실물 관리
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                <a href="/admin/found-items" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                     <i data-lucide="package" class="w-5 h-5"></i>
                     습득물 관리
+                </a>
+                <a href="/admin/animals" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="dog" class="w-5 h-5"></i>
+                    실종동물 관리
+                </a>
+                <a href="/admin/missing-persons" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="user-round-search" class="w-5 h-5"></i>
+                    실종자 관리
                 </a>
                 <a href="/admin/inquiries" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                     <i data-lucide="message-square" class="w-5 h-5"></i>
@@ -58,98 +66,196 @@
         <main class="flex-1 overflow-y-auto">
             <!-- Top Header -->
             <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
-                <h1 class="text-xl font-semibold">대시보드 개요</h1>
+                <div class="flex items-center gap-2">
+                    <a href="/admin" class="md:hidden text-slate-500"><i data-lucide="menu"></i></a>
+                    <h1 class="text-xl font-bold text-slate-800">대시보드 개요</h1>
+                </div>
                 <div class="flex items-center gap-4">
-                    <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors relative">
-                        <i data-lucide="bell" class="w-5 h-5"></i>
-                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
                     <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
-                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
                             A
                         </div>
-                        <span class="font-medium text-sm">관리자님</span>
+                        <span class="font-semibold text-sm text-slate-700">관리자님</span>
                     </div>
                 </div>
             </header>
 
             <div class="p-8 space-y-8">
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                <i data-lucide="users" class="w-6 h-6"></i>
-                            </div>
-                            <span class="text-xs font-semibold text-green-500 bg-green-50 px-2 py-1 rounded-full">+12%</span>
-                        </div>
-                        <h3 class="text-slate-500 text-sm font-medium">총 회원 수</h3>
-                        <p class="text-2xl font-bold mt-1" th:text="${totalUsers}">0</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="p-2 bg-red-50 text-red-600 rounded-lg">
-                                <i data-lucide="search" class="w-6 h-6"></i>
-                            </div>
-                        </div>
-                        <h3 class="text-slate-500 text-sm font-medium">분실물 제보</h3>
-                        <p class="text-2xl font-bold mt-1" th:text="${lostItems}">0</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                                <i data-lucide="package" class="w-6 h-6"></i>
-                            </div>
-                        </div>
-                        <h3 class="text-slate-500 text-sm font-medium">습득물 제보</h3>
-                        <p class="text-2xl font-bold mt-1" th:text="${foundItems}">0</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                                <i data-lucide="check-circle" class="w-6 h-6"></i>
-                            </div>
-                            <span class="text-xs font-semibold text-blue-500 bg-blue-50 px-2 py-1 rounded-full">성공률 25%</span>
-                        </div>
-                        <h3 class="text-slate-500 text-sm font-medium">매칭 성공</h3>
-                        <p class="text-2xl font-bold mt-1" th:text="${matchSuccess}">0</p>
+                <!-- Welcome Banner -->
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-44 h-44 bg-white/10 rounded-full blur-2xl"></div>
+                    <div class="absolute -left-10 -top-10 w-44 h-44 bg-white/10 rounded-full blur-2xl"></div>
+                    <div class="relative z-10 max-w-xl">
+                        <span class="text-xs font-bold bg-white/20 px-3 py-1 rounded-full uppercase tracking-wider">Dogo Smart Console v1.2</span>
+                        <h2 class="text-3xl font-extrabold mt-3">안녕하세요, 관리자님!</h2>
+                        <p class="mt-2 text-blue-100 text-sm leading-relaxed">
+                            오늘도 Dogo 서비스를 이용해 소중한 유실물과 반려동물, 실종자가 사랑하는 가족의 품으로 돌아갈 수 있도록 실시간 데이터를 점검하고 스마트 매칭 결과를 확인해 보세요.
+                        </p>
                     </div>
                 </div>
 
-                <!-- Recent Activity Table -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                        <h2 class="text-lg font-bold">최근 등록된 물품</h2>
-                        <button class="text-sm text-blue-600 font-medium hover:underline">전체 보기</button>
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Card 1: Users -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                                <i data-lucide="users" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">실시간 가입</span>
+                        </div>
+                        <h3 class="text-slate-500 text-sm font-medium">총 회원 수</h3>
+                        <p class="text-3xl font-extrabold text-slate-800 mt-1" th:text="${totalUsers} + '명'">0명</p>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-50 text-slate-500 text-sm uppercase font-semibold">
-                                <tr>
-                                    <th class="px-6 py-4">유형</th>
-                                    <th class="px-6 py-4">물품명</th>
-                                    <th class="px-6 py-4">위치</th>
-                                    <th class="px-6 py-4">등록일</th>
-                                    <th class="px-6 py-4">상태</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                                <tr th:each="activity : ${activities}" class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <span th:class="${activity.type == '분실' ? 'text-red-600 bg-red-50' : (activity.type == '습득' ? 'text-emerald-600 bg-emerald-50' : 'text-blue-600 bg-blue-50')} + ' px-2 py-1 rounded-lg text-xs font-bold'" th:text="${activity.type}">유형</span>
-                                    </td>
-                                    <td class="px-6 py-4 font-medium" th:text="${activity.item}">아이템</td>
-                                    <td class="px-6 py-4 text-slate-600 text-sm" th:text="${activity.location}">위치</td>
-                                    <td class="px-6 py-4 text-slate-500 text-sm" th:text="${activity.date}">날짜</td>
-                                    <td class="px-6 py-4">
-                                        <span class="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-                                            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
-                                            처리중
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- Card 2: Lost Items -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
+                                <i data-lucide="search" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full">주인 찾는 중</span>
+                        </div>
+                        <h3 class="text-slate-500 text-sm font-medium">분실물 등록 건수</h3>
+                        <p class="text-3xl font-extrabold text-slate-800 mt-1" th:text="${lostItems} + '건'">0건</p>
+                    </div>
+                    <!-- Card 3: Found Items -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                                <i data-lucide="package" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">보관중</span>
+                        </div>
+                        <h3 class="text-slate-500 text-sm font-medium">습득물 보관 건수</h3>
+                        <p class="text-3xl font-extrabold text-slate-800 mt-1" th:text="${foundItems} + '건'">0건</p>
+                    </div>
+                    <!-- Card 4: Matchings -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                                <i data-lucide="check-circle" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">추적 매칭 가동</span>
+                        </div>
+                        <h3 class="text-slate-500 text-sm font-medium">실종 사건 수 (동물/사람)</h3>
+                        <p class="text-3xl font-extrabold text-slate-800 mt-1" th:text="${matchSuccess} + '건'">0건</p>
+                    </div>
+                </div>
+
+                <!-- Middle Content Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Left: Recent Activity Feed -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 bg-blue-600 rounded-full animate-pulse"></span>
+                                <h2 class="text-lg font-bold text-slate-800">실시간 유실물/습득물 현황</h2>
+                            </div>
+                            <span class="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full">실시간 반영</span>
+                        </div>
+                        <div class="overflow-x-auto flex-1">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
+                                    <tr>
+                                        <th class="px-6 py-4">구분</th>
+                                        <th class="px-6 py-4">물품 정보</th>
+                                        <th class="px-6 py-4">발생 위치</th>
+                                        <th class="px-6 py-4">등록 시각</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr th:each="activity : ${activities}" class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span th:class="${activity.type == '분실' ? 'text-rose-600 bg-rose-50 border-rose-100' : 'text-emerald-600 bg-emerald-50 border-emerald-100'} + ' px-2.5 py-1 rounded-full text-xs font-bold border'" 
+                                                  th:text="${activity.type}">유형</span>
+                                        </td>
+                                        <td class="px-6 py-4 font-semibold text-slate-800 text-sm" th:text="${activity.item}">아이템</td>
+                                        <td class="px-6 py-4 text-slate-600 text-sm" th:text="${activity.location}">위치</td>
+                                        <td class="px-6 py-4 text-slate-500 text-sm" th:text="${activity.date}">날짜</td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(activities)}">
+                                        <td colspan="4" class="text-center py-10 text-slate-400">최근 접수된 실시간 물품이 없습니다.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-4 border-t border-slate-100 bg-slate-50/50 text-center">
+                            <a href="/admin/lost-items" class="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">
+                                전체 목록 및 연동 필터 조회하기 <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Right: Quick Analytics & Quick Console -->
+                    <div class="space-y-8">
+                        <!-- Quick Action Console -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <h2 class="text-lg font-bold text-slate-800 mb-4">Dogo 스마트 컨트롤 패널</h2>
+                            <div class="grid grid-cols-2 gap-4">
+                                <a href="/admin/animals" class="p-4 bg-slate-50 hover:bg-blue-50 border border-slate-100 hover:border-blue-100 rounded-xl transition-all group text-left">
+                                    <div class="p-2 bg-blue-100 text-blue-600 rounded-lg w-fit group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                        <i data-lucide="dog" class="w-5 h-5"></i>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-slate-800 mt-3">실종동물 매칭</h4>
+                                    <p class="text-slate-500 text-xs mt-1">지능형 매칭 추적</p>
+                                </a>
+                                <a href="/admin/lost-items?sourceType=POLICE" class="p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-100 rounded-xl transition-all group text-left">
+                                    <div class="p-2 bg-emerald-100 text-emerald-600 rounded-lg w-fit group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                        <i data-lucide="database" class="w-5 h-5"></i>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-slate-800 mt-3">경찰망 동기화</h4>
+                                    <p class="text-slate-500 text-xs mt-1">공공 API 현황</p>
+                                </a>
+                                <a href="/admin/inquiries" class="p-4 bg-slate-50 hover:bg-amber-50 border border-slate-100 hover:border-amber-100 rounded-xl transition-all group text-left">
+                                    <div class="p-2 bg-amber-100 text-amber-600 rounded-lg w-fit group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                                        <i data-lucide="message-square" class="w-5 h-5"></i>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-slate-800 mt-3">1:1 고객대응</h4>
+                                    <p class="text-slate-500 text-xs mt-1">미답변 문의 답변</p>
+                                </a>
+                                <a href="/admin/users" class="p-4 bg-slate-50 hover:bg-rose-50 border border-slate-100 hover:border-rose-100 rounded-xl transition-all group text-left">
+                                    <div class="p-2 bg-rose-100 text-rose-600 rounded-lg w-fit group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                                        <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-slate-800 mt-3">회원 제재/탈퇴</h4>
+                                    <p class="text-slate-500 text-xs mt-1">블랙리스트 통제</p>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Statistics Visual bar -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h2 class="text-lg font-bold text-slate-800">대표 유실물 분포 비율</h2>
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                                        <span>전자기기 (핸드폰/에어팟 등)</span>
+                                        <span>42%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-blue-600 h-full rounded-full" style="width: 42%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                                        <span>지갑 / 신용카드 / 신분증</span>
+                                        <span>35%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-emerald-600 h-full rounded-full" style="width: 35%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                                        <span>가방 / 의류 / 귀금속</span>
+                                        <span>23%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-amber-500 h-full rounded-full" style="width: 23%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

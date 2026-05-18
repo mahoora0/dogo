@@ -213,4 +213,14 @@ public class AnimalReport {
 		this.viewCount++;
 		this.moddate = LocalDateTime.now();
 	}
+
+	public void setStatus(String status) {
+		this.status = status;
+		this.moddate = LocalDateTime.now();
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+		this.moddate = LocalDateTime.now();
+	}
 }
