@@ -32,6 +32,21 @@ public class MissingPersonReport {
 	@JoinColumn(name = "USER_NO")
 	private User user;
 
+	@Column(name = "SOURCE_TYPE", nullable = false)
+	private String sourceType = "USER";
+
+	@Column(name = "EXTERNAL_ID")
+	private String externalId;
+
+	@Column(name = "API_PROVIDER")
+	private String apiProvider;
+
+	@Column(name = "RAW_PAYLOAD")
+	private String rawPayload;
+
+	@Column(name = "SYNCED_AT")
+	private LocalDateTime syncedAt;
+
 	@Column(name = "AGE", nullable = false)
 	private Integer age;
 
@@ -103,5 +118,45 @@ public class MissingPersonReport {
 		this.hairColor = hairColor;
 		this.hairStyle = hairStyle;
 		this.clothing = clothing;
+	}
+
+	public static MissingPersonReport fromPublicApi(
+			String apiProvider,
+			String externalId,
+			String rawPayload,
+			Integer age,
+			String nationality,
+			LocalDateTime occurredAt,
+			String occurredPlace,
+			Integer heightCm,
+			BigDecimal weightKg,
+			String bodyType,
+			String faceShape,
+			String hairColor,
+			String hairStyle,
+			String clothing
+	) {
+		MissingPersonReport report = new MissingPersonReport();
+		report.sourceType = "PUBLIC_API";
+		report.apiProvider = apiProvider;
+		report.externalId = externalId;
+		report.rawPayload = rawPayload;
+		report.syncedAt = LocalDateTime.now();
+		report.age = age;
+		report.nationality = nationality;
+		report.occurredAt = occurredAt;
+		report.occurredPlace = occurredPlace;
+		report.heightCm = heightCm;
+		report.weightKg = weightKg;
+		report.bodyType = bodyType;
+		report.faceShape = faceShape;
+		report.hairColor = hairColor;
+		report.hairStyle = hairStyle;
+		report.clothing = clothing;
+		return report;
+	}
+
+	public String getSourceLabel() {
+		return "PUBLIC_API".equals(sourceType) ? "공공데이터" : "사용자 제보";
 	}
 }

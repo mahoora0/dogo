@@ -99,14 +99,14 @@ The controller and search service should not call the public API directly. They 
 
 List cards and detail pages should display a compact source label:
 
-- User post: `User report`
-- Public API post: `Public data`
+- User post: `사용자 제보`
+- Public API post: `공공데이터`
 
 If `sourceType` filtering is added, place it near the existing status filter as a small segmented/radio control:
 
-- `All`
-- `User report`
-- `Public data`
+- `전체`
+- `사용자 제보`
+- `공공데이터`
 
 The UI should not expose raw API payloads or internal external IDs to normal users.
 
