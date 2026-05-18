@@ -291,6 +291,17 @@ public class LostItemService {
 		eventPublisher.publishEvent(new LostItemMatchRequestedEvent(item.getLostId()));
 	}
 
+	@Transactional
+	public void delete(Long id, User loginUser) {
+		LostItem item = lostItemRepository.findById(id)
+				.filter(i -> !i.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("분실물 게시글을 찾을 수 없습니다."));
+		checkOwnership(item, loginUser);
+
+		itemMatchService.clearMatchesForLostItem(item.getLostId());
+		item.markDeleted();
+	}
+
 	private void checkOwnership(LostItem item, User loginUser) {
 		if (!"USER".equals(item.getSourceType())) {
 			throw new IllegalArgumentException("수정 권한이 없습니다.");

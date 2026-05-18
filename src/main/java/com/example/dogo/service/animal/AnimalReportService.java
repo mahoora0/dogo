@@ -286,6 +286,17 @@ public class AnimalReportService {
 		animalReportMatchRepository.flush();
 	}
 
+	@Transactional
+	public void delete(Long id, User loginUser) {
+		AnimalReport report = animalReportRepository.findById(id)
+				.filter(r -> !r.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("동물 신고 게시글을 찾을 수 없습니다."));
+		checkOwnership(report, loginUser);
+
+		clearMatchesForReport(report.getReportId());
+		report.markDeleted();
+	}
+
 	private void checkOwnership(AnimalReport report, User loginUser) {
 		if (loginUser == null || report.getUser() == null || !report.getUser().getUserNo().equals(loginUser.getUserNo())) {
 			throw new IllegalArgumentException("수정 권한이 없습니다.");
