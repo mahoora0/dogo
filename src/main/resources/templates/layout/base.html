@@ -57,7 +57,6 @@
     <div class="main-layout">
       <aside class="sidebar">
         <nav>
-          <h2>찾기 서비스</h2>
           <div class="category">
             <h3>분실물</h3>
             <ul>
@@ -77,6 +76,9 @@
               </li>
               <li th:classappend="${currentUri == '/found-items/new' ? 'active' : ''}">
                 <a th:href="@{/found-items/new}"><span class="sidebar-icon sidebar-icon--found-new"></span>습득물 등록</a>
+              </li>
+              <li th:classappend="${currentUri == '/areas/list' ? 'active' : ''}">
+                <a th:href="@{/areas/list}"><span class="sidebar-icon sidebar-icon--service-center"></span>서비스센터</a>
               </li>
             </ul>
           </div>
@@ -102,6 +104,7 @@
               </li>
             </ul>
           </div>
+          <hr class="sidebar-divider">
           <div class="category">
             <h3>고객지원</h3>
             <ul>
