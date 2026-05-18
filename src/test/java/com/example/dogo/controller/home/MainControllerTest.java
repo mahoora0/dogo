@@ -24,8 +24,8 @@ class MainControllerTest {
 	@Test
 	void homeShowsIndexPage() throws Exception {
 		when(lostItemService.getSearchCategoryNames()).thenReturn(List.of("가방", "전자기기"));
-		when(lostItemService.getRecentItems(4)).thenReturn(List.of());
-		when(foundItemService.getRecentItems(4)).thenReturn(List.of());
+		when(lostItemService.getRecentItems(8)).thenReturn(List.of());
+		when(foundItemService.getRecentItems(8)).thenReturn(List.of());
 
 		mockMvc.perform(get("/"))
 				.andExpect(status().isOk())

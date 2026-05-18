@@ -29,6 +29,21 @@
           </th:block>
 
           <th:block sec:authorize="isAuthenticated()">
+            <!-- 🔔 알림 아이콘 추가 -->
+            <a th:href="@{/notifications}" class="chat-button" title="알림">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   fill="none"
+                   viewBox="0 0 24 24"
+                   stroke-width="2"
+                   stroke="currentColor">
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11a6 6 0 1 0-12 0v3.159c0 .538-.214 1.055-.595 1.437L4 17h5m6 0a3 3 0 1 1-6 0m6 0H9"/>
+              </svg>
+              <span class="chat-text">알림</span>
+            </a>
+
+            <!-- 💬 채팅 -->
             <a th:href="@{/chat}" class="chat-button" title="채팅하기">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
@@ -46,6 +61,8 @@
               </span>
               <span sec:authentication="principal.user.nickname">닉네임</span>
             </a>
+
+            <!-- 기존 프로필 -->
             <form th:action="@{/logout}" method="post">
               <button type="submit" class="nav-link nav-link--button">로그아웃</button>
             </form>
