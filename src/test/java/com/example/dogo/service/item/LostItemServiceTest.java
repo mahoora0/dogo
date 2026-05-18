@@ -177,6 +177,128 @@ class LostItemServiceTest {
 		assertThat(Files.exists(uploadDir.resolve("lost-items").resolve(Path.of(imageUrl).getFileName()))).isTrue();
 	}
 
+	@Test
+	void getForEditSplitsAreaAndReturnsEditData() {
+		LostItem item = lostItemWithOwner(5L, 1L, "서울특별시 강남구");
+		when(lostItemRepository.findById(5L)).thenReturn(Optional.of(item));
+		when(lostItemImageRepository.findByLostItemOrderBySortOrderAscImageIdAsc(item))
+				.thenReturn(List.of(image(item, "/uploads/lost-items/wallet.jpg")));
+
+		User loginUser = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(loginUser, "userNo", 1L);
+
+		var result = lostItemService.getForEdit(5L, loginUser);
+
+		assertThat(result.id()).isEqualTo(5L);
+		assertThat(result.lostAreaProvince()).isEqualTo("서울특별시");
+		assertThat(result.lostAreaDistrict()).isEqualTo("강남구");
+		assertThat(result.existingImageUrls()).containsExactly("/uploads/lost-items/wallet.jpg");
+	}
+
+	@Test
+	void getForEditThrowsWhenItemNotFound() {
+		when(lostItemRepository.findById(99L)).thenReturn(Optional.empty());
+
+		User loginUser = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(loginUser, "userNo", 1L);
+
+		assertThatThrownBy(() -> lostItemService.getForEdit(99L, loginUser))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("분실물 게시글을 찾을 수 없습니다.");
+	}
+
+	@Test
+	void getForEditThrowsForPoliceSourcedItem() {
+		LostItem policeItem = LostItem.fromPolice("ATC001", "경찰 등록 분실물", null,
+				"지갑", "지갑", null, null,
+				LocalDateTime.of(2026, 5, 8, 12, 0), "서울", "강남역", null);
+		ReflectionTestUtils.setField(policeItem, "lostId", 6L);
+		when(lostItemRepository.findById(6L)).thenReturn(Optional.of(policeItem));
+
+		User loginUser = new User("user@dogo.local", "사용자", "010-0000-0001");
+		ReflectionTestUtils.setField(loginUser, "userNo", 1L);
+
+		assertThatThrownBy(() -> lostItemService.getForEdit(6L, loginUser))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("수정 권한이 없습니다.");
+	}
+
+	@Test
+	void getForEditThrowsWhenOwnershipMismatch() {
+		LostItem item = lostItemWithOwner(7L, 1L, "서울특별시 강남구");
+		when(lostItemRepository.findById(7L)).thenReturn(Optional.of(item));
+
+		User otherUser = new User("other@dogo.local", "다른사용자", "010-9999-9999");
+		ReflectionTestUtils.setField(otherUser, "userNo", 2L);
+
+		assertThatThrownBy(() -> lostItemService.getForEdit(7L, otherUser))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("수정 권한이 없습니다.");
+	}
+
+	@Test
+	void updateChangesItemFields() {
+		LostItem item = lostItemWithOwner(8L, 1L, "서울특별시 강남구");
+		when(lostItemRepository.findById(8L)).thenReturn(Optional.of(item));
+
+		User loginUser = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(loginUser, "userNo", 1L);
+
+		LostItemCreateRequest req = request("수정된 제목", "수정된 지갑", null);
+		req.setLostAreaProvince("부산광역시");
+		req.setLostAreaDistrict("해운대구");
+
+		lostItemService.update(8L, req, loginUser);
+
+		assertThat(item.getTitle()).isEqualTo("수정된 제목");
+		assertThat(item.getItemName()).isEqualTo("수정된 지갑");
+		assertThat(item.getLostArea()).isEqualTo("부산광역시 해운대구");
+	}
+
+	@Test
+	void updateReplacesImagesWhenNewImagesUploaded() throws Exception {
+		LostItem item = lostItemWithOwner(9L, 1L, "서울");
+		LostItemImage oldImage = image(item, "/uploads/lost-items/old.jpg");
+		ReflectionTestUtils.setField(oldImage, "storedName", "old.jpg");
+
+		Path lostDir = uploadDir.resolve("lost-items");
+		java.nio.file.Files.createDirectories(lostDir);
+		java.nio.file.Files.writeString(lostDir.resolve("old.jpg"), "old-data");
+
+		when(lostItemRepository.findById(9L)).thenReturn(Optional.of(item));
+		when(lostItemImageRepository.findByLostItemOrderBySortOrderAscImageIdAsc(item)).thenReturn(List.of(oldImage));
+
+		User loginUser = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(loginUser, "userNo", 1L);
+
+		MockMultipartFile newImage = new MockMultipartFile("image", "new.jpg", "image/jpeg", "new-data".getBytes());
+		LostItemCreateRequest req = request("제목", "지갑", newImage);
+
+		lostItemService.update(9L, req, loginUser);
+
+		verify(lostItemImageRepository).deleteAll(List.of(oldImage));
+		assertThat(java.nio.file.Files.exists(lostDir.resolve("old.jpg"))).isFalse();
+
+		ArgumentCaptor<LostItemImage> captor = ArgumentCaptor.forClass(LostItemImage.class);
+		verify(lostItemImageRepository).save(captor.capture());
+		assertThat(captor.getValue().getImageUrl()).startsWith("/uploads/lost-items/");
+	}
+
+	@Test
+	void updateKeepsExistingImagesWhenNoNewImages() {
+		LostItem item = lostItemWithOwner(10L, 1L, "서울");
+		when(lostItemRepository.findById(10L)).thenReturn(Optional.of(item));
+
+		User loginUser = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(loginUser, "userNo", 1L);
+
+		LostItemCreateRequest req = request("제목", "지갑", null);
+		lostItemService.update(10L, req, loginUser);
+
+		verify(lostItemImageRepository, never()).deleteAll(any());
+		verify(lostItemImageRepository, never()).save(any());
+	}
+
 	private LostItem lostItem(Long id, String title, String content) {
 		LostItem lostItem = new LostItem(
 				new User("tester@dogo.local", "테스터", "010-1111-2222"),
@@ -193,6 +315,16 @@ class LostItemServiceTest {
 		);
 		ReflectionTestUtils.setField(lostItem, "lostId", id);
 		return lostItem;
+	}
+
+	private LostItem lostItemWithOwner(Long id, Long ownerUserNo, String lostArea) {
+		User owner = new User("owner@dogo.local", "소유자", "010-0000-0001");
+		ReflectionTestUtils.setField(owner, "userNo", ownerUserNo);
+		LostItem item = new LostItem(owner, "검정 지갑을 찾습니다", null,
+				"검정 지갑", "지갑", null, null,
+				LocalDateTime.of(2026, 5, 8, 12, 0), lostArea, "강남역", "010-1234-5678");
+		ReflectionTestUtils.setField(item, "lostId", id);
+		return item;
 	}
 
 	private LostItemImage image(LostItem lostItem, String imageUrl) {

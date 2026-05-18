@@ -22,9 +22,10 @@ class MainControllerTest {
 	private final LostItemService lostItemService = mock(LostItemService.class);
 	private final FoundItemService foundItemService = mock(FoundItemService.class);
 	private final ItemMatchService itemMatchService = mock(ItemMatchService.class);
-	private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(
-			new MainController(lostItemService, foundItemService, itemMatchService)
-	).setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver()).build();
+	private final MockMvc mockMvc = MockMvcBuilders
+			.standaloneSetup(new MainController(lostItemService, foundItemService, itemMatchService))
+			.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+			.build();
 
 	@Test
 	void homeShowsIndexPage() throws Exception {

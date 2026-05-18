@@ -12,6 +12,10 @@ public interface AnimalReportMatchRepository extends JpaRepository<AnimalReportM
 
 	boolean existsByMissingReportAndSightingReport(AnimalReport missingReport, AnimalReport sightingReport);
 
+	void deleteByMissingReport_ReportId(Long reportId);
+
+	void deleteBySightingReport_ReportId(Long reportId);
+
 	void deleteByMissingReportUser(com.example.dogo.entity.user.User user);
 
 	void deleteBySightingReportUser(com.example.dogo.entity.user.User user);

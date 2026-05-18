@@ -41,7 +41,7 @@ _SUPPORTED_DETECTION_CLASSES = {"cat", "dog"}
 def _load_clip_model():
     logger.info(f"CLIP 모델 로딩 중: model={CLIP_MODEL_NAME}, processor={CLIP_PROCESSOR_NAME}")
     t0 = time.perf_counter()
-    processor = AutoProcessor.from_pretrained(CLIP_PROCESSOR_NAME)
+    processor = AutoProcessor.from_pretrained(CLIP_PROCESSOR_NAME, use_fast=True)
     if CLIP_MODEL_BACKEND in {"onnx", "onnx-int8"}:
         import onnxruntime as ort
 

@@ -5,12 +5,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-public record AnimalReportDetailView(
+public record AnimalReportEditData(
 		Long id,
 		String reportType,
-		String reportTypeLabel,
-		String status,
-		String statusLabel,
 		String title,
 		LocalDate eventDate,
 		LocalTime eventTime,
@@ -18,27 +15,16 @@ public record AnimalReportDetailView(
 		String detailPlace,
 		String contactPhone,
 		boolean contactPublic,
-		String displayContact,
 		String sightingCareStatus,
-		String sightingCareStatusLabel,
 		String animalType,
-		String animalTypeLabel,
 		String breedName,
 		String gender,
-		String genderLabel,
 		String neuteredStatus,
-		String neuteredStatusLabel,
 		Integer ageValue,
 		String ageUnit,
-		String ageUnitLabel,
 		BigDecimal weightKg,
-		String ageDisplay,
-		String weightDisplay,
 		String furColor,
 		String distinctiveMarks,
 		String content,
-		int viewCount,
-		List<String> imageUrls,
-		Long userNo
-) {
-}
+		List<String> existingImageUrls
+) {}

@@ -4,6 +4,7 @@ import com.example.dogo.dto.animal.AnimalImageSearchResult;
 import com.example.dogo.dto.animal.AnimalMatchCandidateView;
 import com.example.dogo.dto.animal.AnimalReportCreateRequest;
 import com.example.dogo.dto.animal.AnimalReportDetailView;
+import com.example.dogo.dto.animal.AnimalReportEditData;
 import com.example.dogo.dto.animal.AnimalReportView;
 import com.example.dogo.entity.animal.AnimalReport;
 import com.example.dogo.entity.animal.AnimalReportImage;
@@ -183,8 +184,112 @@ public class AnimalReportService {
 				report.getDistinctiveMarks(),
 				report.getContent(),
 				report.getViewCount(),
+				imageUrls,
+				report.getUser() != null ? report.getUser().getUserNo() : null
+		);
+	}
+
+	@Transactional(readOnly = true)
+	public AnimalReportEditData getForEdit(Long id, User loginUser) {
+		AnimalReport report = animalReportRepository.findById(id)
+				.filter(r -> !r.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("동물 신고 게시글을 찾을 수 없습니다."));
+		checkOwnership(report, loginUser);
+
+		List<String> imageUrls = animalReportImageRepository.findByAnimalReportOrderBySortOrderAscImageIdAsc(report).stream()
+				.map(AnimalReportImage::getImageUrl)
+				.toList();
+
+		return new AnimalReportEditData(
+				report.getReportId(),
+				report.getReportType(),
+				report.getTitle(),
+				report.getEventDate(),
+				report.getEventTime(),
+				report.getRegionName(),
+				report.getDetailPlace(),
+				report.getContactPhone(),
+				report.isContactPublic(),
+				report.getSightingCareStatus(),
+				report.getAnimalType(),
+				report.getBreedName(),
+				report.getGender(),
+				report.getNeuteredStatus(),
+				report.getAgeValue(),
+				report.getAgeUnit(),
+				report.getWeightKg(),
+				report.getFurColor(),
+				report.getDistinctiveMarks(),
+				report.getContent(),
 				imageUrls
 		);
+	}
+
+	@Transactional
+	public void update(Long id, AnimalReportCreateRequest request, User loginUser) {
+		validateCreateRequest(request);
+		AnimalReport report = animalReportRepository.findById(id)
+				.filter(r -> !r.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("동물 신고 게시글을 찾을 수 없습니다."));
+		checkOwnership(report, loginUser);
+
+		String reportType = request.getReportType().trim();
+		String animalType = request.getAnimalType().trim();
+		String breedName = blankToNull(request.getBreedName());
+		String title = defaultTitle(reportType, request.getTitle(), animalType, breedName);
+		Area regionArea = findRegionArea(request.getRegionName()).orElse(null);
+
+		report.update(
+				reportType,
+				title,
+				request.getEventDate(),
+				request.getEventTime(),
+				regionArea,
+				request.getRegionName().trim(),
+				request.getDetailPlace().trim(),
+				blankToNull(request.getContactPhone()),
+				request.isContactPublic(),
+				normalizedCareStatus(reportType, request.getSightingCareStatus()),
+				animalType,
+				breedName,
+				defaultInSet(request.getGender(), GENDERS, "UNKNOWN"),
+				defaultInSet(request.getNeuteredStatus(), NEUTERED_STATUSES, "UNKNOWN"),
+				request.getAgeValue(),
+				normalizedAgeUnit(request.getAgeUnit()),
+				normalizedWeight(request.getWeightKg()),
+				blankToNull(request.getFurColor()),
+				blankToNull(request.getDistinctiveMarks()),
+				blankToNull(request.getContent())
+		);
+
+		List<MultipartFile> newImages = request.getUploadImages();
+		if (!newImages.isEmpty()) {
+			List<AnimalReportImage> oldImages = animalReportImageRepository.findByAnimalReportOrderBySortOrderAscImageIdAsc(report);
+			for (AnimalReportImage old : oldImages) {
+				try {
+					Files.deleteIfExists(animalReportUploadPath.resolve(old.getStoredName()));
+				} catch (IOException ignored) {
+				}
+			}
+			animalReportImageRepository.deleteAll(oldImages);
+			saveImages(report, newImages);
+		}
+
+		clearMatchesForReport(report.getReportId());
+		eventPublisher.publishEvent(new AnimalReportCreatedEvent(report.getReportId()));
+	}
+
+	@Transactional
+	public void clearMatchesForReport(Long reportId) {
+		animalReportMatchRepository.deleteByMissingReport_ReportId(reportId);
+		animalReportMatchRepository.deleteBySightingReport_ReportId(reportId);
+		animalReportMatchRepository.flush();
+	}
+
+	private void checkOwnership(AnimalReport report, User loginUser) {
+		if (loginUser == null || report.getUser() == null || !report.getUser().getUserNo().equals(loginUser.getUserNo())) {
+			throw new IllegalArgumentException("수정 권한이 없습니다.");
+		}
 	}
 
 	private AnimalReportView toListView(AnimalReport report) {

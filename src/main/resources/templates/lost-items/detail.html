@@ -171,9 +171,13 @@
             <input type="hidden" name="itemType" value="LOST">
             <button type="submit"
                     class="w-full rounded-full bg-slate-900 px-6 py-4 text-center font-bold text-white shadow-md transition hover:bg-slate-700 hover:shadow-lg active:scale-[0.98]">
-              채팅으로 연락하기
+              채팅
             </button>
           </form>
+          <a th:if="${isOwner}" th:href="@{/lost-items/{id}/edit(id=${lostItem.id})}"
+             class="flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-8 py-4 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95">
+            수정
+          </a>
           <a th:href="@{/lost-items}" class="flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-8 py-4 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95">
             목록
           </a>
