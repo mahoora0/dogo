@@ -194,6 +194,22 @@ public class FoundItemController {
 		}
 	}
 
+	@PostMapping("/found-items/{id}/delete")
+	public String delete(@PathVariable Long id,
+						 @AuthenticationPrincipal CustomUserDetails userDetails,
+						 Model model) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			foundItemService.delete(id, userDetails.getUser());
+			return "redirect:/found-items";
+		} catch (IllegalArgumentException e) {
+			model.addAttribute("message", e.getMessage());
+			return "found-items/error";
+		}
+	}
+
 	@ExceptionHandler(IllegalArgumentException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public String notFound(IllegalArgumentException exception, Model model) {

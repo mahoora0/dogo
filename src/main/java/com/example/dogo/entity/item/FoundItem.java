@@ -236,6 +236,10 @@ public class FoundItem {
 		this.status = status;
 	}
 
+	public void markDeleted() {
+		this.deleted = true;
+	}
+
 	@PrePersist
 	void prePersist() {
 		if (this.regDate == null) {
