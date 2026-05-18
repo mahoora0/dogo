@@ -1,14 +1,16 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 
-from app.clip_embedding import CLIP_MODEL_NAME, _load_clip_model, encode_image
+from app.clip_embedding import CLIP_MODEL_NAME, _load_clip_model, encode_image, encode_images
 from app.logger import get_logger
 from app.schemas import (
     EmbeddingsRequest,
     EmbeddingsResponse,
     HealthResponse,
+    PetImageEmbeddingItem,
     PetImageEmbeddingResponse,
+    PetImageEmbeddingsResponse,
     SimilarityRequest,
     SimilarityResponse,
 )
@@ -62,3 +64,26 @@ async def pet_image_embedding(
     image_bytes = await image.read()
     vector, model, crop_type = encode_image(image_bytes, animalType)
     return PetImageEmbeddingResponse(vector=vector, model=model, cropType=crop_type)
+
+
+@app.post("/pet-image-embeddings", response_model=PetImageEmbeddingsResponse)
+async def pet_image_embeddings(
+    ids: list[int] = Form(...),
+    images: list[UploadFile] = File(...),
+    animalTypes: list[str] | None = Form(None),
+) -> PetImageEmbeddingsResponse:
+    if len(ids) != len(images):
+        raise HTTPException(status_code=400, detail="ids and images must have the same length")
+
+    animal_types = animalTypes or []
+    image_items = []
+    for index, image in enumerate(images):
+        animal_type = animal_types[index] if index < len(animal_types) and animal_types[index] else None
+        image_items.append((await image.read(), animal_type))
+
+    vectors, model, crop_types = encode_images(image_items)
+    embeddings = [
+        PetImageEmbeddingItem(id=image_id, vector=vector, model=model, cropType=crop_type)
+        for image_id, vector, crop_type in zip(ids, vectors, crop_types)
+    ]
+    return PetImageEmbeddingsResponse(embeddings=embeddings)

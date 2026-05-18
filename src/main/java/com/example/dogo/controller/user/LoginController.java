@@ -25,8 +25,14 @@ import org.springframework.util.StringUtils;
 
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
+import com.example.dogo.repository.item.ItemMatchRepository;
 import com.example.dogo.repository.item.LostItemImageRepository;
 import com.example.dogo.repository.item.FoundItemImageRepository;
+import com.example.dogo.repository.animal.AnimalReportRepository;
+import com.example.dogo.repository.animal.AnimalReportMatchRepository;
+import com.example.dogo.repository.Support.InquiryRepository;
+import com.example.dogo.repository.ChatMessageRepository;
+import com.example.dogo.repository.ChatRoomRepository;
 import com.example.dogo.dto.item.RecentItemView;
 import org.springframework.ui.Model;
 import java.util.List;
@@ -45,6 +51,12 @@ public class LoginController {
   private final FoundItemRepository foundItemRepository;
   private final LostItemImageRepository lostItemImageRepository;
   private final FoundItemImageRepository foundItemImageRepository;
+  private final ItemMatchRepository itemMatchRepository;
+  private final AnimalReportRepository animalReportRepository;
+  private final AnimalReportMatchRepository animalReportMatchRepository;
+  private final InquiryRepository inquiryRepository;
+  private final ChatMessageRepository chatMessageRepository;
+  private final ChatRoomRepository chatRoomRepository;
   private final OAuth2Service oauth2Service;
 
   @GetMapping("/login")
@@ -177,13 +189,27 @@ public class LoginController {
     // 소셜 연동 해제 (카카오/네이버 등)
     oauth2Service.unlink(dbUser);
 
-    // 사용자가 작성한 분실물/습득물 정보 삭제
+    // 분실물/습득물 매칭 결과 삭제 → 분실물/습득물 삭제
+    itemMatchRepository.deleteByLostItemUser(dbUser);
+    itemMatchRepository.deleteByFoundItemUser(dbUser);
     lostItemRepository.deleteByUser(dbUser);
     foundItemRepository.deleteByUser(dbUser);
-    
+
+    // 동물 신고 매칭 결과 삭제 → 동물 신고 삭제 (이미지/임베딩은 CASCADE)
+    animalReportMatchRepository.deleteByMissingReportUser(dbUser);
+    animalReportMatchRepository.deleteBySightingReportUser(dbUser);
+    animalReportRepository.deleteByUser(dbUser);
+
+    // 문의글 삭제
+    inquiryRepository.deleteByUser(dbUser);
+
+    // 채팅 메시지 → 채팅방 삭제
+    chatMessageRepository.deleteByParticipant(dbUser);
+    chatRoomRepository.deleteByParticipant(dbUser);
+
     // 소셜 계정 연결 정보 삭제
     userSocialAccountRepository.deleteByUser(dbUser);
-    
+
     // 계정 정보 완전 삭제 (Hard Delete)
     userRepository.delete(dbUser);
     

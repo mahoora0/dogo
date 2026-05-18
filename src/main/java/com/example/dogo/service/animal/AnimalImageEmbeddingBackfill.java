@@ -2,7 +2,6 @@ package com.example.dogo.service.animal;
 
 import com.example.dogo.entity.animal.AnimalReport;
 import com.example.dogo.repository.animal.AnimalReportRepository;
-import com.example.dogo.service.animal.AnimalImageEmbeddingService.EmbedStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -24,8 +24,14 @@ public class AnimalImageEmbeddingBackfill {
 	@Value("${match.pet.embedding.backfill-on-startup:false}")
 	private boolean backfillOnStartup;
 
+	@Value("${match.pet.embedding.force-backfill:false}")
+	private boolean forceBackfill;
+
 	@Value("${match.pet.embedding.backfill-batch-size:50}")
 	private int batchSize;
+
+	@Value("${match.pet.embedding.inference-batch-size:4}")
+	private int inferenceBatchSize;
 
 	private final AnimalImageEmbeddingService embeddingService;
 	private final AnimalReportRepository reportRepository;
@@ -41,8 +47,8 @@ public class AnimalImageEmbeddingBackfill {
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
 		if (!backfillOnStartup) return;
-		log.info("[pet-embedding-backfill] 시작 예약 (batchSize={}, model={}, cropType={})",
-				batchSize, embeddingService.currentModelName(), embeddingService.currentCropType());
+		log.info("[pet-embedding-backfill] scheduled (batchSize={}, inferenceBatchSize={}, forceBackfill={}, model={}, cropType={})",
+				batchSize, inferenceBatchSize, forceBackfill, embeddingService.currentModelName(), embeddingService.currentCropType());
 		CompletableFuture.runAsync(this::runBackfill);
 	}
 
@@ -56,25 +62,25 @@ public class AnimalImageEmbeddingBackfill {
 			Page<AnimalReport> reports;
 			do {
 				reports = reportRepository.findAll(PageRequest.of(page, batchSize));
-				for (AnimalReport report : reports.getContent()) {
-					if (report.isDeleted()) {
-						skipped++;
-						continue;
-					}
-					EmbedStatus status = embeddingService.embedAndSave(report);
-					if (status == EmbedStatus.SAVED) saved++;
-					else if (status == EmbedStatus.SKIPPED) skipped++;
-					else failed++;
+				List<AnimalReport> pageReports = reports.getContent();
+				int chunkSize = Math.max(1, inferenceBatchSize);
+				for (int start = 0; start < pageReports.size(); start += chunkSize) {
+					int end = Math.min(start + chunkSize, pageReports.size());
+					AnimalImageEmbeddingService.BatchEmbedStatus status =
+							embeddingService.embedAndSaveBatch(pageReports.subList(start, end), forceBackfill);
+					saved += status.saved();
+					skipped += status.skipped();
+					failed += status.failed();
 				}
-				log.info("[pet-embedding-backfill] {}페이지 처리 완료: saved={}, skipped={}, failed={}",
+				log.info("[pet-embedding-backfill] page {} complete: saved={}, skipped={}, failed={}",
 						page + 1, saved, skipped, failed);
 				page++;
 			} while (reports.hasNext());
 
-			log.info("[pet-embedding-backfill] 완료: saved={}, skipped={}, failed={}",
+			log.info("[pet-embedding-backfill] complete: saved={}, skipped={}, failed={}",
 					saved, skipped, failed);
 		} catch (Exception e) {
-			log.error("[pet-embedding-backfill] 오류 발생: saved={}, skipped={}, failed={}",
+			log.error("[pet-embedding-backfill] failed: saved={}, skipped={}, failed={}",
 					saved, skipped, failed, e);
 		}
 	}
