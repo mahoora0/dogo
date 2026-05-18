@@ -175,27 +175,36 @@
         </div>
 
         <!-- Sticky Bottom CTA (Mobile) / Regular CTA (Desktop) -->
-        <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <div class="mt-4 flex flex-col gap-3">
           <div th:if="${chatError}"
                th:text="${chatError}"
-               class="sm:col-span-2 w-full rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+               class="w-full rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
             채팅 신청이 불가능합니다.
           </div>
-          <form th:action="@{/chat/room}" method="post" class="flex-1">
+          <form th:action="@{/chat/room}" method="post">
             <input type="hidden" name="itemId" th:value="${foundItem.id}">
             <input type="hidden" name="itemType" value="FOUND">
             <button type="submit"
                     class="w-full rounded-full bg-slate-900 px-6 py-4 text-center font-bold text-white shadow-md transition hover:bg-slate-700 hover:shadow-lg active:scale-[0.98]">
-              채팅
+              1:1 채팅하기
             </button>
           </form>
-          <a th:if="${isOwner}" th:href="@{/found-items/{id}/edit(id=${foundItem.id})}"
-             class="flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-8 py-4 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95">
-            수정
-          </a>
-          <a th:href="@{/found-items}" class="flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-8 py-4 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95">
-            목록
-          </a>
+          <div class="flex gap-3">
+            <a th:if="${isOwner}" th:href="@{/found-items/{id}/edit(id=${foundItem.id})}"
+               class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
+              수정
+            </a>
+            <form th:if="${isOwner}" th:action="@{/found-items/{id}/delete(id=${foundItem.id})}" method="post" class="flex flex-1"
+                  onsubmit="return confirm('정말 삭제하시겠습니까? 관련 매칭 정보도 함께 삭제됩니다.');">
+              <button type="submit"
+                      class="w-full flex items-center justify-center rounded-full border-2 border-red-200 bg-white px-4 py-3 sm:px-6 font-bold text-red-500 transition-all hover:bg-red-50 hover:text-red-700 active:scale-95 whitespace-nowrap">
+                삭제
+              </button>
+            </form>
+            <a th:href="@{/found-items}" class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
+              목록
+            </a>
+          </div>
         </div>
       </div>
     </section>

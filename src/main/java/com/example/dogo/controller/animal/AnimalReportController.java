@@ -243,6 +243,22 @@ public class AnimalReportController {
 		}
 	}
 
+	@PostMapping("/animal-reports/{id}/delete")
+	public String delete(@PathVariable Long id,
+						 @AuthenticationPrincipal CustomUserDetails userDetails,
+						 Model model) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			animalReportService.delete(id, userDetails.getUser());
+			return "redirect:/animal-reports";
+		} catch (IllegalArgumentException e) {
+			model.addAttribute("message", e.getMessage());
+			return "animal-reports/error";
+		}
+	}
+
 	@ExceptionHandler(IllegalArgumentException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public String notFound(IllegalArgumentException exception, Model model) {

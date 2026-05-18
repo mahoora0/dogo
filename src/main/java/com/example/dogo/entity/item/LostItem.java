@@ -190,6 +190,10 @@ public class LostItem {
 		this.contact = contact;
 	}
 
+	public void markDeleted() {
+		this.deleted = true;
+	}
+
 	@PrePersist
 	void prePersist() {
 		if (this.regDate == null) {

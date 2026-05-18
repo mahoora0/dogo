@@ -209,6 +209,10 @@ public class AnimalReport {
 		this.moddate = LocalDateTime.now();
 	}
 
+	public void markDeleted() {
+		this.deleted = true;
+	}
+
 	public void increaseViewCount() {
 		this.viewCount++;
 		this.moddate = LocalDateTime.now();
