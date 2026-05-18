@@ -53,3 +53,8 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+tasks.named('compileTestJava') {
+	classpath += sourceSets.main.output
+	source += sourceSets.main.allJava
+}

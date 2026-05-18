@@ -2,6 +2,12 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
+    <a class="home-missing-alert-strip" th:href="@{/missing-alerts}" aria-label="실종 경보 확인">
+      <span>긴급 알림</span>
+      <strong id="homeMissingAlertSummary">최근 안전Dream 실종 경보를 확인하고 제보에 참여해주세요.</strong>
+      <em>확인하기</em>
+    </a>
+
     <section class="home-actions" aria-label="빠른 이동">
       <a class="home-action-card home-action-card--lost-search" th:href="@{/lost-items}">
         <span class="home-action-icon" aria-hidden="true">
@@ -37,7 +43,7 @@
         </em>
       </a>
 
-      <a class="home-action-card home-action-card--animal-missing" th:href="@{/missing-persons}">
+      <a class="home-action-card home-action-card--animal-missing" th:href="@{/missing-persons/new}">
         <span class="home-action-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z" />
@@ -236,6 +242,7 @@
         applyFilter('all', true);
       });
     </script>
+    <script th:src="@{/js/missing-alerts.js}"></script>
   </th:block>
 </th:block>
 
