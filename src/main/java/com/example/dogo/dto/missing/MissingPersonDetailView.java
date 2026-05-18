@@ -18,6 +18,8 @@ public record MissingPersonDetailView(
 		String hairStyle,
 		String clothing,
 		String status,
-		String statusLabel
+		String statusLabel,
+		String sourceType,
+		String sourceLabel
 ) {
 }

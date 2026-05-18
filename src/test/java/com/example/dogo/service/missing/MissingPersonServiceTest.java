@@ -30,12 +30,48 @@ class MissingPersonServiceTest {
 	@Test
 	void createStoresRequiredMissingPersonFields() {
 		MissingPersonCreateRequest request = createRequest();
-		when(userRepository.findByEmail("dev@dogo.local")).thenReturn(Optional.of(new User("dev@dogo.local", "개발용 사용자", "010-0000-0000")));
+		when(userRepository.findByEmail("dev@dogo.local")).thenReturn(Optional.of(new User("dev@dogo.local", "dev", "010-0000-0000")));
 		when(missingPersonRepository.save(any(MissingPersonReport.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		missingPersonService.create(request, null);
 
 		verify(missingPersonRepository).save(any(MissingPersonReport.class));
+	}
+
+	@Test
+	void userCreatedReportDefaultsToUserSource() {
+		MissingPersonReport report = createReport();
+
+		assertThat(report.getSourceType()).isEqualTo("USER");
+		assertThat(report.getSourceLabel()).isEqualTo("사용자 제보");
+		assertThat(report.getExternalId()).isNull();
+	}
+
+	@Test
+	void publicApiReportStoresImportMetadata() {
+		MissingPersonReport report = MissingPersonReport.fromPublicApi(
+				"MISSING_ALERT",
+				"case-20260518-001",
+				"{\"id\":\"case-20260518-001\"}",
+				13,
+				"Korea",
+				LocalDateTime.of(2026, 5, 18, 9, 30),
+				"Seoul",
+				170,
+				new BigDecimal("58.0"),
+				"Slim",
+				"Oval",
+				"Black",
+				"Short",
+				"Blue hoodie"
+		);
+
+		assertThat(report.getSourceType()).isEqualTo("PUBLIC_API");
+		assertThat(report.getSourceLabel()).isEqualTo("공공데이터");
+		assertThat(report.getApiProvider()).isEqualTo("MISSING_ALERT");
+		assertThat(report.getExternalId()).isEqualTo("case-20260518-001");
+		assertThat(report.getRawPayload()).contains("case-20260518-001");
+		assertThat(report.getSyncedAt()).isNotNull();
 	}
 
 	@Test
@@ -50,43 +86,58 @@ class MissingPersonServiceTest {
 
 	@Test
 	void searchReturnsListViews() {
-		MissingPersonReport report = new MissingPersonReport(
-				new User("dev@dogo.local", "개발용 사용자", "010-0000-0000"),
-				13,
-				"대한민국",
-				LocalDateTime.of(2026, 5, 18, 9, 30),
-				"서울 강남역",
-				170,
-				new BigDecimal("58.0"),
-				"마른 체형",
-				"계란형",
-				"검정",
-				"짧은 머리",
-				"흰색 후드티"
-		);
 		when(missingPersonRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class)))
-				.thenReturn(new PageImpl<>(List.of(report)));
+				.thenReturn(new PageImpl<>(List.of(createReport())));
 
-		var result = missingPersonService.search("김", "OPEN", PageRequest.of(0, 9));
+		var result = missingPersonService.search("Korea", "OPEN", null, PageRequest.of(0, 9));
 
 		assertThat(result.getContent()).hasSize(1);
-		assertThat(result.getContent().get(0).summary()).isEqualTo("13세 대한민국 실종자");
+		assertThat(result.getContent().get(0).summary()).isEqualTo("13세 Korea 실종");
 		assertThat(result.getContent().get(0).statusLabel()).isEqualTo("접수");
+		assertThat(result.getContent().get(0).sourceType()).isEqualTo("USER");
+		assertThat(result.getContent().get(0).sourceLabel()).isEqualTo("사용자 제보");
+	}
+
+	@Test
+	void searchAcceptsSourceTypeFilter() {
+		when(missingPersonRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class)))
+				.thenReturn(new PageImpl<>(List.of()));
+
+		missingPersonService.search("Seoul", "OPEN", "PUBLIC_API", PageRequest.of(0, 9));
+
+		verify(missingPersonRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class));
+	}
+
+	private MissingPersonReport createReport() {
+		return new MissingPersonReport(
+				new User("dev@dogo.local", "dev", "010-0000-0000"),
+				13,
+				"Korea",
+				LocalDateTime.of(2026, 5, 18, 9, 30),
+				"Seoul",
+				170,
+				new BigDecimal("58.0"),
+				"Slim",
+				"Oval",
+				"Black",
+				"Short",
+				"Blue hoodie"
+		);
 	}
 
 	private MissingPersonCreateRequest createRequest() {
 		MissingPersonCreateRequest request = new MissingPersonCreateRequest();
 		request.setAge(13);
-		request.setNationality("대한민국");
+		request.setNationality("Korea");
 		request.setOccurredAt(LocalDateTime.of(2026, 5, 18, 9, 30));
-		request.setOccurredPlace("서울 강남역");
+		request.setOccurredPlace("Seoul");
 		request.setHeightCm(170);
 		request.setWeightKg(new BigDecimal("58.0"));
-		request.setBodyType("마른 체형");
-		request.setFaceShape("계란형");
-		request.setHairColor("검정");
-		request.setHairStyle("짧은 머리");
-		request.setClothing("흰색 후드티");
+		request.setBodyType("Slim");
+		request.setFaceShape("Oval");
+		request.setHairColor("Black");
+		request.setHairStyle("Short");
+		request.setClothing("Blue hoodie");
 		return request;
 	}
 }
