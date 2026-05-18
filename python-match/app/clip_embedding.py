@@ -13,8 +13,8 @@ from app.logger import get_logger
 
 logger = get_logger("clip_embedding")
 
-CLIP_MODEL_NAME = os.getenv("CLIP_MODEL_NAME", "AvitoTech/CLIP-ViT-base-for-animal-identification")
-CLIP_PROCESSOR_NAME = os.getenv("CLIP_PROCESSOR_NAME", "openai/clip-vit-base-patch32")
+CLIP_MODEL_NAME = os.getenv("CLIP_MODEL_NAME", "AvitoTech/Zer0int-CLIP-L-for-animal-identification")
+CLIP_PROCESSOR_NAME = os.getenv("CLIP_PROCESSOR_NAME", "zer0int/CLIP-GmP-ViT-L-14")
 CLIP_TRUST_REMOTE_CODE = os.getenv("CLIP_TRUST_REMOTE_CODE", "false").strip().lower() in {"1", "true", "yes", "on"}
 PET_CROP_ENABLED = os.getenv("PET_CROP_ENABLED", "true").strip().lower() in {"1", "true", "yes", "on"}
 PET_CROP_YOLO_MODEL = os.getenv("PET_CROP_YOLO_MODEL", "yolo11n.pt")
@@ -58,6 +58,26 @@ def encode_image(image_bytes: bytes, animal_type: str | None = None) -> tuple[li
     elapsed = (time.perf_counter() - t0) * 1000
     logger.debug(f"CLIP 인코딩 완료 ({elapsed:.1f}ms, cropType={crop_type})")
     return features[0].tolist(), CLIP_MODEL_NAME, crop_type
+
+
+def encode_images(image_items: list[tuple[bytes, str | None]]) -> tuple[list[list[float]], str, list[str]]:
+    model, processor = _load_clip_model()
+    cropped_images = []
+    crop_types = []
+    for image_bytes, animal_type in image_items:
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        cropped_image, crop_type = crop_pet(image, animal_type)
+        cropped_images.append(cropped_image)
+        crop_types.append(crop_type)
+
+    inputs = processor(images=cropped_images, return_tensors="pt")
+    t0 = time.perf_counter()
+    with torch.no_grad():
+        features = _extract_image_features(model, inputs)
+        features = features / features.norm(dim=-1, keepdim=True)
+    elapsed = (time.perf_counter() - t0) * 1000
+    logger.debug(f"CLIP batch encoding complete ({elapsed:.1f}ms, count={len(image_items)})")
+    return features.tolist(), CLIP_MODEL_NAME, crop_types
 
 
 def crop_pet(image: Image.Image, animal_type: str | None = None) -> tuple[Image.Image, str]:

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,7 @@ public class AnimalImageEmbeddingService {
 	private static final String ORIGINAL_FALLBACK = "ORIGINAL_FALLBACK";
 
 	public record ImageSearchHit(Long reportId, float score) {}
+	public record BatchEmbedStatus(int saved, int skipped, int failed) {}
 	public enum EmbedStatus { SAVED, SKIPPED, FAILED }
 
 	private final AnimalReportImageRepository imageRepository;
@@ -48,7 +50,7 @@ public class AnimalImageEmbeddingService {
 			AnimalReportImageEmbeddingRepository embeddingRepository,
 			PetImageEmbeddingClient embeddingClient,
 			@Value("${file.upload-dir}") String uploadDir,
-			@Value("${match.pet.embedding.model-name:AvitoTech/CLIP-ViT-base-for-animal-identification}") String currentModelName,
+			@Value("${match.pet.embedding.model-name:AvitoTech/Zer0int-CLIP-L-for-animal-identification}") String currentModelName,
 			@Value("${match.pet.embedding.crop-type:ANIMAL_CROP_V2}") String currentCropType
 	) {
 		this.imageRepository = imageRepository;
@@ -100,6 +102,85 @@ public class AnimalImageEmbeddingService {
 		log.info("[pet-embedding] 저장 완료: reportId={}, model={}, cropType={}",
 				report.getReportId(), modelName, cropType);
 		return EmbedStatus.SAVED;
+	}
+
+	@Transactional
+	public BatchEmbedStatus embedAndSaveBatch(List<AnimalReport> reports) {
+		return embedAndSaveBatch(reports, false);
+	}
+
+	@Transactional
+	public BatchEmbedStatus embedAndSaveBatch(List<AnimalReport> reports, boolean force) {
+		int skipped = 0;
+		int failed = 0;
+		List<PetImageEmbeddingClient.BatchEmbeddingRequest> requests = new ArrayList<>();
+		Map<Long, PendingEmbedding> pending = new HashMap<>();
+
+		for (AnimalReport report : reports) {
+			if (report.isDeleted()) {
+				skipped++;
+				continue;
+			}
+
+			Optional<AnimalReportImage> firstImage =
+					imageRepository.findFirstByAnimalReportOrderBySortOrderAscImageIdAsc(report);
+			if (firstImage.isEmpty()) {
+				skipped++;
+				continue;
+			}
+
+			Optional<AnimalReportImageEmbedding> existing = embeddingRepository.findByReportReportId(report.getReportId());
+			if (!force
+					&& existing.isPresent()
+					&& currentModelName.equals(existing.get().getModelName())
+					&& acceptedCropTypes().contains(existing.get().getCropType())) {
+				skipped++;
+				continue;
+			}
+
+			AnimalReportImage image = firstImage.get();
+			byte[] imageBytes = readImageBytes(image.getStoredName());
+			if (imageBytes == null) {
+				failed++;
+				continue;
+			}
+
+			requests.add(new PetImageEmbeddingClient.BatchEmbeddingRequest(
+					report.getReportId(),
+					imageBytes,
+					image.getStoredName(),
+					report.getAnimalType()
+			));
+			pending.put(report.getReportId(), new PendingEmbedding(report, image, existing));
+		}
+
+		if (requests.isEmpty()) {
+			return new BatchEmbedStatus(0, skipped, failed);
+		}
+
+		Map<Long, PetImageEmbeddingClient.EmbeddingResult> results = embeddingClient.embedBatch(requests);
+		int saved = 0;
+		for (Map.Entry<Long, PendingEmbedding> entry : pending.entrySet()) {
+			PetImageEmbeddingClient.EmbeddingResult result = results.get(entry.getKey());
+			if (result == null || !result.hasVector()) {
+				failed++;
+				continue;
+			}
+
+			PendingEmbedding item = entry.getValue();
+			byte[] blob = VectorUtils.toBytes(result.vector());
+			String modelName = normalizeModelName(result.modelName());
+			String cropType = normalizeCropType(result.cropType());
+			item.existing().ifPresentOrElse(
+					stored -> stored.update(item.image(), blob, modelName, cropType),
+					() -> embeddingRepository.save(new AnimalReportImageEmbedding(item.report(), item.image(), blob, modelName, cropType))
+			);
+			saved++;
+		}
+
+		log.info("[pet-embedding] 배치 저장 완료: requested={}, saved={}, skipped={}, failed={}",
+				reports.size(), saved, skipped, failed);
+		return new BatchEmbedStatus(saved, skipped, failed);
 	}
 
 	@Transactional(readOnly = true)
@@ -173,4 +254,10 @@ public class AnimalImageEmbeddingService {
 		}
 		return List.of(currentCropType);
 	}
+
+	private record PendingEmbedding(
+			AnimalReport report,
+			AnimalReportImage image,
+			Optional<AnimalReportImageEmbedding> existing
+	) {}
 }

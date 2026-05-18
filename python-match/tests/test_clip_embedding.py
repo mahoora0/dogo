@@ -1,4 +1,6 @@
-from app.clip_embedding import ANIMAL_CROP, _expand_to_square
+import os
+
+from app.clip_embedding import ANIMAL_CROP, CLIP_MODEL_NAME, CLIP_PROCESSOR_NAME, _expand_to_square
 
 
 def assert_square_inside_image(crop: tuple[int, int, int, int], image_size: tuple[int, int]):
@@ -12,6 +14,14 @@ def assert_square_inside_image(crop: tuple[int, int, int, int], image_size: tupl
 
 def test_animal_crop_type_is_versioned():
     assert ANIMAL_CROP == "ANIMAL_CROP_V2"
+
+
+def test_default_pet_embedding_model_is_zer0int_clip_l():
+    assert CLIP_MODEL_NAME == os.getenv(
+        "CLIP_MODEL_NAME",
+        "AvitoTech/Zer0int-CLIP-L-for-animal-identification",
+    )
+    assert CLIP_PROCESSOR_NAME == os.getenv("CLIP_PROCESSOR_NAME", "zer0int/CLIP-GmP-ViT-L-14")
 
 
 def test_expand_to_square_keeps_center_bbox_square():
