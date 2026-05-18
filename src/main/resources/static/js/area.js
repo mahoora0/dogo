@@ -462,8 +462,10 @@ function focusMarker(lat, lng) {
   // Find the marker at this position and trigger its click event to show info window
   markers.forEach(marker => {
     const markerPos = marker.getPosition();
-    // Use Kakao's LatLng.equals() for reliable coordinate comparison
-    if (markerPos.equals(pos)) {
+    const latDiff = Math.abs(markerPos.getLat() - lat);
+    const lngDiff = Math.abs(markerPos.getLng() - lng);
+    // Use an epsilon of 1e-5 (about 1 meter) to handle tiny floating-point mismatches
+    if (latDiff < 1e-5 && lngDiff < 1e-5) {
       kakao.maps.event.trigger(marker, 'click');
     }
   });
