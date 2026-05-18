@@ -29,6 +29,8 @@ import com.example.dogo.repository.item.ItemMatchRepository;
 import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.animal.AnimalReportMatchRepository;
 import com.example.dogo.repository.Support.InquiryRepository;
+import com.example.dogo.repository.ChatMessageRepository;
+import com.example.dogo.repository.ChatRoomRepository;
 import org.springframework.ui.Model;
 
 @Controller
@@ -45,6 +47,8 @@ public class LoginController {
   private final AnimalReportRepository animalReportRepository;
   private final AnimalReportMatchRepository animalReportMatchRepository;
   private final InquiryRepository inquiryRepository;
+  private final ChatMessageRepository chatMessageRepository;
+  private final ChatRoomRepository chatRoomRepository;
   private final OAuth2Service oauth2Service;
 
   @GetMapping("/login")
@@ -121,6 +125,10 @@ public class LoginController {
 
     // 문의글 삭제
     inquiryRepository.deleteByUser(dbUser);
+
+    // 채팅 메시지 → 채팅방 삭제
+    chatMessageRepository.deleteByParticipant(dbUser);
+    chatRoomRepository.deleteByParticipant(dbUser);
 
     // 소셜 계정 연결 정보 삭제
     userSocialAccountRepository.deleteByUser(dbUser);
