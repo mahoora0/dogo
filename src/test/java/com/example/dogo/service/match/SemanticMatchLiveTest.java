@@ -19,6 +19,7 @@ import java.util.List;
  *
  * 실행: .\gradlew.bat test --tests "*.SemanticMatchLiveTest" -PuseMysql
  */
+@org.junit.jupiter.api.Disabled("수동 실행 전용 — MySQL + Python 서버 필요. 실행: .\\gradlew.bat test --tests \"*.SemanticMatchLiveTest\" -PuseMysql")
 @SpringBootTest
 @EnabledIfSystemProperty(named = "useMysql", matches = "true")
 @TestPropertySource(properties = {

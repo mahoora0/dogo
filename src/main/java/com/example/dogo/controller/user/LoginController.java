@@ -25,7 +25,19 @@ import org.springframework.util.StringUtils;
 
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
+import com.example.dogo.repository.item.ItemMatchRepository;
+import com.example.dogo.repository.item.LostItemImageRepository;
+import com.example.dogo.repository.item.FoundItemImageRepository;
+import com.example.dogo.repository.animal.AnimalReportRepository;
+import com.example.dogo.repository.animal.AnimalReportMatchRepository;
+import com.example.dogo.repository.Support.InquiryRepository;
+import com.example.dogo.repository.ChatMessageRepository;
+import com.example.dogo.repository.ChatRoomRepository;
+import com.example.dogo.dto.item.RecentItemView;
 import org.springframework.ui.Model;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 @Controller
 @RequiredArgsConstructor
@@ -37,6 +49,14 @@ public class LoginController {
   private final PasswordEncoder passwordEncoder;
   private final LostItemRepository lostItemRepository;
   private final FoundItemRepository foundItemRepository;
+  private final LostItemImageRepository lostItemImageRepository;
+  private final FoundItemImageRepository foundItemImageRepository;
+  private final ItemMatchRepository itemMatchRepository;
+  private final AnimalReportRepository animalReportRepository;
+  private final AnimalReportMatchRepository animalReportMatchRepository;
+  private final InquiryRepository inquiryRepository;
+  private final ChatMessageRepository chatMessageRepository;
+  private final ChatRoomRepository chatRoomRepository;
   private final OAuth2Service oauth2Service;
 
   @GetMapping("/login")
@@ -63,8 +83,77 @@ public class LoginController {
   }
 
   @GetMapping("/userpage")
-  public String userPage() {
-    return "user/userpage"; // templates/user/userpage.html을 찾아감
+  public String userPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+    if (userDetails == null) {
+      return "redirect:/login";
+    }
+    com.example.dogo.entity.user.User user = userDetails.getUser();
+
+    List<com.example.dogo.entity.item.LostItem> lostItems = lostItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
+    List<com.example.dogo.entity.item.FoundItem> foundItems = foundItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
+
+    List<RecentItemView> userActivities = new ArrayList<>();
+
+    for (com.example.dogo.entity.item.LostItem item : lostItems) {
+      String imageUrl = lostItemImageRepository.findFirstByLostItemOrderBySortOrderAscImageIdAsc(item)
+          .map(com.example.dogo.entity.item.LostItemImage::getImageUrl)
+          .orElse("/images/noImageSize.png");
+
+      userActivities.add(new RecentItemView(
+          item.getLostId(),
+          "LOST",
+          "분실물",
+          item.getTitle(),
+          item.getCategoryMain(),
+          item.getLostPlace(),
+          item.getRegDate() != null ? item.getRegDate() : item.getLostAt(),
+          item.getStatus(),
+          lostStatusLabel(item.getStatus()),
+          imageUrl
+      ));
+    }
+
+    for (com.example.dogo.entity.item.FoundItem item : foundItems) {
+      String imageUrl = foundItemImageRepository.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(item)
+          .map(com.example.dogo.entity.item.FoundItemImage::getImageUrl)
+          .orElse("/images/noImageSize.png");
+
+      userActivities.add(new RecentItemView(
+          item.getFoundId(),
+          "FOUND",
+          "습득물",
+          item.getTitle(),
+          item.getCategoryMain(),
+          item.getFoundPlace() != null ? item.getFoundPlace() : item.getFoundArea(),
+          item.getRegDate() != null ? item.getRegDate() : item.getFoundAt(),
+          item.getStatus(),
+          foundStatusLabel(item.getStatus()),
+          imageUrl
+      ));
+    }
+
+    userActivities.sort(Comparator.comparing(RecentItemView::itemAt).reversed());
+
+    model.addAttribute("userActivities", userActivities);
+    return "user/userpage";
+  }
+
+  private String lostStatusLabel(String status) {
+    if (status == null) return "대기중";
+    return switch (status) {
+      case "MATCHING" -> "매칭중";
+      case "FOUND" -> "회수완료";
+      default -> "대기중";
+    };
+  }
+
+  private String foundStatusLabel(String status) {
+    if (status == null) return "보관중";
+    return switch (status) {
+      case "MATCHING" -> "매칭중";
+      case "RETURNED" -> "수령완료";
+      default -> "보관중";
+    };
   }
 
   @PostMapping("/join")
@@ -100,13 +189,27 @@ public class LoginController {
     // 소셜 연동 해제 (카카오/네이버 등)
     oauth2Service.unlink(dbUser);
 
-    // 사용자가 작성한 분실물/습득물 정보 삭제
+    // 분실물/습득물 매칭 결과 삭제 → 분실물/습득물 삭제
+    itemMatchRepository.deleteByLostItemUser(dbUser);
+    itemMatchRepository.deleteByFoundItemUser(dbUser);
     lostItemRepository.deleteByUser(dbUser);
     foundItemRepository.deleteByUser(dbUser);
-    
+
+    // 동물 신고 매칭 결과 삭제 → 동물 신고 삭제 (이미지/임베딩은 CASCADE)
+    animalReportMatchRepository.deleteByMissingReportUser(dbUser);
+    animalReportMatchRepository.deleteBySightingReportUser(dbUser);
+    animalReportRepository.deleteByUser(dbUser);
+
+    // 문의글 삭제
+    inquiryRepository.deleteByUser(dbUser);
+
+    // 채팅 메시지 → 채팅방 삭제
+    chatMessageRepository.deleteByParticipant(dbUser);
+    chatRoomRepository.deleteByParticipant(dbUser);
+
     // 소셜 계정 연결 정보 삭제
     userSocialAccountRepository.deleteByUser(dbUser);
-    
+
     // 계정 정보 완전 삭제 (Hard Delete)
     userRepository.delete(dbUser);
     

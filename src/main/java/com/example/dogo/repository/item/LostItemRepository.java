@@ -45,5 +45,7 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long>, JpaSp
 
 	void deleteByUser(com.example.dogo.entity.user.User user);
 
+	List<LostItem> findByUserAndDeletedFalseOrderByRegDateDesc(com.example.dogo.entity.user.User user);
+
 	List<LostItem> findByDeletedFalseOrderByLostAtDescLostIdDesc(Pageable pageable);
 }

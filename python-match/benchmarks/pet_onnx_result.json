@@ -1,0 +1,57 @@
+{
+  "model": "AvitoTech/Zer0int-CLIP-L-for-animal-identification",
+  "processor": "zer0int/CLIP-GmP-ViT-L-14",
+  "imageCount": 11,
+  "paths": [
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\370478ff-e88c-472b-8fd3-a88dee17c1c9.webp",
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\3e2a22d1-3be4-4217-b8c0-f01416f05350.png",
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\3f19d23c-c86b-47b3-ae13-bad5815fd1a3.webp",
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\3fd0ec25-01cb-4ac7-8ab3-d986b89ac1a3.webp",
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\684b6a6b-2782-4741-b0f2-9c5e51453258.jpg",
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\75f9591e-345e-4150-8861-9aef9a0494d4.webp",
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\769a51aa-5414-4b0f-acfc-d3640f170b65.png",
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\95582a1b-6f06-478a-b2d7-19ef075eb76e.webp",
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\ab0f9b37-ce55-48e7-91ed-866a7b14e5ed.png",
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\b7ebc3ac-9f13-4e2c-9bdf-42d4ecb910d7.png",
+    "C:\\Users\\it\\dogo\\uploads\\animal-reports\\cc20036c-7a7c-4744-9834-820da7fc0cc9.png"
+  ],
+  "cropTypes": [
+    "ANIMAL_CROP_V2",
+    "ANIMAL_CROP_V2",
+    "ANIMAL_CROP_V2",
+    "ORIGINAL_FALLBACK",
+    "ANIMAL_CROP_V2",
+    "ANIMAL_CROP_V2",
+    "ANIMAL_CROP_V2",
+    "ANIMAL_CROP_V2",
+    "ANIMAL_CROP_V2",
+    "ANIMAL_CROP_V2",
+    "ANIMAL_CROP_V2"
+  ],
+  "timingMs": {
+    "torch": 7212.54,
+    "onnxFp32": 7294.63,
+    "onnxInt8": 4419.07
+  },
+  "speedup": {
+    "onnxFp32VsTorch": 0.989,
+    "onnxInt8VsTorch": 1.632
+  },
+  "cosineVsTorch": {
+    "onnxFp32Mean": 1.0,
+    "onnxFp32Min": 1.0,
+    "onnxInt8Mean": 0.97393,
+    "onnxInt8Min": 0.954483
+  },
+  "pairwiseSearchImpact": {
+    "int8AbsDeltaMean": 0.02693,
+    "int8AbsDeltaMax": 0.096273,
+    "int8Top1Consistency": "9/11"
+  },
+  "onnxFiles": {
+    "fp32": ".onnx\\pet-image\\pet-image-fp32.onnx",
+    "int8": ".onnx\\pet-image\\pet-image-qint8.onnx",
+    "fp32Bytes": 1216253330,
+    "int8Bytes": 305672439
+  }
+}
