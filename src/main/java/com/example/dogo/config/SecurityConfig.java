@@ -80,9 +80,6 @@ public class SecurityConfig {
             http.oauth2Login(oauth2 -> oauth2
                 .loginPage("/login")
                 .defaultSuccessUrl("/", true)
-                .authorizationEndpoint(auth -> auth
-                    .authorizationRequestResolver(customAuthorizationRequestResolver(clientRegistrationRepository))
-                )
                 .userInfoEndpoint(userInfo -> userInfo
                     .userService(customOAuth2UserService)
                 )
@@ -90,25 +87,5 @@ public class SecurityConfig {
         }
 
         return http.build();
-    }
-
-    private OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
-        DefaultOAuth2AuthorizationRequestResolver resolver =
-                new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
-
-        resolver.setAuthorizationRequestCustomizer(customizer -> {
-            customizer.attributes(attributes -> {
-                String registrationId = (String) attributes.get(OAuth2ParameterNames.REGISTRATION_ID);
-                if ("google".equals(registrationId)) {
-                    customizer.additionalParameters(params -> params.put("prompt", "select_account consent"));
-                } else if ("kakao".equals(registrationId)) {
-                    customizer.additionalParameters(params -> params.put("prompt", "login"));
-                } else if ("naver".equals(registrationId)) {
-                    customizer.additionalParameters(params -> params.put("auth_type", "reprompt"));
-                }
-            });
-        });
-
-        return resolver;
     }
 }
