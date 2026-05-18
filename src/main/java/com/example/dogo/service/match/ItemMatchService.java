@@ -80,6 +80,8 @@ public class ItemMatchService {
 
 	@Transactional
 	public void matchForLostItem(LostItem lostItem) {
+		clearMatchesForLostItem(lostItem.getLostId());
+
 		List<FoundItem> candidates = foundItemRepository.findMatchCandidatesForLost(
 				lostItem.getCategoryMain(),
 				lostItem.getLostAt().minusDays(LOST_DATE_MARGIN_DAYS),
@@ -125,6 +127,12 @@ public class ItemMatchService {
 	}
 
 	@Transactional
+	public void clearMatchesForLostItem(Long lostId) {
+		itemMatchRepository.deleteByLostItemLostId(lostId);
+		itemMatchRepository.flush();
+	}
+
+	@Transactional
 	public void matchForFoundItemId(Long foundId) {
 		FoundItem foundItem = foundItemRepository.findById(foundId)
 				.orElseThrow(() -> new IllegalArgumentException("습득물을 찾을 수 없습니다. foundId=" + foundId));
@@ -133,6 +141,8 @@ public class ItemMatchService {
 
 	@Transactional
 	public void matchForFoundItem(FoundItem foundItem) {
+		clearMatchesForFoundItem(foundItem.getFoundId());
+
 		List<LostItem> candidates = lostItemRepository.findMatchCandidatesForFound(
 				foundItem.getCategoryMain(),
 				foundItem.getFoundAt().minusDays(MAX_MATCH_DAYS),
@@ -175,6 +185,12 @@ public class ItemMatchService {
 		}
 
 		log.info("습득물 매칭 완료: foundId={}, 후보={}건", foundItem.getFoundId(), topMatches.size());
+	}
+
+	@Transactional
+	public void clearMatchesForFoundItem(Long foundId) {
+		itemMatchRepository.deleteByFoundItemFoundId(foundId);
+		itemMatchRepository.flush();
 	}
 
 	@Transactional(readOnly = true)
