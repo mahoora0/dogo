@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{layout/base :: setContent(~{this::content})}">
+  <th:block th:fragment="content">
+    <div class="mb-6">
+      <a th:href="@{/missing-persons}" class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        목록으로 돌아가기
+      </a>
+    </div>
+
+    <div class="mb-8">
+      <span class="mb-2 inline-block text-sm font-semibold text-slate-500">실종자 제보</span>
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">실종자 제보 양식</h1>
+      <p class="mt-2 text-sm text-slate-500">확인 가능한 신체 특징과 발생 정보를 자세히 입력해주세요.</p>
+    </div>
+
+    <div th:if="${errorMessage}" th:text="${errorMessage}"
+         class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">
+      입력값을 확인해주세요.
+    </div>
+
+    <form th:action="@{/missing-persons}" method="post"
+          class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <fieldset class="grid gap-5 md:grid-cols-2">
+        <legend class="mb-4 text-lg font-bold text-slate-900 md:col-span-2">발생 정보</legend>
+
+        <label class="block">
+          <span class="text-sm font-semibold text-slate-700">나이 <span class="text-red-400">*</span></span>
+          <input type="number" min="0" max="130" name="age" th:value="${request != null ? request.age : ''}" required
+                 placeholder="예: 13"
+                 class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-semibold text-slate-700">국적 <span class="text-red-400">*</span></span>
+          <input name="nationality" th:value="${request != null ? request.nationality : ''}" required
+                 placeholder="예: 대한민국"
+                 class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-semibold text-slate-700">발생일시 <span class="text-red-400">*</span></span>
+          <input type="datetime-local" name="occurredAt"
+                 th:attr="max=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd''T''HH:mm')}"
+                 th:value="${request != null && request.occurredAt != null ? #temporals.format(request.occurredAt, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                 required
+                 class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-semibold text-slate-700">발생장소 <span class="text-red-400">*</span></span>
+          <input name="occurredPlace" th:value="${request != null ? request.occurredPlace : ''}" required
+                 placeholder="예: 서울 강남역 2번 출구 근처"
+                 class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        </label>
+      </fieldset>
+
+      <div class="my-8 border-t border-slate-100"></div>
+
+      <fieldset class="grid gap-5 md:grid-cols-2">
+        <legend class="mb-4 text-lg font-bold text-slate-900 md:col-span-2">신체와 착의 정보</legend>
+
+        <label class="block">
+          <span class="text-sm font-semibold text-slate-700">키</span>
+          <input type="number" min="0" max="250" name="heightCm" th:value="${request != null ? request.heightCm : ''}"
+                 placeholder="cm 단위"
+                 class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-semibold text-slate-700">몸무게</span>
+          <input type="number" min="0" max="300" step="0.1" name="weightKg" th:value="${request != null ? request.weightKg : ''}"
+                 placeholder="kg 단위"
+                 class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-semibold text-slate-700">체격 <span class="text-red-400">*</span></span>
+          <input name="bodyType" th:value="${request != null ? request.bodyType : ''}" required
+                 placeholder="예: 마른 체형, 보통, 건장함"
+                 class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-semibold text-slate-700">얼굴형 <span class="text-red-400">*</span></span>
+          <input name="faceShape" th:value="${request != null ? request.faceShape : ''}" required
+                 placeholder="예: 둥근형, 계란형, 긴 얼굴형"
+                 class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-semibold text-slate-700">두발색상 <span class="text-red-400">*</span></span>
+          <input name="hairColor" th:value="${request != null ? request.hairColor : ''}" required
+                 placeholder="예: 검정, 갈색, 금발"
+                 class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-semibold text-slate-700">두발형태 <span class="text-red-400">*</span></span>
+          <input name="hairStyle" th:value="${request != null ? request.hairStyle : ''}" required
+                 placeholder="예: 짧은 머리, 긴 생머리, 파마"
+                 class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
+        </label>
+
+        <label class="block md:col-span-2">
+          <span class="text-sm font-semibold text-slate-700">착의의상 <span class="text-red-400">*</span></span>
+          <textarea name="clothing" rows="4" th:text="${request != null ? request.clothing : ''}" required
+                    placeholder="예: 흰색 후드티, 검정 바지, 흰 운동화"
+                    class="mt-1.5 w-full rounded-3xl border border-slate-200 bg-slate-50 px-6 py-4 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"></textarea>
+        </label>
+      </fieldset>
+
+      <div class="mt-8 flex justify-end gap-3 border-t border-slate-100 pt-6">
+        <a th:href="@{/missing-persons}" class="rounded-full border-2 border-slate-200 bg-white px-8 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 active:scale-95">취소</a>
+        <button type="submit" class="rounded-full bg-slate-900 px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-slate-700 hover:shadow-lg active:scale-[0.98]">등록하기</button>
+      </div>
+    </form>
+  </th:block>
+</th:block>
+</html>

@@ -102,11 +102,11 @@
           <div class="category">
             <h3>실종자</h3>
             <ul>
-              <li>
-                <a href="#"><span class="sidebar-icon sidebar-icon--person-search"></span>실종자 검색</a>
+              <li th:classappend="${currentUri == '/missing-persons' ? 'active' : ''}">
+                <a th:href="@{/missing-persons}"><span class="sidebar-icon sidebar-icon--person-search"></span>실종자 검색</a>
               </li>
-              <li>
-                <a href="#"><span class="sidebar-icon sidebar-icon--person-new"></span>실종자 제보</a>
+              <li th:classappend="${currentUri == '/missing-persons/new' ? 'active' : ''}">
+                <a th:href="@{/missing-persons/new}"><span class="sidebar-icon sidebar-icon--person-new"></span>실종자 제보</a>
               </li>
             </ul>
           </div>

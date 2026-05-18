@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{layout/base :: setContent(~{this::content})}">
+  <th:block th:fragment="content">
+    <div class="mb-6">
+      <a th:href="@{/missing-persons}" class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        목록으로 돌아가기
+      </a>
+    </div>
+
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="flex flex-col gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <span th:text="${report.statusLabel}"
+                th:classappend="${report.status == 'FOUND' ? ' bg-emerald-600' : (report.status == 'CLOSED' ? ' bg-slate-700' : ' bg-rose-500')}"
+                class="mb-4 inline-flex rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm">접수</span>
+          <h1 th:text="${report.summary}" class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">13세 대한민국 실종자</h1>
+          <p th:text="${report.occurredPlace}" class="mt-2 text-sm font-semibold text-slate-600">서울 강남역</p>
+        </div>
+        <time th:text="${#temporals.format(report.occurredAt, 'yyyy.MM.dd HH:mm')}" class="text-sm font-bold text-slate-500">2026.05.18 09:30</time>
+      </div>
+
+      <div class="mt-6 grid gap-4 md:grid-cols-2">
+        <div class="rounded-2xl bg-slate-50 p-5">
+          <h2 class="mb-4 text-base font-bold text-slate-900">기본 정보</h2>
+          <dl class="grid gap-3 text-sm">
+            <div class="flex justify-between gap-4">
+              <dt class="font-semibold text-slate-500">나이</dt>
+              <dd th:text="${report.age + '세'}" class="font-bold text-slate-900">13세</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="font-semibold text-slate-500">국적</dt>
+              <dd th:text="${report.nationality}" class="font-bold text-slate-900">대한민국</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="font-semibold text-slate-500">발생일시</dt>
+              <dd th:text="${#temporals.format(report.occurredAt, 'yyyy.MM.dd HH:mm')}" class="font-bold text-slate-900">2026.05.18 09:30</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="font-semibold text-slate-500">발생장소</dt>
+              <dd th:text="${report.occurredPlace}" class="text-right font-bold text-slate-900">서울 강남역</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="rounded-2xl bg-slate-50 p-5">
+          <h2 class="mb-4 text-base font-bold text-slate-900">신체 정보</h2>
+          <dl class="grid gap-3 text-sm">
+            <div class="flex justify-between gap-4">
+              <dt class="font-semibold text-slate-500">키</dt>
+              <dd th:text="${report.heightCm != null ? report.heightCm + 'cm' : '-'}" class="font-bold text-slate-900">170cm</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="font-semibold text-slate-500">몸무게</dt>
+              <dd th:text="${report.weightKg != null ? report.weightKg + 'kg' : '-'}" class="font-bold text-slate-900">58kg</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="font-semibold text-slate-500">체격</dt>
+              <dd th:text="${report.bodyType}" class="font-bold text-slate-900">마른 체형</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="font-semibold text-slate-500">얼굴형</dt>
+              <dd th:text="${report.faceShape}" class="font-bold text-slate-900">계란형</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div class="mt-4 rounded-2xl bg-slate-50 p-5">
+        <h2 class="mb-4 text-base font-bold text-slate-900">두발과 착의</h2>
+        <dl class="grid gap-3 text-sm md:grid-cols-2">
+          <div class="flex justify-between gap-4">
+            <dt class="font-semibold text-slate-500">두발색상</dt>
+            <dd th:text="${report.hairColor}" class="font-bold text-slate-900">검정</dd>
+          </div>
+          <div class="flex justify-between gap-4">
+            <dt class="font-semibold text-slate-500">두발형태</dt>
+            <dd th:text="${report.hairStyle}" class="font-bold text-slate-900">짧은 머리</dd>
+          </div>
+          <div class="md:col-span-2">
+            <dt class="mb-2 font-semibold text-slate-500">착의의상</dt>
+            <dd th:text="${report.clothing}" class="rounded-xl bg-white p-4 font-semibold leading-7 text-slate-800">흰색 후드티</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <a th:href="@{/missing-persons}" class="flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-8 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 active:scale-95">
+          목록
+        </a>
+      </div>
+    </section>
+  </th:block>
+</th:block>
+</html>

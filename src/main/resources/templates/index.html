@@ -6,56 +6,68 @@
       <a class="home-action-card home-action-card--lost-search" th:href="@{/lost-items}">
         <span class="home-action-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z"/>
+            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z" />
           </svg>
         </span>
         <p>물건을 잃어버리셨나요?</p>
         <strong>분실물 등록</strong>
         <span>잃어버린 물건을 등록하고 찾아보세요.</span>
         <em>바로가기
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
         </em>
       </a>
 
       <a class="home-action-card home-action-card--found" th:href="@{/found-items/new}">
         <span class="home-action-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z"/>
+            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z" />
           </svg>
         </span>
         <p>주인을 찾아주고싶어요?</p>
         <strong>습득물 등록</strong>
         <span>주운 물건을 쉽고 빠르게 등록해주세요.</span>
         <em>바로가기
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
         </em>
       </a>
 
-      <a class="home-action-card home-action-card--animal-missing" th:href="@{/animal-reports/new(reportType='MISSING')}">
+      <a class="home-action-card home-action-card--animal-missing" th:href="@{/missing-persons}">
         <span class="home-action-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z"/>
+            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z" />
           </svg>
         </span>
         <p>사람을 찾고 있나요?</p>
         <strong>실종자 제보</strong>
         <span>실종된 사람 정보를 제보하고 도움을 요청하세요.</span>
         <em>바로가기
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
         </em>
       </a>
 
       <a class="home-action-card home-action-card--animal" th:href="@{/animal-reports}">
         <span class="home-action-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z"/>
+            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z" />
           </svg>
         </span>
         <p>반려동물을 찾고 있나요?</p>
         <strong>실종동물 제보</strong>
         <span>잃어버린 반려동물을 찾기 위해 제보해주세요.</span>
         <em>바로가기
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
         </em>
       </a>
     </section>
@@ -79,7 +91,8 @@
         <span>카테고리</span>
         <select name="category">
           <option value="">전체</option>
-          <option th:each="categoryOption : ${searchCategories}" th:value="${categoryOption}" th:text="${categoryOption}">지갑</option>
+          <option th:each="categoryOption : ${searchCategories}" th:value="${categoryOption}"
+            th:text="${categoryOption}">지갑</option>
         </select>
       </label>
       <label>
@@ -95,21 +108,20 @@
         <a th:href="@{/lost-items}">전체보기</a>
       </div>
       <div class="home-tabs" aria-label="게시물 유형">
-        <a class="recent-tab is-active" href="#" data-filter="all">전체</a>
-        <a class="recent-tab" href="#" data-filter="LOST">분실물</a>
-        <a class="recent-tab" href="#" data-filter="FOUND">습득물</a>
+        <a class="is-active" th:href="@{/lost-items}">전체</a>
+        <a th:href="@{/lost-items}">분실물</a>
+        <a th:href="@{/found-items}">습득물</a>
         <a th:href="@{/animal-reports}">실종자</a>
         <a th:href="@{/animal-reports}">실종동물</a>
       </div>
 
       <div th:if="${!#lists.isEmpty(recentItems)}" class="home-recent-grid" id="recentGrid">
         <a th:each="item : ${recentItems}"
-           th:href="${item.type == 'LOST' ? '/lost-items/' + item.id : '/found-items/' + item.id}"
-           class="home-recent-card"
-           th:data-type="${item.type}">
+          th:href="${item.type == 'LOST' ? '/lost-items/' + item.id : '/found-items/' + item.id}"
+          class="home-recent-card" th:data-type="${item.type}">
           <span th:text="${item.typeLabel}"
-                th:classappend="${item.type == 'LOST' ? ' home-badge--lost' : ' home-badge--found'}"
-                class="home-badge">분실물</span>
+            th:classappend="${item.type == 'LOST' ? ' home-badge--lost' : ' home-badge--found'}"
+            class="home-badge">분실물</span>
           <div class="home-recent-image">
             <img th:if="${item.imageUrl}" th:src="${item.imageUrl}" alt="">
             <img th:unless="${item.imageUrl}" th:src="@{/images/noImageSize.png}" alt="">
@@ -117,7 +129,10 @@
           <div class="home-recent-body">
             <strong th:text="${item.title}">검은색 지갑을 분실했어요</strong>
             <p>
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="2"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Z" stroke="currentColor" stroke-width="2" />
+                <circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="2" />
+              </svg>
               <span th:text="${item.place ?: '위치 미상'}">서울 강남역</span>
             </p>
             <time th:text="${#temporals.format(item.itemAt, 'yyyy.MM.dd')}">2024.05.20</time>
@@ -125,14 +140,15 @@
         </a>
       </div>
 
-      <div id="recentEmpty" class="home-empty" th:style="${#lists.isEmpty(recentItems)} ? 'display: flex;' : 'display: none;'">
+      <div id="recentEmpty" class="home-empty"
+        th:style="${#lists.isEmpty(recentItems)} ? 'display: flex;' : 'display: none;'">
         <strong>등록된 게시물이 없습니다</strong>
         <span>새 게시물이 올라오면 이곳에 표시됩니다.</span>
       </div>
     </section>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('DOMContentLoaded', function () {
         const tabs = document.querySelectorAll('.recent-tab');
         const grid = document.getElementById('recentGrid');
         const cards = grid ? grid.querySelectorAll('.home-recent-card') : [];
@@ -182,9 +198,9 @@
         }
 
         tabs.forEach(tab => {
-          tab.addEventListener('click', function(e) {
+          tab.addEventListener('click', function (e) {
             e.preventDefault();
-            
+
             // Remove active style from all tabs
             tabs.forEach(t => t.classList.remove('is-active'));
             // Add active style to selected tab
@@ -200,7 +216,7 @@
         const searchTypeSelect = document.getElementById('searchType');
 
         if (searchForm && searchTypeSelect) {
-          searchTypeSelect.addEventListener('change', function() {
+          searchTypeSelect.addEventListener('change', function () {
             const val = this.value;
             if (val === 'lost') {
               searchForm.action = '/lost-items';
@@ -222,4 +238,5 @@
     </script>
   </th:block>
 </th:block>
+
 </html>
