@@ -60,10 +60,20 @@
       </a>
     </section>
 
-    <form action="/lost-items" method="get" class="home-search-panel" aria-label="통합 검색">
+    <form id="homeSearchForm" action="/lost-items" method="get" class="home-search-panel" aria-label="통합 검색">
       <label>
         <span>통합검색</span>
         <input name="keyword" placeholder="어떤 정보를 찾으시나요?">
+      </label>
+      <label>
+        <span>유형</span>
+        <select id="searchType">
+          <option value="all">전체</option>
+          <option value="lost">분실물</option>
+          <option value="found">습득물</option>
+          <option value="person">실종자</option>
+          <option value="animal">실종동물</option>
+        </select>
       </label>
       <label>
         <span>카테고리</span>
@@ -85,17 +95,18 @@
         <a th:href="@{/lost-items}">전체보기</a>
       </div>
       <div class="home-tabs" aria-label="게시물 유형">
-        <a class="is-active" th:href="@{/lost-items}">전체</a>
-        <a th:href="@{/lost-items}">분실물</a>
-        <a th:href="@{/found-items}">습득물</a>
+        <a class="recent-tab is-active" href="#" data-filter="all">전체</a>
+        <a class="recent-tab" href="#" data-filter="LOST">분실물</a>
+        <a class="recent-tab" href="#" data-filter="FOUND">습득물</a>
         <a th:href="@{/animal-reports}">실종자</a>
         <a th:href="@{/animal-reports}">실종동물</a>
       </div>
 
-      <div th:if="${!#lists.isEmpty(recentItems)}" class="home-recent-grid">
+      <div th:if="${!#lists.isEmpty(recentItems)}" class="home-recent-grid" id="recentGrid">
         <a th:each="item : ${recentItems}"
            th:href="${item.type == 'LOST' ? '/lost-items/' + item.id : '/found-items/' + item.id}"
-           class="home-recent-card">
+           class="home-recent-card"
+           th:data-type="${item.type}">
           <span th:text="${item.typeLabel}"
                 th:classappend="${item.type == 'LOST' ? ' home-badge--lost' : ' home-badge--found'}"
                 class="home-badge">분실물</span>
@@ -114,11 +125,101 @@
         </a>
       </div>
 
-      <div th:if="${#lists.isEmpty(recentItems)}" class="home-empty">
+      <div id="recentEmpty" class="home-empty" th:style="${#lists.isEmpty(recentItems)} ? 'display: flex;' : 'display: none;'">
         <strong>등록된 게시물이 없습니다</strong>
         <span>새 게시물이 올라오면 이곳에 표시됩니다.</span>
       </div>
     </section>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.recent-tab');
+        const grid = document.getElementById('recentGrid');
+        const cards = grid ? grid.querySelectorAll('.home-recent-card') : [];
+        const emptyMsg = document.getElementById('recentEmpty');
+
+        function applyFilter(filterValue, isInitial) {
+          let visibleCount = 0;
+
+          cards.forEach(card => {
+            const cardType = card.getAttribute('data-type');
+            const isMatch = (filterValue === 'all' || cardType === filterValue);
+
+            if (isMatch && visibleCount < 8) {
+              card.style.display = 'block';
+              if (!isInitial) {
+                // Trigger animation
+                card.classList.remove('fade-in');
+                // Force reflow
+                void card.offsetWidth;
+                card.classList.add('fade-in');
+              } else {
+                card.classList.add('fade-in');
+              }
+              visibleCount++;
+            } else {
+              card.style.display = 'none';
+              card.classList.remove('fade-in');
+            }
+          });
+
+          // Display grid or show empty message depending on visibility
+          if (grid) {
+            if (visibleCount > 0) {
+              grid.style.display = 'grid';
+            } else {
+              grid.style.display = 'none';
+            }
+          }
+
+          if (emptyMsg) {
+            if (visibleCount === 0) {
+              emptyMsg.style.display = 'flex';
+            } else {
+              emptyMsg.style.display = 'none';
+            }
+          }
+        }
+
+        tabs.forEach(tab => {
+          tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active style from all tabs
+            tabs.forEach(t => t.classList.remove('is-active'));
+            // Add active style to selected tab
+            this.classList.add('is-active');
+
+            const filterValue = this.getAttribute('data-filter');
+            applyFilter(filterValue, false);
+          });
+        });
+
+        // Handle search form type changes to dynamically update form action
+        const searchForm = document.getElementById('homeSearchForm');
+        const searchTypeSelect = document.getElementById('searchType');
+
+        if (searchForm && searchTypeSelect) {
+          searchTypeSelect.addEventListener('change', function() {
+            const val = this.value;
+            if (val === 'lost') {
+              searchForm.action = '/lost-items';
+            } else if (val === 'found') {
+              searchForm.action = '/found-items';
+            } else if (val === 'animal') {
+              searchForm.action = '/animal-reports';
+            } else if (val === 'person') {
+              searchForm.action = '/animal-reports'; // placeholder / fallback
+            } else {
+              searchForm.action = '/lost-items'; // default fallback for 'all'
+            }
+          });
+        }
+
+        // Initialize with 'all' filter on page load
+        applyFilter('all', true);
+      });
+    </script>
   </th:block>
 </th:block>
 </html>

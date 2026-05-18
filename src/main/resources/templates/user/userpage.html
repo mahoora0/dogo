@@ -40,13 +40,88 @@
         </button>
       </div>
 
-      <!-- 내 활동 섹션 (네모칸 안에 타이틀 포함) -->
+      <!-- 내 활동 섹션 -->
       <div class="bg-white rounded-[24px] border border-gray-100 p-10 shadow-sm">
-        <h3 class="text-xl font-extrabold text-gray-900 mb-10">내 활동</h3>
+        <div class="flex items-center justify-between mb-10">
+          <h3 class="text-xl font-extrabold text-gray-900">내 활동</h3>
+          <span class="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full" th:text="'총 ' + ${#lists.size(userActivities)} + '건'">총 0건</span>
+        </div>
         
-        <!-- 활동 목록 칸 (임시 빈 칸) -->
-        <div class="min-h-[200px] flex items-center justify-center border-2 border-dashed border-gray-50 rounded-2xl">
-          <p class="text-gray-400 font-medium text-lg">활동 내역이 없습니다.</p>
+        <!-- 활동 목록이 없을 때 -->
+        <div th:if="${#lists.isEmpty(userActivities)}" 
+             class="min-h-[250px] flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-[20px] bg-slate-50/50">
+          <div class="mb-4 text-gray-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <p class="text-gray-400 font-bold text-lg">작성한 활동 내역이 없습니다.</p>
+          <p class="text-gray-400 text-sm mt-1">분실물 또는 습득물 게시글을 작성해보세요.</p>
+        </div>
+
+        <!-- 활동 목록 그리드 -->
+        <div th:unless="${#lists.isEmpty(userActivities)}" 
+             class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <a th:each="activity : ${userActivities}" 
+             th:href="${activity.type == 'LOST'} ? @{/lost-items/{id}(id=${activity.id})} : @{/found-items/{id}(id=${activity.id})}"
+             class="group flex flex-col overflow-hidden rounded-[20px] border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-100 hover:shadow-md">
+            
+            <!-- 썸네일 영역 -->
+            <div class="relative h-44 w-full overflow-hidden bg-gray-50">
+              <img th:if="${activity.imageUrl}" th:src="${activity.imageUrl}" alt=""
+                   class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+              <div th:unless="${activity.imageUrl}"
+                   class="flex h-full w-full items-center justify-center text-gray-300 bg-gradient-to-br from-gray-50 to-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              
+              <!-- 타입 배지 (좌측 상단) -->
+              <div class="absolute left-3 top-3 z-10">
+                <span th:text="${activity.typeLabel}"
+                      th:classappend="${activity.type == 'LOST'} ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-blue-50 text-blue-600 border border-blue-100'"
+                      class="block rounded-full px-3 py-1.5 text-xs font-extrabold shadow-sm">분실물</span>
+              </div>
+
+              <!-- 상태 배지 (우측 상단) -->
+              <div class="absolute right-3 top-3 z-10">
+                <span th:text="${activity.statusLabel}"
+                      th:classappend="${activity.status == 'RETURNED' || activity.status == 'FOUND'} ? 'bg-emerald-600 text-white' : (activity.status == 'MATCHING' ? 'bg-amber-500 text-white' : 'bg-slate-800 text-white')"
+                      class="block rounded-full px-3 py-1.5 text-xs font-extrabold shadow-sm">보관중</span>
+              </div>
+            </div>
+            
+            <!-- 본문 영역 -->
+            <div class="p-5 flex-1 flex flex-col justify-between">
+              <div>
+                <h4 th:text="${activity.title}" class="line-clamp-1 text-base font-extrabold text-gray-900 group-hover:text-blue-600 transition-colors">검정 지갑</h4>
+                
+                <!-- 카테고리 -->
+                <div class="mt-2.5 flex flex-wrap gap-1.5">
+                  <span th:text="${activity.category ?: '미분류'}" class="max-w-full truncate rounded-[6px] bg-gray-50 px-2 py-0.5 text-xs font-bold text-gray-500 border border-gray-100">지갑</span>
+                </div>
+              </div>
+              
+              <!-- 위치 및 일시 -->
+              <div class="mt-4 pt-4 border-t border-gray-50 space-y-2 text-xs font-semibold text-gray-400">
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  <span class="truncate" th:text="${activity.place ?: '장소 정보 없음'}">서울 · 홍대</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <span th:text="${#temporals.format(activity.itemAt, 'yyyy.MM.dd HH:mm')}">2026.05.10 15:00</span>
+                </div>
+              </div>
+            </div>
+            
+          </a>
         </div>
       </div>
       

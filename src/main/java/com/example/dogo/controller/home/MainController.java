@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MainController {
 
-  private static final int RECENT_ITEM_LIMIT = 4;
+  private static final int RECENT_ITEM_LIMIT = 8;
 
   private final LostItemService lostItemService;
   private final FoundItemService foundItemService;
@@ -30,7 +30,7 @@ public class MainController {
 
     model.addAttribute("currentUri", "/");
     model.addAttribute("searchCategories", lostItemService.getSearchCategoryNames());
-    model.addAttribute("recentItems", recentItems.subList(0, Math.min(RECENT_ITEM_LIMIT, recentItems.size())));
+    model.addAttribute("recentItems", recentItems);
     return "index";
   }
 }
