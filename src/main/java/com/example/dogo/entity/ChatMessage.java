@@ -1,5 +1,6 @@
 package com.example.dogo.entity;
 
+import com.example.dogo.entity.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -1,5 +1,8 @@
 package com.example.dogo.entity;
 
+import com.example.dogo.entity.item.FoundItem;
+import com.example.dogo.entity.item.LostItem;
+import com.example.dogo.entity.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

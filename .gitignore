@@ -1,5 +1,6 @@
 HELP.md
 .DS_Store
+bootrun.*.log
 .env
 .gradle
 build/

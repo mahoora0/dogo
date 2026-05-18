@@ -7,6 +7,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
+        <div class="chat-page">
         <div class="chat-wrapper">
             <!-- Sidebar: Room List -->
             <div class="chat-sidebar">
@@ -19,16 +20,16 @@
                          class="chat-room-item" 
                          th:classappend="${param.roomId != null && param.roomId[0] == room.roomId.toString() ? 'active' : ''}"
                          th:onclick="'selectRoom(' + ${room.roomId} + ')'">
-                        <img th:src="${room.itemThumbnail ?: '/images/placeholder.png'}" class="chat-room-thumb" alt="">
+                        <img th:src="${room.itemThumbnail ?: '/images/noImageSize.png'}" class="chat-room-thumb" alt="">
                         <div class="chat-room-info">
-                            <div class="flex justify-between items-start">
+                            <div class="chat-room-row">
                                 <div class="chat-room-name" th:text="${room.otherParticipantNickname}">상대방 닉네임</div>
-                                <span class="text-[10px] text-slate-400" th:text="${#temporals.format(room.lastMessageTime, 'HH:mm')}">오전 9:30</span>
+                                <span class="chat-room-time" th:text="${#temporals.format(room.lastMessageTime, 'HH:mm')}">오전 9:30</span>
                             </div>
-                            <div class="flex justify-between items-center">
+                            <div class="chat-room-row">
                                 <div class="chat-room-last-msg" th:text="${room.lastMessage}">마지막 메시지 내용</div>
                                 <div th:if="${room.unreadCount != null && room.unreadCount > 0}" 
-                                     class="bg-violet-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center" 
+                                     class="chat-room-unread" 
                                      th:text="${room.unreadCount}">2</div>
                             </div>
                         </div>
@@ -73,7 +74,7 @@
 
             <!-- Right Panel: Info -->
             <div id="info-panel" class="chat-info-panel hidden">
-                <div class="flex items-center justify-between mb-2">
+                <div class="chat-panel-title-row">
                     <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
                     <h4 class="text-sm font-bold">습득물 정보</h4>
                     <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
@@ -82,9 +83,9 @@
                 <div class="item-card">
                     <img id="item-info-img" src="" class="item-img" alt="">
                     <div class="item-details">
-                        <div class="flex justify-between items-start">
+                        <div class="chat-item-title-row">
                             <h4 id="item-info-title" class="item-title">아이템 제목</h4>
-                            <span class="bg-violet-50 text-violet-600 text-[10px] px-2 py-1 rounded font-bold">습득완료</span>
+                            <span class="chat-item-badge">습득완료</span>
                         </div>
                         <div class="item-meta">
                             <div class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> <span id="item-info-location">장소 정보</span></div>
@@ -112,16 +113,22 @@
             const currentUser = [[${currentUser}]];
             const initialRoomId = [[${param.roomId}]];
             const rooms = [[${rooms}]];
+            const DEFAULT_ITEM_IMAGE = '/images/noImageSize.png';
+            const DEFAULT_PROFILE_IMAGE = '/images/logoNoName.png';
             
             let currentRoomId = null;
             let stompClient = null;
             let subscription = null;
+            const renderedMessageIds = new Set();
 
             function connect() {
                 const socket = new SockJS('/ws-stomp');
                 stompClient = Stomp.over(socket);
                 stompClient.debug = null; // Disable logging
                 stompClient.connect({}, function (frame) {
+                    stompClient.subscribe(`/sub/users/${currentUser.userNo}/messages`, function (message) {
+                        handleIncomingMessage(JSON.parse(message.body));
+                    });
                     if (initialRoomId) {
                         selectRoom(initialRoomId[0]);
                     }
@@ -143,9 +150,9 @@
                 
                 document.getElementById('current-room-name').innerText = room.itemTitle;
                 document.getElementById('item-info-title').innerText = room.itemTitle;
-                document.getElementById('item-info-img').src = room.itemThumbnail || '/images/placeholder.png';
+                document.getElementById('item-info-img').src = room.itemThumbnail || DEFAULT_ITEM_IMAGE;
                 document.getElementById('participant-name').innerText = room.otherParticipantNickname;
-                document.getElementById('participant-img').src = room.otherParticipantProfileImage || '/images/default-profile.png';
+                document.getElementById('participant-img').src = room.otherParticipantProfileImage || DEFAULT_PROFILE_IMAGE;
 
                 // Load Messages
                 fetch(`/chat/room/${roomId}/messages`)
@@ -153,6 +160,7 @@
                     .then(messages => {
                         const container = document.getElementById('messages-container');
                         container.innerHTML = '';
+                        renderedMessageIds.clear();
                         messages.forEach(msg => appendMessage(msg));
                         container.scrollTop = container.scrollHeight;
                     });
@@ -160,26 +168,55 @@
                 // Subscribe to new messages
                 if (subscription) subscription.unsubscribe();
                 subscription = stompClient.subscribe(`/sub/chat/room/${roomId}`, function (message) {
-                    const msg = JSON.parse(message.body);
+                    handleIncomingMessage(JSON.parse(message.body));
+                });
+            }
+
+            function handleIncomingMessage(msg) {
+                if (msg.roomId == currentRoomId) {
                     appendMessage(msg);
                     const container = document.getElementById('messages-container');
                     container.scrollTop = container.scrollHeight;
-                });
+                    return;
+                }
+
+                const room = rooms.find(r => r.roomId == msg.roomId);
+                if (room) {
+                    room.lastMessage = msg.content;
+                    highlightRoom(msg.roomId, msg.content);
+                } else {
+                    window.location.href = '/chat?roomId=' + msg.roomId;
+                }
+            }
+
+            function highlightRoom(roomId, lastMessage) {
+                const selectedEl = Array.from(document.querySelectorAll('.chat-room-item')).find(el => el.onclick.toString().includes(roomId));
+                if (!selectedEl) return;
+                const lastMessageEl = selectedEl.querySelector('.chat-room-last-msg');
+                if (lastMessageEl) {
+                    lastMessageEl.innerText = lastMessage;
+                }
             }
 
             function appendMessage(msg) {
                 const container = document.getElementById('messages-container');
+                const messageKey = msg.clientMessageId || [msg.roomId, msg.senderNo, msg.createdAt, msg.content].join('|');
+                if (renderedMessageIds.has(messageKey)) {
+                    return;
+                }
+                renderedMessageIds.add(messageKey);
+
                 const isMe = msg.senderNo == currentUser.userNo;
                 
                 const msgDiv = document.createElement('div');
                 msgDiv.className = `message ${isMe ? 'me' : 'other'}`;
                 
-                const timeStr = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const timeStr = new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 msgDiv.innerHTML = `
-                    ${isMe ? '' : `<img src="${msg.senderProfileImage || '/images/default-profile.png'}" class="message-avatar">`}
+                    ${isMe ? '' : `<img src="${escapeHtml(msg.senderProfileImage || DEFAULT_PROFILE_IMAGE)}" class="message-avatar" alt="">`}
                     <div class="message-content">
-                        <div class="message-bubble">${msg.content}</div>
+                        <div class="message-bubble">${escapeHtml(msg.content)}</div>
                         <div class="message-time">${timeStr}</div>
                     </div>
                 `;
@@ -191,19 +228,57 @@
                 const content = input.value.trim();
                 if (!content || !currentRoomId) return;
 
+                const clientMessageId = 'client-' + Date.now() + '-' + Math.random().toString(36).slice(2);
                 const messageDto = {
                     roomId: currentRoomId,
                     senderNo: currentUser.userNo,
                     content: content,
-                    type: 'TALK'
+                    type: 'TALK',
+                    clientMessageId: clientMessageId
                 };
 
-                stompClient.send("/pub/chat/message", {}, JSON.stringify(messageDto));
+                const pendingMessage = {
+                    ...messageDto,
+                    senderNickname: currentUser.nickname,
+                    senderProfileImage: currentUser.profileImageUrl,
+                    createdAt: new Date().toISOString()
+                };
+                appendMessage(pendingMessage);
+                const container = document.getElementById('messages-container');
+                container.scrollTop = container.scrollHeight;
+
+                fetch(`/chat/room/${currentRoomId}/messages`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(messageDto)
+                })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error('message send failed');
+                        }
+                        return res.json();
+                    })
+                    .then(savedMessage => handleIncomingMessage(savedMessage))
+                    .catch(() => {
+                        if (stompClient && stompClient.connected) {
+                            stompClient.send("/pub/chat/message", {}, JSON.stringify(messageDto));
+                        }
+                    });
                 input.value = '';
+            }
+
+            function escapeHtml(value) {
+                return String(value || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
             }
 
             connect();
         </script>
+        </div>
     </th:block>
 </th:block>
 </html>
