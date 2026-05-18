@@ -31,9 +31,14 @@ public class MissingPersonService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<MissingPersonView> search(String keyword, String status, Pageable pageable) {
-		return missingPersonRepository.findAll(searchSpec(keyword, status), pageable)
+	public Page<MissingPersonView> search(String keyword, String status, String sourceType, Pageable pageable) {
+		return missingPersonRepository.findAll(searchSpec(keyword, status, sourceType), pageable)
 				.map(this::toListView);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<MissingPersonView> search(String keyword, String status, Pageable pageable) {
+		return search(keyword, status, null, pageable);
 	}
 
 	@Transactional
@@ -63,11 +68,11 @@ public class MissingPersonService {
 	public MissingPersonDetailView getDetail(Long id) {
 		MissingPersonReport report = missingPersonRepository.findById(id)
 				.filter(candidate -> !candidate.isDeleted())
-				.orElseThrow(() -> new IllegalArgumentException("실종자 제보를 찾을 수 없습니다."));
+				.orElseThrow(() -> new IllegalArgumentException("실종자 정보를 찾을 수 없습니다."));
 		return toDetailView(report);
 	}
 
-	private Specification<MissingPersonReport> searchSpec(String keyword, String status) {
+	private Specification<MissingPersonReport> searchSpec(String keyword, String status, String sourceType) {
 		return (root, query, criteriaBuilder) -> {
 			List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
 			predicates.add(criteriaBuilder.isFalse(root.get("deleted")));
@@ -75,6 +80,11 @@ public class MissingPersonService {
 			String normalizedStatus = blankToNull(status);
 			if (normalizedStatus != null) {
 				predicates.add(criteriaBuilder.equal(root.get("status"), normalizedStatus));
+			}
+
+			String normalizedSourceType = blankToNull(sourceType);
+			if (normalizedSourceType != null) {
+				predicates.add(criteriaBuilder.equal(root.get("sourceType"), normalizedSourceType));
 			}
 
 			String normalizedKeyword = blankToNull(keyword);
@@ -111,7 +121,9 @@ public class MissingPersonService {
 				report.getHairStyle(),
 				report.getClothing(),
 				report.getStatus(),
-				statusLabel(report.getStatus())
+				statusLabel(report.getStatus()),
+				report.getSourceType(),
+				report.getSourceLabel()
 		);
 	}
 
@@ -131,7 +143,9 @@ public class MissingPersonService {
 				report.getHairStyle(),
 				report.getClothing(),
 				report.getStatus(),
-				statusLabel(report.getStatus())
+				statusLabel(report.getStatus()),
+				report.getSourceType(),
+				report.getSourceLabel()
 		);
 	}
 
@@ -158,13 +172,13 @@ public class MissingPersonService {
 			throw new IllegalArgumentException("얼굴형을 입력해주세요.");
 		}
 		if (!StringUtils.hasText(request.getHairColor())) {
-			throw new IllegalArgumentException("두발색상을 입력해주세요.");
+			throw new IllegalArgumentException("머리색상을 입력해주세요.");
 		}
 		if (!StringUtils.hasText(request.getHairStyle())) {
-			throw new IllegalArgumentException("두발형태를 입력해주세요.");
+			throw new IllegalArgumentException("머리형태를 입력해주세요.");
 		}
 		if (!StringUtils.hasText(request.getClothing())) {
-			throw new IllegalArgumentException("착의의상을 입력해주세요.");
+			throw new IllegalArgumentException("착의사항을 입력해주세요.");
 		}
 	}
 
@@ -174,7 +188,7 @@ public class MissingPersonService {
 	}
 
 	private String summary(MissingPersonReport report) {
-		return report.getAge() + "세 " + report.getNationality() + " 실종자";
+		return report.getAge() + "세 " + report.getNationality() + " 실종";
 	}
 
 	private String statusLabel(String status) {

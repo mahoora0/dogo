@@ -32,6 +32,7 @@ public class MissingPersonController {
 	public String list(
 			@RequestParam(required = false) String keyword,
 			@RequestParam(required = false) String status,
+			@RequestParam(required = false) String sourceType,
 			@RequestParam(defaultValue = "regdate") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
@@ -44,16 +45,17 @@ public class MissingPersonController {
 		int safePage = Math.max(page, 0);
 		int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
 
-		Page<?> reportPage = missingPersonService.search(keyword, status, PageRequest.of(safePage, safeSize, sort));
+		Page<?> reportPage = missingPersonService.search(keyword, status, sourceType, PageRequest.of(safePage, safeSize, sort));
 		if (safePage > 0 && safePage >= reportPage.getTotalPages() && reportPage.getTotalPages() > 0) {
 			safePage = reportPage.getTotalPages() - 1;
-			reportPage = missingPersonService.search(keyword, status, PageRequest.of(safePage, safeSize, sort));
+			reportPage = missingPersonService.search(keyword, status, sourceType, PageRequest.of(safePage, safeSize, sort));
 		}
 
 		model.addAttribute("reportPage", reportPage);
 		model.addAttribute("reports", reportPage.getContent());
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("status", status);
+		model.addAttribute("sourceType", sourceType);
 		model.addAttribute("sortBy", safeField);
 		model.addAttribute("sortDir", sortDir);
 		model.addAttribute("page", safePage);

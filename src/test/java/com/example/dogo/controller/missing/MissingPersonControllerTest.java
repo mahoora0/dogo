@@ -36,33 +36,21 @@ class MissingPersonControllerTest {
 
 	@Test
 	void listShowsMissingPersonBoard() throws Exception {
-		MissingPersonView report = new MissingPersonView(
-				1L,
-				"13세 대한민국 실종자",
-				13,
-				"대한민국",
-				LocalDateTime.of(2026, 5, 18, 9, 30),
-				"서울 강남역",
-				170,
-				new BigDecimal("58.0"),
-				"마른 체형",
-				"계란형",
-				"검정",
-				"짧은 머리",
-				"흰색 후드티",
-				"OPEN",
-				"접수"
-		);
-		when(missingPersonService.search(eq("대한민국"), eq("OPEN"), any(PageRequest.class)))
+		MissingPersonView report = missingPersonView("USER", "사용자 제보");
+		when(missingPersonService.search(eq("Korea"), eq("OPEN"), eq("PUBLIC_API"), any(PageRequest.class)))
 				.thenReturn(new PageImpl<>(List.of(report)));
 
-		mockMvc.perform(get("/missing-persons").param("keyword", "대한민국").param("status", "OPEN"))
+		mockMvc.perform(get("/missing-persons")
+						.param("keyword", "Korea")
+						.param("status", "OPEN")
+						.param("sourceType", "PUBLIC_API"))
 				.andExpect(status().isOk())
 				.andExpect(view().name("missing-persons/list"))
 				.andExpect(model().attribute("currentUri", "/missing-persons"))
 				.andExpect(model().attributeExists("reports"))
-				.andExpect(model().attribute("keyword", "대한민국"))
-				.andExpect(model().attribute("status", "OPEN"));
+				.andExpect(model().attribute("keyword", "Korea"))
+				.andExpect(model().attribute("status", "OPEN"))
+				.andExpect(model().attribute("sourceType", "PUBLIC_API"));
 	}
 
 	@Test
@@ -80,44 +68,72 @@ class MissingPersonControllerTest {
 
 		mockMvc.perform(post("/missing-persons")
 						.param("age", "13")
-						.param("nationality", "대한민국")
+						.param("nationality", "Korea")
 						.param("occurredAt", "2026-05-18T09:30")
-						.param("occurredPlace", "서울 강남역")
+						.param("occurredPlace", "Seoul")
 						.param("heightCm", "170")
 						.param("weightKg", "58.0")
-						.param("bodyType", "마른 체형")
-						.param("faceShape", "계란형")
-						.param("hairColor", "검정")
-						.param("hairStyle", "짧은 머리")
-						.param("clothing", "흰색 후드티"))
+						.param("bodyType", "Slim")
+						.param("faceShape", "Oval")
+						.param("hairColor", "Black")
+						.param("hairStyle", "Short")
+						.param("clothing", "Blue hoodie"))
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/missing-persons/12?created=true"));
 	}
 
 	@Test
 	void detailShowsMissingPersonReport() throws Exception {
-		when(missingPersonService.getDetail(12L)).thenReturn(new MissingPersonDetailView(
-				12L,
-				"13세 대한민국 실종자",
-				13,
-				"대한민국",
-				LocalDateTime.of(2026, 5, 18, 9, 30),
-				"서울 강남역",
-				170,
-				new BigDecimal("58.0"),
-				"마른 체형",
-				"계란형",
-				"검정",
-				"짧은 머리",
-				"흰색 후드티",
-				"OPEN",
-				"접수"
-		));
+		when(missingPersonService.getDetail(12L)).thenReturn(detail("PUBLIC_API", "공공데이터"));
 
 		mockMvc.perform(get("/missing-persons/12"))
 				.andExpect(status().isOk())
 				.andExpect(view().name("missing-persons/detail"))
 				.andExpect(model().attributeExists("report"))
 				.andExpect(model().attribute("currentUri", "/missing-persons"));
+	}
+
+	private MissingPersonView missingPersonView(String sourceType, String sourceLabel) {
+		return new MissingPersonView(
+				1L,
+				"13세 Korea 실종",
+				13,
+				"Korea",
+				LocalDateTime.of(2026, 5, 18, 9, 30),
+				"Seoul",
+				170,
+				new BigDecimal("58.0"),
+				"Slim",
+				"Oval",
+				"Black",
+				"Short",
+				"Blue hoodie",
+				"OPEN",
+				"접수",
+				sourceType,
+				sourceLabel
+		);
+	}
+
+	private MissingPersonDetailView detail(String sourceType, String sourceLabel) {
+		return new MissingPersonDetailView(
+				12L,
+				"13세 Korea 실종",
+				13,
+				"Korea",
+				LocalDateTime.of(2026, 5, 18, 9, 30),
+				"Seoul",
+				170,
+				new BigDecimal("58.0"),
+				"Slim",
+				"Oval",
+				"Black",
+				"Short",
+				"Blue hoodie",
+				"OPEN",
+				"접수",
+				sourceType,
+				sourceLabel
+		);
 	}
 }

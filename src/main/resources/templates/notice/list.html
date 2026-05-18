@@ -52,7 +52,7 @@
                         </td>
                         <!-- 제목 -->
                         <td class="py-4 px-6 font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
-                            <a th:href="@{/notice/{id}(id=${notice.id})}" th:text="${notice.title}" class="block truncate max-w-md sm:max-w-xl">
+                            <a th:href="@{${isAdmin ? '/admin/notice/' + notice.id : '/notice/' + notice.id}}" th:text="${notice.title}" class="block truncate max-w-md sm:max-w-xl">
                                 공지사항 제목입니다.
                             </a>
                         </td>

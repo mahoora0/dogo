@@ -6,6 +6,7 @@ import com.example.dogo.entity.item.FoundItemImage;
 import com.example.dogo.entity.item.ItemMatch;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.entity.item.LostItemImage;
+import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.item.FoundItemImageRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.item.ItemMatchRepository;
@@ -193,9 +194,12 @@ public class ItemMatchService {
 		itemMatchRepository.flush();
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional
 	public List<MatchCandidateView> getMatchesForLostItem(Long lostId) {
-		return itemMatchRepository.findByLostIdWithFoundItem(lostId).stream()
+		List<ItemMatch> matches = itemMatchRepository.findByLostIdWithFoundItem(lostId);
+		matches.forEach(ItemMatch::markAsRead);
+
+		return matches.stream()
 				.limit(MAX_CANDIDATES)
 				.map(match -> {
 					FoundItem found = match.getFoundItem();
@@ -221,6 +225,55 @@ public class ItemMatchService {
 					);
 				})
 				.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public long getUnreadMatchCount(User user) {
+		if (user == null) {
+			return 0;
+		}
+		long count = itemMatchRepository.countByLostItemUserUserNoAndMatchStatus(user.getUserNo(), "CANDIDATE");
+		return Math.min(count, 3);
+	}
+
+	@Transactional(readOnly = true)
+	public List<MatchCandidateView> getTopMatchesForNotification(User user) {
+		if (user == null) {
+			return List.of();
+		}
+
+		return itemMatchRepository.findTop3ByLostItemUserUserNoOrderByFinalScoreDescMatchIdDesc(user.getUserNo())
+				.stream()
+				.map(match -> {
+					FoundItem found = match.getFoundItem();
+					String imageUrl = foundItemImageRepository
+							.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(found)
+							.map(FoundItemImage::getImageUrl)
+							.orElse(null);
+					return new MatchCandidateView(
+							found.getFoundId(),
+							"found",
+							found.getTitle(),
+							found.getItemName(),
+							found.getCategoryMain(),
+							found.getFoundArea(),
+							found.getFoundPlace(),
+							found.getFoundAt(),
+							found.getStatus(),
+							foundStatusLabel(found.getStatus()),
+							imageUrl,
+							match.displayScore(),
+							List.of()
+					);
+				})
+				.toList();
+	}
+
+	@Transactional
+	public void markAllAsRead(User user) {
+		if (user != null) {
+			itemMatchRepository.markAllAsReadByUserNo(user.getUserNo());
+		}
 	}
 
 	@Transactional(readOnly = true)
@@ -442,6 +495,25 @@ public class ItemMatchService {
 			case "FOUND" -> "회수완료";
 			default -> "대기중";
 		};
+	}
+
+	@Transactional
+	public void matchForUserLostItems(User user) {
+		if (user == null) {
+			return;
+		}
+
+		List<LostItem> activeLostItems = lostItemRepository.findByUserAndDeletedFalseAndStatusIn(
+				user, List.of("WAITING", "MATCHING"));
+
+		for (LostItem lostItem : activeLostItems) {
+			try {
+				matchForLostItem(lostItem);
+			} catch (Exception e) {
+				log.error("Failed to refresh matches for user lost item. lostItemId={}",
+						lostItem.getLostId(), e);
+			}
+		}
 	}
 
 	private record RuleCandidate(LostItem lost, FoundItem found, MatchScoreResult score) {

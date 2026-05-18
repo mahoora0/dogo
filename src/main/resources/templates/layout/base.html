@@ -28,24 +28,83 @@
             <a th:href="@{/join}" class="nav-link">회원가입</a>
           </th:block>
 
+          <!-- 로그인 된 상태 -->
           <th:block sec:authorize="isAuthenticated()">
-            <!-- 🔔 알림 아이콘 추가 -->
-            <a th:href="@{/notifications}" class="chat-button" title="알림">
-              <svg xmlns="http://www.w3.org/2000/svg"
-                   fill="none"
-                   viewBox="0 0 24 24"
-                   stroke-width="2"
-                   stroke="currentColor">
-                <path stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11a6 6 0 1 0-12 0v3.159c0 .538-.214 1.055-.595 1.437L4 17h5m6 0a3 3 0 1 1-6 0m6 0H9"/>
-              </svg>
-              <span class="chat-text">알림</span>
-            </a>
+            <!-- 매칭 알림 종 아이콘 (사용자가 최소 1개 이상 분실물을 등록했을 때만 노출) -->
+            <div th:if="${hasLostItems}" class="relative inline-block text-left mr-2" id="notificationWrapper">
+              <button type="button" id="notificationBtn" class="relative p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
+                </svg>
+                <span th:if="${unreadMatchCount > 0}" th:text="${unreadMatchCount}"
+                      class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+                  0
+                </span>
+              </button>
 
-            <!-- 💬 채팅 -->
-            <a th:href="@{/chat}" class="chat-button" title="채팅하기">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <!-- 알림 드롭다운 -->
+              <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden">
+                <div class="p-4 border-b border-slate-100 bg-slate-50">
+                  <h3 class="text-sm font-bold text-slate-900">새로운 매칭 알림</h3>
+                </div>
+                <div class="max-h-96 overflow-y-auto">
+                  <th:block th:if="${not #lists.isEmpty(topMatches)}">
+                    <a th:each="match : ${topMatches}" th:href="@{/found-items/{id}(id=${match.id})}"
+                       class="flex items-start gap-3 p-4 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors">
+                      <div class="w-12 h-12 flex-shrink-0 bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                        <img th:if="${match.imageUrl != null}" th:src="${match.imageUrl}" class="w-full h-full object-cover">
+                        <div th:unless="${match.imageUrl != null}" class="w-full h-full flex items-center justify-center text-slate-400 text-xs">IMG</div>
+                      </div>
+                      <div class="flex-grow min-w-0">
+                        <p class="text-[10px] font-bold text-indigo-600 mb-0.5">매칭 [[${match.score}]]점</p>
+                        <p class="text-sm font-semibold text-slate-900 truncate" th:text="${match.name}">물건명</p>
+                        <p class="text-[11px] text-slate-500 truncate" th:text="${match.area}">장소</p>
+                      </div>
+                    </a>
+                  </th:block>
+                  <div th:if="${#lists.isEmpty(topMatches)}" class="p-8 text-center text-sm text-slate-400">
+                    새로운 매칭 결과가 없습니다.
+                  </div>
+                </div>
+                <div class="p-3 bg-slate-50 border-t border-slate-100 text-center">
+                  <a th:href="@{/lost-items}" class="text-xs font-bold text-slate-600 hover:text-indigo-600">내 분실물 목록 보기</a>
+                </div>
+              </div>
+            </div>
+
+            <script>
+              document.addEventListener('DOMContentLoaded', function() {
+                const btn = document.getElementById('notificationBtn');
+                const dropdown = document.getElementById('notificationDropdown');
+                const badge = btn ? btn.querySelector('.absolute') : null;
+
+                if (btn && dropdown) {
+                  btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isOpening = dropdown.classList.contains('hidden');
+                    dropdown.classList.toggle('hidden');
+
+                    // 창을 열 때 숫자가 있다면 지우고 서버에 알림 (한 번만 실행)
+                    if (isOpening && badge) {
+                      badge.style.display = 'none';
+                      fetch('/api/matches/mark-as-read', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                      }).catch(err => console.error('알림 읽음 처리 실패:', err));
+                    }
+                  });
+
+                  document.addEventListener('click', function(e) {
+                    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                      dropdown.classList.add('hidden');
+                    }
+                  });
+                }
+              });
+            </script>
+
+            <a th:href="@{/chat}" class="chat-button relative" title="채팅하기">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
               </svg>
               <span class="chat-text">채팅</span>

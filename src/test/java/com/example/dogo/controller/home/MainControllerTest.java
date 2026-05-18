@@ -2,7 +2,9 @@ package com.example.dogo.controller.home;
 
 import com.example.dogo.service.item.FoundItemService;
 import com.example.dogo.service.item.LostItemService;
+import com.example.dogo.service.match.ItemMatchService;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -19,7 +21,11 @@ class MainControllerTest {
 
 	private final LostItemService lostItemService = mock(LostItemService.class);
 	private final FoundItemService foundItemService = mock(FoundItemService.class);
-	private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(new MainController(lostItemService, foundItemService)).build();
+	private final ItemMatchService itemMatchService = mock(ItemMatchService.class);
+	private final MockMvc mockMvc = MockMvcBuilders
+			.standaloneSetup(new MainController(lostItemService, foundItemService, itemMatchService))
+			.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+			.build();
 
 	@Test
 	void homeShowsIndexPage() throws Exception {

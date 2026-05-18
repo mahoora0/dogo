@@ -1,6 +1,7 @@
 package com.example.dogo.repository.item;
 
 import com.example.dogo.entity.item.LostItem;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -10,7 +11,15 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.dogo.entity.user.User;
 public interface LostItemRepository extends JpaRepository<LostItem, Long>, JpaSpecificationExecutor<LostItem> {
+
+
+	// 특정 사용자의 등록한 분실물 중, 삭제되지 않고 활성 상태(예: WAITING, MATCHING)에 있는 목록을 조회합니다.
+	List<LostItem> findByUserAndDeletedFalseAndStatusIn(User user, List<String> statuses);
+
+	// 특정 사용자가 등록한 분실물(삭제되지 않은 것)이 최소 1개 이상 존재하는지 여부를 확인합니다.
+	boolean existsByUserAndDeletedFalse(User user);
 
 	boolean existsByAtcId(String atcId);
 
