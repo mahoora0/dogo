@@ -8,4 +8,8 @@ import java.util.List;
 public interface MissingPersonRepository extends JpaRepository<MissingPersonReport, Long>, JpaSpecificationExecutor<MissingPersonReport> {
 
 	List<MissingPersonReport> findByDeletedFalseOrderByRegdateDesc();
+
+	boolean existsBySourceType(String sourceType);
+
+	boolean existsByApiProviderAndExternalId(String apiProvider, String externalId);
 }
