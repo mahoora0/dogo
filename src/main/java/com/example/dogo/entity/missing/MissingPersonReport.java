@@ -104,4 +104,14 @@ public class MissingPersonReport {
 		this.hairStyle = hairStyle;
 		this.clothing = clothing;
 	}
+
+	public void setStatus(String status) {
+		this.status = status;
+		this.moddate = LocalDateTime.now();
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+		this.moddate = LocalDateTime.now();
+	}
 }

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dogo Admin - 분실물 관리</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col">
+            <div class="p-6">
+                <a href="/" class="flex items-center gap-2 font-bold text-2xl text-blue-600">
+                    <i data-lucide="package-search"></i>
+                    <span>Dogo Admin</span>
+                </a>
+            </div>
+            <nav class="flex-1 px-4 space-y-1">
+                <a href="/admin" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    대시보드
+                </a>
+                <a href="/admin/users" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    회원 관리
+                </a>
+                <a href="/admin/lost-items" class="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-medium">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    분실물 관리
+                </a>
+                <a href="/admin/found-items" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="package" class="w-5 h-5"></i>
+                    습득물 관리
+                </a>
+                <a href="/admin/animals" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="dog" class="w-5 h-5"></i>
+                    실종동물 관리
+                </a>
+                <a href="/admin/missing-persons" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="user-round-search" class="w-5 h-5"></i>
+                    실종자 관리
+                </a>
+                <a href="/admin/inquiries" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    1:1 문의
+                </a>
+            </nav>
+            <div class="p-4 border-t border-slate-100">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="flex items-center gap-3 w-full px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors font-medium">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                        로그아웃
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <!-- Top Header -->
+            <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
+                <div class="flex items-center gap-2">
+                    <a href="/admin" class="md:hidden text-slate-500"><i data-lucide="menu"></i></a>
+                    <h1 class="text-xl font-semibold">분실물 관리</h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                            A
+                        </div>
+                        <span class="font-medium text-sm">관리자님</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-8">
+                <!-- Page Table Card -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-lg font-bold">등록된 분실물 목록</h2>
+                            <span class="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full" th:text="'총 ' + ${#lists.size(items)} + '건'">총 0건</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <a th:href="@{/admin/lost-items(sourceType='ALL')}" 
+                               th:class="${sourceType == 'ALL' ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'} + ' px-4 py-2 rounded-xl text-xs font-bold transition-all'">전체보기</a>
+                            <a th:href="@{/admin/lost-items(sourceType='USER')}" 
+                               th:class="${sourceType == 'USER' ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'} + ' px-4 py-2 rounded-xl text-xs font-bold transition-all'">유저 등록 건</a>
+                            <a th:href="@{/admin/lost-items(sourceType='POLICE')}" 
+                               th:class="${sourceType == 'POLICE' ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'} + ' px-4 py-2 rounded-xl text-xs font-bold transition-all'">경찰 연동 건</a>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 text-sm uppercase font-semibold">
+                                <tr>
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">구분</th>
+                                    <th class="px-6 py-4">물품명 (대분류)</th>
+                                    <th class="px-6 py-4">제목</th>
+                                    <th class="px-6 py-4">분실 위치</th>
+                                    <th class="px-6 py-4">분실 일시</th>
+                                    <th class="px-6 py-4">상태</th>
+                                    <th class="px-6 py-4 text-center">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr th:each="item : ${items}" class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-bold text-slate-400" th:text="${item.lostId}">#</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span th:class="${item.sourceType == 'USER' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-emerald-600 bg-emerald-50 border-emerald-100'} + ' px-3 py-1.5 rounded-full text-xs font-bold border whitespace-nowrap inline-block'" 
+                                              th:text="${item.sourceType == 'USER' ? '유저등록' : '경찰연동'}">유저등록</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-700 text-sm font-medium" th:text="${item.itemName + (item.categoryMain != null ? ' (' + item.categoryMain + ')' : '')}">물품</td>
+                                    <td class="px-6 py-4 font-semibold text-slate-900 text-sm">
+                                        <a th:href="@{/lost-items/{id}(id=${item.lostId})}" target="_blank" class="hover:text-blue-600 hover:underline" th:text="${item.title}">제목</a>
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-600 text-sm" th:text="${item.lostArea + ' ' + item.lostPlace}">위치</td>
+                                    <td class="px-6 py-4 text-slate-500 text-sm" th:text="${#temporals.format(item.lostAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+                                    
+                                    <!-- 상태 수정 폼 -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <form th:action="@{/admin/lost-items/{id}/status(id=${item.lostId}, sourceType=${sourceType})}" method="post">
+                                            <select name="status" onchange="this.form.submit()" 
+                                                    class="text-xs font-bold rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                <option value="WAITING" th:selected="${item.status == 'WAITING'}">접수/대기</option>
+                                                <option value="MATCHING" th:selected="${item.status == 'MATCHING'}">매칭중</option>
+                                                <option value="RESOLVED" th:selected="${item.status == 'RESOLVED'}">해결됨</option>
+                                                <option value="CLOSED" th:selected="${item.status == 'CLOSED'}">종료됨</option>
+                                            </select>
+                                        </form>
+                                    </td>
+                                    
+                                    <!-- 삭제 버튼 -->
+                                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                                        <form th:action="@{/admin/lost-items/{id}/delete(id=${item.lostId}, sourceType=${sourceType})}" method="post" 
+                                              onsubmit="return confirm('정말로 이 분실물 글을 삭제하시겠습니까? (Soft Delete)');">
+                                            <button type="submit" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-colors inline-flex items-center justify-center">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(items)}">
+                                    <td colspan="8" class="text-center py-10 text-slate-400">등록된 분실물 건이 없습니다.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

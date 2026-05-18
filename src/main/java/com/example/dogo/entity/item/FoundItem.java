@@ -218,4 +218,12 @@ public class FoundItem {
 			this.regDate = LocalDateTime.now();
 		}
 	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
 }
