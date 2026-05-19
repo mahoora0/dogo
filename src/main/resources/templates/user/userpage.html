@@ -163,7 +163,7 @@
           <div class="flex flex-col items-center mb-10">
             <div class="relative group cursor-pointer" onclick="document.getElementById('profileImageInput').click()">
               <img id="modalProfilePreview" 
-                   th:src="${#authentication.principal.user.profileImageUrl != null ? #authentication.principal.user.profileImageUrl : '/images/default-avatar.png'}"
+                   th:src="${#authentication.principal.user.profileImageUrl != null ? #authentication.principal.user.profileImageUrl : '/images/default-avatar.svg'}"
                    class="w-32 h-32 rounded-full object-cover border-4 border-[#EBF5FF] group-hover:opacity-80 transition-all" alt="미리보기">
               <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
