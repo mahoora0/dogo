@@ -11,6 +11,8 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/areaList.css}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
   </head>
 
   <body>
@@ -103,14 +105,15 @@
               });
             </script>
 
-            <a th:href="@{/chat}" class="chat-button relative" title="채팅하기">
+            <a th:href="@{/chat}" class="chat-button relative" title="채팅하기" onclick="document.getElementById('global-chat-badge').style.display='none';">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
               </svg>
               <span class="chat-text">채팅</span>
-              <span th:if="${unreadChatCount != null && unreadChatCount > 0}"
-                    th:text="${unreadChatCount > 99 ? '99+' : unreadChatCount}"
-                    class="notification-badge chat-notification-badge">0</span>
+              <span id="global-chat-badge"
+                    th:style="${currentUri != '/chat' && unreadChatCount != null && unreadChatCount > 0 ? '' : 'display: none;'}"
+                    th:text="${unreadChatCount != null && unreadChatCount > 99 ? '99+' : (unreadChatCount ?: 0)}"
+                    class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">0</span>
             </a>
             <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="profile-link">
               <img th:if="${#authentication.principal.user.profileImageUrl != null}"
@@ -355,6 +358,47 @@
           .catch(err => console.error('긴급 팝업 확인 실패:', err));
       });
     </script>
+
+    <!-- Global Chat Notification WebSocket -->
+    <th:block sec:authorize="isAuthenticated()">
+      <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+          const globalUserNo = [[${#authentication.principal.user.userNo}]];
+          if (globalUserNo) {
+            const socket = new SockJS('/ws-stomp');
+            const globalStompClient = Stomp.over(socket);
+            globalStompClient.debug = null;
+            globalStompClient.connect({}, function (frame) {
+              globalStompClient.subscribe(`/sub/users/${globalUserNo}/messages`, function (message) {
+                const msg = JSON.parse(message.body);
+                
+                let isCurrentlyReading = false;
+                if (window.location.pathname.startsWith('/chat')) {
+                    // 채팅 페이지에 있을 때는 글로벌 배지를 업데이트하지 않음
+                    isCurrentlyReading = true;
+                }
+                
+                if (!isCurrentlyReading && msg.senderNo != globalUserNo) {
+                    const badge = document.getElementById('global-chat-badge');
+                    if (badge) {
+                        let currentText = badge.innerText;
+                        let count = 0;
+                        if (currentText === '99+') {
+                            count = 100;
+                        } else {
+                            count = parseInt(currentText) || 0;
+                        }
+                        count++;
+                        badge.innerText = count > 99 ? '99+' : count;
+                        badge.style.display = 'inline-flex';
+                    }
+                }
+              });
+            });
+          }
+        });
+      </script>
+    </th:block>
   </body>
 </th:block>
 </html>

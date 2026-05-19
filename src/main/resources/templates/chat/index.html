@@ -3,9 +3,7 @@
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
     <th:block th:fragment="content">
         <link rel="stylesheet" th:href="@{/css/chat.css}">
-        <!-- SockJS and STOMP -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+        <!-- SockJS and STOMP are now loaded globally in base.html -->
 
         <div class="chat-page">
         <div class="chat-wrapper">
@@ -142,7 +140,13 @@
                 // UI Update
                 document.querySelectorAll('.chat-room-item').forEach(el => el.classList.remove('active'));
                 const selectedEl = Array.from(document.querySelectorAll('.chat-room-item')).find(el => el.onclick.toString().includes(roomId));
-                if (selectedEl) selectedEl.classList.add('active');
+                if (selectedEl) {
+                    selectedEl.classList.add('active');
+                    const unreadBadge = selectedEl.querySelector('.chat-room-unread');
+                    if (unreadBadge) {
+                        unreadBadge.style.display = 'none';
+                    }
+                }
 
                 document.getElementById('chat-header').classList.remove('hidden');
                 document.getElementById('input-area').classList.remove('hidden');
