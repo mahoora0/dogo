@@ -135,6 +135,12 @@ public class AnimalReportController {
 		return "animal-reports/list";
 	}
 
+	@GetMapping("/lost-report")
+	public String lostReport(Model model) {
+		model.addAttribute("currentUri", "/lost-report");
+		return "lost-report/index";
+	}
+
 	@GetMapping("/animal-reports/new")
 	public String createForm(Model model) {
 		model.addAttribute("request", new AnimalReportCreateRequest());
@@ -240,6 +246,22 @@ public class AnimalReportController {
 			model.addAttribute("errorMessage", e.getMessage());
 			model.addAttribute("currentUri", "/animal-reports");
 			return "animal-reports/edit";
+		}
+	}
+
+	@PostMapping("/animal-reports/{id}/delete")
+	public String delete(@PathVariable Long id,
+						 @AuthenticationPrincipal CustomUserDetails userDetails,
+						 Model model) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			animalReportService.delete(id, userDetails.getUser());
+			return "redirect:/animal-reports";
+		} catch (IllegalArgumentException e) {
+			model.addAttribute("message", e.getMessage());
+			return "animal-reports/error";
 		}
 	}
 

@@ -23,7 +23,8 @@ public class KricController {
   public List<SubwayLostCenterDTO> getSubwayList(
           @RequestParam(required = false) String region,
           @RequestParam(required = false) String subRegion,
-          @RequestParam(required = false) String neighborhood) {
-    return kricApiService.getSubwayList(region, subRegion, neighborhood);
+          @RequestParam(required = false) String neighborhood,
+          @RequestParam(required = false) String keyword) {
+    return kricApiService.getSubwayList(region, subRegion, neighborhood, keyword);
   }
 }

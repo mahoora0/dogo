@@ -11,4 +11,10 @@ public interface MissingPersonRepository extends JpaRepository<MissingPersonRepo
 	List<MissingPersonReport> findByDeletedFalseOrderByRegdateDesc();
 
 	Optional<MissingPersonReport> findByApiProviderAndExternalId(String apiProvider, String externalId);
+
+	List<MissingPersonReport> findByUserAndDeletedFalseOrderByRegdateDesc(com.example.dogo.entity.user.User user);
+
+	boolean existsBySourceType(String sourceType);
+
+	boolean existsByApiProviderAndExternalId(String apiProvider, String externalId);
 }

@@ -43,7 +43,7 @@ class KricApiServiceTest {
                         .build()
         ));
 
-        List<SubwayLostCenterDTO> result = kricApiService.getSubwayList("부산", "동래구", null);
+        List<SubwayLostCenterDTO> result = kricApiService.getSubwayList("부산", "동래구", null, null);
 
         assertThat(result)
                 .extracting(SubwayLostCenterDTO::getStationName)
@@ -77,7 +77,7 @@ class KricApiServiceTest {
                         .build()
         ));
 
-        List<SubwayLostCenterDTO> result = kricApiService.getSubwayList("대구", null, null);
+        List<SubwayLostCenterDTO> result = kricApiService.getSubwayList("대구", null, null, null);
 
         assertThat(result)
                 .extracting(SubwayLostCenterDTO::getStationName)

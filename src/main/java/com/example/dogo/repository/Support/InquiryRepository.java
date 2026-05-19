@@ -22,6 +22,8 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
     Page<Inquiry> findByCategoryAndStatusOrderByRegdateDescInquiryIdDesc(String category, String status, Pageable pageable);
     Page<Inquiry> findByCategoryAndStatusNotOrderByRegdateDescInquiryIdDesc(String category, String status, Pageable pageable);
 
+    long countByStatusNot(String status);
+
     void deleteByUser(com.example.dogo.entity.user.User user);
 
     List<Inquiry> findByUserOrderByRegdateDescInquiryIdDesc(User user);

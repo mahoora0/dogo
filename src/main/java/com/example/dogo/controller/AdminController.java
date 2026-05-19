@@ -9,6 +9,7 @@ import com.example.dogo.repository.missing.MissingPersonRepository;
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
+import com.example.dogo.repository.Support.InquiryRepository;
 import com.example.dogo.entity.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -31,6 +32,9 @@ public class AdminController {
     private final LostItemRepository lostItemRepository;
     private final FoundItemRepository foundItemRepository;
     private final UserRepository userRepository;
+    private final InquiryRepository inquiryRepository;
+
+    private static boolean emergencyActive = false;
 
     @GetMapping("")
     public String dashboard(Model model) {
@@ -39,6 +43,8 @@ public class AdminController {
         model.addAttribute("lostItems", lostItemRepository.count());
         model.addAttribute("foundItems", foundItemRepository.count());
         model.addAttribute("matchSuccess", animalReportRepository.count() + missingPersonRepository.count());
+        model.addAttribute("unansweredInquiriesCount", inquiryRepository.countByStatusNot("ANSWERED"));
+        model.addAttribute("emergencyActive", emergencyActive);
 
         // 실시간 대표 유실물 분포 비율 연산
         long totalLostCount = lostItemRepository.countByDeletedFalse();
@@ -262,5 +268,133 @@ public class AdminController {
         activity.put("location", location);
         activity.put("date", date);
         return activity;
+    }
+
+    @PostMapping("/api/emergency/toggle")
+    @ResponseBody
+    public Map<String, Object> toggleEmergency() {
+        emergencyActive = !emergencyActive;
+        Map<String, Object> response = new HashMap<>();
+        response.put("active", emergencyActive);
+        return response;
+    }
+
+    @GetMapping("/api/emergency/status")
+    @ResponseBody
+    public Map<String, Object> getEmergencyStatus() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("active", emergencyActive);
+        if (emergencyActive) {
+            List<AnimalReport> animalReports = animalReportRepository.findByDeletedFalseOrderByRegdateDesc();
+            AnimalReport latestAnimal = animalReports.stream()
+                .filter(r -> "MISSING".equals(r.getReportType()))
+                .findFirst()
+                .orElse(null);
+
+            List<MissingPersonReport> personReports = missingPersonRepository.findByDeletedFalseOrderByRegdateDesc();
+            MissingPersonReport latestPerson = personReports.stream()
+                .filter(r -> "OPEN".equals(r.getStatus()))
+                .findFirst()
+                .orElse(null);
+
+            boolean isPersonMoreRecent = false;
+            if (latestPerson != null && latestAnimal != null) {
+                isPersonMoreRecent = latestPerson.getRegdate().isAfter(latestAnimal.getRegdate());
+            } else if (latestPerson != null) {
+                isPersonMoreRecent = true;
+            }
+
+            if (isPersonMoreRecent) {
+                response.put("type", "PERSON");
+                response.put("reportId", latestPerson.getReportId());
+                response.put("title", "실종자를 찾습니다!");
+                response.put("age", latestPerson.getAge());
+                response.put("nationality", latestPerson.getNationality());
+                response.put("location", latestPerson.getOccurredPlace());
+                response.put("date", latestPerson.getOccurredAt() != null ? latestPerson.getOccurredAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "");
+                response.put("distinctiveMarks", String.format("의상: %s\n체형: %s, 얼굴형: %s, 헤어: %s (%s)", 
+                    latestPerson.getClothing(), latestPerson.getBodyType(), latestPerson.getFaceShape(), 
+                    latestPerson.getHairColor(), latestPerson.getHairStyle()));
+                response.put("imageUrl", null);
+            } else if (latestAnimal != null) {
+                response.put("type", "ANIMAL");
+                response.put("reportId", latestAnimal.getReportId());
+                response.put("title", latestAnimal.getTitle() != null ? latestAnimal.getTitle() : "실종된 반려동물을 찾습니다!");
+                response.put("breed", latestAnimal.getBreedName());
+                response.put("animalType", latestAnimal.getAnimalType());
+                response.put("location", latestAnimal.getRegionName() + " " + latestAnimal.getDetailPlace());
+                response.put("date", latestAnimal.getEventDate().toString());
+                response.put("distinctiveMarks", latestAnimal.getDistinctiveMarks());
+                
+                String imageUrl = null;
+                if (latestAnimal.getImages() != null && !latestAnimal.getImages().isEmpty()) {
+                    imageUrl = latestAnimal.getImages().get(0).getImageUrl();
+                }
+                response.put("imageUrl", imageUrl);
+            } else {
+                response.put("type", "ANIMAL");
+                response.put("reportId", 0L);
+                response.put("title", "실종된 반려동물을 찾습니다!");
+                response.put("breed", "리트리버");
+                response.put("animalType", "개");
+                response.put("location", "서울시 강남구 역삼역 인근");
+                response.put("date", "2026-05-18");
+                response.put("distinctiveMarks", "순하고 사람을 잘 따르며, 노란색 목줄을 착용하고 있습니다. 발견 시 제보 부탁드립니다.");
+                response.put("imageUrl", "/images/logo.png");
+            }
+        }
+        return response;
+    }
+
+    @GetMapping("/backup/csv")
+    public void downloadBackupCsv(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"dogo_backup_" + java.time.LocalDate.now() + ".csv\"");
+        
+        // Write UTF-8 BOM to prevent MS Excel from showing corrupted Korean characters
+        response.getOutputStream().write(0xEF);
+        response.getOutputStream().write(0xBB);
+        response.getOutputStream().write(0xBF);
+        
+        java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.OutputStreamWriter(response.getOutputStream(), "UTF-8"));
+        
+        // CSV Headers
+        writer.println("구분,ID,물품명,카테고리,발생장소,상태,출처,등록일");
+        
+        // Lost items
+        List<LostItem> lostItems = lostItemRepository.findByDeletedFalseOrderByRegDateDesc();
+        for (LostItem item : lostItems) {
+            writer.println(String.format("분실,%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"",
+                item.getLostId(),
+                escapeCsv(item.getItemName()),
+                escapeCsv(item.getCategoryMain()),
+                escapeCsv(item.getLostPlace()),
+                escapeCsv(item.getStatus()),
+                escapeCsv(item.getSourceType()),
+                item.getRegDate() != null ? item.getRegDate().toString() : ""
+            ));
+        }
+        
+        // Found items
+        List<FoundItem> foundItems = foundItemRepository.findByDeletedFalseOrderByRegDateDesc();
+        for (FoundItem item : foundItems) {
+            writer.println(String.format("습득,%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"",
+                item.getFoundId(),
+                escapeCsv(item.getItemName()),
+                escapeCsv(item.getCategoryMain()),
+                escapeCsv(item.getFoundPlace() != null ? item.getFoundPlace() : "경찰 보관소"),
+                escapeCsv(item.getStatus()),
+                escapeCsv(item.getSourceType()),
+                item.getRegDate() != null ? item.getRegDate().toString() : ""
+            ));
+        }
+        
+        writer.flush();
+        writer.close();
+    }
+    
+    private String escapeCsv(String val) {
+        if (val == null) return "";
+        return val.replace("\"", "\"\"");
     }
 }

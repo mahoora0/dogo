@@ -194,6 +194,22 @@ public class LostItemController {
 		}
 	}
 
+	@PostMapping("/lost-items/{id}/delete")
+	public String delete(@PathVariable Long id,
+						 @AuthenticationPrincipal CustomUserDetails userDetails,
+						 Model model) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			lostItemService.delete(id, userDetails.getUser());
+			return "redirect:/lost-items";
+		} catch (IllegalArgumentException e) {
+			model.addAttribute("message", e.getMessage());
+			return "lost-items/error";
+		}
+	}
+
 	@ExceptionHandler(IllegalArgumentException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public String notFound(IllegalArgumentException exception, Model model) {

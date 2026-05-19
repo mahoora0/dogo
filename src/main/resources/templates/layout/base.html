@@ -11,6 +11,8 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/areaList.css}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
   </head>
 
   <body>
@@ -30,14 +32,15 @@
 
           <!-- 로그인 된 상태 -->
           <th:block sec:authorize="isAuthenticated()">
-            <!-- 매칭 알림 종 아이콘 (사용자가 최소 1개 이상 분실물을 등록했을 때만 노출) -->
-            <div th:if="${hasLostItems}" class="relative inline-block text-left mr-2" id="notificationWrapper">
-              <button type="button" id="notificationBtn" class="relative p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors focus:outline-none">
+            <!-- 매칭 알림 종 아이콘 -->
+            <div class="relative inline-block text-left mr-1" id="notificationWrapper">
+              <button type="button" id="notificationBtn" class="chat-button relative focus:outline-none" title="알림">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
                 </svg>
-                <span th:if="${unreadMatchCount > 0}" th:text="${unreadMatchCount}"
-                      class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+                <span class="chat-text">알림</span>
+                <span th:if="${unreadMatchCount != null and unreadMatchCount > 0}" th:text="${unreadMatchCount > 99 ? '99+' : unreadMatchCount}"
+                      class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
                   0
                 </span>
               </button>
@@ -103,14 +106,15 @@
               });
             </script>
 
-            <a th:href="@{/chat}" class="chat-button relative" title="채팅하기">
+            <a th:href="@{/chat}" class="chat-button relative" title="채팅하기" onclick="document.getElementById('global-chat-badge').style.display='none';">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
               </svg>
               <span class="chat-text">채팅</span>
-              <span th:if="${unreadChatCount != null && unreadChatCount > 0}"
-                    th:text="${unreadChatCount > 99 ? '99+' : unreadChatCount}"
-                    class="notification-badge chat-notification-badge">0</span>
+              <span id="global-chat-badge"
+                    th:style="${currentUri != '/chat' && unreadChatCount != null && unreadChatCount > 0 ? '' : 'display: none;'}"
+                    th:text="${unreadChatCount != null && unreadChatCount > 99 ? '99+' : (unreadChatCount ?: 0)}"
+                    class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">0</span>
             </a>
             <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="profile-link">
               <img th:if="${#authentication.principal.user.profileImageUrl != null}"
@@ -164,6 +168,9 @@
           <div class="category">
             <h3>실종자</h3>
             <ul>
+              <li th:classappend="${currentUri == '/missing-alerts' ? 'active' : ''}">
+                <a th:href="@{/missing-alerts}"><span class="sidebar-icon sidebar-icon--missing-alert"></span>실종 경보</a>
+              </li>
               <li th:classappend="${currentUri == '/missing-persons' ? 'active' : ''}">
                 <a th:href="@{/missing-persons}"><span class="sidebar-icon sidebar-icon--person-search"></span>실종자 검색</a>
               </li>
@@ -209,6 +216,203 @@
       </main>
     </div>
     <script th:src="@{/js/place-modal.js}"></script>
+
+    <!-- Emergency Missing Animal Popup Modal -->
+    <div id="emergencyModal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-slate-900/65 backdrop-blur-md transition-opacity duration-300 opacity-0">
+      <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-red-100 transform scale-95 transition-transform duration-300 flex flex-col relative">
+        
+        <!-- Emergency Pulse Banner -->
+        <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 text-white flex items-center gap-3 shadow-md relative overflow-hidden">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15),transparent)] animate-pulse"></div>
+          <span class="w-3.5 h-3.5 bg-white rounded-full animate-ping flex-shrink-0"></span>
+          <h3 class="font-extrabold text-base tracking-wide flex-grow">🚨 긴급 실종 경보 (EMERGENCY)</h3>
+          <button type="button" onclick="closeEmergencyModal()" class="text-white/80 hover:text-white focus:outline-none transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="p-6 space-y-4">
+          <!-- Animal Image Container -->
+          <div class="relative w-full aspect-video bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 shadow-inner flex items-center justify-center">
+            <img id="emergencyImg" src="" alt="실종동물 이미지" class="w-full h-full object-cover hidden">
+            <div id="emergencyImgFallback" class="flex flex-col items-center justify-center text-slate-400 gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-slate-300">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+              </svg>
+              <span class="text-xs font-semibold">이미지가 등록되지 않았습니다</span>
+            </div>
+            <span class="absolute bottom-3 left-3 bg-red-600/90 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md">골든타임</span>
+          </div>
+          
+          <!-- Information Fields -->
+          <div class="space-y-3">
+            <div class="flex items-start gap-1">
+              <h4 id="emergencyTitle" class="text-base font-extrabold text-slate-900 leading-snug">실종된 반려동물을 찾습니다!</h4>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 text-xs border-t border-slate-100 pt-3">
+              <div>
+                <span id="emergencyBreedLabel" class="text-slate-400 block mb-0.5">품종</span>
+                <span id="emergencyBreed" class="font-bold text-slate-800 text-sm">-</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">실종일자</span>
+                <span id="emergencyDate" class="font-bold text-slate-800 text-sm">-</span>
+              </div>
+              <div class="col-span-2">
+                <span class="text-slate-400 block mb-0.5">실종 장소</span>
+                <span id="emergencyLocation" class="font-bold text-slate-800 text-sm">-</span>
+              </div>
+              <div class="col-span-2">
+                <span id="emergencyMarksLabel" class="text-slate-400 block mb-0.5">특징 및 착의</span>
+                <span id="emergencyMarks" class="font-bold text-slate-800 text-xs bg-slate-50 border border-slate-100 p-2 rounded-lg block leading-relaxed max-h-16 overflow-y-auto">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-2">
+          <button type="button" onclick="closeEmergencyModalForToday()" class="flex-1 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-colors">
+            오늘 하루 보지 않기
+          </button>
+          <a id="emergencyDetailLink" href="/animal-reports" class="flex-grow py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl transition-colors shadow-lg shadow-red-200 inline-flex items-center justify-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+            </svg>
+            제보 및 상세 보기
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      function closeEmergencyModal() {
+        const modal = document.getElementById('emergencyModal');
+        if (modal) {
+          const dialog = modal.querySelector('div');
+          modal.classList.remove('opacity-100');
+          modal.classList.add('opacity-0');
+          dialog.classList.remove('scale-100');
+          dialog.classList.add('scale-95');
+          setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+          }, 300);
+        }
+      }
+      
+      function closeEmergencyModalForToday() {
+        localStorage.setItem('emergency_hide_date', new Date().toDateString());
+        closeEmergencyModal();
+      }
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        const hideDate = localStorage.getItem('emergency_hide_date');
+        const today = new Date().toDateString();
+        if (hideDate === today) {
+          return;
+        }
+        
+        fetch('/admin/api/emergency/status')
+          .then(res => res.json())
+          .then(data => {
+            if (data.active) {
+              const modal = document.getElementById('emergencyModal');
+              const img = document.getElementById('emergencyImg');
+              const fallback = document.getElementById('emergencyImgFallback');
+              
+              document.getElementById('emergencyTitle').innerText = data.title;
+              document.getElementById('emergencyDate').innerText = data.date;
+              document.getElementById('emergencyLocation').innerText = data.location;
+              document.getElementById('emergencyMarks').innerText = data.distinctiveMarks || '특별한 특징 사항이 등록되어 있지 않습니다.';
+              
+              const breedLabel = document.getElementById('emergencyBreedLabel');
+              const marksLabel = document.getElementById('emergencyMarksLabel');
+              const breedVal = document.getElementById('emergencyBreed');
+              
+              if (data.type === 'PERSON') {
+                if (breedLabel) breedLabel.innerText = '나이/국적';
+                if (marksLabel) marksLabel.innerText = '신체 특징 및 착의';
+                if (breedVal) breedVal.innerText = data.age + '세 (' + data.nationality + ')';
+                document.getElementById('emergencyDetailLink').href = '/missing-persons/' + data.reportId;
+              } else {
+                if (breedLabel) breedLabel.innerText = '품종';
+                if (marksLabel) marksLabel.innerText = '특징 및 착의';
+                if (breedVal) breedVal.innerText = data.breed + ' (' + data.animalType + ')';
+                if (data.reportId > 0) {
+                  document.getElementById('emergencyDetailLink').href = '/animal-reports/' + data.reportId;
+                } else {
+                  document.getElementById('emergencyDetailLink').href = '/animal-reports';
+                }
+              }
+              
+              if (data.imageUrl) {
+                img.src = data.imageUrl;
+                img.classList.remove('hidden');
+                fallback.classList.add('hidden');
+              } else {
+                img.classList.add('hidden');
+                fallback.classList.remove('hidden');
+              }
+              
+              modal.classList.remove('hidden');
+              modal.classList.add('flex');
+              setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+              }, 50);
+            }
+          })
+          .catch(err => console.error('긴급 팝업 확인 실패:', err));
+      });
+    </script>
+
+    <!-- Global Chat Notification WebSocket -->
+    <th:block sec:authorize="isAuthenticated()">
+      <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+          const globalUserNo = [[${#authentication.principal.user.userNo}]];
+          if (globalUserNo) {
+            const socket = new SockJS('/ws-stomp');
+            const globalStompClient = Stomp.over(socket);
+            globalStompClient.debug = null;
+            globalStompClient.connect({}, function (frame) {
+              globalStompClient.subscribe(`/sub/users/${globalUserNo}/messages`, function (message) {
+                const msg = JSON.parse(message.body);
+                
+                let isCurrentlyReading = false;
+                if (window.location.pathname.startsWith('/chat')) {
+                    // 채팅 페이지에 있을 때는 글로벌 배지를 업데이트하지 않음
+                    isCurrentlyReading = true;
+                }
+                
+                if (!isCurrentlyReading && msg.senderNo != globalUserNo) {
+                    const badge = document.getElementById('global-chat-badge');
+                    if (badge) {
+                        let currentText = badge.innerText;
+                        let count = 0;
+                        if (currentText === '99+') {
+                            count = 100;
+                        } else {
+                            count = parseInt(currentText) || 0;
+                        }
+                        count++;
+                        badge.innerText = count > 99 ? '99+' : count;
+                        badge.style.display = 'inline-flex';
+                    }
+                }
+              });
+            });
+          }
+        });
+      </script>
+    </th:block>
   </body>
 </th:block>
 </html>
