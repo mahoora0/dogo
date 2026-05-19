@@ -4,89 +4,64 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MissingLeaflet - 반려견 전단지 제작기</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
   <link rel="stylesheet" type="text/css" th:href="@{/css/lost-report.css}">
 </head>
 <body>
-
 <header class="header">
   <div class="logo">📄 <span>MissingLeaflet</span></div>
   <div class="nav-buttons">
     <button class="btn btn-primary">저장 및 공유</button>
   </div>
 </header>
-
 <div class="main-container">
-
   <aside class="side-panel">
-    <div class="panel-header">
-      <h3>상세 정보 입력</h3>
-      <p>전단지의 내용을 실시간으로 편집하세요.</p>
-    </div>
-
+    <div class="panel-header"><h3>상세 정보 입력</h3>
+      <p>전단지의 내용을 실시간으로 편집하세요.</p></div>
     <div class="scroll-content">
-      <div class="section-group" style="background: #fff5f5; border-color: #fecaca;">
-        <h4>👑 타이틀 설정</h4>
-        <div class="section" style="gap: 6px;">
-          <label class="input-label">메인 문구</label>
-          <input type="text" id="input-title" value="강아지를 찾습니다" oninput="syncText()">
+      <div class="section-group" style="background: #fff5f5; border-color: #fecaca;"><h4>👑 타이틀 설정</h4>
+        <div class="section" style="gap: 6px;"><label class="input-label">메인 문구</label> <input type="text"
+                                                                                               id="input-title"
+                                                                                               value="강아지를 찾습니다"
+                                                                                               oninput="syncText()">
         </div>
-        <div class="section" style="gap: 6px; margin-top: 10px;">
-          <label class="input-label">타이틀 스타일 테마</label>
-          <select id="input-title-theme" onchange="changeTitleTheme()">
-            <option value="theme-red-bg" selected>🔴 빨강 배경 + 흰색 글씨 (기본)</option>
-            <option value="theme-white-bg">⚪ 흰색 배경 + 빨강 글씨</option>
-          </select>
-        </div>
+        <div class="section" style="gap: 6px; margin-top: 10px;"><label class="input-label">타이틀 스타일 테마</label> <select
+            id="input-title-theme" onchange="changeTitleTheme()">
+          <option value="theme-red-bg" selected>🔴 빨강 배경 + 흰색 글씨 (기본)</option>
+          <option value="theme-white-bg">⚪ 흰색 배경 + 빨강 글씨</option>
+        </select></div>
       </div>
-
-      <div class="section-group">
-        <h4>기본 인적사항 (실시간 반영)</h4>
-        <div class="grid-inputs">
-          <label>이름 <input type="text" id="info-name" value="초코" oninput="syncText()"></label>
-          <label>견종 <input type="text" id="info-breed" value="푸들" oninput="syncText()"></label>
-          <label>털색 <input type="text" id="info-color" value="갈색" oninput="syncText()"></label>
-          <label>나이 <input type="text" id="info-age" value="3세" oninput="syncText()"></label>
-          <label>몸무게/키 <input type="text" id="info-size" value="5kg / 35cm" oninput="syncText()"></label>
-          <label>중성화 여부
-            <select id="info-neutral" onchange="syncText()">
-              <option value="완료">완료</option>
-              <option value="미완료">미완료</option>
-            </select>
-          </label>
-          <label class="full-width">내장칩 여부
-            <select id="info-chip" onchange="syncText()">
-              <option value="있음 (내장칩)">있음 (내장칩)</option>
-              <option value="없음">없음</option>
-            </select>
-          </label>
-        </div>
+      <div class="section-group"><h4>기본 인적사항 (실시간 반영)</h4>
+        <div class="grid-inputs"><label>이름 <input type="text" id="info-name" value="초코" oninput="syncText()"></label>
+          <label>견종 <input type="text" id="info-breed" value="푸들" oninput="syncText()"></label> <label>털색 <input
+              type="text" id="info-color" value="갈색" oninput="syncText()"></label> <label>나이 <input type="text"
+                                                                                                    id="info-age"
+                                                                                                    value="3세"
+                                                                                                    oninput="syncText()"></label>
+          <label>몸무게 <input type="text" id="info-size" value="5kg" oninput="syncText()"></label> <label>중성화 여부 <select
+              id="info-neutral" onchange="syncText()">
+            <option value="완료">완료</option>
+            <option value="미완료">미완료</option>
+          </select> </label> <label class="full-width">내장칩 여부 <select id="info-chip" onchange="syncText()">
+            <option value="있음 (내장칩)">있음 (내장칩)</option>
+            <option value="있음 (외장칩)">있음 (외장칩)</option>
+            <option value="없음">없음</option>
+          </select> </label></div>
       </div>
-
-      <div class="section">
-        <label class="input-label">실종 장소</label>
-        <input type="text" id="input-location" value="서울시 마포구 망원한강공원 인근" oninput="syncText()">
+      <div class="section"><label class="input-label">실종 장소</label> <input type="text" id="input-location"
+                                                                           value="서울시 마포구 망원한강공원 인근"
+                                                                           oninput="syncText()"></div>
+      <div class="section"><label class="input-label">실종 당시 특징 및 목격자 안내글</label> <textarea id="input-features" rows="3"
+                                                                                           oninput="syncText()">빨간색 줄무늬 옷을 입고 있었습니다. 겁이 많으니 발견 시 억지로 잡으려 하지 마시고 바로 연락 부탁드립니다.</textarea>
       </div>
-
-      <div class="section">
-        <label class="input-label">실종 당시 특징 및 목격자 안내글</label>
-        <textarea id="input-features" rows="3" oninput="syncText()">빨간색 줄무늬 옷을 입고 있었습니다. 겁이 많으니 발견 시 억지로 잡으려 하지 마시고 바로 연락 부탁드립니다.</textarea>
+      <div class="section"><label class="input-label">사례금 (원)</label> <input type="text" id="input-reward"
+                                                                             value="500,000" oninput="syncText()"></div>
+      <div class="section"><label class="input-label">연락처</label> <input type="text" id="input-contact"
+                                                                         value="010-XXXX-XXXX" oninput="syncText()">
       </div>
-
-      <div class="section">
-        <label class="input-label">사례금 (원)</label>
-        <input type="text" id="input-reward" value="500,000" oninput="syncText()">
-      </div>
-
-      <div class="section">
-        <label class="input-label">연락처</label>
-        <input type="text" id="input-contact" value="010-XXXX-XXXX" oninput="syncText()">
-      </div>
-
       <hr class="divider">
-
-      <div class="section">
-        <label class="input-label">✨ 전단지 요소 추가하기</label>
+      <div class="section"><label class="input-label">✨ 전단지 요소 추가하기</label>
         <div class="grid-buttons">
           <button class="btn-action" onclick="addRewardElement()">💰 사례금 추가</button>
           <button class="btn-action" onclick="addQrElement()">🔲 QR코드 추가</button>
@@ -95,31 +70,23 @@
           <button class="btn-action btn-secondary" onclick="addImageElement()">🖼️ 사진 추가</button>
           <button class="btn-action btn-secondary" onclick="addTextElement()">⚡ 글씨 추가</button>
         </div>
-
         <button class="btn-delete-action" onclick="deleteSelectedElement()">🗑️ 선택한 요소 삭제</button>
-
-        <div class="toggle-container">
-          <label class="switch">
-            <input type="checkbox" id="toggle-guide" checked onchange="toggleGuideLines()">
-            <span class="slider round"></span>
-          </label>
-          <span>편집 점선 가이드 표시</span>
-        </div>
+        <div class="toggle-container"><label class="switch"> <input type="checkbox" id="toggle-guide" checked
+                                                                    onchange="toggleGuideLines()"> <span
+            class="slider round"></span> </label> <span>편집 점선 가이드 표시</span></div>
       </div>
     </div>
   </aside>
-
   <main class="canvas-container">
     <div id="leaflet-canvas" class="canvas" onclick="deselectAll(event)">
-
       <div id="canvas-title" class="static-title theme-red-bg">강아지를 찾습니다</div>
-
-      <div class="element draggable resizable" style="top: 95px; left: 30px; width: 440px; height: 250px;" onclick="selectElement(event)">
+      <div class="element draggable resizable" style="top: 95px; left: 30px; width: 440px; height: 250px;"
+           onclick="selectElement(event)">
         <div class="element-content image-placeholder" style="font-size: 15px;">📸 대표 반려견 사진 등록 영역</div>
         <div class="resize-handle"></div>
       </div>
-
-      <div class="element draggable resizable" style="top: 360px; left: 30px; width: 440px; height: 100px;" onclick="selectElement(event)">
+      <div class="element draggable resizable" style="top: 360px; left: 30px; width: 440px; height: 100px;"
+           onclick="selectElement(event)">
         <div class="element-content text-box-profile grid-profile">
           <div class="profile-item"><b>이름:</b> <span id="view-name">초코</span></div>
           <div class="profile-item"><b>견종:</b> <span id="view-breed">푸들</span></div>
@@ -131,31 +98,30 @@
         </div>
         <div class="resize-handle"></div>
       </div>
-
-      <div class="element draggable resizable" style="top: 475px; left: 30px; width: 440px; height: 105px;" onclick="selectElement(event)">
+      <div class="element draggable resizable" style="top: 475px; left: 30px; width: 440px; height: 105px;"
+           onclick="selectElement(event)">
         <div class="element-content info-details-box">
-          <div class="loc-title">📍 실종 장소: <span id="view-location" class="loc-normal-text">서울시 마포구 망원한강공원 인근</span></div>
+          <div class="loc-title">📍 실종 장소: <span id="view-location" class="loc-normal-text">서울시 마포구 망원한강공원 인근</span>
+          </div>
           <div class="feature-title">💡 특징 및 목격자 안내</div>
-          <div id="view-features" class="feature-text">빨간색 줄무늬 옷을 입고 있었습니다. 겁이 많으니 발견 시 억지로 잡으려 하지 마시고 바로 연락 부탁드립니다.</div>
+          <div id="view-features" class="feature-text">빨간색 줄무늬 옷을 입고 있었습니다. 겁이 많으니 발견 시 억지로 잡으려 하지 마시고 바로 연락 부탁드립니다.
+          </div>
         </div>
         <div class="resize-handle"></div>
       </div>
-
-      <div id="container-contact" class="element draggable resizable" style="top: 590px; left: 30px; width: 440px; height: 45px;" onclick="selectElement(event)">
+      <div id="container-contact" class="element draggable resizable"
+           style="top: 590px; left: 30px; width: 440px; height: 45px;" onclick="selectElement(event)">
         <div class="element-content contact-only-box">
           <div class="contact-line">📞 연락처: <span id="view-contact">010-XXXX-XXXX</span></div>
         </div>
         <div class="resize-handle"></div>
       </div>
-
     </div>
   </main>
 </div>
-
 <div id="custom-context-menu" class="context-menu">
   <div onclick="deleteSelectedElement()">🗑️ 이 요소 삭제하기</div>
 </div>
-
 <script th:src="@{/js/lost-report.js}"></script>
 </body>
 </html>
