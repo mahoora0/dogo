@@ -305,7 +305,7 @@ function addRewardElement() {
 
   newElem.innerHTML = `
     <div class="element-content reward-only-box">
-      <div class="reward-line">💰 사례금: <span id="view-reward"></span>원</div>
+      <div class="reward-line">사례금: <span id="view-reward"></span>원</div>
     </div>
     <div class="delete-btn" onclick="deleteThisElement(event, this)">×</div>
     <div class="resize-handle"></div>
@@ -325,7 +325,15 @@ function addQrElement() {
   newElem.onmousedown = selectElement;
 
   newElem.innerHTML = `
-    <div class="element-content image-placeholder" style="font-size:11px;">🔲 QR코드</div>
+    <div class="element-content image-placeholder" style="font-size:11px;">
+      🔲 QR코드
+      <input type="file" accept="image/*" class="file-input" style="display: none;" onchange="uploadImage(event, this)">
+    </div>
+    <div class="image-edit-overlay">
+      <div class="overlay-button-group" style="display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center;">
+        <button class="btn-image-edit-overlay" onclick="triggerOverlayUpload(event, this)">📷 이미지 등록</button>
+      </div>
+    </div>
     <div class="delete-btn" onclick="deleteThisElement(event, this)">×</div>
     <div class="resize-handle"></div>
   `;
@@ -541,7 +549,7 @@ function addContactElement() {
   const newElem = document.createElement('div');
   newElem.id = 'container-contact';
   newElem.className = 'element draggable resizable';
-  newElem.style = 'top: 595px; left: 30px; width: 440px; height: 45px; z-index:10;';
+  newElem.style = 'top: 630px; left: 30px; width: 440px; height: 45px; z-index:10;';
   newElem.onmousedown = selectElement;
   newElem.innerHTML = `
     <div class="element-content contact-only-box">
@@ -842,3 +850,76 @@ function deleteFloatingImage(event) {
   selectedElement.classList.remove('selected');
   selectedElement = null;
 }
+
+// =========================
+// 이미지/PDF 저장
+// =========================
+async function savePoster(format) {
+  const canvasElement = document.getElementById('leaflet-canvas');
+  if (!canvasElement) return;
+
+  // 1. 캡쳐 전 준비: 선택 해제 및 가이드라인 숨기기 등
+  deselectAll({ target: canvasElement });
+  
+  const toggleGuide = document.getElementById('toggle-guide');
+  const originalToggleState = toggleGuide ? toggleGuide.checked : false;
+  if (originalToggleState) {
+    toggleGuide.checked = false;
+    toggleGuideLines();
+  }
+  
+  // 삭제 버튼, 크기 조절 핸들, 오버레이 숨기기
+  const elementsToHide = canvasElement.querySelectorAll('.delete-btn, .resize-handle, .image-edit-overlay, .image-floating-editor');
+  elementsToHide.forEach(el => el.style.display = 'none');
+  
+  // 편집 가능 요소 블러 처리
+  if (document.activeElement && document.activeElement.blur) {
+      document.activeElement.blur();
+  }
+
+  try {
+    // 2. html2canvas로 캡쳐
+    const canvas = await html2canvas(canvasElement, {
+      scale: 2, // 고해상도
+      useCORS: true, // 외부 이미지(QR 등) 허용
+      backgroundColor: '#ffffff'
+    });
+
+    const imageData = canvas.toDataURL('image/png');
+
+    if (format === 'png') {
+      // 3. PNG 다운로드
+      const link = document.createElement('a');
+      link.download = '실종전단지.png';
+      link.href = imageData;
+      link.click();
+    } else if (format === 'pdf') {
+      // 3. PDF 다운로드 (jsPDF)
+      const { jsPDF } = window.jspdf;
+      
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      
+      // 캔버스 픽셀 크기에 딱 맞춘 PDF 생성 (흰 여백 제거)
+      const pdf = new jsPDF({
+        orientation: canvasWidth > canvasHeight ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvasWidth, canvasHeight]
+      });
+
+      pdf.addImage(imageData, 'PNG', 0, 0, canvasWidth, canvasHeight);
+      pdf.save('실종전단지.pdf');
+    }
+
+  } catch (error) {
+    console.error('전단지 저장 중 오류 발생:', error);
+    alert('전단지 저장 중 오류가 발생했습니다.');
+  } finally {
+    // 4. 캡쳐 후 원상복구
+    if (originalToggleState) {
+      toggleGuide.checked = true;
+      toggleGuideLines();
+    }
+    elementsToHide.forEach(el => el.style.display = '');
+  }
+}
