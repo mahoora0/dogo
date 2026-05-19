@@ -41,4 +41,5 @@ public interface AnimalReportRepository extends JpaRepository<AnimalReport, Long
 			@Param("to") LocalDate to
 	);
 	List<AnimalReport> findByDeletedFalseOrderByRegdateDesc();
+	List<AnimalReport> findByUserAndDeletedFalseOrderByRegdateDesc(com.example.dogo.entity.user.User user);
 }
