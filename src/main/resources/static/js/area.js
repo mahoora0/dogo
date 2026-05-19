@@ -2,6 +2,7 @@ let map;
 let markers = [];
 let currentInfowindow = null;
 let currentNeighborhoodSearchId = 0;
+let focusTimeout = null;
 
 function drawMap() {
   const mapContainer = document.getElementById('map');
@@ -241,6 +242,7 @@ function textMatchesRegion(item, region) {
 
 function filterRailBySelection(data, policeData, region, subRegion, neighborhood) {
   if (!Array.isArray(data)) return [];
+  if (!region) return data;
 
   const regionData = data.filter(item => textMatchesRegion(item, region));
   if (!subRegion && !neighborhood) return regionData;
@@ -255,26 +257,28 @@ function filterRailBySelection(data, policeData, region, subRegion, neighborhood
 
 let currentSearchId = 0;
 
-function updateMap(keyword = '') {
+function updateMap() {
   const sel = document.getElementById('areaSelect');
   const subSel = document.getElementById('subAreaSelect');
   const neighborSel = document.getElementById('neighborhoodSelect');
   const listContainer = document.getElementById('centerList');
+  const searchInput = document.getElementById('centerSearch');
 
   if (!map || !sel) return;
 
   const region = sel.value;
   const subRegion = subSel.value;
   const neighborhood = neighborSel.value;
+  const keyword = searchInput ? searchInput.value.trim() : '';
   const searchId = ++currentSearchId;
 
   markers.forEach(m => m.setMap(null));
   markers = [];
   if (currentInfowindow) currentInfowindow.close();
 
-  if (!region) {
+  if (!region && !keyword) {
     if (listContainer) {
-      listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">지역을 선택해 주세요.</div>';
+      listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">지역을 선택하거나 검색어를 입력해 주세요.</div>';
     }
     return;
   }
@@ -283,9 +287,9 @@ function updateMap(keyword = '') {
     listContainer.innerHTML = '<div class="p-4 text-center text-gray-500"><div class="spinner-border spinner-border-sm me-2"></div>검색 중...</div>';
   }
 
-  const policeUrl = `/api/police?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion || '')}&neighborhood=${encodeURIComponent(neighborhood || '')}`;
-  const korailUrl = `/api/korail/lost-found?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion || '')}&neighborhood=${encodeURIComponent(neighborhood || '')}`;
-  const subwayUrl = `/api/subway/list?region=${encodeURIComponent(region)}&subRegion=${encodeURIComponent(subRegion || '')}&neighborhood=${encodeURIComponent(neighborhood || '')}`;
+  const policeUrl = `/api/police?region=${encodeURIComponent(region || '')}&subRegion=${encodeURIComponent(subRegion || '')}&neighborhood=${encodeURIComponent(neighborhood || '')}&keyword=${encodeURIComponent(keyword || '')}`;
+  const korailUrl = `/api/korail/lost-found?region=${encodeURIComponent(region || '')}&subRegion=${encodeURIComponent(subRegion || '')}&neighborhood=${encodeURIComponent(neighborhood || '')}&keyword=${encodeURIComponent(keyword || '')}`;
+  const subwayUrl = `/api/subway/list?region=${encodeURIComponent(region || '')}&subRegion=${encodeURIComponent(subRegion || '')}&neighborhood=${encodeURIComponent(neighborhood || '')}&keyword=${encodeURIComponent(keyword || '')}`;
 
 
   Promise.all([fetchJson(policeUrl), fetchJson(korailUrl), fetchJson(subwayUrl)])
@@ -315,7 +319,7 @@ function updateMap(keyword = '') {
         ];
 
         renderCenterList(allData, keyword);
-        renderMarkersOnMap(pData, kData, sData, { region, subRegion, neighborhood, searchId });
+        renderMarkersOnMap(pData, kData, sData, { region, subRegion, neighborhood, keyword, searchId });
       })
       .catch(err => {
         console.error('Update map error:', err);
@@ -330,10 +334,20 @@ function renderMarkersOnMap(policeData, korailData, subwayData, selection) {
   let hasMarkers = false;
   let markerCount = 0;
   let firstPosition = null;
+  const keyword = selection.keyword || '';
 
   const addMarkers = (data, type) => {
     if (!Array.isArray(data)) return;
     data.forEach(item => {
+      const name = type === 'POLICE' 
+        ? `${item.polstnNm || ''} ${item.se || ''}` 
+        : type === 'KORAIL'
+          ? `${item.stationName || ''}역 유실물센터 (${item.lineName || ''})`
+          : `${item.stationName || ''}역 유실물센터`;
+
+      // Filter markers by keyword if searched
+      if (keyword && !name.includes(keyword)) return;
+
       // Use latitude/longitude if they exist and are not 0
       const lat = parseFloat(item.latitude);
       const lng = parseFloat(item.longitude);
@@ -355,7 +369,6 @@ function renderMarkersOnMap(policeData, korailData, subwayData, selection) {
         image: markerImage
       });
 
-      const name = type === 'POLICE' ? `${item.polstnNm || ''} ${item.se || ''}` : `${item.stationName || ''}역 유실물센터`;
       const addr = type === 'POLICE' ? (item.addr || item.address) : (type === 'KORAIL' ? item.locationDetails : item.detailLocation);
       const tel = item.telNo || item.telno || item.tel;
 
@@ -453,22 +466,49 @@ function focusMarker(lat, lng) {
   if (!map || !lat || !lng) return;
   const pos = new kakao.maps.LatLng(lat, lng);
   
-  // Center map and zoom in for better visibility
-  map.panTo(pos);
-  if (map.getLevel() > 5) {
+  if (focusTimeout) {
+    clearTimeout(focusTimeout);
+  }
+
+  // Check if zoom level needs to change
+  const currentLevel = map.getLevel();
+  const levelChanged = currentLevel > 5;
+
+  if (levelChanged) {
     map.setLevel(5);
   }
   
-  // Find the marker at this position and trigger its click event to show info window
-  markers.forEach(marker => {
-    const markerPos = marker.getPosition();
-    const latDiff = Math.abs(markerPos.getLat() - lat);
-    const lngDiff = Math.abs(markerPos.getLng() - lng);
-    // Use an epsilon of 1e-5 (about 1 meter) to handle tiny floating-point mismatches
-    if (latDiff < 1e-5 && lngDiff < 1e-5) {
-      kakao.maps.event.trigger(marker, 'click');
-    }
-  });
+  // Pan to the position
+  map.panTo(pos);
+  
+  const triggerClick = () => {
+    markers.forEach(marker => {
+      const markerPos = marker.getPosition();
+      const latDiff = Math.abs(markerPos.getLat() - lat);
+      const lngDiff = Math.abs(markerPos.getLng() - lng);
+      // Use an epsilon of 1e-5 (about 1 meter) to handle tiny floating-point mismatches
+      if (latDiff < 1e-5 && lngDiff < 1e-5) {
+        kakao.maps.event.trigger(marker, 'click');
+      }
+    });
+  };
+
+  // Delay triggering click event to allow map transitions/redraw to finish
+  if (levelChanged) {
+    focusTimeout = setTimeout(triggerClick, 300);
+  } else {
+    focusTimeout = setTimeout(triggerClick, 100);
+  }
 }
 
-document.addEventListener('DOMContentLoaded', loadMap);
+document.addEventListener('DOMContentLoaded', () => {
+  loadMap();
+  const searchInput = document.getElementById('centerSearch');
+  if (searchInput) {
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        updateMap();
+      }
+    });
+  }
+});

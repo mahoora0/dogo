@@ -144,14 +144,39 @@ public class KricApiService {
       return stationName; 
   }
 
-  public List<SubwayLostCenterDTO> getSubwayList(String region, String subRegion, String neighborhood) {
+  public List<SubwayLostCenterDTO> getSubwayList(String region, String subRegion, String neighborhood, String keyword) {
+    if (region == null || region.isBlank()) {
+      if (keyword == null || keyword.isBlank()) {
+        return List.of();
+      }
+      return repository.findAll().stream()
+          .filter(entity -> {
+              String name = entity.getStationName() != null ? entity.getStationName() : "";
+              String detail = entity.getDetailLocation() != null ? entity.getDetailLocation() : "";
+              return name.contains(keyword) || detail.contains(keyword);
+          })
+          .map(entity -> SubwayLostCenterDTO.builder()
+              .id(entity.getId())
+              .operatorName(entity.getOperatorName())
+              .lineName(entity.getLineName())
+              .region(entity.getRegion())
+              .subRegion(entity.getSubRegion())
+              .stationName(entity.getStationName())
+              .latitude(entity.getLatitude())
+              .longitude(entity.getLongitude())
+              .detailLocation(entity.getDetailLocation())
+              .availableTime(entity.getAvailableTime())
+              .telNo(entity.getTelNo())
+              .build())
+          .toList();
+    }
+
     List<SubwayLostCenter> regionCenters = repository.findAll().stream()
         .filter(matchesRegion(region))
         .toList();
 
     return regionCenters.stream()
         .filter(matchesSubRegion(subRegion))
-        .filter(matchesNeighborhood(neighborhood))
         .map(entity -> SubwayLostCenterDTO.builder()
             .id(entity.getId())
             .operatorName(entity.getOperatorName())

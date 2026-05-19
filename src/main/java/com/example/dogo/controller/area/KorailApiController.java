@@ -23,15 +23,29 @@ public class KorailApiController {
     public List<Map<String, Object>> getLostFoundCenters(
             @org.springframework.web.bind.annotation.RequestParam(required = false) String region,
             @org.springframework.web.bind.annotation.RequestParam(required = false) String subRegion,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) String neighborhood) {
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String neighborhood,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String keyword) {
         
+        if (region == null || region.isBlank()) {
+            if (keyword == null || keyword.isBlank()) {
+                return List.of();
+            }
+            return lostFoundCenterRepository.findAllWithCoordinates().stream()
+                .filter(c -> {
+                    String stationName = (String) c.get("stationName");
+                    String details = (String) c.get("locationDetails");
+                    return (stationName != null && stationName.contains(keyword))
+                        || (details != null && details.contains(keyword));
+                })
+                .toList();
+        }
+
         List<Map<String, Object>> regionCenters = lostFoundCenterRepository.findAllWithCoordinates().stream()
             .filter(matchesRegion(region))
             .toList();
 
         return regionCenters.stream()
             .filter(matchesSubRegion(subRegion))
-            .filter(matchesNeighborhood(neighborhood))
             .toList();
     }
 
