@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin_base :: setAdminContent(~{::content}, 'faq')}">
+<th:block th:fragment="content">
+
+    <div class="faq-container max-w-4xl mx-auto">
+        
+        <!-- 제목 및 설명 -->
+        <div class="mb-8 flex justify-between items-end">
+            <div>
+                <h2 class="text-3xl font-extrabold text-slate-900 mb-3">FAQ (자주 묻는 질문) 관리</h2>
+                <p class="text-slate-500 text-lg">분실물 센터 이용과 관련하여 자주 묻는 질문들을 등록하고 관리하세요.</p>
+            </div>
+            <div>
+                <a href="/admin/faq/new" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">FAQ 등록</a>
+            </div>
+        </div>
+
+        <!-- 질문 검색  -->
+        <div class="mb-8 relative">
+            <input type="text" id="faqSearchInput" placeholder="어떤 것이 궁금하신가요?" class="w-full bg-white border border-slate-300 rounded-lg pl-4 pr-12 py-3 text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition duration-200">
+            <button id="faqSearchBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- 질문 카테고리(분류) -->
+        <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+            <button class="category-btn whitespace-nowrap px-4 py-2 rounded-full bg-slate-900 text-white border border-transparent font-medium text-sm transition-colors">전체</button>
+            <button class="category-btn whitespace-nowrap px-4 py-2 rounded-full bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 font-medium text-sm transition-colors">분실물 신고</button>
+            <button class="category-btn whitespace-nowrap px-4 py-2 rounded-full bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 font-medium text-sm transition-colors">습득물 등록</button>
+            <button class="category-btn whitespace-nowrap px-4 py-2 rounded-full bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 font-medium text-sm transition-colors">이용 안내</button>
+        </div>
+
+        <!-- FAQ 질문과 답변 목록 -->
+        <div class="space-y-4">
+            
+            <!-- DB에서 불러온 FAQ 항목 -->
+            <th:block th:each="faq : ${faqList}">
+                <div class="faq-item bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden transition-all duration-200" th:data-category="${faq.category}">
+                    <button class="faq-btn w-full px-6 py-4 flex justify-between items-center text-left focus:outline-none">
+                        <div class="flex items-center gap-4">
+                            <span class="text-indigo-600 font-bold text-lg">Q.</span>
+                            <span class="font-medium text-slate-800 text-lg" th:text="${faq.question}">질문</span>
+                        </div>
+                        <svg class="faq-icon h-5 w-5 text-slate-400 transform transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div class="faq-answer hidden bg-slate-50 px-6 py-4 border-t border-slate-100">
+                        <div class="flex gap-4">
+                            <span class="text-slate-400 font-bold text-lg">A.</span>
+                            <div class="text-slate-600 leading-relaxed flex-grow" th:utext="${faq.answer}">
+                                답변 내용
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-end">
+                            <form th:action="@{/admin/faq/{id}/delete(id=${faq.id})}" method="post" onsubmit="return confirm('이 FAQ를 정말 삭제하시겠습니까?');">
+                                <button type="submit" class="text-sm text-red-500 hover:text-red-700 font-medium px-3 py-1 border border-red-200 hover:bg-red-50 rounded transition-colors">삭제</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+
+            <!-- 기본 FAQ 예시 항목들 (DB 데이터 외에 정적 정보 제공용) -->
+            <div class="faq-item bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden transition-all duration-200" data-category="분실물 신고">
+                <button class="faq-btn w-full px-6 py-4 flex justify-between items-center text-left focus:outline-none">
+                    <div class="flex items-center gap-4">
+                        <span class="text-indigo-600 font-bold text-lg">Q.</span>
+                        <span class="font-medium text-slate-800 text-lg">분실물은 언제까지 보관되나요?</span>
+                    </div>
+                    <svg class="faq-icon h-5 w-5 text-slate-400 transform transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div class="faq-answer hidden bg-slate-50 px-6 py-4 border-t border-slate-100">
+                    <div class="flex gap-4">
+                        <span class="text-slate-400 font-bold text-lg">A.</span>
+                        <p class="text-slate-600 leading-relaxed">
+                            습득된 유실물은 센터에서 최대 <strong class="text-slate-800">6개월</strong>간 보관됩니다. 
+                            6개월이 경과한 후에는 관련 법령에 따라 처리되며, 이후에는 찾으실 수 없습니다. 되도록 빠른 시일 내에 방문해 주시기 바랍니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden transition-all duration-200" data-category="이용 안내">
+                <button class="faq-btn w-full px-6 py-4 flex justify-between items-center text-left focus:outline-none">
+                    <div class="flex items-center gap-4">
+                        <span class="text-indigo-600 font-bold text-lg">Q.</span>
+                        <span class="font-medium text-slate-800 text-lg">물건을 찾을 때 필요한 서류가 있나요?</span>
+                    </div>
+                    <svg class="faq-icon h-5 w-5 text-slate-400 transform transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div class="faq-answer hidden bg-slate-50 px-6 py-4 border-t border-slate-100">
+                    <div class="flex gap-4">
+                        <span class="text-slate-400 font-bold text-lg">A.</span>
+                        <p class="text-slate-600 leading-relaxed">
+                            물건을 수령하실 때는 본인 확인을 위해 <strong class="text-slate-800">신분증(주민등록증, 운전면허증, 여권 등)</strong>을 지참하셔야 합니다. 대리인이 방문하실 경우 위임장과 대리인의 신분증이 추가로 필요합니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden transition-all duration-200" data-category="습득물 등록">
+                <button class="faq-btn w-full px-6 py-4 flex justify-between items-center text-left focus:outline-none">
+                    <div class="flex items-center gap-4">
+                        <span class="text-indigo-600 font-bold text-lg">Q.</span>
+                        <span class="font-medium text-slate-800 text-lg">습득물을 등록하면 보상금을 받을 수 있나요?</span>
+                    </div>
+                    <svg class="faq-icon h-5 w-5 text-slate-400 transform transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div class="faq-answer hidden bg-slate-50 px-6 py-4 border-t border-slate-100">
+                    <div class="flex gap-4">
+                        <span class="text-slate-400 font-bold text-lg">A.</span>
+                        <p class="text-slate-600 leading-relaxed">
+                            유실물법에 따라 물건의 가액의 5% ~ 20% 범위 내에서 보상금을 청구할 수 있습니다. 단, 보상금은 분실자가 반환받을 때 직접 합의하여 지급되는 부분이며 센터에서 직접 지급하지는 않습니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 탭 변경, 아코디언, 검색 기능 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryBtns = document.querySelectorAll('.category-btn');
+            const activeClasses = ['bg-slate-900', 'text-white', 'border-transparent'];
+            const inactiveClasses = ['bg-white', 'text-slate-600', 'border-slate-200', 'hover:bg-slate-50'];
+
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    categoryBtns.forEach(b => {
+                        b.classList.remove(...activeClasses);
+                        b.classList.add(...inactiveClasses);
+                    });
+                    
+                    btn.classList.remove(...inactiveClasses);
+                    btn.classList.add(...activeClasses);
+                    
+                    performSearch();
+                });
+            });
+
+            const faqBtns = document.querySelectorAll('.faq-btn');
+            
+            faqBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const answer = btn.nextElementSibling;
+                    const icon = btn.querySelector('.faq-icon');
+                    
+                    if (answer.classList.contains('hidden')) {
+                        answer.classList.remove('hidden');
+                        icon.classList.add('rotate-180');
+                        btn.parentElement.classList.add('border-indigo-200', 'ring-1', 'ring-indigo-100');
+                    } else {
+                        answer.classList.add('hidden');
+                        icon.classList.remove('rotate-180');
+                        btn.parentElement.classList.remove('border-indigo-200', 'ring-1', 'ring-indigo-100');
+                    }
+                });
+            });
+
+            const searchInput = document.getElementById('faqSearchInput');
+            const searchBtn = document.getElementById('faqSearchBtn');
+            const faqItems = document.querySelectorAll('.faq-item');
+
+            const performSearch = () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const activeCategoryBtn = document.querySelector('.category-btn.bg-slate-900');
+                const selectedCategory = activeCategoryBtn ? activeCategoryBtn.textContent.trim() : '전체';
+                
+                faqItems.forEach(item => {
+                    const questionText = item.querySelector('.faq-btn').textContent.toLowerCase();
+                    const answerText = item.querySelector('.faq-answer').textContent.toLowerCase();
+                    const itemCategory = item.getAttribute('data-category');
+                    
+                    const matchesSearch = questionText.includes(searchTerm) || answerText.includes(searchTerm);
+                    const matchesCategory = selectedCategory === '전체' || itemCategory === selectedCategory;
+                    
+                    if (matchesSearch && matchesCategory) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            };
+
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            if (searchBtn) {
+                searchBtn.addEventListener('click', performSearch);
+            }
+        });
+    </script>
+</th:block>
+</html>
