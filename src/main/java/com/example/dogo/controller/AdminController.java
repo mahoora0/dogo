@@ -285,35 +285,60 @@ public class AdminController {
         Map<String, Object> response = new HashMap<>();
         response.put("active", emergencyActive);
         if (emergencyActive) {
-            List<AnimalReport> reports = animalReportRepository.findByDeletedFalseOrderByRegdateDesc();
-            AnimalReport latestMissing = reports.stream()
+            List<AnimalReport> animalReports = animalReportRepository.findByDeletedFalseOrderByRegdateDesc();
+            AnimalReport latestAnimal = animalReports.stream()
                 .filter(r -> "MISSING".equals(r.getReportType()))
                 .findFirst()
                 .orElse(null);
 
-            if (latestMissing != null) {
-                response.put("reportId", latestMissing.getReportId());
-                response.put("title", latestMissing.getTitle());
-                response.put("breed", latestMissing.getBreedName());
-                response.put("animalType", latestMissing.getAnimalType());
-                response.put("location", latestMissing.getRegionName() + " " + latestMissing.getDetailPlace());
-                response.put("date", latestMissing.getEventDate().toString());
-                response.put("phone", latestMissing.getContactPhone() != null ? latestMissing.getContactPhone() : "112");
-                response.put("distinctiveMarks", latestMissing.getDistinctiveMarks());
+            List<MissingPersonReport> personReports = missingPersonRepository.findByDeletedFalseOrderByRegdateDesc();
+            MissingPersonReport latestPerson = personReports.stream()
+                .filter(r -> "OPEN".equals(r.getStatus()))
+                .findFirst()
+                .orElse(null);
+
+            boolean isPersonMoreRecent = false;
+            if (latestPerson != null && latestAnimal != null) {
+                isPersonMoreRecent = latestPerson.getRegdate().isAfter(latestAnimal.getRegdate());
+            } else if (latestPerson != null) {
+                isPersonMoreRecent = true;
+            }
+
+            if (isPersonMoreRecent) {
+                response.put("type", "PERSON");
+                response.put("reportId", latestPerson.getReportId());
+                response.put("title", "실종자를 찾습니다!");
+                response.put("age", latestPerson.getAge());
+                response.put("nationality", latestPerson.getNationality());
+                response.put("location", latestPerson.getOccurredPlace());
+                response.put("date", latestPerson.getOccurredAt() != null ? latestPerson.getOccurredAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "");
+                response.put("distinctiveMarks", String.format("의상: %s\n체형: %s, 얼굴형: %s, 헤어: %s (%s)", 
+                    latestPerson.getClothing(), latestPerson.getBodyType(), latestPerson.getFaceShape(), 
+                    latestPerson.getHairColor(), latestPerson.getHairStyle()));
+                response.put("imageUrl", null);
+            } else if (latestAnimal != null) {
+                response.put("type", "ANIMAL");
+                response.put("reportId", latestAnimal.getReportId());
+                response.put("title", latestAnimal.getTitle() != null ? latestAnimal.getTitle() : "실종된 반려동물을 찾습니다!");
+                response.put("breed", latestAnimal.getBreedName());
+                response.put("animalType", latestAnimal.getAnimalType());
+                response.put("location", latestAnimal.getRegionName() + " " + latestAnimal.getDetailPlace());
+                response.put("date", latestAnimal.getEventDate().toString());
+                response.put("distinctiveMarks", latestAnimal.getDistinctiveMarks());
                 
                 String imageUrl = null;
-                if (latestMissing.getImages() != null && !latestMissing.getImages().isEmpty()) {
-                    imageUrl = latestMissing.getImages().get(0).getImageUrl();
+                if (latestAnimal.getImages() != null && !latestAnimal.getImages().isEmpty()) {
+                    imageUrl = latestAnimal.getImages().get(0).getImageUrl();
                 }
                 response.put("imageUrl", imageUrl);
             } else {
+                response.put("type", "ANIMAL");
                 response.put("reportId", 0L);
                 response.put("title", "실종된 반려동물을 찾습니다!");
                 response.put("breed", "리트리버");
                 response.put("animalType", "개");
                 response.put("location", "서울시 강남구 역삼역 인근");
                 response.put("date", "2026-05-18");
-                response.put("phone", "010-9876-5432");
                 response.put("distinctiveMarks", "순하고 사람을 잘 따르며, 노란색 목줄을 착용하고 있습니다. 발견 시 제보 부탁드립니다.");
                 response.put("imageUrl", "/images/logo.png");
             }

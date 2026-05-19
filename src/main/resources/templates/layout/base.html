@@ -254,7 +254,7 @@
             
             <div class="grid grid-cols-2 gap-3 text-xs border-t border-slate-100 pt-3">
               <div>
-                <span class="text-slate-400 block mb-0.5">품종</span>
+                <span id="emergencyBreedLabel" class="text-slate-400 block mb-0.5">품종</span>
                 <span id="emergencyBreed" class="font-bold text-slate-800 text-sm">-</span>
               </div>
               <div>
@@ -266,7 +266,7 @@
                 <span id="emergencyLocation" class="font-bold text-slate-800 text-sm">-</span>
               </div>
               <div class="col-span-2">
-                <span class="text-slate-400 block mb-0.5">특징 및 착의</span>
+                <span id="emergencyMarksLabel" class="text-slate-400 block mb-0.5">특징 및 착의</span>
                 <span id="emergencyMarks" class="font-bold text-slate-800 text-xs bg-slate-50 border border-slate-100 p-2 rounded-lg block leading-relaxed max-h-16 overflow-y-auto">-</span>
               </div>
             </div>
@@ -325,10 +325,29 @@
               const fallback = document.getElementById('emergencyImgFallback');
               
               document.getElementById('emergencyTitle').innerText = data.title;
-              document.getElementById('emergencyBreed').innerText = data.breed + ' (' + data.animalType + ')';
               document.getElementById('emergencyDate').innerText = data.date;
               document.getElementById('emergencyLocation').innerText = data.location;
               document.getElementById('emergencyMarks').innerText = data.distinctiveMarks || '특별한 특징 사항이 등록되어 있지 않습니다.';
+              
+              const breedLabel = document.getElementById('emergencyBreedLabel');
+              const marksLabel = document.getElementById('emergencyMarksLabel');
+              const breedVal = document.getElementById('emergencyBreed');
+              
+              if (data.type === 'PERSON') {
+                if (breedLabel) breedLabel.innerText = '나이/국적';
+                if (marksLabel) marksLabel.innerText = '신체 특징 및 착의';
+                if (breedVal) breedVal.innerText = data.age + '세 (' + data.nationality + ')';
+                document.getElementById('emergencyDetailLink').href = '/missing-persons/' + data.reportId;
+              } else {
+                if (breedLabel) breedLabel.innerText = '품종';
+                if (marksLabel) marksLabel.innerText = '특징 및 착의';
+                if (breedVal) breedVal.innerText = data.breed + ' (' + data.animalType + ')';
+                if (data.reportId > 0) {
+                  document.getElementById('emergencyDetailLink').href = '/animal-reports/' + data.reportId;
+                } else {
+                  document.getElementById('emergencyDetailLink').href = '/animal-reports';
+                }
+              }
               
               if (data.imageUrl) {
                 img.src = data.imageUrl;
@@ -337,12 +356,6 @@
               } else {
                 img.classList.add('hidden');
                 fallback.classList.remove('hidden');
-              }
-              
-              if (data.reportId > 0) {
-                document.getElementById('emergencyDetailLink').href = '/animal-reports/' + data.reportId;
-              } else {
-                document.getElementById('emergencyDetailLink').href = '/animal-reports';
               }
               
               modal.classList.remove('hidden');

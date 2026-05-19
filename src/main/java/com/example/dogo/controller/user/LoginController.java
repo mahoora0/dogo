@@ -33,6 +33,9 @@ import com.example.dogo.repository.animal.AnimalReportMatchRepository;
 import com.example.dogo.repository.Support.InquiryRepository;
 import com.example.dogo.repository.ChatMessageRepository;
 import com.example.dogo.repository.ChatRoomRepository;
+import com.example.dogo.repository.missing.MissingPersonRepository;
+import com.example.dogo.entity.animal.AnimalReport;
+import com.example.dogo.entity.missing.MissingPersonReport;
 import com.example.dogo.dto.item.RecentItemView;
 import org.springframework.ui.Model;
 import java.util.List;
@@ -58,6 +61,7 @@ public class LoginController {
   private final ChatMessageRepository chatMessageRepository;
   private final ChatRoomRepository chatRoomRepository;
   private final OAuth2Service oauth2Service;
+  private final MissingPersonRepository missingPersonRepository;
 
   @GetMapping("/login")
   public String loginPage(@RequestParam(value = "error", required = false) String error,
@@ -83,6 +87,7 @@ public class LoginController {
   }
 
   @GetMapping("/userpage")
+  @Transactional(readOnly = true)
   public String userPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
     if (userDetails == null) {
       return "redirect:/login";
@@ -92,6 +97,8 @@ public class LoginController {
     List<com.example.dogo.entity.item.LostItem> lostItems = lostItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
     List<com.example.dogo.entity.item.FoundItem> foundItems = foundItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
     List<com.example.dogo.entity.Support.Inquiry> inquiries = inquiryRepository.findByUserOrderByRegdateDescInquiryIdDesc(user);
+    List<AnimalReport> animalReports = animalReportRepository.findByUserAndDeletedFalseOrderByRegdateDesc(user);
+    List<MissingPersonReport> personReports = missingPersonRepository.findByUserAndDeletedFalseOrderByRegdateDesc(user);
 
     List<RecentItemView> userActivities = new ArrayList<>();
 
@@ -149,6 +156,46 @@ public class LoginController {
           "고객센터",
           inquiry.getRegdate() != null ? inquiry.getRegdate() : java.time.LocalDateTime.now(),
           inquiry.getStatus(),
+          statusLabel,
+          "/images/noImageSize.png"
+      ));
+    }
+
+    for (AnimalReport report : animalReports) {
+      String imageUrl = "/images/noImageSize.png";
+      if (report.getImages() != null && !report.getImages().isEmpty()) {
+        imageUrl = report.getImages().get(0).getImageUrl();
+      }
+
+      String typeLabel = "MISSING".equals(report.getReportType()) ? "실종동물 신고" : "제보 및 목격";
+      String statusLabel = "OPEN".equals(report.getStatus()) ? "접수" : ("MATCHING".equals(report.getStatus()) ? "매칭중" : "해결완료");
+
+      userActivities.add(new RecentItemView(
+          report.getReportId(),
+          "ANIMAL_REPORT",
+          typeLabel,
+          report.getTitle(),
+          report.getAnimalType() + " (" + report.getBreedName() + ")",
+          report.getRegionName() + " " + report.getDetailPlace(),
+          report.getRegdate() != null ? report.getRegdate() : java.time.LocalDateTime.now(),
+          report.getStatus(),
+          statusLabel,
+          imageUrl
+      ));
+    }
+
+    for (MissingPersonReport report : personReports) {
+      String statusLabel = "OPEN".equals(report.getStatus()) ? "접수" : "해결완료";
+
+      userActivities.add(new RecentItemView(
+          report.getReportId(),
+          "MISSING_PERSON",
+          "실종자 신고",
+          report.getAge() + "세 " + report.getNationality() + " 실종",
+          report.getBodyType() + " (" + report.getHairStyle() + ")",
+          report.getOccurredPlace(),
+          report.getRegdate() != null ? report.getRegdate() : java.time.LocalDateTime.now(),
+          report.getStatus(),
           statusLabel,
           "/images/noImageSize.png"
       ));
