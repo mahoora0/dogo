@@ -5,6 +5,8 @@ import com.example.dogo.security.CustomUserDetails;
 import com.example.dogo.service.item.FoundItemService;
 import com.example.dogo.service.item.LostItemService;
 import com.example.dogo.service.match.ItemMatchService;
+import com.example.dogo.service.missing.MissingPersonService;
+import com.example.dogo.service.animal.AnimalReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -24,13 +26,17 @@ public class MainController {
   private final LostItemService lostItemService;
   private final FoundItemService foundItemService;
   private final ItemMatchService itemMatchService;
+  private final MissingPersonService missingPersonService;
+  private final AnimalReportService animalReportService;
 
   @GetMapping("/")
   public String index(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
     List<RecentItemView> recentItems = new ArrayList<>();
     recentItems.addAll(lostItemService.getRecentItems(RECENT_ITEM_LIMIT));
     recentItems.addAll(foundItemService.getRecentItems(RECENT_ITEM_LIMIT));
-    recentItems.sort(Comparator.comparing(RecentItemView::itemAt).reversed());
+    recentItems.addAll(missingPersonService.getRecentItems(RECENT_ITEM_LIMIT));
+    recentItems.addAll(animalReportService.getRecentItems(RECENT_ITEM_LIMIT));
+    recentItems.sort(Comparator.comparing(RecentItemView::itemAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
 
     // [로그인 시 실시간 매칭 작동] 회원이 최소 1개 이상 분실물을 등록했을 때만 매칭 가동 및 알림 갱신
     if (userDetails != null) {

@@ -1,5 +1,6 @@
 package com.example.dogo.service.missing;
 
+import com.example.dogo.dto.item.RecentItemView;
 import com.example.dogo.dto.missing.MissingPersonCreateRequest;
 import com.example.dogo.dto.missing.MissingPersonDetailView;
 import com.example.dogo.dto.missing.MissingPersonView;
@@ -39,6 +40,25 @@ public class MissingPersonService {
 	@Transactional(readOnly = true)
 	public Page<MissingPersonView> search(String keyword, String status, Pageable pageable) {
 		return search(keyword, status, null, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public List<RecentItemView> getRecentItems(int limit) {
+		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "regdate"));
+		return missingPersonRepository.findAll(searchSpec(null, null, null), pageable).stream()
+				.map(item -> new RecentItemView(
+						item.getReportId(),
+						"PERSON",
+						"실종자",
+						summary(item),
+						"사람",
+						item.getOccurredPlace(),
+						item.getOccurredAt(),
+						item.getStatus(),
+						statusLabel(item.getStatus()),
+						"/images/noImageSize.png"
+				))
+				.toList();
 	}
 
 	@Transactional

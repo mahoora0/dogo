@@ -283,8 +283,8 @@ textarea {
     box-shadow: 0 8px 22px rgba(15, 23, 42, 0.03);
     display: flex;
     flex-direction: column;
-    min-height: 190px;
-    padding: 24px 22px 20px;
+    min-height: 290px;
+    padding: 32px 24px 28px;
     transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
@@ -301,9 +301,9 @@ textarea {
 
 .home-action-icon {
     display: inline-flex;
-    height: 34px;
-    margin-bottom: 18px;
-    width: 34px;
+    height: 32px;
+    margin-bottom: 20px;
+    width: 32px;
 }
 
 .home-action-icon svg {
@@ -318,26 +318,26 @@ textarea {
 
 .home-action-card p {
     color: #475569;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     line-height: 1.35;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .home-action-card strong {
     color: #111827;
-    font-size: 20px;
-    font-weight: 850;
-    line-height: 1.2;
-    margin-bottom: 12px;
+    font-size: 19px;
+    font-weight: 750;
+    line-height: 1.25;
+    margin-bottom: 16px;
 }
 
 .home-action-card > span:not(.home-action-icon) {
     color: #64748b;
     display: block;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    line-height: 1.45;
+    line-height: 1.5;
 }
 
 .home-action-card em {
