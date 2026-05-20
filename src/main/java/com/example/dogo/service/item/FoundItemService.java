@@ -14,7 +14,6 @@ import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.match.FoundItemMatchRequestedEvent;
 import com.example.dogo.service.match.ItemMatchService;
-import com.example.dogo.service.match.embedding.FoundItemEmbeddingRequestedEvent;
 import com.example.dogo.service.police.sync.PoliceFoundItemDetailEnrichmentService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
@@ -270,8 +269,6 @@ public class FoundItemService {
 			saveImages(item, newImages);
 		}
 
-		itemMatchService.clearMatchesForFoundItem(item.getFoundId());
-		eventPublisher.publishEvent(new FoundItemEmbeddingRequestedEvent(item.getFoundId()));
 		eventPublisher.publishEvent(new FoundItemMatchRequestedEvent(item.getFoundId()));
 	}
 
@@ -317,7 +314,6 @@ public class FoundItemService {
 
 		FoundItem savedItem = foundItemRepository.save(foundItem);
 		saveImages(savedItem, request.getUploadImages());
-		eventPublisher.publishEvent(new FoundItemEmbeddingRequestedEvent(savedItem.getFoundId()));
 		eventPublisher.publishEvent(new FoundItemMatchRequestedEvent(savedItem.getFoundId()));
 
 		return savedItem.getFoundId();

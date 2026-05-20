@@ -6,7 +6,7 @@ import com.example.dogo.dto.police.PoliceLostItemResponse;
 import com.example.dogo.dto.police.PoliceLostItemSyncResult;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.repository.item.LostItemRepository;
-import com.example.dogo.service.match.embedding.LostItemEmbeddingRequestedEvent;
+import com.example.dogo.service.match.LostItemMatchRequestedEvent;
 import com.example.dogo.service.police.client.PoliceLostItemClient;
 import com.example.dogo.service.police.mapper.PoliceLostItemMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -96,7 +96,7 @@ class PoliceLostItemSyncServiceTest {
 				"https://example.com/lost/wallet.jpg"
 		));
 		verify(eventPublisher).publishEvent((Object) argThat(event ->
-				event instanceof LostItemEmbeddingRequestedEvent e && e.lostId().equals(100L)));
+				event instanceof LostItemMatchRequestedEvent e && e.lostId().equals(100L)));
 	}
 
 	@Test

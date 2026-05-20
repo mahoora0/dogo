@@ -72,6 +72,30 @@ class ItemMatchScorerTest {
 	}
 
 	@Test
+	void scoreUsesExtendedColorSynonyms() {
+		LostItem lost = lostItem(
+				"초록색 카드지갑",
+				"지갑",
+				LocalDateTime.of(2026, 5, 10, 18, 0),
+				"서울",
+				"강남역"
+		);
+		FoundItem found = foundItem(
+				"그린 카드지갑",
+				"지갑",
+				LocalDateTime.of(2026, 5, 10, 20, 0),
+				"서울",
+				"강남역",
+				"그린"
+		);
+
+		MatchScoreResult result = scorer.score(lost, found);
+
+		assertThat(result.eligible()).isTrue();
+		assertThat(result.reasons()).anyMatch(reason -> reason.contains("색상 일치 (초록)"));
+	}
+
+	@Test
 	void scoreMatchesCompactAndSpacedPhoneModelNames() {
 		LostItem lost = lostItem(
 				"아이폰15프로",

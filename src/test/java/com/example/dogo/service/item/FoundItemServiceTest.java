@@ -11,7 +11,6 @@ import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.match.FoundItemMatchRequestedEvent;
 import com.example.dogo.service.match.ItemMatchService;
-import com.example.dogo.service.match.embedding.FoundItemEmbeddingRequestedEvent;
 import com.example.dogo.service.police.sync.PoliceFoundItemDetailEnrichmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -135,8 +134,6 @@ class FoundItemServiceTest {
 		verify(userRepository, never()).findByEmail(any());
 		verify(foundItemImageRepository, never()).save(any());
 
-		verify(eventPublisher).publishEvent((Object) argThat(event ->
-				event instanceof FoundItemEmbeddingRequestedEvent e && e.foundId().equals(10L)));
 		verify(eventPublisher).publishEvent((Object) argThat(event ->
 				event instanceof FoundItemMatchRequestedEvent e && e.foundId().equals(10L)));
 	}

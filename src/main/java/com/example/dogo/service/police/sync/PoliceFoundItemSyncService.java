@@ -7,7 +7,7 @@ import com.example.dogo.dto.police.PoliceFoundItemSyncResult;
 import com.example.dogo.dto.police.PoliceRegionCode;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.repository.item.FoundItemRepository;
-import com.example.dogo.service.match.embedding.FoundItemEmbeddingRequestedEvent;
+import com.example.dogo.service.match.FoundItemMatchRequestedEvent;
 import com.example.dogo.service.police.client.PoliceCommonCodeClient;
 import com.example.dogo.service.police.client.PoliceFoundItemClient;
 import com.example.dogo.service.police.mapper.PoliceFoundItemMapper;
@@ -206,7 +206,7 @@ public class PoliceFoundItemSyncService {
 			} else {
 				imageService.saveImageIfPresent(savedItem, response);
 			}
-			eventPublisher.publishEvent(new FoundItemEmbeddingRequestedEvent(savedItem.getFoundId()));
+			eventPublisher.publishEvent(new FoundItemMatchRequestedEvent(savedItem.getFoundId()));
 			return true;
 		} catch (DataIntegrityViolationException exception) {
 			log.debug("이미 저장된 경찰청 습득물입니다. atcId={}, fdSn={}", atcId, fdSn, exception);

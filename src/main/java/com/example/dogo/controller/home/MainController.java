@@ -38,15 +38,13 @@ public class MainController {
     recentItems.addAll(animalReportService.getRecentItems(RECENT_ITEM_LIMIT));
     recentItems.sort(Comparator.comparing(RecentItemView::itemAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
 
-    // [로그인 시 실시간 매칭 작동] 회원이 최소 1개 이상 분실물을 등록했을 때만 매칭 가동 및 알림 갱신
+    // 회원이 최소 1개 이상 분실물을 등록했을 때만 매칭 알림 조회
     if (userDetails != null) {
       boolean hasLostItems = lostItemService.hasLostItems(userDetails.getUser());
       model.addAttribute("hasLostItems", hasLostItems);
 
       if (hasLostItems) {
-        // 1. 로그인한 회원의 미완료 분실물들에 대해 최신 습득물 매칭 알고리즘 백그라운드 구동
-        itemMatchService.matchForUserLostItems(userDetails.getUser());
-        // 2. 종 아이콘 배지에 표시할 읽지 않은 매칭 알림 수 조회 및 모델 추가
+        // 종 아이콘 배지에 표시할 읽지 않은 매칭 알림 수 조회 및 모델 추가
         long unreadCount = itemMatchService.getUnreadMatchCount(userDetails.getUser());
         model.addAttribute("unreadMatchCount", unreadCount);
       } else {

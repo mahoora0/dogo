@@ -2,6 +2,8 @@ package com.example.dogo.service.match;
 
 import org.junit.jupiter.api.Test;
 
+import com.example.dogo.repository.item.FoundItemRepository;
+import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.sse.SseMatchRegistry;
 
 import java.util.List;
@@ -19,7 +21,7 @@ class ItemMatchEventListenerTest {
 		ItemMatchService itemMatchService = mock(ItemMatchService.class);
 		MatchFragmentRenderer fragmentRenderer = mock(MatchFragmentRenderer.class);
 		SseFixture fixture = new SseFixture(itemMatchService, fragmentRenderer);
-		when(itemMatchService.getMatchesForLostItem(10L)).thenReturn(List.of());
+		when(itemMatchService.getMatchesForLostItemPreview(10L)).thenReturn(List.of());
 		when(fragmentRenderer.renderLostItemMatches(List.of())).thenReturn("<div></div>");
 
 		fixture.listener().handleLostItemMatchRequested(new LostItemMatchRequestedEvent(10L));
@@ -62,7 +64,14 @@ class ItemMatchEventListenerTest {
 				MatchFragmentRenderer fragmentRenderer,
 				SseMatchRegistry sseMatchRegistry
 		) {
-			this(new ItemMatchEventListener(itemMatchService, fragmentRenderer, sseMatchRegistry), sseMatchRegistry);
+			this(new ItemMatchEventListener(
+					itemMatchService,
+					fragmentRenderer,
+					sseMatchRegistry,
+					mock(LostItemRepository.class),
+					mock(FoundItemRepository.class),
+					null
+			), sseMatchRegistry);
 		}
 	}
 }

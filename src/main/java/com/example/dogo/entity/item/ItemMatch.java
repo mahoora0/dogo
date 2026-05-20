@@ -134,6 +134,17 @@ public class ItemMatch {
 		}
 	}
 
+	public void refreshScoreFrom(ItemMatch refreshed) {
+		this.matchScore = refreshed.matchScore;
+		this.ruleScore = refreshed.ruleScore;
+		this.semanticScore = refreshed.semanticScore;
+		this.finalScore = refreshed.finalScore;
+		this.matchReasons = refreshed.matchReasons;
+		this.matchVersion = refreshed.matchVersion;
+		this.modelName = refreshed.modelName;
+		this.moddate = LocalDateTime.now();
+	}
+
 	private String serializeReasons(List<String> reasons) {
 		if (reasons == null || reasons.isEmpty()) {
 			return null;

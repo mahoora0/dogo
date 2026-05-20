@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,7 @@ public class ItemMatchService {
 	private static final BigDecimal TRANSPORT_AREA_MISMATCH_CAP = new BigDecimal("62.00");
 	private static final String RULE_MATCH_VERSION = "java-rule-v1";
 	private static final String SEMANTIC_MATCH_VERSION = "java-rule-v1+kosimcse-v1";
+	private static final Duration SEMANTIC_FAILURE_COOLDOWN = Duration.ofSeconds(30);
 
 	private final ItemMatchRepository itemMatchRepository;
 	private final FoundItemRepository foundItemRepository;
@@ -53,6 +56,7 @@ public class ItemMatchService {
 	private final LostItemImageRepository lostItemImageRepository;
 	private final ItemMatchScorer itemMatchScorer;
 	private final SemanticMatchClient semanticMatchClient;
+	private volatile Instant semanticUnavailableUntil = Instant.EPOCH;
 
 	public ItemMatchService(
 			ItemMatchRepository itemMatchRepository,
@@ -81,8 +85,6 @@ public class ItemMatchService {
 
 	@Transactional
 	public void matchForLostItem(LostItem lostItem) {
-		clearMatchesForLostItem(lostItem.getLostId());
-
 		List<FoundItem> candidates = foundItemRepository.findMatchCandidatesForLost(
 				lostItem.getCategoryMain(),
 				lostItem.getLostAt().minusDays(LOST_DATE_MARGIN_DAYS),
@@ -99,6 +101,7 @@ public class ItemMatchService {
 		}
 
 		if (ruleEligible.isEmpty()) {
+			replaceMatchesForLostItem(lostItem.getLostId(), List.of());
 			log.info("분실물 매칭 완료: lostId={}, 후보=0건", lostItem.getLostId());
 			return;
 		}
@@ -116,13 +119,7 @@ public class ItemMatchService {
 
 		matches.sort((a, b) -> b.displayScore().compareTo(a.displayScore()));
 		List<ItemMatch> topMatches = matches.stream().limit(MAX_CANDIDATES).toList();
-
-		for (ItemMatch match : topMatches) {
-			if (!itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(
-					lostItem.getLostId(), match.getFoundItem().getFoundId())) {
-				itemMatchRepository.save(match);
-			}
-		}
+		replaceMatchesForLostItem(lostItem.getLostId(), topMatches);
 
 		log.info("분실물 매칭 완료: lostId={}, 후보={}건", lostItem.getLostId(), topMatches.size());
 	}
@@ -142,8 +139,6 @@ public class ItemMatchService {
 
 	@Transactional
 	public void matchForFoundItem(FoundItem foundItem) {
-		clearMatchesForFoundItem(foundItem.getFoundId());
-
 		List<LostItem> candidates = lostItemRepository.findMatchCandidatesForFound(
 				foundItem.getCategoryMain(),
 				foundItem.getFoundAt().minusDays(MAX_MATCH_DAYS),
@@ -160,6 +155,7 @@ public class ItemMatchService {
 		}
 
 		if (ruleEligible.isEmpty()) {
+			replaceMatchesForFoundItem(foundItem.getFoundId(), List.of());
 			log.info("습득물 매칭 완료: foundId={}, 후보=0건", foundItem.getFoundId());
 			return;
 		}
@@ -177,13 +173,7 @@ public class ItemMatchService {
 
 		matches.sort((a, b) -> b.displayScore().compareTo(a.displayScore()));
 		List<ItemMatch> topMatches = matches.stream().limit(MAX_CANDIDATES).toList();
-
-		for (ItemMatch match : topMatches) {
-			if (!itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(
-					match.getLostItem().getLostId(), foundItem.getFoundId())) {
-				itemMatchRepository.save(match);
-			}
-		}
+		replaceMatchesForFoundItem(foundItem.getFoundId(), topMatches);
 
 		log.info("습득물 매칭 완료: foundId={}, 후보={}건", foundItem.getFoundId(), topMatches.size());
 	}
@@ -196,8 +186,19 @@ public class ItemMatchService {
 
 	@Transactional
 	public List<MatchCandidateView> getMatchesForLostItem(Long lostId) {
+		return getMatchesForLostItem(lostId, true);
+	}
+
+	@Transactional(readOnly = true)
+	public List<MatchCandidateView> getMatchesForLostItemPreview(Long lostId) {
+		return getMatchesForLostItem(lostId, false);
+	}
+
+	private List<MatchCandidateView> getMatchesForLostItem(Long lostId, boolean markAsRead) {
 		List<ItemMatch> matches = itemMatchRepository.findByLostIdWithFoundItem(lostId);
-		matches.forEach(ItemMatch::markAsRead);
+		if (markAsRead) {
+			matches.forEach(ItemMatch::markAsRead);
+		}
 
 		return matches.stream()
 				.limit(MAX_CANDIDATES)
@@ -310,6 +311,11 @@ public class ItemMatchService {
 		if (candidates.isEmpty()) {
 			return SemanticFetchResult.empty();
 		}
+		Instant now = Instant.now();
+		if (now.isBefore(semanticUnavailableUntil)) {
+			log.debug("시맨틱 매칭 클라이언트 cooldown 중, rule-only 폴백 사용: until={}", semanticUnavailableUntil);
+			return SemanticFetchResult.empty();
+		}
 		try {
 			SemanticMatchResponse response = semanticMatchClient.score(new SemanticMatchRequest(query, candidates));
 			List<SemanticMatchResult> results = response.results() != null ? response.results() : List.of();
@@ -317,9 +323,53 @@ public class ItemMatchService {
 					.collect(Collectors.toMap(SemanticMatchResult::candidateId, r -> r));
 			return new SemanticFetchResult(response.model(), resultMap);
 		} catch (Exception e) {
+			semanticUnavailableUntil = now.plus(SEMANTIC_FAILURE_COOLDOWN);
 			log.warn("시맨틱 매칭 클라이언트 호출 실패, rule-only 폴백 사용: {}", e.getMessage());
 			return SemanticFetchResult.empty();
 		}
+	}
+
+	private void replaceMatchesForLostItem(Long lostId, List<ItemMatch> topMatches) {
+		for (ItemMatch match : topMatches) {
+			saveOrRefreshMatch(match);
+		}
+
+		if (topMatches.isEmpty()) {
+			itemMatchRepository.deleteByLostItemLostId(lostId);
+			return;
+		}
+
+		List<Long> topFoundIds = topMatches.stream()
+				.map(match -> match.getFoundItem().getFoundId())
+				.toList();
+		itemMatchRepository.deleteByLostItemLostIdAndFoundItemFoundIdNotIn(lostId, topFoundIds);
+	}
+
+	private void replaceMatchesForFoundItem(Long foundId, List<ItemMatch> topMatches) {
+		for (ItemMatch match : topMatches) {
+			saveOrRefreshMatch(match);
+		}
+
+		if (topMatches.isEmpty()) {
+			itemMatchRepository.deleteByFoundItemFoundId(foundId);
+			return;
+		}
+
+		List<Long> topLostIds = topMatches.stream()
+				.map(match -> match.getLostItem().getLostId())
+				.toList();
+		itemMatchRepository.deleteByFoundItemFoundIdAndLostItemLostIdNotIn(foundId, topLostIds);
+	}
+
+	private void saveOrRefreshMatch(ItemMatch refreshed) {
+		itemMatchRepository
+				.findByLostItemLostIdAndFoundItemFoundId(
+						refreshed.getLostItem().getLostId(),
+						refreshed.getFoundItem().getFoundId())
+				.ifPresentOrElse(
+						existing -> existing.refreshScoreFrom(refreshed),
+						() -> itemMatchRepository.save(refreshed)
+				);
 	}
 
 	private ItemMatch buildMatch(LostItem lost, FoundItem found, MatchScoreResult ruleScore,
