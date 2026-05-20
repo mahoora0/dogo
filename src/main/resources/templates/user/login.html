@@ -6,68 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>로그인 - 두고내림</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* SNS 로그인 전체 컨테이너 */
-    .sns-login-container {
-      display: flex;
-      justify-content: center;
-      gap: 24px;
-      width: 100%;
-      box-sizing: border-box;
-      margin-top: 10px;
-    }
-
-    /* SNS 버튼 공통 스타일 (원형) */
-    .sns-button {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      text-decoration: none;
-      flex: none;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-    }
-
-    .sns-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-    }
-
-    .sns-button:active {
-      transform: translateY(-1px);
-    }
-
-    /* 개별 로고 이미지 스타일 */
-    .sns-logo {
-      width: 24px;
-      height: 24px;
-      object-fit: contain;
-    }
-
-    /* 기업별 브랜드 컬러 매칭 */
-    .google-btn {
-      background-color: #FFFFFF;
-      border: 1px solid #f1f3f5 !important;
-    }
-
-    .naver-btn {
-      background-color: #03C75A;
-    }
-
-    .kakao-btn {
-      background-color: #FEE500;
-    }
-
-    /* 이미지 느낌의 둥근 모서리 */
-    .rounded-custom {
-      border-radius: 12px;
-    }
-  </style>
+  <link rel="stylesheet" th:href="@{/css/user-style.css}">
 </head>
 
 <body class="bg-[#F8F9FA] flex items-center justify-center min-h-screen p-4">
