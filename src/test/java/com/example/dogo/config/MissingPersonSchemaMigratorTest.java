@@ -41,7 +41,7 @@ class MissingPersonSchemaMigratorTest {
 				"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MISSING_PERSON_REPORT'",
 				String.class
 		);
-		assertThat(columns).contains("SOURCE_TYPE", "EXTERNAL_ID", "API_PROVIDER", "RAW_PAYLOAD", "SYNCED_AT");
+		assertThat(columns).contains("SOURCE_TYPE", "EXTERNAL_ID", "API_PROVIDER", "RAW_PAYLOAD", "SYNCED_AT", "PERSON_NAME", "GENDER");
 	}
 
 	private DataSource dataSource() {

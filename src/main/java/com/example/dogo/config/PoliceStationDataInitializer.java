@@ -25,7 +25,7 @@ public class PoliceStationDataInitializer implements CommandLineRunner {
         // 이미 데이터가 있다면 삭제하고 재입력 (깨진 데이터 복구용)
         if (policeStationRepository.count() > 0) {
             log.info("Existing police station data found. Clearing for re-import with correct encoding...");
-            policeStationRepository.deleteAll();
+            policeStationRepository.deleteAllInBatch();
         }
 
         try {
@@ -45,7 +45,7 @@ public class PoliceStationDataInitializer implements CommandLineRunner {
                 else is = new ClassPathResource("data/police_station.csv").getInputStream();
                 
                 try {
-                    policeStationRepository.deleteAll();
+                    policeStationRepository.deleteAllInBatch();
                     readAndSaveStations(is, enc);
                     
                     // 읽어온 데이터가 깨졌는지 샘플 검사

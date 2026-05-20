@@ -53,6 +53,8 @@ class MissingPersonServiceTest {
 				"MISSING_ALERT",
 				"case-20260518-001",
 				"{\"id\":\"case-20260518-001\"}",
+				"Hong Gil-dong",
+				"male",
 				13,
 				"Korea",
 				LocalDateTime.of(2026, 5, 18, 9, 30),
@@ -70,6 +72,8 @@ class MissingPersonServiceTest {
 		assertThat(report.getSourceLabel()).isEqualTo("공공데이터");
 		assertThat(report.getApiProvider()).isEqualTo("MISSING_ALERT");
 		assertThat(report.getExternalId()).isEqualTo("case-20260518-001");
+		assertThat(report.getPersonName()).isEqualTo("Hong Gil-dong");
+		assertThat(report.getGender()).isEqualTo("male");
 		assertThat(report.getRawPayload()).contains("case-20260518-001");
 		assertThat(report.getSyncedAt()).isNotNull();
 	}

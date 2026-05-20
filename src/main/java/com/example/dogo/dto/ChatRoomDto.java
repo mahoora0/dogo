@@ -18,4 +18,6 @@ public class ChatRoomDto {
     private Integer unreadCount;
     private String itemType; // FOUND, LOST
     private Long itemId;
+    private String itemPlace;
+    private String itemDate;
 }

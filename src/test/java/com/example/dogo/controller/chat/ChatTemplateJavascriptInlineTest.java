@@ -84,8 +84,8 @@ class ChatTemplateJavascriptInlineTest {
         String layout = Files.readString(LAYOUT);
 
         assertThat(chat).contains("room.unreadCount > 99 ? '99+' : room.unreadCount");
-        assertThat(layout).contains("unreadChatCount > 99 ? '99+' : unreadChatCount");
-        assertThat(layout).contains("th:if=\"${unreadChatCount != null && unreadChatCount > 0}\"");
-        assertThat(layout).contains("class=\"notification-badge chat-notification-badge\"");
+        assertThat(layout).contains("unreadChatCount != null && unreadChatCount > 99 ? '99+' : (unreadChatCount ?: 0)");
+        assertThat(layout).contains("th:style=\"${currentUri != '/chat' && unreadChatCount != null && unreadChatCount > 0 ? '' : 'display: none;'}\"");
+        assertThat(layout).contains("id=\"global-chat-badge\"");
     }
 }

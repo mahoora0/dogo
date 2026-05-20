@@ -123,6 +123,8 @@ public class MissingAlertSyncService {
 					API_PROVIDER,
 					externalId,
 					rawPayload(alert),
+					alert.name(),
+					alert.sex(),
 					parseAge(firstText(alert.ageNow(), alert.age())),
 					"대한민국",
 					parseOccurredAt(alert.occurrenceDate(), requestedDate),

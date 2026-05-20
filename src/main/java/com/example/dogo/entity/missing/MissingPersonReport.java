@@ -47,6 +47,12 @@ public class MissingPersonReport {
 	@Column(name = "SYNCED_AT")
 	private LocalDateTime syncedAt;
 
+	@Column(name = "PERSON_NAME")
+	private String personName;
+
+	@Column(name = "GENDER")
+	private String gender;
+
 	@Column(name = "AGE", nullable = false)
 	private Integer age;
 
@@ -146,12 +152,52 @@ public class MissingPersonReport {
 			String hairStyle,
 			String clothing
 	) {
+		return fromPublicApi(
+				apiProvider,
+				externalId,
+				rawPayload,
+				null,
+				null,
+				age,
+				nationality,
+				occurredAt,
+				occurredPlace,
+				heightCm,
+				weightKg,
+				bodyType,
+				faceShape,
+				hairColor,
+				hairStyle,
+				clothing
+		);
+	}
+
+	public static MissingPersonReport fromPublicApi(
+			String apiProvider,
+			String externalId,
+			String rawPayload,
+			String personName,
+			String gender,
+			Integer age,
+			String nationality,
+			LocalDateTime occurredAt,
+			String occurredPlace,
+			Integer heightCm,
+			BigDecimal weightKg,
+			String bodyType,
+			String faceShape,
+			String hairColor,
+			String hairStyle,
+			String clothing
+	) {
 		MissingPersonReport report = new MissingPersonReport();
 		report.sourceType = "PUBLIC_API";
 		report.apiProvider = apiProvider;
 		report.externalId = externalId;
 		report.rawPayload = rawPayload;
 		report.syncedAt = LocalDateTime.now();
+		report.personName = personName;
+		report.gender = gender;
 		report.age = age;
 		report.nationality = nationality;
 		report.occurredAt = occurredAt;

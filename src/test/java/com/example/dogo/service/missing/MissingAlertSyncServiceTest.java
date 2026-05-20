@@ -31,6 +31,8 @@ class MissingAlertSyncServiceTest {
 		assertThat(repository.savedReports).hasSize(1);
 		assertThat(repository.savedReports.get(0).getSourceType()).isEqualTo("PUBLIC_API");
 		assertThat(repository.savedReports.get(0).getApiProvider()).isEqualTo("SAFE182_AMBER");
+		assertThat(repository.savedReports.get(0).getPersonName()).isEqualTo("홍길동");
+		assertThat(repository.savedReports.get(0).getGender()).isEqualTo("남자");
 	}
 
 	@Test

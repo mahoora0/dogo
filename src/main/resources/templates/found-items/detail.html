@@ -181,7 +181,7 @@
                class="w-full rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
             채팅 신청이 불가능합니다.
           </div>
-          <form th:action="@{/chat/room}" method="post">
+          <form th:if="${!isOwner && foundItem.userNo != null}" th:action="@{/chat/room}" method="post">
             <input type="hidden" name="itemId" th:value="${foundItem.id}">
             <input type="hidden" name="itemType" value="FOUND">
             <button type="submit"
