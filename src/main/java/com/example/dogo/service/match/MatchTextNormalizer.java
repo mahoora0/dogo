@@ -43,6 +43,26 @@ public class MatchTextNormalizer {
 		COLOR_SYNONYMS.put("brown", "갈색");
 		COLOR_SYNONYMS.put("베이지", "베이지");
 		COLOR_SYNONYMS.put("beige", "베이지");
+		COLOR_SYNONYMS.put("초록색", "초록");
+		COLOR_SYNONYMS.put("초록", "초록");
+		COLOR_SYNONYMS.put("그린", "초록");
+		COLOR_SYNONYMS.put("green", "초록");
+		COLOR_SYNONYMS.put("노란색", "노랑");
+		COLOR_SYNONYMS.put("노랑", "노랑");
+		COLOR_SYNONYMS.put("노란", "노랑");
+		COLOR_SYNONYMS.put("옐로우", "노랑");
+		COLOR_SYNONYMS.put("옐로", "노랑");
+		COLOR_SYNONYMS.put("yellow", "노랑");
+		COLOR_SYNONYMS.put("분홍색", "분홍");
+		COLOR_SYNONYMS.put("분홍", "분홍");
+		COLOR_SYNONYMS.put("핑크", "분홍");
+		COLOR_SYNONYMS.put("pink", "분홍");
+		COLOR_SYNONYMS.put("은색", "은색");
+		COLOR_SYNONYMS.put("실버", "은색");
+		COLOR_SYNONYMS.put("silver", "은색");
+		COLOR_SYNONYMS.put("금색", "금색");
+		COLOR_SYNONYMS.put("골드", "금색");
+		COLOR_SYNONYMS.put("gold", "금색");
 	}
 
 	public String normalize(String text) {
@@ -73,6 +93,23 @@ public class MatchTextNormalizer {
 			}
 		}
 		return Optional.empty();
+	}
+
+	public String displayColorName(String normalizedColor) {
+		return switch (normalizedColor) {
+			case "검정" -> "블랙(검정)";
+			case "흰색" -> "화이트(흰색)";
+			case "빨강" -> "레드(빨강)";
+			case "파랑" -> "블루(파랑)";
+			case "초록" -> "그린(초록)";
+			case "노랑" -> "옐로우(노랑)";
+			case "분홍" -> "핑크(분홍)";
+			case "갈색" -> "브라운(갈색)";
+			case "회색" -> "그레이(회색)";
+			case "은색" -> "실버(은색)";
+			case "금색" -> "골드(금색)";
+			default -> normalizedColor;
+		};
 	}
 
 	private String[] valuesWithText(String... values) {

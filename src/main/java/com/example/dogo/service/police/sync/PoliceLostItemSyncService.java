@@ -6,7 +6,7 @@ import com.example.dogo.dto.police.PoliceLostItemResponse;
 import com.example.dogo.dto.police.PoliceLostItemSyncResult;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.repository.item.LostItemRepository;
-import com.example.dogo.service.match.embedding.LostItemEmbeddingRequestedEvent;
+import com.example.dogo.service.match.LostItemMatchRequestedEvent;
 import com.example.dogo.service.police.client.PoliceLostItemClient;
 import com.example.dogo.service.police.mapper.PoliceLostItemMapper;
 import org.slf4j.Logger;
@@ -140,7 +140,7 @@ public class PoliceLostItemSyncService {
 			LostItem lostItem = mapper.toLostItem(response, detail.orElse(null));
 			LostItem savedItem = lostItemRepository.save(lostItem);
 			detail.ifPresent(detailResponse -> imageService.saveImageIfPresent(savedItem, detailResponse));
-			eventPublisher.publishEvent(new LostItemEmbeddingRequestedEvent(savedItem.getLostId()));
+			eventPublisher.publishEvent(new LostItemMatchRequestedEvent(savedItem.getLostId()));
 			return true;
 		} catch (DataIntegrityViolationException exception) {
 			log.debug("이미 저장된 경찰청 분실물입니다. atcId={}", atcId, exception);

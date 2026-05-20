@@ -11,7 +11,7 @@ import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.match.ItemMatchService;
 import com.example.dogo.service.match.LostItemMatchRequestedEvent;
-import com.example.dogo.service.match.embedding.LostItemEmbeddingRequestedEvent;
+import com.example.dogo.service.match.MatchTextNormalizer;
 import com.example.dogo.service.police.sync.PoliceLostItemDetailEnrichmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,6 +75,7 @@ class LostItemServiceTest {
 				policeLostItemDetailEnrichmentService,
 				itemMatchService,
 				eventPublisher,
+				new MatchTextNormalizer(),
 				uploadDir.toString()
 		);
 	}
@@ -144,8 +145,6 @@ class LostItemServiceTest {
 		assertThat(captor.getValue().getStatus()).isEqualTo("WAITING");
 		verify(lostItemImageRepository, never()).save(any());
 
-		verify(eventPublisher).publishEvent((Object) argThat(event ->
-				event instanceof LostItemEmbeddingRequestedEvent e && e.lostId().equals(10L)));
 		verify(eventPublisher).publishEvent((Object) argThat(event ->
 				event instanceof LostItemMatchRequestedEvent e && e.lostId().equals(10L)));
 	}

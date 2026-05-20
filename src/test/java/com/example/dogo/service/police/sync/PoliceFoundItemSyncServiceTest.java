@@ -7,7 +7,7 @@ import com.example.dogo.dto.police.PoliceFoundItemSyncResult;
 import com.example.dogo.dto.police.PoliceRegionCode;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.repository.item.FoundItemRepository;
-import com.example.dogo.service.match.embedding.FoundItemEmbeddingRequestedEvent;
+import com.example.dogo.service.match.FoundItemMatchRequestedEvent;
 import com.example.dogo.service.police.client.PoliceCommonCodeClient;
 import com.example.dogo.service.police.client.PoliceFoundItemClient;
 import com.example.dogo.service.police.mapper.PoliceFoundItemMapper;
@@ -105,7 +105,7 @@ class PoliceFoundItemSyncServiceTest {
 
 		verify(imageService).saveImageIfPresent(captor.getValue(), detail("F202605110000001", "1"));
 		verify(eventPublisher).publishEvent((Object) argThat(event ->
-				event instanceof FoundItemEmbeddingRequestedEvent e && e.foundId().equals(100L)));
+				event instanceof FoundItemMatchRequestedEvent e && e.foundId().equals(100L)));
 	}
 
 	@Test
