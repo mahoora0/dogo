@@ -12,6 +12,12 @@ import java.util.List;
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     List<ChatMessage> findByChatRoomOrderByCreatedAtAsc(ChatRoom chatRoom);
     ChatMessage findTopByChatRoomOrderByCreatedAtDesc(ChatRoom chatRoom);
+    int countByChatRoomAndSenderNotAndReadFalse(ChatRoom chatRoom, User sender);
+    int countByChatRoomInAndSenderNotAndReadFalse(List<ChatRoom> chatRooms, User sender);
+
+    @Modifying
+    @Query("UPDATE ChatMessage m SET m.read = true WHERE m.chatRoom = :chatRoom AND m.sender <> :reader AND m.read = false")
+    void markRoomMessagesAsRead(@Param("chatRoom") ChatRoom chatRoom, @Param("reader") User reader);
 
     @Modifying
     @Query("DELETE FROM ChatMessage m WHERE m.chatRoom IN (SELECT cr FROM ChatRoom cr WHERE cr.inquirer = :user OR cr.owner = :user)")

@@ -1,0 +1,693 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+body, html {
+    height: 100%;
+    background-color: #0f172a;
+    color: #333;
+    overflow: hidden;
+}
+
+.header {
+    height: 56px;
+    background: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+    position: relative;
+}
+
+.logo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo span {
+    background: linear-gradient(135deg, #8b5cf6, #d946ef);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #8b5cf6;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #7c3aed;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+
+.main-container {
+    display: flex !important;
+    height: calc(100vh - 56px);
+    width: 100%;
+}
+
+.side-panel {
+    width: 360px;
+    min-width: 360px;
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+    z-index: 5;
+}
+
+.panel-header {
+    padding: 24px 20px 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.side-panel h3 {
+    font-size: 1.2rem;
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.panel-header p {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.scroll-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.divider {
+    border: 0;
+    height: 1px;
+    background: #f1f5f9;
+    margin: 8px 0;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.section-group {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.section-group h4 {
+    font-size: 0.85rem;
+    color: #334155;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.input-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.side-panel input[type="text"], .side-panel textarea, .side-panel select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background-color: #fff;
+    color: #0f172a;
+    transition: all 0.2s ease;
+}
+
+.side-panel input[type="text"]:focus, .side-panel textarea:focus, .side-panel select:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.grid-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.grid-inputs label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #64748b;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+.grid-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-action {
+    padding: 12px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.btn-secondary {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: #64748b;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.btn-delete-action {
+    width: 100%;
+    padding: 11px;
+    background: #fff1f2;
+    border: 1px solid #ffe4e6;
+    color: #e11d48;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-action:hover {
+    background: #ffe4e6;
+    color: #be123c;
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #475569;
+    margin-top: 14px;
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 8px;
+}
+
+.header-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    user-select: none;
+    cursor: pointer;
+    margin-right: 8px; /* 저장 및 공유 버튼과의 깔끔한 여백 */
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: .3s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+}
+
+input:checked + .slider {
+    background-color: #8b5cf6;
+}
+
+input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+.slider.round {
+    border-radius: 20px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.canvas-container {
+    flex: 1;
+    background: #1e293b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+    padding: 40px;
+}
+
+.canvas {
+    width: 500px;
+    height: 707px;
+    background: white;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    position: relative;
+    border-radius: 4px;
+}
+
+.element {
+    position: absolute;
+    border: 1px dashed #cbd5e1;
+    cursor: move;
+    user-select: none;
+    background: #fff;
+    overflow: visible;
+    transition: border-color 0.15s ease;
+}
+
+.element-content {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+    position: relative; /* absolute 포지션 자식 요소들의 확실한 overflow: hidden 클리핑 보장 */
+}
+
+/* 타이틀 디자인 포지션 */
+.static-title {
+    width: 100%;
+    text-align: center;
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: -1.5px;
+    transition: all 0.2s ease-in-out;
+}
+
+.static-title.theme-red-bg {
+    top: 0;
+    height: 80px;
+    font-size: 38px;
+    background-color: #e11d48;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.static-title.theme-white-bg {
+    top: 15px;
+    height: auto;
+    font-size: 34px;
+    background-color: transparent;
+    color: #e11d48;
+    border-bottom: 4px double #e11d48;
+    padding-bottom: 4px;
+    width: calc(100% - 40px);
+    left: 20px;
+}
+
+.text-box-profile {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #fff;
+}
+
+.grid-profile {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.profile-item {
+    font-size: 13.5px;
+    color: #334155;
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 4px;
+}
+
+.profile-item b {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.info-details-box {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+}
+
+.loc-title, .feature-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #e11d48;
+}
+
+.loc-normal-text {
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.feature-text {
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.45;
+    font-weight: 500;
+}
+
+.reward-only-box {
+    padding: 6px 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fff5f5;
+    border: 2px dashed #f87171;
+    border-radius: 8px;
+    height: 100%;
+}
+
+.reward-line {
+    font-size: 19px;
+    font-weight: 900;
+    color: #dc2626;
+}
+
+.contact-only-box {
+    padding: 4px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f0f9ff;
+    border: 2px solid #2563eb;
+    border-radius: 8px;
+    height: 100%;
+}
+
+.contact-line {
+    font-size: 18px;
+    font-weight: 950;
+    color: #1d4ed8;
+}
+
+.image-placeholder {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    text-align: center;
+    font-weight: 600;
+}
+
+.element.selected {
+    border: 2px solid #2563eb !important;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.15);
+    z-index: 99;
+}
+
+.element.selected .resize-handle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background-color: #2563eb;
+    border: 2.5px solid #ffffff;
+    border-radius: 50%;
+    right: -7px;
+    bottom: -7px;
+    cursor: se-resize;
+    z-index: 106;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s ease, background-color 0.1s ease;
+}
+
+.element.selected .resize-handle:hover {
+    transform: scale(1.3);
+    background-color: #1d4ed8;
+}
+
+.context-menu {
+    display: none;
+    position: absolute;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 6px 0;
+    z-index: 1000;
+    min-width: 160px;
+}
+
+.context-menu div {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    color: #e11d48;
+    cursor: pointer;
+}
+
+.context-menu div:hover {
+    background: #fff1f2;
+}
+
+/* 커스텀 프로필 레드바 & 실종 일시 디자인 */
+.profile-red-bar {
+    background-color: #e11d48;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 19px;
+    font-weight: 900;
+    text-align: center;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);
+    height: 100%;
+    padding: 0 16px;
+    word-break: keep-all;
+    line-height: 1.35;
+}
+
+.info-row {
+    font-size: 14px;
+    color: #334155;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.info-row b {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+/* 요소 상단 우측 X 삭제 버튼 디자인 */
+.element.selected .delete-btn {
+    display: flex;
+}
+
+.delete-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 22px;
+    height: 22px;
+    background-color: #ef4444;
+    color: #ffffff;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+    z-index: 105;
+    transition: background-color 0.1s ease, transform 0.1s ease;
+    user-select: none;
+}
+
+.delete-btn:hover {
+    background-color: #dc2626;
+    transform: scale(1.2);
+}
+
+/* 사진 영역 마우스 호버 시 등록/수정 오버레이 디자인 */
+.image-edit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.4); /* 소프트 반투명 다크 슬레이트 마스크 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 95;
+    pointer-events: none; /* 클릭 이벤트가 캔버스 드래그/선택으로 무사히 관통되도록 함 */
+    border-radius: inherit;
+}
+
+/* 마우스 호버(hover) 시에만 오버레이 노출 (사진이 등록되지 않았을 때만 노출) */
+.element:hover .element-content.image-placeholder + .image-edit-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 실제 클릭할 사진 등록/변경 버튼 디자인 */
+.btn-image-edit-overlay {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+    pointer-events: auto; /* 버튼 영역만 클릭 상호작용 가능 */
+}
+
+.btn-image-edit-overlay:hover {
+    background: #1d4ed8;
+    transform: scale(1.05);
+}
+
+/* 실제 클릭할 사진 삭제 버튼 디자인 */
+.btn-image-delete-overlay {
+    background: #ef4444; /* 현대적인 소프트 레드 */
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+    pointer-events: auto; /* 버튼 영역만 클릭 상호작용 가능 */
+}
+
+.btn-image-delete-overlay:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+/* 사진 클릭 시 나타나는 플로팅 위치/크기 조절 패널 */
+.image-floating-editor {
+    position: absolute;
+    top: 100%; /* 사진 영역 바로 밑바닥 경계선에서 시작 */
+    margin-top: 12px; /* 사진 영역과의 깔끔한 12px 여백 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 250px;
+    background: rgba(15, 23, 42, 0.95); /* 세련된 다크 테마 */
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    z-index: 200; /* 크기 조절 핸들보다 앞쪽에 배치 */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #f8fafc;
+    user-select: none;
+    pointer-events: auto;
+}
+
+.image-floating-editor button {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.image-floating-editor button:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: scale(1.05);
+}
+
+.image-floating-editor input[type="range"] {
+    accent-color: #38bdf8;
+}

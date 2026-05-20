@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -59,7 +60,11 @@ public class ChatController {
 
     @GetMapping("/chat/room/{roomId}/messages")
     @ResponseBody
-    public List<ChatMessageDto> getMessages(@PathVariable Long roomId) {
+    public List<ChatMessageDto> getMessages(@PathVariable Long roomId,
+                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails != null) {
+            chatService.markRoomMessagesAsRead(roomId, userDetails.getUser());
+        }
         return chatService.getChatMessages(roomId);
     }
 
@@ -80,6 +85,20 @@ public class ChatController {
                 .clientMessageId(message.getClientMessageId())
                 .build();
         ChatMessageDto savedMessage = chatService.saveMessage(request);
+        publishMessage(savedMessage);
+        return savedMessage;
+    }
+
+    @PostMapping("/chat/room/{roomId}/upload")
+    @ResponseBody
+    public ChatMessageDto uploadFile(@PathVariable Long roomId,
+                                     @RequestParam("file") MultipartFile file,
+                                     @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new ChatUnavailableException("로그인 후 이용할 수 있습니다.");
+        }
+
+        ChatMessageDto savedMessage = chatService.saveFileMessage(roomId, file, userDetails.getUser());
         publishMessage(savedMessage);
         return savedMessage;
     }

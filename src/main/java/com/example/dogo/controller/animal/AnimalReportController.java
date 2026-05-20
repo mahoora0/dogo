@@ -135,6 +135,12 @@ public class AnimalReportController {
 		return "animal-reports/list";
 	}
 
+	@GetMapping("/lost-report")
+	public String lostReport(Model model) {
+		model.addAttribute("currentUri", "/lost-report");
+		return "lost-report/index";
+	}
+
 	@GetMapping("/animal-reports/new")
 	public String createForm(Model model) {
 		model.addAttribute("request", new AnimalReportCreateRequest());

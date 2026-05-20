@@ -3,7 +3,10 @@ package com.example.dogo.controller.missing;
 import com.example.dogo.dto.missing.MissingPersonCreateRequest;
 import com.example.dogo.security.CustomUserDetails;
 import com.example.dogo.service.missing.MissingPersonService;
+import com.example.dogo.service.missing.sync.Safe182MissingPersonSyncService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -23,10 +26,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @RequiredArgsConstructor
 public class MissingPersonController {
 
+	private static final Logger log = LoggerFactory.getLogger(MissingPersonController.class);
 	private static final int MAX_PAGE_SIZE = 30;
 	private static final java.util.Set<String> SORT_FIELDS = java.util.Set.of("regdate", "occurredAt");
 
 	private final MissingPersonService missingPersonService;
+	private final Safe182MissingPersonSyncService safe182MissingPersonSyncService;
 
 	@GetMapping("/missing-persons")
 	public String list(
@@ -44,6 +49,8 @@ public class MissingPersonController {
 		Sort sort = Sort.by(direction, safeField).and(Sort.by(Sort.Direction.DESC, "reportId"));
 		int safePage = Math.max(page, 0);
 		int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+
+		syncSafe182Search(keyword);
 
 		Page<?> reportPage = missingPersonService.search(keyword, status, sourceType, PageRequest.of(safePage, safeSize, sort));
 		if (safePage > 0 && safePage >= reportPage.getTotalPages() && reportPage.getTotalPages() > 0) {
@@ -92,6 +99,14 @@ public class MissingPersonController {
 		model.addAttribute("report", missingPersonService.getDetail(id));
 		model.addAttribute("currentUri", "/missing-persons");
 		return "missing-persons/detail";
+	}
+
+	private void syncSafe182Search(String keyword) {
+		try {
+			safe182MissingPersonSyncService.syncSearch(keyword);
+		} catch (RuntimeException exception) {
+			log.warn("Safe182 missing person search sync failed.", exception);
+		}
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)

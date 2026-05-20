@@ -3,9 +3,7 @@
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
     <th:block th:fragment="content">
         <link rel="stylesheet" th:href="@{/css/chat.css}">
-        <!-- SockJS and STOMP -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+        <!-- SockJS and STOMP are now loaded globally in base.html -->
 
         <div class="chat-page">
         <div class="chat-wrapper">
@@ -30,7 +28,7 @@
                                 <div class="chat-room-last-msg" th:text="${room.lastMessage}">마지막 메시지 내용</div>
                                 <div th:if="${room.unreadCount != null && room.unreadCount > 0}" 
                                      class="chat-room-unread" 
-                                     th:text="${room.unreadCount}">2</div>
+                                     th:text="${room.unreadCount > 99 ? '99+' : room.unreadCount}">2</div>
                             </div>
                         </div>
                     </div>
@@ -64,8 +62,9 @@
 
                 <div id="input-area" class="chat-input-area hidden">
                     <div class="chat-input-container">
+                        <input type="file" id="file-input" style="display:none" onchange="uploadFile(this)">
                         <input type="text" id="message-input" class="chat-input" placeholder="메시지를 입력하세요..." onkeypress="if(event.keyCode==13) sendMessage()">
-                        <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg></button>
+                        <button onclick="triggerFileSelect()" class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg></button>
                         <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
                         <button onclick="sendMessage()" class="chat-send-btn">전송</button>
                     </div>
@@ -77,11 +76,11 @@
                 <div class="chat-panel-title-row">
                     <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
                     <h4 class="text-sm font-bold">습득물 정보</h4>
-                    <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
+                    <button id="item-detail-btn" class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
                 </div>
 
                 <div class="item-card">
-                    <img id="item-info-img" src="" class="item-img" alt="">
+                    <img id="item-info-img" th:src="@{/images/noImageSize.png}" class="item-img" alt="">
                     <div class="item-details">
                         <div class="chat-item-title-row">
                             <h4 id="item-info-title" class="item-title">아이템 제목</h4>
@@ -97,14 +96,131 @@
                 <div class="mt-4">
                     <h5 class="text-xs font-bold text-slate-400 mb-2">대화 중인 사용자</h5>
                     <div class="participant-info mb-4">
-                        <img id="participant-img" src="" class="participant-avatar" alt="">
+                        <img id="participant-img" th:src="@{/images/logoNoName.png}" class="participant-avatar" alt="">
                         <div>
                             <div id="participant-name" class="font-bold text-sm">상대방 이름</div>
                             <div class="text-[10px] text-slate-400">습득자</div>
                         </div>
-                        <button class="btn-outline ml-auto w-auto px-4">프로필 보기</button>
+                        <button id="view-profile-btn" class="btn-outline ml-auto w-auto px-4">프로필 보기</button>
                     </div>
                     <button class="btn-primary-large">대화 계속하기</button>
+                </div>
+            </div>
+        </div>
+        <!-- Profile Modal -->
+        <div id="profile-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+            <div class="bg-white w-full max-w-[400px] rounded-[24px] overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300 p-8 flex flex-col items-center relative">
+                <!-- Close button -->
+                <button onclick="closeProfileModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                
+                <!-- Profile Header (Avatar) -->
+                <div class="relative mb-4 mt-4">
+                    <img id="profile-modal-img" src="/images/logoNoName.png" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-sm" alt="Avatar">
+                </div>
+                
+                <!-- User Details -->
+                <h3 id="profile-modal-nickname" class="text-xl font-bold text-slate-800 mb-1">상대방 닉네임</h3>
+                <span id="profile-modal-regdate" class="text-xs text-slate-400 font-semibold mb-6">가입일: 2026.05.20</span>
+                
+                <!-- Stats Section -->
+                <div class="grid grid-cols-2 gap-4 w-full border-t border-b border-slate-100 py-4 mb-6">
+                    <div class="text-center border-r border-slate-100">
+                        <span class="block text-xs font-bold text-slate-400">분실물 등록</span>
+                        <span id="profile-modal-lost-count" class="text-lg font-extrabold text-slate-700">0건</span>
+                    </div>
+                    <div class="text-center">
+                        <span class="block text-xs font-bold text-slate-400">습득물 등록</span>
+                        <span id="profile-modal-found-count" class="text-lg font-extrabold text-slate-700">0건</span>
+                    </div>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="w-full space-y-3 mb-4 text-sm font-medium text-slate-600">
+                    <div class="flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span id="profile-modal-email" class="truncate">이메일 정보</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        <span id="profile-modal-phone">연락처 정보</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item Detail Modal -->
+        <div id="item-detail-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+            <div class="bg-white w-full max-w-[480px] rounded-[24px] overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col relative">
+                <!-- Close button -->
+                <button onclick="closeItemDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors z-10 bg-white/80 p-1.5 rounded-full backdrop-blur-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <!-- Item Image -->
+                <div class="relative w-full h-[200px] bg-slate-100 flex items-center justify-center overflow-hidden">
+                    <img id="item-modal-img" src="/images/noImageSize.png" class="w-full h-full object-cover" alt="Item Image">
+                    <div id="item-modal-status-badge" class="absolute bottom-4 left-4 bg-teal-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-md">
+                        보관중
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="p-6 flex-1 overflow-y-auto max-h-[350px]">
+                    <!-- Title -->
+                    <h3 id="item-modal-title" class="text-xl font-bold text-slate-800 mb-4 truncate">습득물 제목</h3>
+
+                    <!-- Details Grid -->
+                    <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                        <div class="bg-slate-50 p-3 rounded-xl">
+                            <span class="block text-xs text-slate-400 font-semibold mb-0.5">물품명</span>
+                            <span id="item-modal-item-name" class="font-bold text-slate-700">지갑</span>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl">
+                            <span class="block text-xs text-slate-400 font-semibold mb-0.5">카테고리</span>
+                            <span id="item-modal-category" class="font-bold text-slate-700">현금/지갑 > 지갑</span>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl">
+                            <span class="block text-xs text-slate-400 font-semibold mb-0.5">색상</span>
+                            <span id="item-modal-color" class="font-bold text-slate-700">검정색</span>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl">
+                            <span class="block text-xs text-slate-400 font-semibold mb-0.5">발생일시</span>
+                            <span id="item-modal-date" class="font-bold text-slate-700">2026.05.20</span>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl col-span-2">
+                            <span class="block text-xs text-slate-400 font-semibold mb-0.5">발생장소</span>
+                            <span id="item-modal-place" class="font-bold text-slate-700">홍대입구역 2번 출구</span>
+                        </div>
+                    </div>
+
+                    <!-- Description/Content -->
+                    <div class="border-t border-slate-100 pt-4">
+                        <span class="block text-xs text-slate-400 font-semibold mb-2">상세내용</span>
+                        <div id="item-modal-content" class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl max-h-[120px] overflow-y-auto whitespace-pre-wrap">
+                            상세내용이 표시됩니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer with navigation link -->
+                <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3">
+                    <button onclick="closeItemDetailModal()" class="px-4 py-2 text-xs text-slate-600 bg-slate-200 hover:bg-slate-300 rounded-xl font-bold transition-all">닫기</button>
+                    <a id="item-modal-link" href="#" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 text-xs rounded-xl font-bold transition-all shadow-sm flex items-center gap-1.5">
+                        전체 게시글 보기
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
@@ -142,7 +258,13 @@
                 // UI Update
                 document.querySelectorAll('.chat-room-item').forEach(el => el.classList.remove('active'));
                 const selectedEl = Array.from(document.querySelectorAll('.chat-room-item')).find(el => el.onclick.toString().includes(roomId));
-                if (selectedEl) selectedEl.classList.add('active');
+                if (selectedEl) {
+                    selectedEl.classList.add('active');
+                    const unreadBadge = selectedEl.querySelector('.chat-room-unread');
+                    if (unreadBadge) {
+                        unreadBadge.style.display = 'none';
+                    }
+                }
 
                 document.getElementById('chat-header').classList.remove('hidden');
                 document.getElementById('input-area').classList.remove('hidden');
@@ -150,9 +272,26 @@
                 
                 document.getElementById('current-room-name').innerText = room.itemTitle;
                 document.getElementById('item-info-title').innerText = room.itemTitle;
-                document.getElementById('item-info-img').src = room.itemThumbnail || DEFAULT_ITEM_IMAGE;
+                setImageWithFallback(document.getElementById('item-info-img'), room.itemThumbnail, DEFAULT_ITEM_IMAGE);
+                document.getElementById('item-info-location').innerText = room.itemPlace || '장소 정보 없음';
+                document.getElementById('item-info-date').innerText = room.itemDate || '날짜 정보 없음';
                 document.getElementById('participant-name').innerText = room.otherParticipantNickname;
-                document.getElementById('participant-img').src = room.otherParticipantProfileImage || DEFAULT_PROFILE_IMAGE;
+                setImageWithFallback(document.getElementById('participant-img'), room.otherParticipantProfileImage, DEFAULT_PROFILE_IMAGE);
+
+                // Bind click handlers for item detail and profile view
+                const detailBtn = document.getElementById('item-detail-btn');
+                if (detailBtn) {
+                    detailBtn.onclick = function() {
+                        openItemDetailModal(room.itemType, room.itemId);
+                    };
+                }
+
+                const profileBtn = document.getElementById('view-profile-btn');
+                if (profileBtn) {
+                    profileBtn.onclick = function() {
+                        openProfileModal(room.otherParticipantNo);
+                    };
+                }
 
                 // Load Messages
                 fetch(`/chat/room/${roomId}/messages`)
@@ -213,10 +352,39 @@
                 
                 const timeStr = new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+                let bubbleContent = '';
+                if (msg.type === 'FILE') {
+                    if (isImageFile(msg.fileName)) {
+                        bubbleContent = `
+                            <div class="message-bubble" style="padding: 0; overflow: hidden; background: transparent; box-shadow: none; border-radius: 0.75rem;">
+                                <a href="${msg.fileUrl}" target="_blank">
+                                    <img src="${msg.fileUrl}" class="chat-img" style="max-width: min(100%, 280px); max-height: 200px; border-radius: 0.75rem; display: block; object-fit: cover; border: 1px solid var(--chat-border);" />
+                                </a>
+                            </div>
+                        `;
+                    } else {
+                        bubbleContent = `
+                            <div class="message-bubble">
+                                <a href="${msg.fileUrl}" target="_blank" class="chat-file-attachment" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 24px; height: 24px;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    <div style="min-width: 0;">
+                                        <div style="font-weight: 600; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: underline;">${escapeHtml(msg.fileName || msg.content)}</div>
+                                        <div style="font-size: 0.75rem; opacity: 0.75; margin-top: 0.125rem;">${formatBytes(msg.fileSize)}</div>
+                                    </div>
+                                </a>
+                            </div>
+                        `;
+                    }
+                } else {
+                    bubbleContent = `<div class="message-bubble">${escapeHtml(msg.content)}</div>`;
+                }
+
                 msgDiv.innerHTML = `
                     ${isMe ? '' : `<img src="${escapeHtml(msg.senderProfileImage || DEFAULT_PROFILE_IMAGE)}" class="message-avatar" alt="">`}
                     <div class="message-content">
-                        <div class="message-bubble">${escapeHtml(msg.content)}</div>
+                        ${bubbleContent}
                         <div class="message-time">${timeStr}</div>
                     </div>
                 `;
@@ -274,6 +442,144 @@
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#39;');
+            }
+
+            function setImageWithFallback(img, src, fallbackSrc) {
+                img.onerror = function () {
+                    if (img.src.endsWith(fallbackSrc)) {
+                        return;
+                    }
+                    img.src = fallbackSrc;
+                };
+                img.src = src || fallbackSrc;
+            }
+
+            function openProfileModal(userNo) {
+                if (!userNo) return;
+                fetch(`/api/user/${userNo}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error('프로필 조회 실패');
+                        return res.json();
+                    })
+                    .then(data => {
+                        document.getElementById('profile-modal-img').src = data.profileImageUrl || '/images/logoNoName.png';
+                        document.getElementById('profile-modal-nickname').innerText = data.nickname;
+                        document.getElementById('profile-modal-regdate').innerText = `가입일: ${data.regDate}`;
+                        document.getElementById('profile-modal-lost-count').innerText = `${data.lostCount}건`;
+                        document.getElementById('profile-modal-found-count').innerText = `${data.foundCount}건`;
+                        document.getElementById('profile-modal-email').innerText = data.email;
+                        document.getElementById('profile-modal-phone').innerText = data.phone;
+                        
+                        const modal = document.getElementById('profile-modal');
+                        modal.classList.remove('hidden');
+                        setTimeout(() => {
+                            modal.classList.remove('opacity-0');
+                            modal.firstElementChild.classList.remove('scale-95');
+                        }, 50);
+                    })
+                    .catch(err => {
+                        alert('프로필 정보를 가져오는 데 실패했습니다: ' + err.message);
+                    });
+            }
+
+            function closeProfileModal() {
+                const modal = document.getElementById('profile-modal');
+                modal.classList.add('opacity-0');
+                modal.firstElementChild.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+
+            function openItemDetailModal(itemType, itemId) {
+                if (!itemType || !itemId) return;
+                fetch(`/api/chat/item/${itemType}/${itemId}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error('상세정보 조회 실패');
+                        return res.json();
+                    })
+                    .then(data => {
+                        document.getElementById('item-modal-img').src = data.imageUrl || '/images/noImageSize.png';
+                        document.getElementById('item-modal-status-badge').innerText = data.status || '알수없음';
+                        document.getElementById('item-modal-title').innerText = data.title;
+                        document.getElementById('item-modal-item-name').innerText = data.itemName;
+                        document.getElementById('item-modal-category').innerText = data.category || '분류 없음';
+                        document.getElementById('item-modal-color').innerText = data.color || '색상 없음';
+                        document.getElementById('item-modal-date').innerText = data.date;
+                        document.getElementById('item-modal-place').innerText = data.place;
+                        document.getElementById('item-modal-content').innerText = data.content;
+                        
+                        // Set the link to the full detail page
+                        const linkEl = document.getElementById('item-modal-link');
+                        if (itemType === 'FOUND') {
+                            linkEl.href = `/found-items/${itemId}`;
+                        } else if (itemType === 'LOST') {
+                            linkEl.href = `/lost-items/${itemId}`;
+                        }
+
+                        const modal = document.getElementById('item-detail-modal');
+                        modal.classList.remove('hidden');
+                        setTimeout(() => {
+                            modal.classList.remove('opacity-0');
+                            modal.firstElementChild.classList.remove('scale-95');
+                        }, 50);
+                    })
+                    .catch(err => {
+                        alert('상세 정보를 가져오는 데 실패했습니다: ' + err.message);
+                    });
+            }
+
+            function closeItemDetailModal() {
+                const modal = document.getElementById('item-detail-modal');
+                modal.classList.add('opacity-0');
+                modal.firstElementChild.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+
+            function triggerFileSelect() {
+                document.getElementById('file-input').click();
+            }
+
+            function uploadFile(input) {
+                if (!input.files || input.files.length === 0 || !currentRoomId) return;
+                const file = input.files[0];
+                input.value = '';
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch(`/chat/room/${currentRoomId}/upload`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('파일 업로드 실패');
+                    }
+                    return res.json();
+                })
+                .then(savedMessage => {
+                    handleIncomingMessage(savedMessage);
+                })
+                .catch(err => {
+                    alert('파일 업로드에 실패했습니다: ' + err.message);
+                });
+            }
+
+            function isImageFile(fileName) {
+                if (!fileName) return false;
+                const ext = fileName.split('.').pop().toLowerCase();
+                return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(ext);
+            }
+
+            function formatBytes(bytes) {
+                if (bytes === undefined || bytes === null || bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.log(bytes) / Math.log(k);
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
             }
 
             connect();

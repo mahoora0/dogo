@@ -1,5 +1,6 @@
 package com.example.dogo.service.missing;
 
+import com.example.dogo.dto.item.RecentItemView;
 import com.example.dogo.dto.missing.MissingPersonCreateRequest;
 import com.example.dogo.dto.missing.MissingPersonDetailView;
 import com.example.dogo.dto.missing.MissingPersonView;
@@ -39,6 +40,25 @@ public class MissingPersonService {
 	@Transactional(readOnly = true)
 	public Page<MissingPersonView> search(String keyword, String status, Pageable pageable) {
 		return search(keyword, status, null, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public List<RecentItemView> getRecentItems(int limit) {
+		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "regdate"));
+		return missingPersonRepository.findAll(searchSpec(null, null, null), pageable).stream()
+				.map(item -> new RecentItemView(
+						item.getReportId(),
+						"PERSON",
+						"실종자",
+						summary(item),
+						"사람",
+						item.getOccurredPlace(),
+						item.getOccurredAt(),
+						item.getStatus(),
+						statusLabel(item.getStatus()),
+						"/images/noImageSize.png"
+				))
+				.toList();
 	}
 
 	@Transactional
@@ -91,6 +111,8 @@ public class MissingPersonService {
 			if (normalizedKeyword != null) {
 				String pattern = "%" + normalizedKeyword.toLowerCase(Locale.ROOT) + "%";
 				predicates.add(criteriaBuilder.or(
+						criteriaBuilder.like(criteriaBuilder.lower(root.get("personName")), pattern),
+						criteriaBuilder.like(criteriaBuilder.lower(root.get("gender")), pattern),
 						criteriaBuilder.like(criteriaBuilder.lower(root.get("nationality")), pattern),
 						criteriaBuilder.like(criteriaBuilder.lower(root.get("occurredPlace")), pattern),
 						criteriaBuilder.like(criteriaBuilder.lower(root.get("bodyType")), pattern),
@@ -184,10 +206,13 @@ public class MissingPersonService {
 
 	private User getOrCreateDevUser() {
 		return userRepository.findByEmail(DEV_USER_EMAIL)
-				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발용 사용자", "010-0000-0000")));
+				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발자 사용자", "010-0000-0000")));
 	}
 
 	private String summary(MissingPersonReport report) {
+		if (StringUtils.hasText(report.getPersonName())) {
+			return report.getPersonName() + " (" + report.getAge() + "세)";
+		}
 		return report.getAge() + "세 " + report.getNationality() + " 실종";
 	}
 

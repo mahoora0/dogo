@@ -4,6 +4,7 @@ import com.example.dogo.dto.missing.MissingPersonCreateRequest;
 import com.example.dogo.dto.missing.MissingPersonDetailView;
 import com.example.dogo.dto.missing.MissingPersonView;
 import com.example.dogo.service.missing.MissingPersonService;
+import com.example.dogo.service.missing.sync.Safe182MissingPersonSyncService;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +19,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -29,8 +31,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MissingPersonControllerTest {
 
 	private final MissingPersonService missingPersonService = mock(MissingPersonService.class);
+	private final Safe182MissingPersonSyncService safe182MissingPersonSyncService = mock(Safe182MissingPersonSyncService.class);
 	private final MockMvc mockMvc = MockMvcBuilders
-			.standaloneSetup(new MissingPersonController(missingPersonService))
+			.standaloneSetup(new MissingPersonController(missingPersonService, safe182MissingPersonSyncService))
 			.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
 			.build();
 
@@ -51,6 +54,8 @@ class MissingPersonControllerTest {
 				.andExpect(model().attribute("keyword", "Korea"))
 				.andExpect(model().attribute("status", "OPEN"))
 				.andExpect(model().attribute("sourceType", "PUBLIC_API"));
+
+		verify(safe182MissingPersonSyncService).syncSearch("Korea");
 	}
 
 	@Test

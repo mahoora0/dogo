@@ -3,6 +3,7 @@ package com.example.dogo.service.animal;
 import com.example.dogo.dto.animal.AnimalImageSearchResult;
 import com.example.dogo.dto.animal.AnimalMatchCandidateView;
 import com.example.dogo.dto.animal.AnimalReportCreateRequest;
+import com.example.dogo.dto.item.RecentItemView;
 import com.example.dogo.dto.animal.AnimalReportDetailView;
 import com.example.dogo.dto.animal.AnimalReportEditData;
 import com.example.dogo.dto.animal.AnimalReportView;
@@ -94,6 +95,27 @@ public class AnimalReportService {
 				animalReportSearchSpec(reportType, animalType, region, keyword, keywordScope),
 				pageable
 		).map(this::toListView);
+	}
+
+	@Transactional(readOnly = true)
+	public List<RecentItemView> getRecentItems(int limit) {
+		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "regdate"));
+		return animalReportRepository.findAll(animalReportSearchSpec(null, null, null, null, null), pageable).stream()
+				.map(item -> new RecentItemView(
+						item.getReportId(),
+						"ANIMAL",
+						reportTypeLabel(item.getReportType()),
+						item.getTitle(),
+						animalTypeLabel(item.getAnimalType()),
+						item.getRegionName(),
+						item.getEventDate() != null ? item.getEventDate().atStartOfDay() : null,
+						item.getStatus(),
+						statusLabel(item.getStatus()),
+						animalReportImageRepository.findFirstByAnimalReportOrderBySortOrderAscImageIdAsc(item)
+								.map(AnimalReportImage::getImageUrl)
+								.orElse(PLACEHOLDER_IMAGE)
+				))
+				.toList();
 	}
 
 	@Transactional
