@@ -691,3 +691,72 @@ input:checked + .slider:before {
 .image-floating-editor input[type="range"] {
     accent-color: #38bdf8;
 }
+
+/* ==========================================================================
+   💡 반려동물 특징 표시 기능 (Target Dot + Speech Bubble) 스타일 정의
+   ========================================================================== */
+
+/* 1. 특징 표시 점 (Target Dot) */
+.element.feature-dot {
+    background-color: #e11d48 !important;
+    border: 1.5px solid #ffffff !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 6px rgba(225, 29, 72, 0.8) !important;
+    cursor: move !important;
+    width: 8px !important;
+    height: 8px !important;
+    overflow: visible !important;
+    border-style: solid !important; /* 가이드 점선 상속 방지 */
+}
+
+/* 점 선택 및 호버 상태 */
+.element.feature-dot.selected {
+    border: 1.5px solid #2563eb !important;
+    box-shadow: 0 0 8px rgba(37, 99, 235, 0.9) !important;
+}
+
+/* 2. 펄스 애니메이션 (Pulsing Target Effect) */
+.feature-dot-pulse {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 1px solid #e11d48;
+    border-radius: 50%;
+    animation: dotPulse 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    opacity: 0;
+    pointer-events: none;
+}
+
+@keyframes dotPulse {
+    0% {
+        transform: scale(0.7);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+/* 3. 특징 표시 말풍선 (Speech Bubble) */
+.element.feature-bubble {
+    background: #ffffff !important;
+    border: 1.5px solid #e11d48 !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 10px rgba(225, 29, 72, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+    cursor: move !important;
+    min-height: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+    max-width: 220px !important; /* 글씨 양에 따라 가로가 커지되 최대 폭 제한 */
+}
+
+/* 말풍선 선택 및 호버 상태 */
+.element.feature-bubble.selected {
+    border: 1.5px solid #2563eb !important;
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2) !important;
+}

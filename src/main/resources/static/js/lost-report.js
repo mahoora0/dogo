@@ -7,6 +7,7 @@ let isResizing = false;
 let startX = 0, startY = 0;
 let startLeft = 0, startTop = 0;
 let startWidth = 0, startHeight = 0;
+let currentCanvasZoom = 1.0;
 
 // =========================
 // 실시간 데이터 바인딩
@@ -154,7 +155,7 @@ function selectElement(event) {
 function deselectAll(event) {
   hideContextMenu();
 
-  if (event.target.id === 'leaflet-canvas') {
+  if (event.target.id === 'leaflet-canvas' || event.target.id === 'feature-lines-svg') {
     if (selectedElement) {
       selectedElement.classList.remove('selected');
       // Remove floating editor
@@ -170,8 +171,13 @@ function deselectAll(event) {
 // =========================
 function deleteSelectedElement() {
   if (selectedElement) {
-    selectedElement.remove();
-    selectedElement = null;
+    if (selectedElement.classList.contains('feature-dot') || selectedElement.classList.contains('feature-bubble')) {
+      const pairId = selectedElement.getAttribute('data-pair-id');
+      deleteFeatureCallout(pairId);
+    } else {
+      selectedElement.remove();
+      selectedElement = null;
+    }
     hideContextMenu();
   } else {
     alert("지우고 싶은 요소를 먼저 선택해 주세요!");
@@ -252,8 +258,12 @@ function startDrag(e) {
 function doDrag(e) {
   if (!isDragging) return;
 
-  selectedElement.style.left = `${startLeft + (e.clientX - startX)}px`;
-  selectedElement.style.top = `${startTop + (e.clientY - startY)}px`;
+  selectedElement.style.left = `${startLeft + (e.clientX - startX) / currentCanvasZoom}px`;
+  selectedElement.style.top = `${startTop + (e.clientY - startY) / currentCanvasZoom}px`;
+
+  if (selectedElement.classList.contains('feature-dot') || selectedElement.classList.contains('feature-bubble')) {
+    updateFeatureLines();
+  }
 }
 
 function startResize(e) {
@@ -272,11 +282,15 @@ function startResize(e) {
 function doResize(e) {
   if (!isResizing) return;
 
-  const newWidth = Math.max(30, startWidth + (e.clientX - startX));
-  const newHeight = Math.max(30, startHeight + (e.clientY - startY));
+  const newWidth = Math.max(30, startWidth + (e.clientX - startX) / currentCanvasZoom);
+  const newHeight = Math.max(30, startHeight + (e.clientY - startY) / currentCanvasZoom);
 
   selectedElement.style.width = `${newWidth}px`;
   selectedElement.style.height = `${newHeight}px`;
+
+  if (selectedElement.classList.contains('feature-bubble')) {
+    updateFeatureLines();
+  }
 }
 
 function stopActions() {
@@ -396,7 +410,11 @@ function toggleGuideLines() {
   const elements = document.querySelectorAll('.element');
 
   elements.forEach(el => {
-    el.style.borderColor = isChecked ? "#cbd5e1" : "transparent";
+    if (el.classList.contains('feature-dot')) {
+      el.style.borderColor = "transparent";
+    } else {
+      el.style.borderColor = isChecked ? "#cbd5e1" : "transparent";
+    }
   });
 }
 
@@ -453,10 +471,15 @@ function deleteThisElement(event, btn) {
   if (event) event.stopPropagation();
   const element = btn.closest('.element');
   if (element) {
-    if (selectedElement === element) {
-      selectedElement = null;
+    if (element.classList.contains('feature-dot') || element.classList.contains('feature-bubble')) {
+      const pairId = element.getAttribute('data-pair-id');
+      deleteFeatureCallout(pairId);
+    } else {
+      if (selectedElement === element) {
+        selectedElement = null;
+      }
+      element.remove();
     }
-    element.remove();
   }
 }
 
@@ -675,8 +698,8 @@ function startPanning(e, img) {
 
   function doPan(ev) {
     if (!isPanning) return;
-    const dx = ev.clientX - panStartX;
-    const dy = ev.clientY - panStartY;
+    const dx = (ev.clientX - panStartX) / currentCanvasZoom;
+    const dy = (ev.clientY - panStartY) / currentCanvasZoom;
     const newX = imgStartX + dx;
     const newY = imgStartY + dy;
     
@@ -877,6 +900,10 @@ async function savePoster(format) {
       document.activeElement.blur();
   }
 
+  // 저장 전 캔버스 줌 상태 원상복구 (html2canvas 왜곡 및 캡쳐 짤림 방지)
+  const originalZoom = currentCanvasZoom;
+  setCanvasZoom(1.0);
+
   try {
     // 2. html2canvas로 캡쳐
     const canvas = await html2canvas(canvasElement, {
@@ -921,5 +948,139 @@ async function savePoster(format) {
       toggleGuideLines();
     }
     elementsToHide.forEach(el => el.style.display = '');
+    // 원본 줌 복구
+    setCanvasZoom(originalZoom);
   }
+}
+
+// ==========================================================================
+// 📍 반려동물 특징 표시 기능 (Target Dot + Speech Bubble + SVG dynamic lines)
+// ==========================================================================
+
+let featureCalloutCounter = 0;
+
+function addFeatureCalloutElement() {
+  featureCalloutCounter++;
+  const pairId = `feature-${featureCalloutCounter}-${Date.now()}`;
+  const canvas = document.getElementById('leaflet-canvas');
+  if (!canvas) return;
+
+  // 1. 특징 표시 점 (Target Dot) 생성
+  const dotElem = document.createElement('div');
+  dotElem.id = `dot-${pairId}`;
+  dotElem.className = 'element draggable feature-dot';
+  dotElem.setAttribute('data-pair-id', pairId);
+  // 사진 영역 부근에 디폴트 스폰
+  dotElem.style = 'top: 180px; left: 130px; width: 8px; height: 8px; z-index: 15;';
+  dotElem.onmousedown = selectElement;
+  dotElem.innerHTML = `
+    <div class="feature-dot-pulse"></div>
+    <div class="delete-btn" onclick="deleteThisElement(event, this)">×</div>
+  `;
+
+  // 2. 특징 표시 말풍선 (Speech Bubble) 생성
+  const bubbleElem = document.createElement('div');
+  bubbleElem.id = `bubble-${pairId}`;
+  bubbleElem.className = 'element draggable resizable feature-bubble';
+  bubbleElem.setAttribute('data-pair-id', pairId);
+  // 점의 오른쪽에 디폴트 스폰 (width: auto, height: auto 적용)
+  bubbleElem.style = 'top: 140px; left: 200px; width: auto; height: auto; min-height: 20px; z-index: 15;';
+  bubbleElem.onmousedown = selectElement;
+  bubbleElem.innerHTML = `
+    <div class="element-content" contenteditable="true" style="padding: 3px 6px; font-size: 9.5px; font-weight: 700; text-align: center; color: #1e293b; outline: none; word-break: break-all; display: flex; align-items: center; justify-content: center; min-height: inherit;" oninput="updateFeatureLines()">
+      특징 입력하기
+    </div>
+    <div class="delete-btn" onclick="deleteThisElement(event, this)">×</div>
+    <div class="resize-handle"></div>
+  `;
+
+  canvas.appendChild(dotElem);
+  canvas.appendChild(bubbleElem);
+
+  // 드래그 시 가이드라인 및 선 동기화 즉시 보장
+  setTimeout(() => {
+    updateFeatureLines();
+    toggleGuideLines();
+  }, 50);
+}
+
+function updateFeatureLines() {
+  const svg = document.getElementById('feature-lines-svg');
+  if (!svg) return;
+
+  // 필터 정의 defs 유지하면서 라인 초기화
+  const defs = svg.querySelector('defs');
+  svg.innerHTML = '';
+  if (defs) {
+    svg.appendChild(defs);
+  } else {
+    const newDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    newDefs.innerHTML = `
+      <filter id="line-shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-opacity="0.35"/>
+      </filter>
+    `;
+    svg.appendChild(newDefs);
+  }
+
+  // 모든 특징 마커에 대해 선 그리기
+  const dots = document.querySelectorAll('.feature-dot');
+  dots.forEach(dot => {
+    const pairId = dot.getAttribute('data-pair-id');
+    const bubble = document.getElementById(`bubble-${pairId}`);
+    if (bubble) {
+      // 캔버스 대비 중심 좌표 계산
+      const x1 = dot.offsetLeft + dot.offsetWidth / 2;
+      const y1 = dot.offsetTop + dot.offsetHeight / 2;
+
+      const x2 = bubble.offsetLeft + bubble.offsetWidth / 2;
+      const y2 = bubble.offsetTop + bubble.offsetHeight / 2;
+
+      // SVG Line 그리기
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', x1);
+      line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2);
+      line.setAttribute('y2', y2);
+      line.setAttribute('stroke', '#e11d48');
+      line.setAttribute('stroke-width', '2.5');
+      line.setAttribute('stroke-dasharray', '5 4');
+      line.setAttribute('filter', 'url(#line-shadow)');
+      svg.appendChild(line);
+    }
+  });
+}
+
+function deleteFeatureCallout(pairId) {
+  const dot = document.getElementById(`dot-${pairId}`);
+  const bubble = document.getElementById(`bubble-${pairId}`);
+
+  if (selectedElement === dot || selectedElement === bubble) {
+    selectedElement = null;
+  }
+
+  if (dot) dot.remove();
+  if (bubble) bubble.remove();
+
+  updateFeatureLines();
+}
+
+// ==========================================================================
+// 🔍 캔버스 전체 화면 줌(Zoom In/Out) 제어 기능
+// ==========================================================================
+function setCanvasZoom(factor) {
+  currentCanvasZoom = Math.max(0.5, Math.min(2.0, parseFloat(factor)));
+  const canvas = document.getElementById('leaflet-canvas');
+  if (canvas) {
+    canvas.style.transform = `scale(${currentCanvasZoom})`;
+    canvas.style.transformOrigin = 'center center';
+  }
+  const percentageDisplay = document.getElementById('canvas-zoom-percentage');
+  if (percentageDisplay) {
+    percentageDisplay.innerText = `${Math.round(currentCanvasZoom * 100)}%`;
+  }
+}
+
+function adjustCanvasZoom(amount) {
+  setCanvasZoom(currentCanvasZoom + amount);
 }
