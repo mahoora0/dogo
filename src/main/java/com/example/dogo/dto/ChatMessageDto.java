@@ -16,7 +16,10 @@ public class ChatMessageDto {
     private String senderNickname;
     private String senderProfileImage;
     private String content;
-    private String type; // ENTER, TALK
+    private String type; // ENTER, TALK, FILE
     private LocalDateTime createdAt;
     private String clientMessageId;
+    private String fileUrl;
+    private String fileName;
+    private Long fileSize;
 }

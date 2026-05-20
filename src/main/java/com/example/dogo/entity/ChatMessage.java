@@ -39,8 +39,17 @@ public class ChatMessage {
     @Column(name = "IS_READ", nullable = false)
     private boolean read = false;
 
+    @Column(name = "FILE_URL", length = 500)
+    private String fileUrl;
+
+    @Column(name = "FILE_NAME", length = 255)
+    private String fileName;
+
+    @Column(name = "FILE_SIZE")
+    private Long fileSize;
+
     public enum MessageType {
-        ENTER, TALK
+        ENTER, TALK, FILE
     }
 
     public ChatMessage(ChatRoom chatRoom, User sender, String content, MessageType messageType) {
@@ -48,6 +57,17 @@ public class ChatMessage {
         this.sender = sender;
         this.content = content;
         this.messageType = messageType;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public ChatMessage(ChatRoom chatRoom, User sender, String content, MessageType messageType, String fileUrl, String fileName, Long fileSize) {
+        this.chatRoom = chatRoom;
+        this.sender = sender;
+        this.content = content;
+        this.messageType = messageType;
+        this.fileUrl = fileUrl;
+        this.fileName = fileName;
+        this.fileSize = fileSize;
         this.createdAt = LocalDateTime.now();
     }
 }

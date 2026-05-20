@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.http.ResponseEntity;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +85,85 @@ public class LoginController {
   public ResponseEntity<Boolean> checkNickname(@RequestParam("nickname") String nickname) {
     boolean exists = userRepository.existsByNickname(nickname);
     return ResponseEntity.ok(exists);
+  }
+
+  @GetMapping("/api/user/{userNo}")
+  @ResponseBody
+  public ResponseEntity<?> getUserProfile(@PathVariable("userNo") Long userNo) {
+    return userRepository.findById(userNo)
+        .map(user -> {
+            int lostCount = lostItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user).size();
+            int foundCount = foundItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user).size();
+            
+            return ResponseEntity.ok(java.util.Map.of(
+                "nickname", user.getNickname(),
+                "profileImageUrl", user.getProfileImageUrl() != null ? user.getProfileImageUrl() : "/images/logoNoName.png",
+                "email", user.getEmail() != null ? user.getEmail() : "이메일 없음",
+                "phone", user.getPhone() != null ? user.getPhone() : "연락처 없음",
+                "regDate", user.getRegDate() != null ? user.getRegDate().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")) : "가입일 없음",
+                "lostCount", lostCount,
+                "foundCount", foundCount
+            ));
+        })
+        .orElse(ResponseEntity.notFound().build());
+  }
+
+  @GetMapping("/api/chat/item/{itemType}/{itemId}")
+  @ResponseBody
+  public ResponseEntity<?> getItemSimpleDetail(@PathVariable("itemType") String itemType, @PathVariable("itemId") Long itemId) {
+    if ("FOUND".equals(itemType)) {
+      return foundItemRepository.findById(itemId)
+          .map(item -> {
+              List<com.example.dogo.entity.item.FoundItemImage> imgs = foundItemImageRepository.findByFoundItemOrderBySortOrderAscImageIdAsc(item);
+              String imgUrl = !imgs.isEmpty() ? imgs.get(0).getImageUrl() : "/images/noImageSize.png";
+              String formattedDate = item.getFoundAt() != null ? item.getFoundAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm")) : "날짜 정보 없음";
+              
+              return ResponseEntity.ok(java.util.Map.of(
+                  "title", item.getTitle() != null ? item.getTitle() : "제목 없음",
+                  "itemName", item.getItemName() != null ? item.getItemName() : "물품명 없음",
+                  "category", (item.getCategoryMain() != null ? item.getCategoryMain() : "") + (item.getCategorySub() != null ? " > " + item.getCategorySub() : ""),
+                  "color", item.getColorName() != null ? item.getColorName() : "색상 정보 없음",
+                  "place", item.getFoundPlace() != null ? item.getFoundPlace() : "장소 정보 없음",
+                  "date", formattedDate,
+                  "status", getStatusKorean(item.getStatus()),
+                  "content", item.getContent() != null ? item.getContent() : "상세내용 없음",
+                  "imageUrl", imgUrl
+              ));
+          })
+          .orElse(ResponseEntity.notFound().build());
+    } else if ("LOST".equals(itemType)) {
+      return lostItemRepository.findById(itemId)
+          .map(item -> {
+              List<com.example.dogo.entity.item.LostItemImage> imgs = lostItemImageRepository.findByLostItemOrderBySortOrderAscImageIdAsc(item);
+              String imgUrl = !imgs.isEmpty() ? imgs.get(0).getImageUrl() : "/images/noImageSize.png";
+              String formattedDate = item.getLostAt() != null ? item.getLostAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm")) : "날짜 정보 없음";
+              
+              return ResponseEntity.ok(java.util.Map.of(
+                  "title", item.getTitle() != null ? item.getTitle() : "제목 없음",
+                  "itemName", item.getItemName() != null ? item.getItemName() : "물품명 없음",
+                  "category", (item.getCategoryMain() != null ? item.getCategoryMain() : "") + (item.getCategorySub() != null ? " > " + item.getCategorySub() : ""),
+                  "color", item.getColorName() != null ? item.getColorName() : "색상 정보 없음",
+                  "place", item.getLostPlace() != null ? item.getLostPlace() : "장소 정보 없음",
+                  "date", formattedDate,
+                  "status", getStatusKorean(item.getStatus()),
+                  "content", item.getContent() != null ? item.getContent() : "상세내용 없음",
+                  "imageUrl", imgUrl
+              ));
+          })
+          .orElse(ResponseEntity.notFound().build());
+    }
+    return ResponseEntity.badRequest().build();
+  }
+
+  private String getStatusKorean(String status) {
+    if (status == null) return "알수없음";
+    switch (status.toUpperCase()) {
+      case "KEEPING": return "보관중";
+      case "MATCHING": return "매칭중";
+      case "COMPLETED": return "완료";
+      case "WAITING": return "대기중";
+      default: return status;
+    }
   }
 
   @GetMapping("/userpage")

@@ -78,6 +78,8 @@ class ChatServiceTest {
         FoundItem foundItem = mock(FoundItem.class);
         User inquirer = mock(User.class);
 
+        when(inquirer.getUserNo()).thenReturn(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(inquirer));
         when(foundItemRepository.findById(10L)).thenReturn(Optional.of(foundItem));
         when(foundItem.getUser()).thenReturn(null);
 
@@ -86,6 +88,30 @@ class ChatServiceTest {
 
         assertEquals("이 게시글은 채팅 신청이 불가능합니다.", exception.getMessage());
         verify(chatRoomRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("정상적인 정보로 1:1 채팅방 생성 성공")
+    void createOrGetRoomSuccessfullyCreatesRoom() {
+        FoundItem foundItem = mock(FoundItem.class);
+        User inquirer = mock(User.class);
+        User owner = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(inquirer.getUserNo()).thenReturn(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(inquirer));
+        when(foundItemRepository.findById(10L)).thenReturn(Optional.of(foundItem));
+        when(foundItem.getUser()).thenReturn(owner);
+        when(owner.getUserNo()).thenReturn(2L);
+        
+        when(chatRoomRepository.findByFoundItemAndInquirer(10L, inquirer)).thenReturn(Optional.empty());
+        when(chatRoomRepository.save(any(ChatRoom.class))).thenReturn(room);
+        when(room.getRoomId()).thenReturn(99L);
+
+        Long roomId = chatService.createOrGetRoom(10L, "FOUND", inquirer);
+
+        assertEquals(99L, roomId);
+        verify(chatRoomRepository, times(1)).save(any(ChatRoom.class));
     }
 
     @Test
@@ -129,6 +155,49 @@ class ChatServiceTest {
     }
 
     @Test
+    @DisplayName("소유자(owner)이고 메시지가 없는 방은 목록에서 제외된다")
+    void getChatRoomsFiltersOutEmptyRoomsForOwner() {
+        User user = mock(User.class);
+        User owner = mock(User.class);
+        User inquirer = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(user.getUserNo()).thenReturn(2L);
+        when(inquirer.getUserNo()).thenReturn(1L);
+        when(owner.getUserNo()).thenReturn(2L);
+        when(room.getInquirer()).thenReturn(inquirer);
+        when(room.getOwner()).thenReturn(owner);
+        when(chatRoomRepository.findByParticipant(user)).thenReturn(List.of(room));
+        when(chatMessageRepository.findTopByChatRoomOrderByCreatedAtDesc(room)).thenReturn(null);
+
+        List<ChatRoomDto> rooms = chatService.getChatRooms(user);
+
+        assertTrue(rooms.isEmpty());
+    }
+
+    @Test
+    @DisplayName("신청자(inquirer)이고 메시지가 없는 방은 목록에 포함된다")
+    void getChatRoomsIncludesEmptyRoomsForInquirer() {
+        User user = mock(User.class);
+        User owner = mock(User.class);
+        User inquirer = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(user.getUserNo()).thenReturn(1L);
+        when(inquirer.getUserNo()).thenReturn(1L);
+        when(owner.getUserNo()).thenReturn(2L);
+        when(room.getInquirer()).thenReturn(inquirer);
+        when(room.getOwner()).thenReturn(owner);
+        when(chatRoomRepository.findByParticipant(user)).thenReturn(List.of(room));
+        when(chatMessageRepository.findTopByChatRoomOrderByCreatedAtDesc(room)).thenReturn(null);
+        when(owner.getNickname()).thenReturn("상대방");
+
+        List<ChatRoomDto> rooms = chatService.getChatRooms(user);
+
+        assertEquals(1, rooms.size());
+    }
+
+    @Test
     @DisplayName("전체 미확인 채팅 수는 참여 중인 모든 채팅방에서 상대 메시지만 합산한다")
     void getUnreadCountSumsUnreadMessagesFromOtherParticipants() {
         User user = mock(User.class);
@@ -163,5 +232,34 @@ class ChatServiceTest {
         chatService.markRoomMessagesAsRead(7L, user);
 
         verify(chatMessageRepository).markRoomMessagesAsRead(room, user);
+    }
+
+    @Test
+    @DisplayName("파일 메시지 저장 테스트")
+    void saveFileMessageTest() throws Exception {
+        // given
+        Long roomId = 1L;
+        org.springframework.web.multipart.MultipartFile multipartFile = mock(org.springframework.web.multipart.MultipartFile.class);
+        User sender = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(multipartFile.isEmpty()).thenReturn(false);
+        when(multipartFile.getOriginalFilename()).thenReturn("test_file.txt");
+        when(multipartFile.getSize()).thenReturn(1024L);
+        when(chatRoomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(sender.getUserNo()).thenReturn(1L);
+        when(sender.getNickname()).thenReturn("테스터");
+
+        // when
+        ChatMessageDto result = chatService.saveFileMessage(roomId, multipartFile, sender);
+
+        // then
+        assertEquals("[파일] test_file.txt", result.getContent());
+        assertEquals("FILE", result.getType());
+        assertEquals("test_file.txt", result.getFileName());
+        assertEquals(1024L, result.getFileSize());
+        assertTrue(result.getFileUrl().startsWith("/uploads/chats/"));
+        verify(chatMessageRepository, times(1)).save(any());
+        verify(multipartFile, times(1)).transferTo(any(java.nio.file.Path.class));
     }
 }
