@@ -49,6 +49,8 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long>, Jpa
 
 	List<FoundItem> findByDeletedFalseOrderByFoundAtDescFoundIdDesc(Pageable pageable);
 
+	List<FoundItem> findByDeletedFalseOrderByRegDateDescFoundIdDesc(Pageable pageable);
+
 	List<FoundItem> findByDeletedFalseOrderByRegDateDesc();
 
 	List<FoundItem> findBySourceTypeAndDeletedFalseOrderByRegDateDesc(String sourceType);

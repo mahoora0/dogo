@@ -20,6 +20,7 @@ public record MissingPersonView(
 		String status,
 		String statusLabel,
 		String sourceType,
-		String sourceLabel
+		String sourceLabel,
+		String base64Image
 ) {
 }

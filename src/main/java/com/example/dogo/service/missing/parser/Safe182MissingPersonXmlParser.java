@@ -19,6 +19,11 @@ import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
@@ -43,7 +48,10 @@ public class Safe182MissingPersonXmlParser {
 	}
 
 	private List<Safe182MissingPersonRecord> records(Document document, String xml) {
-		NodeList nodes = document.getElementsByTagName("list");
+		NodeList nodes = document.getElementsByTagName("item");
+		if (nodes.getLength() == 0) {
+			nodes = document.getElementsByTagName("list");
+		}
 		List<Safe182MissingPersonRecord> records = new ArrayList<>();
 		for (int index = 0; index < nodes.getLength(); index++) {
 			Node node = nodes.item(index);
@@ -55,12 +63,12 @@ public class Safe182MissingPersonXmlParser {
 					&& element.getElementsByTagName("nm").getLength() == 0) {
 				continue;
 			}
-			records.add(record(element, xml));
+			records.add(record(element, elementToString(element)));
 		}
 		return records;
 	}
 
-	private Safe182MissingPersonRecord record(Element element, String xml) {
+	private Safe182MissingPersonRecord record(Element element, String elementXml) {
 		String name = text(element, "nm");
 		String occurredDate = text(element, "occrde");
 		String gender = text(element, "sexdstnDscd");
@@ -81,15 +89,28 @@ public class Safe182MissingPersonXmlParser {
 				parseInteger(age),
 				parseDate(occurredDate),
 				place,
-				parseInteger(firstText(element, "height", "tknphotolength")),
+				parseInteger(text(element, "height")),
 				parseDecimal(text(element, "bdwgh")),
 				text(element, "frmDscd"),
 				text(element, "faceshpeDscd"),
 				text(element, "haircolrDscd"),
 				text(element, "hairshpeDscd"),
 				text(element, "alldressingDscd"),
-				xml
+				elementXml
 		);
+	}
+
+	private String elementToString(Element element) {
+		try {
+			TransformerFactory tf = TransformerFactory.newInstance();
+			Transformer transformer = tf.newTransformer();
+			transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+			StringWriter writer = new StringWriter();
+			transformer.transform(new DOMSource(element), new StreamResult(writer));
+			return writer.getBuffer().toString();
+		} catch (Exception e) {
+			return "";
+		}
 	}
 
 	private Document parseDocument(String xml) {
@@ -185,6 +206,10 @@ public class Safe182MissingPersonXmlParser {
 		if (!StringUtils.hasText(value)) {
 			return null;
 		}
-		return value.trim();
+		String trimmed = value.trim();
+		if (trimmed.equalsIgnoreCase("null")) {
+			return null;
+		}
+		return trimmed;
 	}
 }

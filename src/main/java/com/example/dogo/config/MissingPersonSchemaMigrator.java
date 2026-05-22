@@ -41,6 +41,7 @@ public class MissingPersonSchemaMigrator implements ApplicationRunner {
 		addColumnIfMissing("SYNCED_AT", "SYNCED_AT DATETIME");
 		addColumnIfMissing("PERSON_NAME", "PERSON_NAME VARCHAR(100)");
 		addColumnIfMissing("GENDER", "GENDER VARCHAR(30)");
+		addColumnIfMissing("SEARCH_CONTENT", "SEARCH_CONTENT VARCHAR(768)");
 	}
 
 	private void addColumnIfMissing(String columnName, String columnDefinition) throws SQLException {

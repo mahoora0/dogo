@@ -102,7 +102,7 @@ public class LostItemService {
 	@Transactional(readOnly = true)
 	public List<RecentItemView> getRecentItems(int limit) {
 		Pageable pageable = Pageable.ofSize(limit);
-		return lostItemRepository.findByDeletedFalseOrderByLostAtDescLostIdDesc(pageable).stream()
+		return lostItemRepository.findByDeletedFalseOrderByRegDateDescLostIdDesc(pageable).stream()
 				.map(item -> new RecentItemView(
 						item.getLostId(),
 						"LOST",
@@ -115,7 +115,8 @@ public class LostItemService {
 						statusLabel(item.getStatus()),
 						lostItemImageRepository.findFirstByLostItemOrderBySortOrderAscImageIdAsc(item)
 								.map(LostItemImage::getImageUrl)
-								.orElse(PLACEHOLDER_IMAGE)
+								.orElse(PLACEHOLDER_IMAGE),
+						item.getRegDate()
 				))
 				.toList();
 	}

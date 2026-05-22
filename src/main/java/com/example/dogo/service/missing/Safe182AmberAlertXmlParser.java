@@ -53,9 +53,9 @@ public class Safe182AmberAlertXmlParser {
 	}
 
 	private List<Safe182AmberAlertView> alerts(Document document) {
-		NodeList alertNodes = document.getElementsByTagName("list");
+		NodeList alertNodes = document.getElementsByTagName("item");
 		if (alertNodes.getLength() == 0) {
-			alertNodes = document.getElementsByTagName("item");
+			alertNodes = document.getElementsByTagName("list");
 		}
 
 		List<Safe182AmberAlertView> alerts = new ArrayList<>();
@@ -66,11 +66,11 @@ public class Safe182AmberAlertXmlParser {
 			}
 			Element item = (Element) node;
 			alerts.add(new Safe182AmberAlertView(
-					text(item, "occrde"),
+					formatOccurrenceDate(text(item, "occrde")),
 					text(item, "alldressingDscd"),
 					text(item, "ageNow"),
 					text(item, "age"),
-					text(item, "writngTrgetDscd"),
+					mapTargetCode(text(item, "writngTrgetDscd")),
 					text(item, "sexdstnDscd"),
 					text(item, "occrAdres"),
 					text(item, "nm"),
@@ -114,6 +114,35 @@ public class Safe182AmberAlertXmlParser {
 		if (!StringUtils.hasText(value)) {
 			return null;
 		}
-		return value.trim();
+		String trimmed = value.trim();
+		if (trimmed.equalsIgnoreCase("null")) {
+			return null;
+		}
+		return trimmed;
+	}
+
+	private String mapTargetCode(String code) {
+		if (code == null) {
+			return null;
+		}
+		return switch (code.trim()) {
+			case "010" -> "정상아동(18세미만)";
+			case "020" -> "가출인";
+			case "040" -> "시설보호무연고자";
+			case "060" -> "지적장애인";
+			case "061" -> "지적장애인(18세미만)";
+			case "062" -> "지적장애인(18세이상)";
+			case "070" -> "치매질환자";
+			case "080" -> "불상(기타)";
+			default -> "실종 경보 (" + code + ")";
+		};
+	}
+
+	private String formatOccurrenceDate(String dateStr) {
+		if (dateStr == null || dateStr.trim().length() != 8) {
+			return dateStr;
+		}
+		String clean = dateStr.trim();
+		return clean.substring(0, 4) + "." + clean.substring(4, 6) + "." + clean.substring(6, 8);
 	}
 }

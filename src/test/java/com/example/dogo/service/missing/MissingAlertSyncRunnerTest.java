@@ -1,9 +1,12 @@
 package com.example.dogo.service.missing;
 
 import com.example.dogo.repository.missing.MissingPersonRepository;
+import com.example.dogo.service.missing.client.Safe182MissingPersonClient;
+import com.example.dogo.service.missing.client.Safe182MissingPersonPage;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -88,7 +91,17 @@ class MissingAlertSyncRunnerTest {
 
 		RecordingMissingAlertSyncService() {
 			super(
-					new MissingAlertService((occurrenceDate, rowSize, page) -> null),
+					new Safe182MissingPersonClient() {
+						@Override
+						public Safe182MissingPersonPage search(String keyword, int page, int rowSize) {
+							return null;
+						}
+
+						@Override
+						public Safe182MissingPersonPage searchByDateRange(LocalDate startDate, LocalDate endDate, int page, int rowSize) {
+							return null;
+						}
+					},
 					null,
 					100,
 					1,
