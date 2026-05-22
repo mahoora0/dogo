@@ -87,18 +87,82 @@
             </header>
 
             <div class="p-8 space-y-8">
-                <!-- Welcome Banner -->
-                <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
-                    <div class="absolute -right-10 -bottom-10 w-44 h-44 bg-white/10 rounded-full blur-2xl"></div>
-                    <div class="absolute -left-10 -top-10 w-44 h-44 bg-white/10 rounded-full blur-2xl"></div>
-                    <div class="relative z-10 max-w-xl">
-                        <span class="text-xs font-bold bg-white/20 px-3 py-1 rounded-full uppercase tracking-wider">Dogo Smart Console v1.2</span>
-                        <h2 class="text-3xl font-extrabold mt-3">안녕하세요, 관리자님!</h2>
-                        <p class="mt-2 text-blue-100 text-sm leading-relaxed">
-                            오늘도 Dogo 서비스를 이용해 소중한 유실물과 반려동물, 실종자가 사랑하는 가족의 품으로 돌아갈 수 있도록 실시간 데이터를 점검하고 스마트 매칭 결과를 확인해 보세요.
-                        </p>
+                <!-- 📞 대시보드 빠른 액션 (Quick Action Console) - 웅장한 가로형 3열 스트립 콘솔 -->
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm transition-all duration-300">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2.5 bg-slate-900 text-white rounded-2xl">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">대시보드 빠른 액션</h3>
+                            <p class="text-xs text-slate-500">최우선으로 처리해야 할 핵심 민원 상태를 모니터링하고 빠른 전용 직행 액션을 취합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Card 1: 📞 미답변 문의 대응 -->
+                        <a href="/admin/inquiries" class="p-5 bg-slate-50 hover:bg-amber-50/50 border border-slate-100 hover:border-amber-100 rounded-2xl transition-all duration-300 group text-left flex flex-col justify-between min-h-[140px] relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-amber-100/10 rounded-full blur-xl group-hover:bg-amber-100/20 transition-all"></div>
+                            <div class="flex items-center justify-between z-10">
+                                <div class="p-2.5 bg-amber-100 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition-all duration-300">
+                                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                                </div>
+                                <span th:if="${unansweredInquiriesCount > 0}" th:text="${unansweredInquiriesCount} + '건 대기'" 
+                                      class="text-[10px] font-extrabold px-2.5 py-1 rounded-full border bg-red-50 text-red-600 border-red-100 uppercase animate-bounce shadow-sm">0건 대기</span>
+                            </div>
+                            <div class="mt-4 z-10 flex items-center justify-between gap-2">
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800 group-hover:text-amber-700 transition-colors">📞 미답변 문의 대응</h4>
+                                    <p class="text-[11px] text-slate-500 mt-1 leading-normal">접수된 1:1 문의사항 중 답변 대기 건입니다.</p>
+                                </div>
+                                <div class="flex items-center justify-center p-2 bg-amber-500 group-hover:bg-amber-600 text-white rounded-xl transition-all shadow-md group-hover:scale-105 shrink-0">
+                                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Card 2: 🚨 게시판 신고 처리 -->
+                        <a href="/admin/inquiries" class="p-5 bg-slate-50 hover:bg-rose-50/50 border border-slate-100 hover:border-rose-100 rounded-2xl transition-all duration-300 group text-left flex flex-col justify-between min-h-[140px] relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-rose-100/10 rounded-full blur-xl group-hover:bg-rose-100/20 transition-all"></div>
+                            <div class="flex items-center justify-between z-10">
+                                <div class="p-2.5 bg-rose-100 text-rose-600 rounded-xl group-hover:bg-rose-600 group-hover:text-white transition-all duration-300">
+                                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                                </div>
+                                <span th:if="${reportedItemsCount > 0}" th:text="${reportedItemsCount} + '건 대기'" 
+                                      class="text-[10px] font-extrabold px-2.5 py-1 rounded-full border bg-rose-600 text-white border-rose-500 uppercase animate-pulse shadow-sm">0건 대기</span>
+                            </div>
+                            <div class="mt-4 z-10 flex items-center justify-between gap-2">
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800 group-hover:text-rose-700 transition-colors">🚨 게시판 신고 처리</h4>
+                                    <p class="text-[11px] text-slate-500 mt-1 leading-normal">신고 접수되어 규정 위반 검토가 시급한 건입니다.</p>
+                                </div>
+                                <div class="flex items-center justify-center p-2 bg-rose-600 group-hover:bg-rose-700 text-white rounded-xl transition-all shadow-md group-hover:scale-105 shrink-0">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Card 3: 📥 대량 데이터 백업 -->
+                        <div class="p-5 bg-slate-50 border border-slate-100 rounded-2xl transition-all duration-300 text-left flex flex-col justify-between min-h-[140px] relative overflow-hidden group">
+                            <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-100/10 rounded-full blur-xl group-hover:bg-emerald-100/20 transition-all"></div>
+                            <div class="flex items-center justify-between z-10">
+                                <div class="p-2.5 bg-emerald-100 text-emerald-600 rounded-xl">
+                                    <i data-lucide="download" class="w-5 h-5"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 z-10 flex items-center justify-between gap-2">
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800">📥 대량 데이터 백업</h4>
+                                    <p class="text-[11px] text-slate-500 mt-1 leading-normal">현재까지 축적된 유실물 데이터를 엑셀로 다운로드합니다.</p>
+                                </div>
+                                <a href="/admin/backup/csv" class="flex items-center justify-center p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shadow-md hover:scale-105 shrink-0">
+                                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
 
                 <!-- 🛠️ 시스템 핵심 컨트롤 패널 (System Core Control Tower) -->
                 <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm transition-all duration-300">
@@ -294,43 +358,6 @@
 
                     <!-- Right: Quick Analytics & Quick Console -->
                     <div class="space-y-8">
-                        <!-- Quick Action Console -->
-                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                            <h2 class="text-lg font-bold text-slate-800 mb-4">대시보드 빠른 액션</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Card 1: 📞 미답변 문의 알림 -->
-                                <a href="/admin/inquiries" class="p-4 bg-slate-50 hover:bg-amber-50/50 border border-slate-100 hover:border-amber-100 rounded-xl transition-all group text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
-                                    <div>
-                                        <div class="flex items-center justify-between">
-                                            <div class="p-2 bg-amber-100 text-amber-600 rounded-lg w-fit group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                                                <i data-lucide="message-square" class="w-5 h-5"></i>
-                                            </div>
-                                            <span th:if="${unansweredInquiriesCount > 0}" th:text="${unansweredInquiriesCount} + '건 대기'" 
-                                                  class="text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-red-50 text-red-600 border-red-100 uppercase animate-bounce">0건 대기</span>
-                                        </div>
-                                        <h4 class="font-bold text-sm text-slate-800 mt-3 font-semibold">📞 미답변 문의 대응</h4>
-                                    </div>
-                                    <div class="mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-amber-500 group-hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm">
-                                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                                        답변하기
-                                    </div>
-                                </a>
-
-                                <!-- Card 2: 📥 대량 데이터 백업 -->
-                                <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
-                                    <div>
-                                        <div class="p-2 bg-emerald-100 text-emerald-600 rounded-lg w-fit">
-                                            <i data-lucide="download" class="w-5 h-5"></i>
-                                        </div>
-                                        <h4 class="font-bold text-sm text-slate-800 mt-3 font-semibold">📥 대량 데이터 백업</h4>
-                                    </div>
-                                    <a href="/admin/backup/csv" class="mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-emerald-200">
-                                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                                        엑셀 다운로드
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Statistics Visual bar -->
                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
