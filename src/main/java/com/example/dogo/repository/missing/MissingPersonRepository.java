@@ -10,6 +10,8 @@ public interface MissingPersonRepository extends JpaRepository<MissingPersonRepo
 
 	List<MissingPersonReport> findByDeletedFalseOrderByRegdateDesc();
 
+	org.springframework.data.domain.Page<MissingPersonReport> findBySourceTypeAndDeletedFalse(String sourceType, org.springframework.data.domain.Pageable pageable);
+
 	Optional<MissingPersonReport> findByApiProviderAndExternalId(String apiProvider, String externalId);
 
 	List<MissingPersonReport> findByUserAndDeletedFalseOrderByRegdateDesc(com.example.dogo.entity.user.User user);

@@ -59,6 +59,36 @@ public class DataSafe182MissingPersonClient implements Safe182MissingPersonClien
 		return result;
 	}
 
+	@Override
+	public Safe182MissingPersonPage searchByDateRange(java.time.LocalDate startDate, java.time.LocalDate endDate, int page, int rowSize) {
+		if (!StringUtils.hasText(esntlId) || !StringUtils.hasText(authKey)) {
+			throw new IllegalStateException("Safe182 missing search API credentials are not configured.");
+		}
+
+		java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+		String response = utf8(restClient.post()
+				.uri(uriBuilder -> {
+					uriBuilder
+							.queryParam("esntlId", esntlId)
+							.queryParam("authKey", authKey)
+							.queryParam("rowSize", rowSize)
+							.queryParam("page", page)
+							.queryParam("detailDate1", startDate.format(formatter))
+							.queryParam("detailDate2", endDate.format(formatter))
+							.queryParam("xmlUseYN", "Y");
+					return uriBuilder.build();
+				})
+				.retrieve()
+				.body(byte[].class));
+
+		Safe182MissingPersonPage result = parser.parse(response);
+		if (StringUtils.hasText(result.result()) && !"00".equals(result.result())) {
+			throw new IllegalStateException("Safe182 missing search API call failed: " + result.result() + " " + result.message());
+		}
+		return result;
+	}
+
 	private String utf8(byte[] response) {
 		if (response == null || response.length == 0) {
 			return "";

@@ -69,7 +69,7 @@ class MissingPersonServiceTest {
 		);
 
 		assertThat(report.getSourceType()).isEqualTo("PUBLIC_API");
-		assertThat(report.getSourceLabel()).isEqualTo("공공데이터");
+		assertThat(report.getSourceLabel()).isEqualTo("데이터 출처: 경찰청");
 		assertThat(report.getApiProvider()).isEqualTo("MISSING_ALERT");
 		assertThat(report.getExternalId()).isEqualTo("case-20260518-001");
 		assertThat(report.getPersonName()).isEqualTo("Hong Gil-dong");
