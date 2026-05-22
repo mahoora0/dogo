@@ -1,13 +1,16 @@
 package com.example.dogo.service.missing;
 
-import com.example.dogo.dto.missing.Safe182AmberAlertPage;
-import com.example.dogo.dto.missing.Safe182AmberAlertView;
+import com.example.dogo.service.missing.client.Safe182MissingPersonClient;
+import com.example.dogo.service.missing.client.Safe182MissingPersonPage;
+import com.example.dogo.service.missing.client.Safe182MissingPersonRecord;
 import com.example.dogo.entity.missing.MissingPersonReport;
 import com.example.dogo.repository.missing.MissingPersonRepository;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,11 +20,11 @@ class MissingAlertSyncServiceTest {
 
 	@Test
 	void syncDateStoresPublicApiMissingReports() {
-		RecordingMissingAlertService missingAlertService = new RecordingMissingAlertService(
-				new Safe182AmberAlertPage("00", "OK", 1, List.of(alert()))
+		RecordingMissingPersonClient client = new RecordingMissingPersonClient(
+				new Safe182MissingPersonPage("00", "OK", 1, List.of(record()))
 		);
 		RecordingMissingPersonRepository repository = new RecordingMissingPersonRepository(false, false);
-		MissingAlertSyncService syncService = syncService(missingAlertService, repository.proxy());
+		MissingAlertSyncService syncService = syncService(client, repository.proxy());
 
 		MissingAlertSyncResult result = syncService.syncDate(LocalDate.of(2026, 5, 18));
 
@@ -30,18 +33,18 @@ class MissingAlertSyncServiceTest {
 		assertThat(result.skippedCount()).isZero();
 		assertThat(repository.savedReports).hasSize(1);
 		assertThat(repository.savedReports.get(0).getSourceType()).isEqualTo("PUBLIC_API");
-		assertThat(repository.savedReports.get(0).getApiProvider()).isEqualTo("SAFE182_AMBER");
+		assertThat(repository.savedReports.get(0).getApiProvider()).isEqualTo("SAFE182_MISSING_PERSON");
 		assertThat(repository.savedReports.get(0).getPersonName()).isEqualTo("홍길동");
 		assertThat(repository.savedReports.get(0).getGender()).isEqualTo("남자");
 	}
 
 	@Test
 	void syncDateSkipsExistingPublicApiReports() {
-		RecordingMissingAlertService missingAlertService = new RecordingMissingAlertService(
-				new Safe182AmberAlertPage("00", "OK", 1, List.of(alert()))
+		RecordingMissingPersonClient client = new RecordingMissingPersonClient(
+				new Safe182MissingPersonPage("00", "OK", 1, List.of(record()))
 		);
 		RecordingMissingPersonRepository repository = new RecordingMissingPersonRepository(true, false);
-		MissingAlertSyncService syncService = syncService(missingAlertService, repository.proxy());
+		MissingAlertSyncService syncService = syncService(client, repository.proxy());
 
 		MissingAlertSyncResult result = syncService.syncDate(LocalDate.of(2026, 5, 18));
 
@@ -52,25 +55,23 @@ class MissingAlertSyncServiceTest {
 	}
 
 	@Test
-	void syncBackfillFetchesConfiguredLookbackRange() {
-		RecordingMissingAlertService missingAlertService = new RecordingMissingAlertService(
-				new Safe182AmberAlertPage("00", "OK", 0, List.of())
+	void syncAllFetchesAllActiveRecordsWithoutDateFilter() {
+		RecordingMissingPersonClient client = new RecordingMissingPersonClient(
+				new Safe182MissingPersonPage("00", "OK", 0, List.of())
 		);
 		RecordingMissingPersonRepository repository = new RecordingMissingPersonRepository(false, false);
-		MissingAlertSyncService syncService = syncService(missingAlertService, repository.proxy());
+		MissingAlertSyncService syncService = syncService(client, repository.proxy());
 
-		MissingAlertSyncResult result = syncService.syncBackfill(LocalDate.of(2026, 5, 18));
+		MissingAlertSyncResult result = syncService.syncAll();
 
-		assertThat(result.pageCount()).isEqualTo(2);
-		assertThat(missingAlertService.requestedDates).containsExactly(
-				LocalDate.of(2026, 5, 17),
-				LocalDate.of(2026, 5, 18)
-		);
+		assertThat(result.pageCount()).isEqualTo(1);
+		assertThat(client.searchAllCalled).isTrue();
+		assertThat(client.requestedDates).isEmpty();
 	}
 
-	private MissingAlertSyncService syncService(MissingAlertService service, MissingPersonRepository repository) {
+	private MissingAlertSyncService syncService(Safe182MissingPersonClient client, MissingPersonRepository repository) {
 		return new MissingAlertSyncService(
-				service,
+				client,
 				repository,
 				100,
 				1,
@@ -78,39 +79,43 @@ class MissingAlertSyncServiceTest {
 		);
 	}
 
-	private Safe182AmberAlertView alert() {
-		return new Safe182AmberAlertView(
-				"20260518",
-				"파란색 상의",
-				"12",
-				"11",
-				"010",
-				"남자",
-				"서울특별시 종로구",
+	private Safe182MissingPersonRecord record() {
+		return new Safe182MissingPersonRecord(
+				"12345",
 				"홍길동",
-				"145",
-				"38",
+				"남자",
+				10,
+				LocalDateTime.of(2026, 5, 18, 0, 0),
+				"서울특별시 종로구",
+				145,
+				new BigDecimal("38.0"),
 				"보통",
 				"계란형",
-				"짧은머리",
 				"흑색",
-				"1234",
+				"짧은머리",
+				"파란색 상의",
 				"자료 출처: 경찰청"
 		);
 	}
 
-	private static class RecordingMissingAlertService extends MissingAlertService {
-		private final Safe182AmberAlertPage response;
+	private static class RecordingMissingPersonClient implements Safe182MissingPersonClient {
+		private final Safe182MissingPersonPage response;
 		private final List<LocalDate> requestedDates = new ArrayList<>();
+		private boolean searchAllCalled = false;
 
-		RecordingMissingAlertService(Safe182AmberAlertPage response) {
-			super((occurrenceDate, rowSize, page) -> response);
+		RecordingMissingPersonClient(Safe182MissingPersonPage response) {
 			this.response = response;
 		}
 
 		@Override
-		public Safe182AmberAlertPage fetchAlerts(int rowSize, Integer page, LocalDate occurrenceDate) {
-			requestedDates.add(occurrenceDate);
+		public Safe182MissingPersonPage search(String keyword, int page, int rowSize) {
+			searchAllCalled = true;
+			return response;
+		}
+
+		@Override
+		public Safe182MissingPersonPage searchByDateRange(LocalDate startDate, LocalDate endDate, int page, int rowSize) {
+			requestedDates.add(startDate); // Assumes we just track the startDate for verification
 			return response;
 		}
 	}

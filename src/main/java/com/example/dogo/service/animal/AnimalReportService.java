@@ -113,7 +113,8 @@ public class AnimalReportService {
 						statusLabel(item.getStatus()),
 						animalReportImageRepository.findFirstByAnimalReportOrderBySortOrderAscImageIdAsc(item)
 								.map(AnimalReportImage::getImageUrl)
-								.orElse(PLACEHOLDER_IMAGE)
+								.orElse(PLACEHOLDER_IMAGE),
+						item.getRegdate()
 				))
 				.toList();
 	}
