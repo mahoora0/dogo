@@ -134,7 +134,7 @@
                             </button>
                         </div>
 
-                        <!-- 컨트롤 2: 시간/위치 가중치 분석 스위치 -->
+                        <!-- 컨트롤 2: 시간/위치 가중치 분석 스위치 & 실시간 정확도 결합 -->
                         <div class="p-5 bg-blue-50/40 border border-blue-100/80 rounded-2xl flex flex-col justify-between relative overflow-hidden">
                             <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-blue-100/30 rounded-full blur-xl"></div>
                             <div class="flex items-center justify-between z-10">
@@ -148,13 +148,25 @@
                                 </label>
                             </div>
                             <h4 class="font-bold text-sm text-slate-800 mt-4 z-10">📍 시간 및 위치 가중치 분석</h4>
-                            <p class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed z-10">유실-습득물 간의 거리와 시공간 오차 가중치를 계산식에서 제외하거나 반영합니다.</p>
+                            <p class="text-xs text-slate-500 mt-1 mb-3 leading-relaxed z-10">유실-습득물 간의 거리와 시공간 오차 가중치를 계산식에서 제외하거나 반영합니다.</p>
+                            
+                            <!-- 📈 실시간 정확도 연동 게이지 -->
+                            <div class="mt-1 mb-3 bg-white/70 backdrop-blur-sm p-3 border border-blue-100/50 rounded-xl z-10">
+                                <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                                    <span>🎯 평균 매칭 정확도</span>
+                                    <span id="matchAccVal" class="font-bold text-blue-750">94.8%</span>
+                                </div>
+                                <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                    <div id="matchAccBar" class="bg-blue-600 h-full rounded-full transition-all duration-1000" style="width: 94.8%"></div>
+                                </div>
+                            </div>
+                            
                             <div class="text-[10px] font-bold text-blue-600 bg-blue-50/50 rounded-lg p-2 text-center z-10">
                                 💡 장거리/전국 단위 수색 필요시 OFF 설정 권장
                             </div>
                         </div>
 
-                        <!-- 컨트롤 3: 형태/키워드 동적 필터 스위치 -->
+                        <!-- 컨트롤 3: 형태/키워드 동적 필터 스위치 & 실시간 부하율 결합 -->
                         <div class="p-5 bg-indigo-50/40 border border-indigo-100/80 rounded-2xl flex flex-col justify-between relative overflow-hidden">
                             <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-indigo-100/30 rounded-full blur-xl"></div>
                             <div class="flex items-center justify-between z-10">
@@ -168,7 +180,19 @@
                                 </label>
                             </div>
                             <h4 class="font-bold text-sm text-slate-800 mt-4 z-10">🔍 동적 형태 및 키워드 필터</h4>
-                            <p class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed z-10">물품명 텍스트 정규화 분석기(Text Normalizer) 필터를 적용하거나 대기 모드로 돌립니다.</p>
+                            <p class="text-xs text-slate-500 mt-1 mb-3 leading-relaxed z-10">물품명 텍스트 정규화 분석기(Text Normalizer) 필터를 적용하거나 대기 모드로 돌립니다.</p>
+                            
+                            <!-- 🔥 실시간 엔진 부하 연동 게이지 -->
+                            <div class="mt-1 mb-3 bg-white/70 backdrop-blur-sm p-3 border border-indigo-100/50 rounded-xl z-10">
+                                <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                                    <span>🔥 실시간 엔진 처리 부하율</span>
+                                    <span id="engineLoadVal" class="font-bold text-indigo-750">12%</span>
+                                </div>
+                                <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                    <div id="engineLoadBar" class="bg-indigo-600 h-full rounded-full transition-all duration-1000" style="width: 12%"></div>
+                                </div>
+                            </div>
+                            
                             <div class="text-[10px] font-bold text-indigo-600 bg-indigo-50/50 rounded-lg p-2 text-center z-10">
                                 💡 서버 과부하 상황 발생시 즉시 OFF 설정 권장
                             </div>
@@ -272,7 +296,7 @@
                     <div class="space-y-8">
                         <!-- Quick Action Console -->
                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                            <h2 class="text-lg font-bold text-slate-800 mb-4">대시보드 빠른 액션 및 모니터링</h2>
+                            <h2 class="text-lg font-bold text-slate-800 mb-4">대시보드 빠른 액션</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- Card 1: 📞 미답변 문의 알림 -->
                                 <a href="/admin/inquiries" class="p-4 bg-slate-50 hover:bg-amber-50/50 border border-slate-100 hover:border-amber-100 rounded-xl transition-all group text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
@@ -304,42 +328,6 @@
                                         <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
                                         엑셀 다운로드
                                     </a>
-                                </div>
-
-                                <!-- Card 3 (가로 2칸 차지): 🧩 AI 매칭 엔진 실시간 모니터링 -->
-                                <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all text-left flex flex-col justify-between space-y-3 relative overflow-hidden md:col-span-2">
-                                    <div>
-                                        <div class="flex items-center justify-between">
-                                            <div class="p-2 bg-indigo-100 text-indigo-600 rounded-lg w-fit">
-                                                <i data-lucide="cpu" class="w-5 h-5"></i>
-                                            </div>
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-                                                엔진 실시간 구동 대기중
-                                            </span>
-                                        </div>
-                                        <h4 class="font-bold text-sm text-slate-800 mt-3 font-semibold">🧩 AI 매칭 엔진 실시간 모니터링</h4>
-                                        <div class="mt-3 space-y-3.5 text-xs">
-                                            <div>
-                                                <div class="flex justify-between text-slate-500 mb-1">
-                                                    <span>평균 매칭 정확도</span>
-                                                    <span id="matchAccVal" class="font-bold text-slate-800">94.8%</span>
-                                                </div>
-                                                <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                                                    <div id="matchAccBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 94.8%"></div>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div class="flex justify-between text-slate-500 mb-1">
-                                                    <span>엔진 처리 부하</span>
-                                                    <span id="engineLoadVal" class="font-bold text-slate-800">12%</span>
-                                                </div>
-                                                <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                                                    <div id="engineLoadBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 12%"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
