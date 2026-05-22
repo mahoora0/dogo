@@ -35,6 +35,8 @@ public class AdminController {
     private final InquiryRepository inquiryRepository;
 
     private static boolean emergencyActive = false;
+    private static boolean locationWeightEnabled = true;
+    private static boolean keywordFilterEnabled = true;
 
     @GetMapping("")
     public String dashboard(Model model) {
@@ -45,6 +47,8 @@ public class AdminController {
         model.addAttribute("matchSuccess", animalReportRepository.count() + missingPersonRepository.count());
         model.addAttribute("unansweredInquiriesCount", inquiryRepository.countByStatusNot("ANSWERED"));
         model.addAttribute("emergencyActive", emergencyActive);
+        model.addAttribute("locationWeightEnabled", locationWeightEnabled);
+        model.addAttribute("keywordFilterEnabled", keywordFilterEnabled);
 
         // 실시간 대표 유실물 분포 비율 연산
         long totalLostCount = lostItemRepository.countByDeletedFalse();
@@ -276,6 +280,21 @@ public class AdminController {
         emergencyActive = !emergencyActive;
         Map<String, Object> response = new HashMap<>();
         response.put("active", emergencyActive);
+        return response;
+    }
+
+    @PostMapping("/api/settings/toggle")
+    @ResponseBody
+    public Map<String, Object> toggleSetting(@RequestParam("key") String key, @RequestParam("value") boolean value) {
+        if ("location_weight_enabled".equals(key)) {
+            locationWeightEnabled = value;
+        } else if ("keyword_filter_enabled".equals(key)) {
+            keywordFilterEnabled = value;
+        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("key", key);
+        response.put("value", value);
         return response;
     }
 

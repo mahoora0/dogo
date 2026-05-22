@@ -151,4 +151,15 @@ class AdminControllerTest {
         // Turn off emergency to leave state clean
         mockMvc.perform(post("/admin/api/emergency/toggle"));
     }
+
+    @Test
+    void toggleSettingSuccessfullyChangesConfig() throws Exception {
+        mockMvc.perform(post("/admin/api/settings/toggle")
+                        .param("key", "location_weight_enabled")
+                        .param("value", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.key", is("location_weight_enabled")))
+                .andExpect(jsonPath("$.value", is(false)));
+    }
 }

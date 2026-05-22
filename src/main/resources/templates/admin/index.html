@@ -236,52 +236,52 @@
                                     </div>
                                 </a>
 
-                                <!-- Card 3: ⚙️ 시스템 헬스체크 -->
+                                <!-- Card 3: 🧩 AI 매칭 엔진 제어 -->
                                 <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
                                     <div>
                                         <div class="flex items-center justify-between">
                                             <div class="p-2 bg-indigo-100 text-indigo-600 rounded-lg w-fit">
-                                                <i data-lucide="activity" class="w-5 h-5"></i>
+                                                <i data-lucide="cpu" class="w-5 h-5"></i>
                                             </div>
                                             <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
                                                 <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-                                                시스템 정상
+                                                엔진 실시간 대기중
                                             </span>
                                         </div>
-                                        <h4 class="font-bold text-sm text-slate-800 mt-3">⚙️ 시스템 헬스체크</h4>
+                                        <h4 class="font-bold text-sm text-slate-800 mt-3">🧩 AI 매칭 엔진 제어</h4>
                                         <div class="mt-2 space-y-2 text-xs">
                                             <div>
                                                 <div class="flex justify-between text-slate-500 mb-0.5">
-                                                    <span>CPU 사용량</span>
-                                                    <span id="cpuVal" class="font-semibold text-slate-700">12%</span>
+                                                    <span>평균 매칭 정확도</span>
+                                                    <span id="matchAccVal" class="font-semibold text-slate-700">94.8%</span>
                                                 </div>
                                                 <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                                                    <div id="cpuBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 12%"></div>
+                                                    <div id="matchAccBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 94.8%"></div>
                                                 </div>
                                             </div>
                                             <div>
                                                 <div class="flex justify-between text-slate-500 mb-0.5">
-                                                    <span>JVM 메모리</span>
-                                                    <span id="memVal" class="font-semibold text-slate-700">48%</span>
+                                                    <span>엔진 처리 부하</span>
+                                                    <span id="engineLoadVal" class="font-semibold text-slate-700">12%</span>
                                                 </div>
                                                 <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                                                    <div id="memBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 48%"></div>
+                                                    <div id="engineLoadBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 12%"></div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="pt-2 border-t border-slate-200/60 space-y-1.5 text-[10px] text-slate-600">
                                         <div class="flex items-center justify-between">
-                                            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>경찰망 API 연동</span>
+                                            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>시간/위치 가중치 분석</span>
                                             <label class="relative inline-flex items-center cursor-pointer scale-75 origin-right">
-                                                <input type="checkbox" id="policeApiToggle" class="sr-only peer" checked>
+                                                <input type="checkbox" id="locationWeightToggle" class="sr-only peer" th:checked="${locationWeightEnabled}">
                                                 <div class="w-7 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
                                             </label>
                                         </div>
                                         <div class="flex items-center justify-between">
-                                            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>지도 API 연동</span>
+                                            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>동적 형태/키워드 필터</span>
                                             <label class="relative inline-flex items-center cursor-pointer scale-75 origin-right">
-                                                <input type="checkbox" id="mapApiToggle" class="sr-only peer" checked>
+                                                <input type="checkbox" id="keywordFilterToggle" class="sr-only peer" th:checked="${keywordFilterEnabled}">
                                                 <div class="w-7 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
                                             </label>
                                         </div>
@@ -406,36 +406,70 @@
             });
         }
 
-        // ⚙️ 시스템 헬스체크 실시간 시뮬레이션
-        const cpuBar = document.getElementById('cpuBar');
-        const cpuVal = document.getElementById('cpuVal');
-        const memBar = document.getElementById('memBar');
-        const memVal = document.getElementById('memVal');
-        if (cpuBar && cpuVal && memBar && memVal) {
+        // 🧩 AI 매칭 엔진 실시간 시뮬레이션
+        const matchAccBar = document.getElementById('matchAccBar');
+        const matchAccVal = document.getElementById('matchAccVal');
+        const engineLoadBar = document.getElementById('engineLoadBar');
+        const engineLoadVal = document.getElementById('engineLoadVal');
+        if (matchAccBar && matchAccVal && engineLoadBar && engineLoadVal) {
             setInterval(() => {
-                // CPU fluctuates between 8% and 22%
-                const cpu = Math.floor(Math.random() * 15) + 8;
-                cpuBar.style.width = `${cpu}%`;
-                cpuVal.innerText = `${cpu}%`;
+                // Accuracy fluctuates between 94.2% and 95.4%
+                const acc = (94.2 + Math.random() * 1.2).toFixed(1);
+                matchAccBar.style.width = `${acc}%`;
+                matchAccVal.innerText = `${acc}%`;
                 
-                // Memory fluctuates between 46% and 51%
-                const mem = Math.floor(Math.random() * 6) + 46;
-                memBar.style.width = `${mem}%`;
-                memVal.innerText = `${mem}%`;
+                // Engine load fluctuates between 8% and 18%
+                const load = Math.floor(Math.random() * 10) + 8;
+                engineLoadBar.style.width = `${load}%`;
+                engineLoadVal.innerText = `${load}%`;
             }, 3000);
         }
 
-        // API 연동 토글 알림
-        const policeToggle = document.getElementById('policeApiToggle');
-        const mapToggle = document.getElementById('mapApiToggle');
-        if (policeToggle) {
-            policeToggle.addEventListener('change', function() {
-                showToast(this.checked ? '🟢 경찰망 공공 API 실시간 동기화 연동이 정상 작동 중입니다.' : '🟡 경찰망 동기화 API 연동이 일시 중지되었습니다.');
+        // 매칭 엔진 설정 토글 알림 및 백엔드 연동
+        const locationWeightToggle = document.getElementById('locationWeightToggle');
+        const keywordFilterToggle = document.getElementById('keywordFilterToggle');
+
+        function updateEngineSetting(key, value, successMsg, failMsg) {
+            const formData = new FormData();
+            formData.append('key', key);
+            formData.append('value', value);
+
+            // AJAX call to AdminController settings API
+            fetch('/admin/api/settings/toggle', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showToast(value ? successMsg : failMsg);
+                } else {
+                    showToast('🔴 설정 저장에 실패하였습니다. 권한을 확인하세요.');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating setting:', error);
+                showToast('🔴 네트워크 오류로 인해 설정을 반영하지 못했습니다.');
             });
         }
-        if (mapToggle) {
-            mapToggle.addEventListener('change', function() {
-                showToast(this.checked ? '🟢 카카오 지도 API 연동이 정상 상태로 활성화되었습니다.' : '🟡 카카오 지도 API 호출이 대기 모드로 전환되었습니다.');
+
+        if (locationWeightToggle) {
+            locationWeightToggle.addEventListener('change', function() {
+                updateEngineSetting(
+                    'location_weight_enabled',
+                    this.checked,
+                    '🟢 시간 및 위치 가중치 매칭 분석이 활성화되어 정확도가 보정됩니다.',
+                    '🟡 시간 및 위치 가중치 매칭 분석이 비활성화되었습니다.'
+                );
+            });
+        }
+        if (keywordFilterToggle) {
+            keywordFilterToggle.addEventListener('change', function() {
+                updateEngineSetting(
+                    'keyword_filter_enabled',
+                    this.checked,
+                    '🟢 형태 및 키워드 동적 필터링 분석 기능이 정상 작동 중입니다.',
+                    '🟡 형태 및 키워드 동적 필터링 분석 기능이 대기 모드로 전환되었습니다.'
+                );
             });
         }
 
