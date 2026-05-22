@@ -38,6 +38,14 @@ public class AdminController {
     private static boolean locationWeightEnabled = true;
     private static boolean keywordFilterEnabled = true;
 
+    public static boolean isLocationWeightEnabled() {
+        return locationWeightEnabled;
+    }
+
+    public static boolean isKeywordFilterEnabled() {
+        return keywordFilterEnabled;
+    }
+
     @GetMapping("")
     public String dashboard(Model model) {
         // 실제 데이터베이스에서 건수 조회하여 바인딩

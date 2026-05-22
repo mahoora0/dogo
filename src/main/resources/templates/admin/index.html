@@ -100,6 +100,82 @@
                     </div>
                 </div>
 
+                <!-- 🛠️ 시스템 핵심 컨트롤 패널 (System Core Control Tower) -->
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm transition-all duration-300">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2.5 bg-slate-900 text-white rounded-2xl">
+                            <i data-lucide="sliders" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">시스템 핵심 컨트롤 패널</h3>
+                            <p class="text-xs text-slate-500">매칭 알고리즘의 주요 가중치 설정 및 긴급 상황 공지를 실시간으로 제어합니다.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- 컨트롤 1: 긴급 상황 경보 제어 -->
+                        <div class="p-5 bg-rose-50/50 border border-rose-100/80 rounded-2xl flex flex-col justify-between relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-rose-100/30 rounded-full blur-xl"></div>
+                            <div class="flex items-center justify-between z-10">
+                                <span class="text-xs font-bold text-rose-700 bg-rose-100/50 px-2.5 py-1 rounded-full flex items-center gap-1">
+                                    <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                                    대피 긴급 제어
+                                </span>
+                                <span id="emergencyBadge" 
+                                      th:class="${emergencyActive} ? 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-rose-600 text-white border-rose-500 uppercase animate-pulse' : 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-500 border-slate-200 uppercase'"
+                                      th:text="${emergencyActive} ? '상황 발령' : '정상 가동'">정상 가동</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-800 mt-4 z-10">🚨 긴급 재난 알림 팝업</h4>
+                            <p class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed z-10">전체 사용자 화면에 긴급 팝업창을 즉시 노출시키거나 해제합니다.</p>
+                            <button type="button" id="emergencyToggleBtn" 
+                                    th:class="${emergencyActive} ? 'inline-flex items-center justify-center gap-2 w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-rose-300 ring-2 ring-rose-500 ring-offset-2 z-10' : 'inline-flex items-center justify-center gap-2 w-full py-2.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm z-10'"
+                                    th:innerHTML="${emergencyActive} ? '<i data-lucide=\'power\' class=\'w-4 h-4\'></i> 긴급 알림 해제' : '<i data-lucide=\'power\' class=\'w-4 h-4\'></i> 긴급 상황 발령'">
+                                긴급 상황 발령
+                            </button>
+                        </div>
+
+                        <!-- 컨트롤 2: 시간/위치 가중치 분석 스위치 -->
+                        <div class="p-5 bg-blue-50/40 border border-blue-100/80 rounded-2xl flex flex-col justify-between relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-blue-100/30 rounded-full blur-xl"></div>
+                            <div class="flex items-center justify-between z-10">
+                                <span class="text-xs font-bold text-blue-700 bg-blue-100/50 px-2.5 py-1 rounded-full flex items-center gap-1">
+                                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                                    위치/시간 필터
+                                </span>
+                                <label class="relative inline-flex items-center cursor-pointer scale-90">
+                                    <input type="checkbox" id="locationWeightToggle" class="sr-only peer" th:checked="${locationWeightEnabled}">
+                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-800 mt-4 z-10">📍 시간 및 위치 가중치 분석</h4>
+                            <p class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed z-10">유실-습득물 간의 거리와 시공간 오차 가중치를 계산식에서 제외하거나 반영합니다.</p>
+                            <div class="text-[10px] font-bold text-blue-600 bg-blue-50/50 rounded-lg p-2 text-center z-10">
+                                💡 장거리/전국 단위 수색 필요시 OFF 설정 권장
+                            </div>
+                        </div>
+
+                        <!-- 컨트롤 3: 형태/키워드 동적 필터 스위치 -->
+                        <div class="p-5 bg-indigo-50/40 border border-indigo-100/80 rounded-2xl flex flex-col justify-between relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-indigo-100/30 rounded-full blur-xl"></div>
+                            <div class="flex items-center justify-between z-10">
+                                <span class="text-xs font-bold text-indigo-700 bg-indigo-100/50 px-2.5 py-1 rounded-full flex items-center gap-1">
+                                    <i data-lucide="search-code" class="w-3.5 h-3.5"></i>
+                                    언어 형태소 분석
+                                </span>
+                                <label class="relative inline-flex items-center cursor-pointer scale-90">
+                                    <input type="checkbox" id="keywordFilterToggle" class="sr-only peer" th:checked="${keywordFilterEnabled}">
+                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-800 mt-4 z-10">🔍 동적 형태 및 키워드 필터</h4>
+                            <p class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed z-10">물품명 텍스트 정규화 분석기(Text Normalizer) 필터를 적용하거나 대기 모드로 돌립니다.</p>
+                            <div class="text-[10px] font-bold text-indigo-600 bg-indigo-50/50 rounded-lg p-2 text-center z-10">
+                                💡 서버 과부하 상황 발생시 즉시 OFF 설정 권장
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Card 1: Users -->
@@ -196,29 +272,9 @@
                     <div class="space-y-8">
                         <!-- Quick Action Console -->
                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                            <h2 class="text-lg font-bold text-slate-800 mb-4">Dogo 스마트 컨트롤 패널</h2>
+                            <h2 class="text-lg font-bold text-slate-800 mb-4">대시보드 빠른 액션 및 모니터링</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Card 1: 🚨 긴급 실종 등록 -->
-                                <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
-                                    <div>
-                                        <div class="flex items-center justify-between">
-                                            <div class="p-2 bg-rose-100 text-rose-600 rounded-lg w-fit">
-                                                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-                                            </div>
-                                            <span id="emergencyBadge" 
-                                                  th:class="${emergencyActive} ? 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 uppercase animate-pulse' : 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-500 border-slate-200 uppercase'"
-                                                  th:text="${emergencyActive} ? '긴급 상황' : '비활성'">비활성</span>
-                                        </div>
-                                        <h4 class="font-bold text-sm text-slate-800 mt-3">🚨 긴급 실종 등록</h4>
-                                    </div>
-                                    <button type="button" id="emergencyToggleBtn" 
-                                            th:class="${emergencyActive} ? 'mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-rose-300 ring-2 ring-rose-500 ring-offset-2' : 'mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm'"
-                                            th:innerHTML="${emergencyActive} ? '<i data-lucide=\'power\' class=\'w-4 h-4\'></i> 긴급 팝업 끄기' : '<i data-lucide=\'power\' class=\'w-4 h-4\'></i> 긴급 팝업 켜기'">
-                                        긴급 팝업 켜기
-                                    </button>
-                                </div>
-
-                                <!-- Card 2: 📞 미답변 문의 알림 -->
+                                <!-- Card 1: 📞 미답변 문의 알림 -->
                                 <a href="/admin/inquiries" class="p-4 bg-slate-50 hover:bg-amber-50/50 border border-slate-100 hover:border-amber-100 rounded-xl transition-all group text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
                                     <div>
                                         <div class="flex items-center justify-between">
@@ -228,78 +284,62 @@
                                             <span th:if="${unansweredInquiriesCount > 0}" th:text="${unansweredInquiriesCount} + '건 대기'" 
                                                   class="text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-red-50 text-red-600 border-red-100 uppercase animate-bounce">0건 대기</span>
                                         </div>
-                                        <h4 class="font-bold text-sm text-slate-800 mt-3">📞 미답변 문의 알림</h4>
+                                        <h4 class="font-bold text-sm text-slate-800 mt-3 font-semibold">📞 미답변 문의 대응</h4>
                                     </div>
                                     <div class="mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-amber-500 group-hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm">
                                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                                        1:1 문의 대응하러 가기
+                                        답변하기
                                     </div>
                                 </a>
 
-                                <!-- Card 3: 🧩 AI 매칭 엔진 제어 -->
-                                <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
-                                    <div>
-                                        <div class="flex items-center justify-between">
-                                            <div class="p-2 bg-indigo-100 text-indigo-600 rounded-lg w-fit">
-                                                <i data-lucide="cpu" class="w-5 h-5"></i>
-                                            </div>
-                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-                                                엔진 실시간 대기중
-                                            </span>
-                                        </div>
-                                        <h4 class="font-bold text-sm text-slate-800 mt-3">🧩 AI 매칭 엔진 제어</h4>
-                                        <div class="mt-2 space-y-2 text-xs">
-                                            <div>
-                                                <div class="flex justify-between text-slate-500 mb-0.5">
-                                                    <span>평균 매칭 정확도</span>
-                                                    <span id="matchAccVal" class="font-semibold text-slate-700">94.8%</span>
-                                                </div>
-                                                <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                                                    <div id="matchAccBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 94.8%"></div>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div class="flex justify-between text-slate-500 mb-0.5">
-                                                    <span>엔진 처리 부하</span>
-                                                    <span id="engineLoadVal" class="font-semibold text-slate-700">12%</span>
-                                                </div>
-                                                <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                                                    <div id="engineLoadBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 12%"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="pt-2 border-t border-slate-200/60 space-y-1.5 text-[10px] text-slate-600">
-                                        <div class="flex items-center justify-between">
-                                            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>시간/위치 가중치 분석</span>
-                                            <label class="relative inline-flex items-center cursor-pointer scale-75 origin-right">
-                                                <input type="checkbox" id="locationWeightToggle" class="sr-only peer" th:checked="${locationWeightEnabled}">
-                                                <div class="w-7 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
-                                            </label>
-                                        </div>
-                                        <div class="flex items-center justify-between">
-                                            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>동적 형태/키워드 필터</span>
-                                            <label class="relative inline-flex items-center cursor-pointer scale-75 origin-right">
-                                                <input type="checkbox" id="keywordFilterToggle" class="sr-only peer" th:checked="${keywordFilterEnabled}">
-                                                <div class="w-7 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Card 4: 📥 대량 데이터 백업 -->
+                                <!-- Card 2: 📥 대량 데이터 백업 -->
                                 <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all text-left flex flex-col justify-between space-y-3 relative overflow-hidden">
                                     <div>
                                         <div class="p-2 bg-emerald-100 text-emerald-600 rounded-lg w-fit">
                                             <i data-lucide="download" class="w-5 h-5"></i>
                                         </div>
-                                        <h4 class="font-bold text-sm text-slate-800 mt-3">📥 대량 데이터 백업</h4>
+                                        <h4 class="font-bold text-sm text-slate-800 mt-3 font-semibold">📥 대량 데이터 백업</h4>
                                     </div>
                                     <a href="/admin/backup/csv" class="mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-emerald-200">
                                         <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                                        엑셀(CSV) 퀵 다운로드
+                                        엑셀 다운로드
                                     </a>
+                                </div>
+
+                                <!-- Card 3 (가로 2칸 차지): 🧩 AI 매칭 엔진 실시간 모니터링 -->
+                                <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all text-left flex flex-col justify-between space-y-3 relative overflow-hidden md:col-span-2">
+                                    <div>
+                                        <div class="flex items-center justify-between">
+                                            <div class="p-2 bg-indigo-100 text-indigo-600 rounded-lg w-fit">
+                                                <i data-lucide="cpu" class="w-5 h-5"></i>
+                                            </div>
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                                                엔진 실시간 구동 대기중
+                                            </span>
+                                        </div>
+                                        <h4 class="font-bold text-sm text-slate-800 mt-3 font-semibold">🧩 AI 매칭 엔진 실시간 모니터링</h4>
+                                        <div class="mt-3 space-y-3.5 text-xs">
+                                            <div>
+                                                <div class="flex justify-between text-slate-500 mb-1">
+                                                    <span>평균 매칭 정확도</span>
+                                                    <span id="matchAccVal" class="font-bold text-slate-800">94.8%</span>
+                                                </div>
+                                                <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                                    <div id="matchAccBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 94.8%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between text-slate-500 mb-1">
+                                                    <span>엔진 처리 부하</span>
+                                                    <span id="engineLoadVal" class="font-bold text-slate-800">12%</span>
+                                                </div>
+                                                <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                                    <div id="engineLoadBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 12%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
