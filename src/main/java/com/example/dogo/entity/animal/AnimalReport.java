@@ -39,8 +39,23 @@ public class AnimalReport {
 	private List<AnimalReportImage> images = new ArrayList<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "USER_NO", nullable = false)
+	@JoinColumn(name = "USER_NO")
 	private User user;
+
+	@Column(name = "SOURCE_TYPE", nullable = false)
+	private String sourceType = "USER";
+
+	@Column(name = "API_PROVIDER")
+	private String apiProvider;
+
+	@Column(name = "EXTERNAL_ID")
+	private String externalId;
+
+	@Column(name = "RAW_PAYLOAD", columnDefinition = "TEXT")
+	private String rawPayload;
+
+	@Column(name = "SYNCED_AT")
+	private LocalDateTime syncedAt;
 
 	@Column(name = "REPORT_TYPE", nullable = false)
 	private String reportType;
@@ -162,6 +177,62 @@ public class AnimalReport {
 		this.furColor = furColor;
 		this.distinctiveMarks = distinctiveMarks;
 		this.content = content;
+	}
+
+	public static AnimalReport fromPublicApi(
+			String apiProvider,
+			String externalId,
+			String reportType,
+			String title,
+			LocalDate eventDate,
+			LocalTime eventTime,
+			Area regionArea,
+			String regionName,
+			String detailPlace,
+			String contactPhone,
+			boolean contactPublic,
+			String sightingCareStatus,
+			String animalType,
+			String breedName,
+			String gender,
+			String neuteredStatus,
+			Integer ageValue,
+			String ageUnit,
+			BigDecimal weightKg,
+			String furColor,
+			String distinctiveMarks,
+			String content,
+			String rawPayload
+	) {
+		AnimalReport report = new AnimalReport(
+				null,
+				reportType,
+				title,
+				eventDate,
+				eventTime,
+				regionArea,
+				regionName,
+				detailPlace,
+				contactPhone,
+				contactPublic,
+				sightingCareStatus,
+				animalType,
+				breedName,
+				gender,
+				neuteredStatus,
+				ageValue,
+				ageUnit,
+				weightKg,
+				furColor,
+				distinctiveMarks,
+				content
+		);
+		report.sourceType = apiProvider;
+		report.apiProvider = apiProvider;
+		report.externalId = externalId;
+		report.rawPayload = rawPayload;
+		report.syncedAt = LocalDateTime.now();
+		return report;
 	}
 
 	public void update(

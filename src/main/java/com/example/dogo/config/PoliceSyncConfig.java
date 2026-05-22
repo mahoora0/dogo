@@ -11,8 +11,8 @@ public class PoliceSyncConfig {
 	@Bean
 	public TaskExecutor policeStartupBackfillExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(3);
-		executor.setMaxPoolSize(3);
+		executor.setCorePoolSize(5);
+		executor.setMaxPoolSize(5);
 		executor.setQueueCapacity(0);
 		executor.setThreadNamePrefix("police-backfill-");
 		executor.initialize();

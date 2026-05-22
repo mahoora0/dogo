@@ -225,6 +225,20 @@ public class AnimalImageEmbeddingService {
 	}
 
 	private byte[] readImageBytes(String storedName) {
+		if (storedName == null) return null;
+
+		if (storedName.startsWith("http://") || storedName.startsWith("https://")) {
+			try {
+				java.net.URI uri = java.net.URI.create(storedName);
+				try (java.io.InputStream in = uri.toURL().openStream()) {
+					return in.readAllBytes();
+				}
+			} catch (Exception e) {
+				log.warn("[pet-embedding] 외부 이미지 URL 읽기 실패: {} - {}", storedName, e.getMessage());
+				return null;
+			}
+		}
+
 		Path imagePath = uploadDir.resolve(ANIMAL_UPLOAD_SUBDIR).resolve(storedName).normalize();
 		if (!imagePath.startsWith(uploadDir)) {
 			log.warn("[pet-embedding] 경로 탐색 감지, 스킵: {}", storedName);

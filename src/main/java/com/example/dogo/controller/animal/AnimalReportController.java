@@ -96,7 +96,10 @@ public class AnimalReportController {
 			@RequestParam(required = false) String region,
 			@RequestParam(required = false) String keyword,
 			@RequestParam(defaultValue = "ALL") String keywordScope,
-			@RequestParam(defaultValue = "regdate") String sortBy,
+			@RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+			@RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
+			@RequestParam(required = false) String detailPlace,
+			@RequestParam(defaultValue = "eventDate") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "9") int size,
@@ -114,10 +117,10 @@ public class AnimalReportController {
 				.filter(value -> value.equals(keywordScope))
 				.findFirst()
 				.orElse("ALL");
-		Page<?> reportPage = animalReportService.search(reportType, animalType, region, keyword, safeKeywordScope, pageRequest);
+		Page<?> reportPage = animalReportService.search(reportType, animalType, region, keyword, safeKeywordScope, startDate, endDate, detailPlace, pageRequest);
 		if (safePage > 0 && safePage >= reportPage.getTotalPages() && reportPage.getTotalPages() > 0) {
 			safePage = reportPage.getTotalPages() - 1;
-			reportPage = animalReportService.search(reportType, animalType, region, keyword, safeKeywordScope, PageRequest.of(safePage, safeSize, sort));
+			reportPage = animalReportService.search(reportType, animalType, region, keyword, safeKeywordScope, startDate, endDate, detailPlace, PageRequest.of(safePage, safeSize, sort));
 		}
 
 		model.addAttribute("reportPage", reportPage);
@@ -127,6 +130,9 @@ public class AnimalReportController {
 		model.addAttribute("region", region);
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("keywordScope", safeKeywordScope);
+		model.addAttribute("startDate", startDate);
+		model.addAttribute("endDate", endDate);
+		model.addAttribute("detailPlace", detailPlace);
 		model.addAttribute("sortBy", safeField);
 		model.addAttribute("sortDir", sortDir);
 		model.addAttribute("page", safePage);
@@ -169,8 +175,28 @@ public class AnimalReportController {
 	}
 
 	@PostMapping("/animal-reports/image-search")
-	public String imageSearch(@RequestParam("image") MultipartFile image, Model model) {
+	public String imageSearch(
+			@RequestParam("image") MultipartFile image,
+			@RequestParam(required = false) String reportType,
+			@RequestParam(required = false) String animalType,
+			@RequestParam(required = false) String region,
+			@RequestParam(required = false) String keyword,
+			@RequestParam(defaultValue = "ALL") String keywordScope,
+			@RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+			@RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
+			@RequestParam(required = false) String detailPlace,
+			Model model
+	) {
 		model.addAttribute("currentUri", "/animal-reports");
+		model.addAttribute("reportType", reportType);
+		model.addAttribute("animalType", animalType);
+		model.addAttribute("region", region);
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("keywordScope", keywordScope);
+		model.addAttribute("startDate", startDate);
+		model.addAttribute("endDate", endDate);
+		model.addAttribute("detailPlace", detailPlace);
+
 		if (!animalReportService.isImageSearchAvailable()) {
 			model.addAttribute("error", "이미지 검색 기능이 현재 비활성화되어 있습니다.");
 			model.addAttribute("results", List.of());
@@ -182,7 +208,18 @@ public class AnimalReportController {
 			return "animal-reports/image-search";
 		}
 		try {
-			var results = animalReportService.searchByImage(image.getBytes(), image.getOriginalFilename());
+			var results = animalReportService.searchByImage(
+					image.getBytes(),
+					image.getOriginalFilename(),
+					reportType,
+					animalType,
+					region,
+					keyword,
+					keywordScope,
+					startDate,
+					endDate,
+					detailPlace
+			);
 			model.addAttribute("results", results);
 			return "animal-reports/image-search";
 		} catch (IOException e) {
