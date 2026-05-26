@@ -11,8 +11,9 @@
     <section class="home-actions" aria-label="빠른 이동">
       <a class="home-action-card home-action-card--lost-search" th:href="@{/lost-items}">
         <span class="home-action-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z" />
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="10" r="7"></circle>
+            <line x1="21" y1="21" x2="15" y2="15"></line>
           </svg>
         </span>
         <p>물건을 잃어버리셨나요?</p>
@@ -28,8 +29,8 @@
 
       <a class="home-action-card home-action-card--found" th:href="@{/found-items/new}">
         <span class="home-action-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z" />
+          <svg viewBox="0 0 512 512" fill="currentColor">
+            <path d="M190.5 68.8L225.3 128H224 152c-22.1 0-40-17.9-40-40s17.9-40 40-40c2.2 0 4.4 .2 6.5 .5c12.2 1.9 24.2 7.9 32 18.3zM53.8 29.3C71.3 9.4 96.4 0 122.3 0c6.6 0 13.2 .7 19.7 2C182 8.4 216 31 234.3 62L256 98.9l21.7-36.9C296 31 330 8.4 370 2c6.5-1.3 13.1-2 19.7-2c25.9 0 51 9.4 68.5 29.3c21 23.7 26.6 57 15.6 85.8C463.3 142.3 434 160 400 160h-72H288 224 152 112c-34 0-63.3-17.7-73.8-44.9c-11-28.8-5.4-62.1 15.6-85.8zM400 128c22.1 0 40-17.9 40-40s-17.9-40-40-40c-16.9 0-31.5 10.7-37.4 25.8c-1.7 4.3-3.6 8.5-5.6 12.6l-20.7 35.1c-2.4 4.1-5 8.1-7.8 11.9c-1.3 1.8-2.6 3.5-4 5.3c-2.4 3.1-4.9 6.1-7.5 9.1c11.9-9.1 26.8-14.8 43-14.8zM32 192h208V480H64c-17.7 0-32-14.3-32-32V192zm240 288V192H480V448c0 17.7-14.3 32-32 32H272z"/>
           </svg>
         </span>
         <p>주인을 찾아주고싶어요?</p>
@@ -45,8 +46,8 @@
 
       <a class="home-action-card home-action-card--animal-missing" th:href="@{/missing-persons/new}">
         <span class="home-action-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z" />
+          <svg viewBox="0 0 448 512" fill="currentColor">
+            <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/>
           </svg>
         </span>
         <p>사람을 찾고 있나요?</p>
@@ -60,10 +61,10 @@
         </em>
       </a>
 
-      <a class="home-action-card home-action-card--animal" th:href="@{/animal-reports}">
+      <a class="home-action-card home-action-card--animal" th:href="@{/animal-reports/new}">
         <span class="home-action-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M5 4h11l3 3v13H5V4Zm2 2v12h10V9h-3V6H7Zm4 5V8h2v3h3v2h-3v3h-2v-3H8v-2h3Z" />
+            <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z"/>
           </svg>
         </span>
         <p>반려동물을 찾고 있나요?</p>
@@ -114,19 +115,19 @@
         <a th:href="@{/lost-items}">전체보기</a>
       </div>
       <div class="home-tabs" aria-label="게시물 유형">
-        <a class="is-active" th:href="@{/lost-items}">전체</a>
-        <a th:href="@{/lost-items}">분실물</a>
-        <a th:href="@{/found-items}">습득물</a>
-        <a th:href="@{/animal-reports}">실종자</a>
-        <a th:href="@{/animal-reports}">실종동물</a>
+        <a class="recent-tab is-active" data-filter="all" th:href="@{/lost-items}">전체</a>
+        <a class="recent-tab" data-filter="LOST" th:href="@{/lost-items}">분실물</a>
+        <a class="recent-tab" data-filter="FOUND" th:href="@{/found-items}">습득물</a>
+        <a class="recent-tab" data-filter="PERSON" th:href="@{/missing-persons}">실종자</a>
+        <a class="recent-tab" data-filter="ANIMAL" th:href="@{/animal-reports}">실종동물</a>
       </div>
 
       <div th:if="${!#lists.isEmpty(recentItems)}" class="home-recent-grid" id="recentGrid">
         <a th:each="item : ${recentItems}"
-          th:href="${item.type == 'LOST' ? '/lost-items/' + item.id : '/found-items/' + item.id}"
+          th:href="${item.type == 'LOST' ? '/lost-items/' + item.id : (item.type == 'FOUND' ? '/found-items/' + item.id : (item.type == 'PERSON' ? '/missing-persons/' + item.id : '/animal-reports/' + item.id))}"
           class="home-recent-card" th:data-type="${item.type}">
           <span th:text="${item.typeLabel}"
-            th:classappend="${item.type == 'LOST' ? ' home-badge--lost' : ' home-badge--found'}"
+            th:classappend="${item.type == 'LOST' ? ' home-badge--lost' : (item.type == 'FOUND' ? ' home-badge--found' : (item.type == 'PERSON' ? ' bg-red-500' : ' bg-orange-500'))}"
             class="home-badge">분실물</span>
           <div class="home-recent-image">
             <img th:if="${item.imageUrl}" th:src="${item.imageUrl}" alt="">

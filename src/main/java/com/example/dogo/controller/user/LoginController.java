@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.http.ResponseEntity;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,9 @@ import com.example.dogo.repository.animal.AnimalReportMatchRepository;
 import com.example.dogo.repository.Support.InquiryRepository;
 import com.example.dogo.repository.ChatMessageRepository;
 import com.example.dogo.repository.ChatRoomRepository;
+import com.example.dogo.repository.missing.MissingPersonRepository;
+import com.example.dogo.entity.animal.AnimalReport;
+import com.example.dogo.entity.missing.MissingPersonReport;
 import com.example.dogo.dto.item.RecentItemView;
 import org.springframework.ui.Model;
 import java.util.List;
@@ -58,6 +62,7 @@ public class LoginController {
   private final ChatMessageRepository chatMessageRepository;
   private final ChatRoomRepository chatRoomRepository;
   private final OAuth2Service oauth2Service;
+  private final MissingPersonRepository missingPersonRepository;
 
   @GetMapping("/login")
   public String loginPage(@RequestParam(value = "error", required = false) String error,
@@ -82,7 +87,87 @@ public class LoginController {
     return ResponseEntity.ok(exists);
   }
 
+  @GetMapping("/api/user/{userNo}")
+  @ResponseBody
+  public ResponseEntity<?> getUserProfile(@PathVariable("userNo") Long userNo) {
+    return userRepository.findById(userNo)
+        .map(user -> {
+            int lostCount = lostItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user).size();
+            int foundCount = foundItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user).size();
+            
+            return ResponseEntity.ok(java.util.Map.of(
+                "nickname", user.getNickname(),
+                "profileImageUrl", user.getProfileImageUrl() != null ? user.getProfileImageUrl() : "/images/logoNoName.png",
+                "email", user.getEmail() != null ? user.getEmail() : "이메일 없음",
+                "phone", user.getPhone() != null ? user.getPhone() : "연락처 없음",
+                "regDate", user.getRegDate() != null ? user.getRegDate().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")) : "가입일 없음",
+                "lostCount", lostCount,
+                "foundCount", foundCount
+            ));
+        })
+        .orElse(ResponseEntity.notFound().build());
+  }
+
+  @GetMapping("/api/chat/item/{itemType}/{itemId}")
+  @ResponseBody
+  public ResponseEntity<?> getItemSimpleDetail(@PathVariable("itemType") String itemType, @PathVariable("itemId") Long itemId) {
+    if ("FOUND".equals(itemType)) {
+      return foundItemRepository.findById(itemId)
+          .map(item -> {
+              List<com.example.dogo.entity.item.FoundItemImage> imgs = foundItemImageRepository.findByFoundItemOrderBySortOrderAscImageIdAsc(item);
+              String imgUrl = !imgs.isEmpty() ? imgs.get(0).getImageUrl() : "/images/noImageSize.png";
+              String formattedDate = item.getFoundAt() != null ? item.getFoundAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm")) : "날짜 정보 없음";
+              
+              return ResponseEntity.ok(java.util.Map.of(
+                  "title", item.getTitle() != null ? item.getTitle() : "제목 없음",
+                  "itemName", item.getItemName() != null ? item.getItemName() : "물품명 없음",
+                  "category", (item.getCategoryMain() != null ? item.getCategoryMain() : "") + (item.getCategorySub() != null ? " > " + item.getCategorySub() : ""),
+                  "color", item.getColorName() != null ? item.getColorName() : "색상 정보 없음",
+                  "place", item.getFoundPlace() != null ? item.getFoundPlace() : "장소 정보 없음",
+                  "date", formattedDate,
+                  "status", getStatusKorean(item.getStatus()),
+                  "content", item.getContent() != null ? item.getContent() : "상세내용 없음",
+                  "imageUrl", imgUrl
+              ));
+          })
+          .orElse(ResponseEntity.notFound().build());
+    } else if ("LOST".equals(itemType)) {
+      return lostItemRepository.findById(itemId)
+          .map(item -> {
+              List<com.example.dogo.entity.item.LostItemImage> imgs = lostItemImageRepository.findByLostItemOrderBySortOrderAscImageIdAsc(item);
+              String imgUrl = !imgs.isEmpty() ? imgs.get(0).getImageUrl() : "/images/noImageSize.png";
+              String formattedDate = item.getLostAt() != null ? item.getLostAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm")) : "날짜 정보 없음";
+              
+              return ResponseEntity.ok(java.util.Map.of(
+                  "title", item.getTitle() != null ? item.getTitle() : "제목 없음",
+                  "itemName", item.getItemName() != null ? item.getItemName() : "물품명 없음",
+                  "category", (item.getCategoryMain() != null ? item.getCategoryMain() : "") + (item.getCategorySub() != null ? " > " + item.getCategorySub() : ""),
+                  "color", item.getColorName() != null ? item.getColorName() : "색상 정보 없음",
+                  "place", item.getLostPlace() != null ? item.getLostPlace() : "장소 정보 없음",
+                  "date", formattedDate,
+                  "status", getStatusKorean(item.getStatus()),
+                  "content", item.getContent() != null ? item.getContent() : "상세내용 없음",
+                  "imageUrl", imgUrl
+              ));
+          })
+          .orElse(ResponseEntity.notFound().build());
+    }
+    return ResponseEntity.badRequest().build();
+  }
+
+  private String getStatusKorean(String status) {
+    if (status == null) return "알수없음";
+    switch (status.toUpperCase()) {
+      case "KEEPING": return "보관중";
+      case "MATCHING": return "매칭중";
+      case "COMPLETED": return "완료";
+      case "WAITING": return "대기중";
+      default: return status;
+    }
+  }
+
   @GetMapping("/userpage")
+  @Transactional(readOnly = true)
   public String userPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
     if (userDetails == null) {
       return "redirect:/login";
@@ -92,6 +177,8 @@ public class LoginController {
     List<com.example.dogo.entity.item.LostItem> lostItems = lostItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
     List<com.example.dogo.entity.item.FoundItem> foundItems = foundItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
     List<com.example.dogo.entity.Support.Inquiry> inquiries = inquiryRepository.findByUserOrderByRegdateDescInquiryIdDesc(user);
+    List<AnimalReport> animalReports = animalReportRepository.findByUserAndDeletedFalseOrderByRegdateDesc(user);
+    List<MissingPersonReport> personReports = missingPersonRepository.findByUserAndDeletedFalseOrderByRegdateDesc(user);
 
     List<RecentItemView> userActivities = new ArrayList<>();
 
@@ -149,6 +236,46 @@ public class LoginController {
           "고객센터",
           inquiry.getRegdate() != null ? inquiry.getRegdate() : java.time.LocalDateTime.now(),
           inquiry.getStatus(),
+          statusLabel,
+          "/images/noImageSize.png"
+      ));
+    }
+
+    for (AnimalReport report : animalReports) {
+      String imageUrl = "/images/noImageSize.png";
+      if (report.getImages() != null && !report.getImages().isEmpty()) {
+        imageUrl = report.getImages().get(0).getImageUrl();
+      }
+
+      String typeLabel = "MISSING".equals(report.getReportType()) ? "실종동물 신고" : "제보 및 목격";
+      String statusLabel = "OPEN".equals(report.getStatus()) ? "접수" : ("MATCHING".equals(report.getStatus()) ? "매칭중" : "해결완료");
+
+      userActivities.add(new RecentItemView(
+          report.getReportId(),
+          "ANIMAL_REPORT",
+          typeLabel,
+          report.getTitle(),
+          report.getAnimalType() + " (" + report.getBreedName() + ")",
+          report.getRegionName() + " " + report.getDetailPlace(),
+          report.getRegdate() != null ? report.getRegdate() : java.time.LocalDateTime.now(),
+          report.getStatus(),
+          statusLabel,
+          imageUrl
+      ));
+    }
+
+    for (MissingPersonReport report : personReports) {
+      String statusLabel = "OPEN".equals(report.getStatus()) ? "접수" : "해결완료";
+
+      userActivities.add(new RecentItemView(
+          report.getReportId(),
+          "MISSING_PERSON",
+          "실종자 신고",
+          report.getAge() + "세 " + report.getNationality() + " 실종",
+          report.getBodyType() + " (" + report.getHairStyle() + ")",
+          report.getOccurredPlace(),
+          report.getRegdate() != null ? report.getRegdate() : java.time.LocalDateTime.now(),
+          report.getStatus(),
           statusLabel,
           "/images/noImageSize.png"
       ));

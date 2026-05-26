@@ -14,7 +14,7 @@ import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.match.ItemMatchService;
 import com.example.dogo.service.match.LostItemMatchRequestedEvent;
-import com.example.dogo.service.match.embedding.LostItemEmbeddingRequestedEvent;
+import com.example.dogo.service.match.MatchTextNormalizer;
 import com.example.dogo.service.police.sync.PoliceLostItemDetailEnrichmentService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,6 +48,7 @@ public class LostItemService {
 	private final PoliceLostItemDetailEnrichmentService policeLostItemDetailEnrichmentService;
 	private final ItemMatchService itemMatchService;
 	private final ApplicationEventPublisher eventPublisher;
+	private final MatchTextNormalizer matchTextNormalizer;
 	private final Path lostItemUploadPath;
 
 	public LostItemService(
@@ -57,6 +58,7 @@ public class LostItemService {
 			PoliceLostItemDetailEnrichmentService policeLostItemDetailEnrichmentService,
 			ItemMatchService itemMatchService,
 			ApplicationEventPublisher eventPublisher,
+			MatchTextNormalizer matchTextNormalizer,
 			@Value("${file.upload-dir}") String uploadDir
 	) {
 		this.lostItemRepository = lostItemRepository;
@@ -65,6 +67,7 @@ public class LostItemService {
 		this.policeLostItemDetailEnrichmentService = policeLostItemDetailEnrichmentService;
 		this.itemMatchService = itemMatchService;
 		this.eventPublisher = eventPublisher;
+		this.matchTextNormalizer = matchTextNormalizer;
 		this.lostItemUploadPath = Path.of(uploadDir, "lost-items").toAbsolutePath().normalize();
 	}
 
@@ -99,7 +102,7 @@ public class LostItemService {
 	@Transactional(readOnly = true)
 	public List<RecentItemView> getRecentItems(int limit) {
 		Pageable pageable = Pageable.ofSize(limit);
-		return lostItemRepository.findByDeletedFalseOrderByLostAtDescLostIdDesc(pageable).stream()
+		return lostItemRepository.findByDeletedFalseOrderByRegDateDescLostIdDesc(pageable).stream()
 				.map(item -> new RecentItemView(
 						item.getLostId(),
 						"LOST",
@@ -112,7 +115,8 @@ public class LostItemService {
 						statusLabel(item.getStatus()),
 						lostItemImageRepository.findFirstByLostItemOrderBySortOrderAscImageIdAsc(item)
 								.map(LostItemImage::getImageUrl)
-								.orElse(PLACEHOLDER_IMAGE)
+								.orElse(PLACEHOLDER_IMAGE),
+						item.getRegDate()
 				))
 				.toList();
 	}
@@ -286,8 +290,6 @@ public class LostItemService {
 			saveImages(item, newImages);
 		}
 
-		itemMatchService.clearMatchesForLostItem(item.getLostId());
-		eventPublisher.publishEvent(new LostItemEmbeddingRequestedEvent(item.getLostId()));
 		eventPublisher.publishEvent(new LostItemMatchRequestedEvent(item.getLostId()));
 	}
 
@@ -332,7 +334,6 @@ public class LostItemService {
 
 		LostItem savedItem = lostItemRepository.save(lostItem);
 		saveImages(savedItem, request.getUploadImages());
-		eventPublisher.publishEvent(new LostItemEmbeddingRequestedEvent(savedItem.getLostId()));
 		eventPublisher.publishEvent(new LostItemMatchRequestedEvent(savedItem.getLostId()));
 
 		return savedItem.getLostId();
@@ -365,49 +366,12 @@ public class LostItemService {
 			return lostItem.getColorName();
 		}
 
-		String text = String.join(" ",
-				defaultText(lostItem.getItemName(), ""),
-				defaultText(lostItem.getTitle(), ""),
-				defaultText(lostItem.getContent(), "")
-		).toLowerCase(Locale.ROOT);
-
-		if (text.contains("블랙") || text.contains("검정") || text.contains("검은") || text.contains("black")) {
-			return "블랙(검정)";
-		}
-		if (text.contains("화이트") || text.contains("흰색") || text.contains("하얀") || text.contains("white")) {
-			return "화이트(흰색)";
-		}
-		if (text.contains("레드") || text.contains("빨강") || text.contains("빨간") || text.contains("red")) {
-			return "레드(빨강)";
-		}
-		if (text.contains("블루") || text.contains("파랑") || text.contains("파란") || text.contains("blue")) {
-			return "블루(파랑)";
-		}
-		if (text.contains("그린") || text.contains("초록") || text.contains("green")) {
-			return "그린(초록)";
-		}
-		if (text.contains("옐로") || text.contains("노랑") || text.contains("노란") || text.contains("yellow")) {
-			return "옐로우(노랑)";
-		}
-		if (text.contains("핑크") || text.contains("분홍") || text.contains("pink")) {
-			return "핑크(분홍)";
-		}
-		if (text.contains("브라운") || text.contains("갈색") || text.contains("brown")) {
-			return "브라운(갈색)";
-		}
-		if (text.contains("그레이") || text.contains("회색") || text.contains("gray") || text.contains("grey")) {
-			return "그레이(회색)";
-		}
-		if (text.contains("베이지") || text.contains("beige")) {
-			return "베이지";
-		}
-		if (text.contains("실버") || text.contains("은색") || text.contains("silver")) {
-			return "실버(은색)";
-		}
-		if (text.contains("골드") || text.contains("금색") || text.contains("gold")) {
-			return "골드(금색)";
-		}
-		return null;
+		return matchTextNormalizer.extractColor(
+						lostItem.getItemName(),
+						lostItem.getTitle(),
+						lostItem.getContent())
+				.map(matchTextNormalizer::displayColorName)
+				.orElse(null);
 	}
 
 	private void saveImages(LostItem lostItem, List<MultipartFile> images) {

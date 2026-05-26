@@ -7,9 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
 </head>
 <body class="bg-slate-50 text-slate-900">
     <div class="flex h-screen overflow-hidden relative">
@@ -124,7 +122,14 @@
                                     <td class="px-6 py-4 text-slate-900 text-sm font-semibold">
                                         <a th:href="@{/missing-persons/{id}(id=${report.reportId})}" target="_blank" class="hover:text-blue-600 hover:underline" th:text="${report.age + '세 (' + report.nationality + ')'}">나이</a>
                                     </td>
-                                    <td class="px-6 py-4 text-slate-600 text-sm" th:text="${(report.heightCm != null ? report.heightCm + 'cm' : '-') + ' / ' + (report.weightKg != null ? report.weightKg + 'kg' : '-') + ' (' + report.bodyType + ')'}">특징</td>
+                                    <td class="px-6 py-4 text-slate-600 text-sm">
+                                        <span th:if="${report.heightCm != null && report.heightCm > 0}" th:text="${report.heightCm + 'cm'}">170cm</span>
+                                        <span th:if="${report.heightCm != null && report.heightCm > 0 && report.weightKg != null}"> / </span>
+                                        <span th:if="${report.weightKg != null}" th:text="${report.weightKg + 'kg'}">58kg</span>
+                                        <span th:if="${(report.heightCm != null && report.heightCm > 0) || report.weightKg != null}"> </span>
+                                        <span th:if="${report.bodyType != null && report.bodyType != '미상' && report.bodyType != ''}" th:text="'(' + report.bodyType + ')'">(Slim)</span>
+                                        <span th:if="${(report.heightCm == null || report.heightCm <= 0) && report.weightKg == null && (report.bodyType == null || report.bodyType == '미상' || report.bodyType == '')}">-</span>
+                                    </td>
                                     <td class="px-6 py-4 text-slate-700 text-sm font-medium" th:text="${report.clothing}">착의 의상</td>
                                     <td class="px-6 py-4 text-slate-600 text-sm" th:text="${report.occurredPlace}">위치</td>
                                     <td class="px-6 py-4 text-slate-500 text-sm" th:text="${#temporals.format(report.occurredAt, 'yyyy-MM-dd HH:mm')}">날짜</td>

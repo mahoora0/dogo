@@ -58,6 +58,8 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long>, JpaSp
 
 	List<LostItem> findByDeletedFalseOrderByLostAtDescLostIdDesc(Pageable pageable);
 
+	List<LostItem> findByDeletedFalseOrderByRegDateDescLostIdDesc(Pageable pageable);
+
 	List<LostItem> findByDeletedFalseOrderByRegDateDesc();
 
 	List<LostItem> findBySourceTypeAndDeletedFalseOrderByRegDateDesc(String sourceType);

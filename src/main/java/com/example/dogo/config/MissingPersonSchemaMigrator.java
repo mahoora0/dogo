@@ -39,6 +39,9 @@ public class MissingPersonSchemaMigrator implements ApplicationRunner {
 		addColumnIfMissing("API_PROVIDER", "API_PROVIDER VARCHAR(50)");
 		addColumnIfMissing("RAW_PAYLOAD", "RAW_PAYLOAD TEXT");
 		addColumnIfMissing("SYNCED_AT", "SYNCED_AT DATETIME");
+		addColumnIfMissing("PERSON_NAME", "PERSON_NAME VARCHAR(100)");
+		addColumnIfMissing("GENDER", "GENDER VARCHAR(30)");
+		addColumnIfMissing("SEARCH_CONTENT", "SEARCH_CONTENT VARCHAR(768)");
 	}
 
 	private void addColumnIfMissing(String columnName, String columnDefinition) throws SQLException {

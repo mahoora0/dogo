@@ -32,14 +32,15 @@
 
           <!-- 로그인 된 상태 -->
           <th:block sec:authorize="isAuthenticated()">
-            <!-- 매칭 알림 종 아이콘 (사용자가 최소 1개 이상 분실물을 등록했을 때만 노출) -->
-            <div th:if="${hasLostItems}" class="relative inline-block text-left mr-2" id="notificationWrapper">
-              <button type="button" id="notificationBtn" class="relative p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors focus:outline-none">
+            <!-- 매칭 알림 종 아이콘 -->
+            <div class="relative inline-block text-left mr-1" id="notificationWrapper">
+              <button type="button" id="notificationBtn" class="chat-button relative focus:outline-none" title="알림">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
                 </svg>
-                <span th:if="${unreadMatchCount > 0}" th:text="${unreadMatchCount}"
-                      class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+                <span class="chat-text">알림</span>
+                <span th:if="${unreadMatchCount != null and unreadMatchCount > 0}" th:text="${unreadMatchCount > 99 ? '99+' : unreadMatchCount}"
+                      class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
                   0
                 </span>
               </button>
@@ -254,7 +255,7 @@
             
             <div class="grid grid-cols-2 gap-3 text-xs border-t border-slate-100 pt-3">
               <div>
-                <span class="text-slate-400 block mb-0.5">품종</span>
+                <span id="emergencyBreedLabel" class="text-slate-400 block mb-0.5">품종</span>
                 <span id="emergencyBreed" class="font-bold text-slate-800 text-sm">-</span>
               </div>
               <div>
@@ -266,7 +267,7 @@
                 <span id="emergencyLocation" class="font-bold text-slate-800 text-sm">-</span>
               </div>
               <div class="col-span-2">
-                <span class="text-slate-400 block mb-0.5">특징 및 착의</span>
+                <span id="emergencyMarksLabel" class="text-slate-400 block mb-0.5">특징 및 착의</span>
                 <span id="emergencyMarks" class="font-bold text-slate-800 text-xs bg-slate-50 border border-slate-100 p-2 rounded-lg block leading-relaxed max-h-16 overflow-y-auto">-</span>
               </div>
             </div>
@@ -325,10 +326,29 @@
               const fallback = document.getElementById('emergencyImgFallback');
               
               document.getElementById('emergencyTitle').innerText = data.title;
-              document.getElementById('emergencyBreed').innerText = data.breed + ' (' + data.animalType + ')';
               document.getElementById('emergencyDate').innerText = data.date;
               document.getElementById('emergencyLocation').innerText = data.location;
               document.getElementById('emergencyMarks').innerText = data.distinctiveMarks || '특별한 특징 사항이 등록되어 있지 않습니다.';
+              
+              const breedLabel = document.getElementById('emergencyBreedLabel');
+              const marksLabel = document.getElementById('emergencyMarksLabel');
+              const breedVal = document.getElementById('emergencyBreed');
+              
+              if (data.type === 'PERSON') {
+                if (breedLabel) breedLabel.innerText = '나이/국적';
+                if (marksLabel) marksLabel.innerText = '신체 특징 및 착의';
+                if (breedVal) breedVal.innerText = data.age + '세 (' + data.nationality + ')';
+                document.getElementById('emergencyDetailLink').href = '/missing-persons/' + data.reportId;
+              } else {
+                if (breedLabel) breedLabel.innerText = '품종';
+                if (marksLabel) marksLabel.innerText = '특징 및 착의';
+                if (breedVal) breedVal.innerText = data.breed + ' (' + data.animalType + ')';
+                if (data.reportId > 0) {
+                  document.getElementById('emergencyDetailLink').href = '/animal-reports/' + data.reportId;
+                } else {
+                  document.getElementById('emergencyDetailLink').href = '/animal-reports';
+                }
+              }
               
               if (data.imageUrl) {
                 img.src = data.imageUrl;
@@ -337,12 +357,6 @@
               } else {
                 img.classList.add('hidden');
                 fallback.classList.remove('hidden');
-              }
-              
-              if (data.reportId > 0) {
-                document.getElementById('emergencyDetailLink').href = '/animal-reports/' + data.reportId;
-              } else {
-                document.getElementById('emergencyDetailLink').href = '/animal-reports';
               }
               
               modal.classList.remove('hidden');

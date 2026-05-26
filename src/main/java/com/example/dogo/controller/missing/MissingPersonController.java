@@ -33,7 +33,7 @@ public class MissingPersonController {
 			@RequestParam(required = false) String keyword,
 			@RequestParam(required = false) String status,
 			@RequestParam(required = false) String sourceType,
-			@RequestParam(defaultValue = "regdate") String sortBy,
+			@RequestParam(defaultValue = "occurredAt") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "9") int size,

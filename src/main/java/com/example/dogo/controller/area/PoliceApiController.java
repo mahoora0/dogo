@@ -21,10 +21,27 @@ public class PoliceApiController {
 
   @GetMapping
   public List<PoliceStation> getPoliceByRegion(
-      @RequestParam String region,
+      @RequestParam(required = false) String region,
       @RequestParam(required = false) String subRegion,
-      @RequestParam(required = false) String neighborhood) {
-    // log.info("getPoliceByRegion called: region={}, subRegion={}, neighborhood={}", region, subRegion, neighborhood);
+      @RequestParam(required = false) String neighborhood,
+      @RequestParam(required = false) String keyword) {
+    // log.info("getPoliceByRegion called: region={}, subRegion={}, neighborhood={}, keyword={}", region, subRegion, neighborhood, keyword);
+    
+    if (region == null || region.isBlank()) {
+      if (keyword == null || keyword.isBlank()) {
+        return List.of();
+      }
+      return policeStationRepository.findAll().stream()
+          .filter(s -> {
+              String name = (s.getPolstnNm() != null ? s.getPolstnNm() : "") + " " + (s.getSe() != null ? s.getSe() : "");
+              return name.contains(keyword) 
+                  || (s.getAddr() != null && s.getAddr().contains(keyword))
+                  || (s.getAddress() != null && s.getAddress().contains(keyword))
+                  || (s.getAddress1() != null && s.getAddress1().contains(keyword));
+          })
+          .toList();
+    }
+
     String pnuPrefix = getPnuPrefixByRegion(region);
     if (pnuPrefix != null) {
       List<PoliceStation> stations = policeStationRepository.findByPnuStartingWith(pnuPrefix);

@@ -4,6 +4,7 @@ import com.example.dogo.dto.missing.MissingPersonCreateRequest;
 import com.example.dogo.dto.missing.MissingPersonDetailView;
 import com.example.dogo.dto.missing.MissingPersonView;
 import com.example.dogo.service.missing.MissingPersonService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +19,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -111,7 +113,8 @@ class MissingPersonControllerTest {
 				"OPEN",
 				"접수",
 				sourceType,
-				sourceLabel
+				sourceLabel,
+				null
 		);
 	}
 
@@ -133,7 +136,13 @@ class MissingPersonControllerTest {
 				"OPEN",
 				"접수",
 				sourceType,
-				sourceLabel
+				sourceLabel,
+				null,
+				15,
+				"010",
+				"정상아동(18세미만)",
+				"남자",
+				"특이사항 테스트"
 		);
 	}
 }

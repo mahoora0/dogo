@@ -1,5 +1,6 @@
 package com.example.dogo.service.missing;
 
+import com.example.dogo.dto.item.RecentItemView;
 import com.example.dogo.dto.missing.MissingPersonCreateRequest;
 import com.example.dogo.dto.missing.MissingPersonDetailView;
 import com.example.dogo.dto.missing.MissingPersonView;
@@ -39,6 +40,26 @@ public class MissingPersonService {
 	@Transactional(readOnly = true)
 	public Page<MissingPersonView> search(String keyword, String status, Pageable pageable) {
 		return search(keyword, status, null, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public List<RecentItemView> getRecentItems(int limit) {
+		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "occurredAt").and(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "reportId")));
+		return missingPersonRepository.findAll(searchSpec(null, null, null), pageable).stream()
+				.map(item -> new RecentItemView(
+						item.getReportId(),
+						"PERSON",
+						"실종자",
+						summary(item),
+						"사람",
+						item.getOccurredPlace(),
+						item.getOccurredAt(),
+						item.getStatus(),
+						statusLabel(item.getStatus()),
+						extractBase64Image(item.getRawPayload()),
+						item.getRegdate()
+				))
+				.toList();
 	}
 
 	@Transactional
@@ -90,15 +111,7 @@ public class MissingPersonService {
 			String normalizedKeyword = blankToNull(keyword);
 			if (normalizedKeyword != null) {
 				String pattern = "%" + normalizedKeyword.toLowerCase(Locale.ROOT) + "%";
-				predicates.add(criteriaBuilder.or(
-						criteriaBuilder.like(criteriaBuilder.lower(root.get("nationality")), pattern),
-						criteriaBuilder.like(criteriaBuilder.lower(root.get("occurredPlace")), pattern),
-						criteriaBuilder.like(criteriaBuilder.lower(root.get("bodyType")), pattern),
-						criteriaBuilder.like(criteriaBuilder.lower(root.get("faceShape")), pattern),
-						criteriaBuilder.like(criteriaBuilder.lower(root.get("hairColor")), pattern),
-						criteriaBuilder.like(criteriaBuilder.lower(root.get("hairStyle")), pattern),
-						criteriaBuilder.like(criteriaBuilder.lower(root.get("clothing")), pattern)
-				));
+				predicates.add(criteriaBuilder.like(root.get("searchContent"), pattern));
 			}
 
 			return criteriaBuilder.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
@@ -123,11 +136,34 @@ public class MissingPersonService {
 				report.getStatus(),
 				statusLabel(report.getStatus()),
 				report.getSourceType(),
-				report.getSourceLabel()
+				report.getSourceLabel(),
+				extractBase64Image(report.getRawPayload())
 		);
 	}
 
 	private MissingPersonDetailView toDetailView(MissingPersonReport report) {
+		String raw = report.getRawPayload();
+		
+		Integer ageNow = null;
+		String ageNowStr = extractXmlTag(raw, "ageNow");
+		if (ageNowStr != null) {
+			try {
+				ageNow = Integer.parseInt(ageNowStr);
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		
+		String targetCode = extractXmlTag(raw, "writngTrgetDscd");
+		String targetLabel = getTargetLabel(targetCode);
+		
+		String gender = extractXmlTag(raw, "sexdstnDscd");
+		if (gender == null || gender.isBlank()) {
+			gender = report.getGender();
+		}
+
+		String etcSpfeatr = extractXmlTag(raw, "etcSpfeatr");
+
 		return new MissingPersonDetailView(
 				report.getReportId(),
 				summary(report),
@@ -145,8 +181,73 @@ public class MissingPersonService {
 				report.getStatus(),
 				statusLabel(report.getStatus()),
 				report.getSourceType(),
-				report.getSourceLabel()
+				report.getSourceLabel(),
+				extractBase64Image(report.getRawPayload()),
+				ageNow,
+				targetCode,
+				targetLabel,
+				gender,
+				etcSpfeatr
 		);
+	}
+
+	private String extractXmlTag(String rawPayload, String tagName) {
+		if (rawPayload == null || !rawPayload.contains("<" + tagName + ">")) {
+			return null;
+		}
+		try {
+			int start = rawPayload.indexOf("<" + tagName + ">");
+			int end = rawPayload.indexOf("</" + tagName + ">", start);
+			if (start != -1 && end != -1) {
+				String content = rawPayload.substring(start + tagName.length() + 2, end).trim();
+				if (content.startsWith("<![CDATA[")) {
+					content = content.substring("<![CDATA[".length(), content.length() - "]]>".length()).trim();
+				}
+				if (!content.isEmpty() && !content.equalsIgnoreCase("null")) {
+					return content;
+				}
+			}
+		} catch (Exception e) {
+			// ignore
+		}
+		return null;
+	}
+
+	private String getTargetLabel(String code) {
+		if (code == null) return null;
+		return switch (code.trim()) {
+			case "010" -> "정상아동(18세미만)";
+			case "020" -> "가출인";
+			case "040" -> "시설보호무연고자";
+			case "060" -> "지적장애인";
+			case "061" -> "지적장애인(18세미만)";
+			case "062" -> "지적장애인(18세이상)";
+			case "070" -> "치매질환자";
+			case "080" -> "불상(기타)";
+			default -> "기타 (" + code + ")";
+		};
+	}
+
+	private String extractBase64Image(String rawPayload) {
+		if (rawPayload == null || !rawPayload.contains("<tknphotoFile>")) {
+			return null;
+		}
+		try {
+			int start = rawPayload.indexOf("<tknphotoFile>");
+			int end = rawPayload.indexOf("</tknphotoFile>", start);
+			if (start != -1 && end != -1) {
+				String content = rawPayload.substring(start + "<tknphotoFile>".length(), end).trim();
+				if (content.startsWith("<![CDATA[")) {
+					content = content.substring("<![CDATA[".length(), content.length() - "]]>".length()).trim();
+				}
+				if (!content.isEmpty() && !content.equalsIgnoreCase("null")) {
+					return "data:image/jpeg;base64," + content;
+				}
+			}
+		} catch (Exception e) {
+			// ignore
+		}
+		return null;
 	}
 
 	private void validateCreateRequest(MissingPersonCreateRequest request) {
@@ -184,10 +285,13 @@ public class MissingPersonService {
 
 	private User getOrCreateDevUser() {
 		return userRepository.findByEmail(DEV_USER_EMAIL)
-				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발용 사용자", "010-0000-0000")));
+				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발자 사용자", "010-0000-0000")));
 	}
 
 	private String summary(MissingPersonReport report) {
+		if (StringUtils.hasText(report.getPersonName())) {
+			return report.getPersonName() + " (" + report.getAge() + "세)";
+		}
 		return report.getAge() + "세 " + report.getNationality() + " 실종";
 	}
 

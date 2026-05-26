@@ -23,10 +23,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,6 +70,8 @@ class ItemMatchServiceTest {
 				scorer,
 				semanticMatchClient
 		);
+		lenient().when(itemMatchRepository.findByLostItemLostIdAndFoundItemFoundId(any(), any()))
+				.thenReturn(Optional.empty());
 	}
 
 	// -----------------------------------------------------------------------
@@ -83,7 +88,7 @@ class ItemMatchServiceTest {
 		when(foundItemRepository.findMatchCandidatesForLost(
 				eq("지갑"), eq(lostAt.minusDays(3)), eq(lostAt.plusDays(60))
 		)).thenReturn(List.of(strong, weak));
-		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
+		when(itemMatchRepository.findByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(Optional.empty());
 		when(semanticMatchClient.score(any())).thenReturn(new SemanticMatchResponse(null, List.of()));
 
 		itemMatchService.matchForLostItem(lost);
@@ -108,7 +113,7 @@ class ItemMatchServiceTest {
 		when(lostItemRepository.findMatchCandidatesForFound(
 				eq("지갑"), eq(foundAt.minusDays(60)), eq(foundAt.plusDays(3))
 		)).thenReturn(List.of(lost));
-		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(2L, 20L)).thenReturn(false);
+		when(itemMatchRepository.findByLostItemLostIdAndFoundItemFoundId(2L, 20L)).thenReturn(Optional.empty());
 		when(semanticMatchClient.score(any())).thenReturn(new SemanticMatchResponse(null, List.of()));
 
 		itemMatchService.matchForFoundItem(found);
@@ -134,7 +139,7 @@ class ItemMatchServiceTest {
 
 		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
 				.thenReturn(List.of(found));
-		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
+		when(itemMatchRepository.findByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(Optional.empty());
 
 		SemanticMatchResult semResult = new SemanticMatchResult(10L, new BigDecimal("80.00"), List.of("물품명/제목/카테고리/색상 의미 유사"));
 		when(semanticMatchClient.score(any()))
@@ -173,7 +178,7 @@ class ItemMatchServiceTest {
 
 		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
 				.thenReturn(List.of(found));
-		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
+		when(itemMatchRepository.findByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(Optional.empty());
 		when(semanticMatchClient.score(any())).thenThrow(new RuntimeException("Python 서버 연결 실패"));
 
 		itemMatchService.matchForLostItem(lost);
@@ -186,6 +191,28 @@ class ItemMatchServiceTest {
 		assertThat(saved.getMatchVersion()).isEqualTo("java-rule-v1");
 		assertThat(saved.getModelName()).isNull();
 		assertThat(saved.getMatchScore()).isEqualByComparingTo(saved.getRuleScore());
+	}
+
+	@Test
+	void matchForLostItem_refreshesExistingMatchWithoutResettingReadStatus() {
+		LocalDateTime lostAt = LocalDateTime.of(2026, 5, 10, 18, 0);
+		LostItem lost = lostItem(1L, "검정색 반지갑", "지갑", lostAt, "서울", "강남역");
+		FoundItem found = foundItem(10L, "블랙 반지갑", "지갑", lostAt.plusHours(2), "서울", "강남역", "블랙");
+		ItemMatch existing = new ItemMatch(lost, found, new BigDecimal("45.00"));
+		existing.markAsRead();
+
+		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
+				.thenReturn(List.of(found));
+		when(itemMatchRepository.findByLostItemLostIdAndFoundItemFoundId(1L, 10L))
+				.thenReturn(Optional.of(existing));
+		when(semanticMatchClient.score(any())).thenReturn(new SemanticMatchResponse(null, List.of()));
+
+		itemMatchService.matchForLostItem(lost);
+
+		verify(itemMatchRepository, never()).save(any());
+		assertThat(existing.getMatchStatus()).isEqualTo("READ");
+		assertThat(existing.getMatchScore()).isGreaterThan(new BigDecimal("45.00"));
+		assertThat(existing.getMatchReasonList()).anyMatch(reason -> reason.contains("색상 일치"));
 	}
 
 	// -----------------------------------------------------------------------
@@ -201,7 +228,7 @@ class ItemMatchServiceTest {
 
 		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
 				.thenReturn(List.of(found1, found2));
-		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(eq(1L), any())).thenReturn(false);
+		when(itemMatchRepository.findByLostItemLostIdAndFoundItemFoundId(eq(1L), any())).thenReturn(Optional.empty());
 
 		// found1(10)만 semantic 결과 있고 found2(11)는 누락
 		SemanticMatchResult semResult = new SemanticMatchResult(10L, new BigDecimal("75.00"), List.of());
@@ -241,7 +268,7 @@ class ItemMatchServiceTest {
 
 		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
 				.thenReturn(List.of(found));
-		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
+		when(itemMatchRepository.findByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(Optional.empty());
 		when(semanticMatchClient.score(any()))
 				.thenReturn(new SemanticMatchResponse("BM-K/KoSimCSE-roberta-multitask",
 						List.of(new SemanticMatchResult(10L, new BigDecimal("100.00"), List.of("물품명/제목/카테고리/색상 의미 유사")))));
@@ -265,7 +292,7 @@ class ItemMatchServiceTest {
 
 		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
 				.thenReturn(List.of(found));
-		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
+		when(itemMatchRepository.findByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(Optional.empty());
 		when(semanticMatchClient.score(any()))
 				.thenReturn(new SemanticMatchResponse("BM-K/KoSimCSE-roberta-multitask",
 						List.of(new SemanticMatchResult(10L, new BigDecimal("100.00"), List.of("물품명/제목/카테고리/색상 의미 유사")))));
@@ -289,7 +316,7 @@ class ItemMatchServiceTest {
 
 		when(foundItemRepository.findMatchCandidatesForLost(any(), any(), any()))
 				.thenReturn(List.of(found));
-		when(itemMatchRepository.existsByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(false);
+		when(itemMatchRepository.findByLostItemLostIdAndFoundItemFoundId(1L, 10L)).thenReturn(Optional.empty());
 		when(semanticMatchClient.score(any()))
 				.thenReturn(new SemanticMatchResponse("BM-K/KoSimCSE-roberta-multitask",
 						List.of(new SemanticMatchResult(10L, new BigDecimal("100.00"), List.of("물품명/제목/카테고리/색상 의미 유사")))));

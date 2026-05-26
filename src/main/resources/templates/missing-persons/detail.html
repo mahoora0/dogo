@@ -4,95 +4,167 @@
   <th:block th:fragment="content">
     <div class="mb-6">
       <a th:href="@{/missing-persons}" class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-slate-900">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         목록으로 돌아가기
       </a>
     </div>
 
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div class="flex flex-col gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div class="mb-4 flex flex-wrap gap-2">
-            <span th:text="${report.statusLabel}"
-                  th:classappend="${report.status == 'FOUND' ? ' bg-emerald-600' : (report.status == 'CLOSED' ? ' bg-slate-700' : ' bg-rose-500')}"
-                  class="inline-flex rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm">접수</span>
-            <span th:text="${report.sourceLabel}"
-                  class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">사용자 제보</span>
+      <div class="flex flex-col gap-6 md:flex-row">
+        <!-- 왼쪽 사이드바: 프로필 이미지 -->
+        <div class="w-full shrink-0 md:w-72">
+          <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
+            <div class="relative aspect-[3/4] w-full overflow-hidden flex items-center justify-center">
+              <img th:src="${report.base64Image != null ? report.base64Image : '/images/noImageSize.png'}" 
+                   alt="실종자 이미지" 
+                   class="h-full w-full object-cover transition duration-300 hover:scale-105" />
+            </div>
           </div>
-          <h1 th:text="${report.summary}" class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">13세 Korea 실종</h1>
-          <p th:text="${report.occurredPlace}" class="mt-2 text-sm font-semibold text-slate-600">Seoul</p>
-        </div>
-        <time th:text="${#temporals.format(report.occurredAt, 'yyyy.MM.dd HH:mm')}" class="text-sm font-bold text-slate-500">2026.05.18 09:30</time>
-      </div>
-
-      <div class="mt-6 grid gap-4 md:grid-cols-2">
-        <div class="rounded-2xl bg-slate-50 p-5">
-          <h2 class="mb-4 text-base font-bold text-slate-900">기본 정보</h2>
-          <dl class="grid gap-3 text-sm">
-            <div class="flex justify-between gap-4">
-              <dt class="font-semibold text-slate-500">나이</dt>
-              <dd th:text="${report.age + '세'}" class="font-bold text-slate-900">13세</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="font-semibold text-slate-500">국적</dt>
-              <dd th:text="${report.nationality}" class="font-bold text-slate-900">Korea</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="font-semibold text-slate-500">발생일시</dt>
-              <dd th:text="${#temporals.format(report.occurredAt, 'yyyy.MM.dd HH:mm')}" class="font-bold text-slate-900">2026.05.18 09:30</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="font-semibold text-slate-500">발생장소</dt>
-              <dd th:text="${report.occurredPlace}" class="text-right font-bold text-slate-900">Seoul</dd>
-            </div>
-          </dl>
         </div>
 
-        <div class="rounded-2xl bg-slate-50 p-5">
-          <h2 class="mb-4 text-base font-bold text-slate-900">신체 정보</h2>
-          <dl class="grid gap-3 text-sm">
-            <div class="flex justify-between gap-4">
-              <dt class="font-semibold text-slate-500">키</dt>
-              <dd th:text="${report.heightCm != null ? report.heightCm + 'cm' : '-'}" class="font-bold text-slate-900">170cm</dd>
+        <!-- 오른쪽 컬럼: 실종자 상세 정보 -->
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-col gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div class="mb-4 flex flex-wrap gap-2">
+                <span th:text="${report.statusLabel}"
+                      th:classappend="${report.status == 'FOUND' ? ' bg-emerald-600' : (report.status == 'CLOSED' ? ' bg-slate-700' : ' bg-rose-500')}"
+                      class="inline-flex rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm">접수</span>
+                <span th:text="${report.sourceLabel}"
+                      class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">사용자 제보</span>
+              </div>
+              <h1 th:text="${report.summary}" class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">13세 Korea 실종</h1>
+              <p th:text="${report.occurredPlace}" class="mt-2 text-sm font-semibold text-slate-600">Seoul</p>
             </div>
-            <div class="flex justify-between gap-4">
-              <dt class="font-semibold text-slate-500">몸무게</dt>
-              <dd th:text="${report.weightKg != null ? report.weightKg + 'kg' : '-'}" class="font-bold text-slate-900">58kg</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="font-semibold text-slate-500">체격</dt>
-              <dd th:text="${report.bodyType}" class="font-bold text-slate-900">Slim</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="font-semibold text-slate-500">얼굴형</dt>
-              <dd th:text="${report.faceShape}" class="font-bold text-slate-900">Oval</dd>
-            </div>
-          </dl>
-        </div>
-      </div>
+            <time th:text="${#temporals.format(report.occurredAt, 'yyyy.MM.dd HH:mm')}" class="text-sm font-bold text-slate-500">2026.05.18 09:30</time>
+          </div>
+          <div th:with="showPhysicalInfo=${(report.heightCm != null && report.heightCm > 0) || 
+                                           (report.weightKg != null && report.weightKg.compareTo(T(java.math.BigDecimal).ZERO) > 0) || 
+                                           (report.bodyType != null && report.bodyType != '미상' && report.bodyType != '불상' && report.bodyType != 'null' && report.bodyType != '') || 
+                                           (report.faceShape != null && report.faceShape != '미상' && report.faceShape != '불상' && report.faceShape != 'null' && report.faceShape != '')}"
+               class="mt-6">
+            
+            <!-- Grid container that dynamically adjusts columns depending on whether physical info is present -->
+            <div class="grid gap-6" th:classappend="${showPhysicalInfo ? 'md:grid-cols-2' : 'grid-cols-1'}">
+              
+              <!-- 기본 정보 -->
+              <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100"
+                   th:if="${(report.age != null && report.age > 0) || 
+                            (report.ageNow != null && report.ageNow > 0) || 
+                            (report.gender != null && report.gender != '' && report.gender != 'null' && report.gender != '미상' && report.gender != '불상') || 
+                            (report.targetLabel != null && report.targetLabel != '') || 
+                            (report.nationality != null && report.nationality != '' && report.nationality != '미상') || 
+                            (report.occurredAt != null) || 
+                            (report.occurredPlace != null && report.occurredPlace != '' && report.occurredPlace != '미상' && report.occurredPlace != '장소 미상')}">
+                <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+                  <span class="inline-block w-1.5 h-4 rounded-full bg-blue-600"></span>기본 정보
+                </h2>
+                
+                <!-- Dynamic columns inside dl if it's full-width -->
+                <dl class="grid gap-x-8 gap-y-4 text-sm"
+                    th:classappend="${showPhysicalInfo ? 'grid-cols-1' : 'sm:grid-cols-2 lg:grid-cols-3'}">
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.age != null && report.age > 0}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">당시 나이</dt>
+                    <dd th:text="${report.age + '세'}" class="font-bold text-sm text-slate-900">13세</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.ageNow != null && report.ageNow > 0}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">현재 나이</dt>
+                    <dd th:text="${report.ageNow + '세'}" class="font-bold text-sm text-slate-900">15세</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.gender != null && report.gender != '' && report.gender != 'null' && report.gender != '미상' && report.gender != '불상'}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">성별</dt>
+                    <dd th:text="${report.gender}" class="font-bold text-sm text-slate-900">남자</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.targetLabel != null && report.targetLabel != ''}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">대상 구분</dt>
+                    <dd th:text="${report.targetLabel}" class="font-bold text-sm text-slate-900">정상아동</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.nationality != null && report.nationality != '' && report.nationality != '미상'}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">국적</dt>
+                    <dd th:text="${report.nationality}" class="font-bold text-sm text-slate-900">Korea</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.occurredAt != null}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">발생일시</dt>
+                    <dd th:text="${#temporals.format(report.occurredAt, 'yyyy.MM.dd HH:mm')}" class="font-bold text-sm text-slate-900">2026.05.18 09:30</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3"
+                       th:classappend="${showPhysicalInfo ? '' : 'sm:col-span-2 lg:col-span-3'}"
+                       th:if="${report.occurredPlace != null && report.occurredPlace != '' && report.occurredPlace != '미상' && report.occurredPlace != '장소 미상'}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">발생장소</dt>
+                    <dd th:text="${report.occurredPlace}" class="font-bold text-sm text-slate-900">Seoul</dd>
+                  </div>
+                </dl>
+              </div>
 
-      <div class="mt-4 rounded-2xl bg-slate-50 p-5">
-        <h2 class="mb-4 text-base font-bold text-slate-900">머리와 착의</h2>
-        <dl class="grid gap-3 text-sm md:grid-cols-2">
-          <div class="flex justify-between gap-4">
-            <dt class="font-semibold text-slate-500">머리색상</dt>
-            <dd th:text="${report.hairColor}" class="font-bold text-slate-900">Black</dd>
-          </div>
-          <div class="flex justify-between gap-4">
-            <dt class="font-semibold text-slate-500">머리형태</dt>
-            <dd th:text="${report.hairStyle}" class="font-bold text-slate-900">Short</dd>
-          </div>
-          <div class="md:col-span-2">
-            <dt class="mb-2 font-semibold text-slate-500">착의사항</dt>
-            <dd th:text="${report.clothing}" class="rounded-xl bg-white p-4 font-semibold leading-7 text-slate-800">Blue hoodie</dd>
-          </div>
-        </dl>
-      </div>
+              <!-- 신체 정보 -->
+              <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100"
+                   th:if="${showPhysicalInfo}">
+                <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+                  <span class="inline-block w-1.5 h-4 rounded-full bg-blue-600"></span>신체 정보
+                </h2>
+                <dl class="grid gap-3 text-sm">
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.heightCm != null && report.heightCm > 0}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">키</dt>
+                    <dd th:text="${report.heightCm + 'cm'}" class="font-bold text-sm text-slate-900">170cm</dd>
+                  </div>
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.weightKg != null && report.weightKg.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">몸무게</dt>
+                    <dd th:text="${report.weightKg + 'kg'}" class="font-bold text-sm text-slate-900">58kg</dd>
+                  </div>
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.bodyType != null && report.bodyType != '미상' && report.bodyType != '불상' && report.bodyType != 'null' && report.bodyType != ''}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">체격</dt>
+                    <dd th:text="${report.bodyType}" class="font-bold text-sm text-slate-900">Slim</dd>
+                  </div>
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.faceShape != null && report.faceShape != '미상' && report.faceShape != '불상' && report.faceShape != 'null' && report.faceShape != ''}">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">얼굴형</dt>
+                    <dd th:text="${report.faceShape}" class="font-bold text-sm text-slate-900">Oval</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
 
-      <div class="mt-6 flex justify-end">
-        <a th:href="@{/missing-persons}" class="flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-8 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 active:scale-95">
-          목록
-        </a>
+            <!-- 머리와 착의 -->
+            <div class="mt-6 rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100"
+                 th:if="${(report.hairColor != null && report.hairColor != '미상' && report.hairColor != '불상' && report.hairColor != 'null' && report.hairColor != '') || 
+                          (report.hairStyle != null && report.hairStyle != '미상' && report.hairStyle != '불상' && report.hairStyle != 'null' && report.hairStyle != '') || 
+                          (report.clothing != null && report.clothing != '착의 정보 없음' && report.clothing != '미상' && report.clothing != '불상' && report.clothing != 'null' && report.clothing != '')}">
+              <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+                <span class="inline-block w-1.5 h-4 rounded-full bg-blue-600"></span>머리와 착의
+              </h2>
+              <dl class="grid gap-x-8 gap-y-4 text-sm md:grid-cols-2">
+                <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.hairColor != null && report.hairColor != '미상' && report.hairColor != '불상' && report.hairColor != 'null' && report.hairColor != ''}">
+                  <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">머리색상</dt>
+                  <dd th:text="${report.hairColor}" class="font-bold text-sm text-slate-900">Black</dd>
+                </div>
+                <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3" th:if="${report.hairStyle != null && report.hairStyle != '미상' && report.hairStyle != '불상' && report.hairStyle != 'null' && report.hairStyle != ''}">
+                  <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">머리형태</dt>
+                  <dd th:text="${report.hairStyle}" class="font-bold text-sm text-slate-900">Short</dd>
+                </div>
+                <div class="md:col-span-2" th:if="${report.clothing != null && report.clothing != '착의 정보 없음' && report.clothing != '미상' && report.clothing != '불상' && report.clothing != 'null' && report.clothing != ''}">
+                  <dt class="mb-2 font-semibold text-xs text-slate-500 whitespace-nowrap">착의사항</dt>
+                  <dd th:text="${report.clothing}" class="rounded-xl bg-white p-4 font-semibold leading-7 text-slate-800 border border-slate-100 shadow-sm">Blue hoodie</dd>
+                </div>
+              </dl>
+            </div>
+
+            <!-- 특이사항 및 신체 특징 (etcSpfeatr) -->
+            <div class="mt-6 rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100"
+                 th:if="${report.etcSpfeatr != null && report.etcSpfeatr != '' && report.etcSpfeatr != 'null' && report.etcSpfeatr != '미상' && report.etcSpfeatr != '불상'}">
+              <h2 class="mb-4 text-base font-bold text-slate-900 flex items-center gap-2">
+                <span class="inline-block w-1.5 h-4 rounded-full bg-blue-600"></span>특이사항 및 신체 특징
+              </h2>
+              <div class="rounded-xl bg-white p-4 font-medium leading-7 text-slate-800 border border-slate-200/60 shadow-sm"
+                   th:text="${report.etcSpfeatr}">
+                특이사항이 여기에 표시됩니다.
+              </div>
+            </div>
+          </div>
       </div>
     </section>
   </th:block>

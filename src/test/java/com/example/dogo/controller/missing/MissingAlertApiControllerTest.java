@@ -68,7 +68,7 @@ class MissingAlertApiControllerTest {
 		private Safe182AmberAlertPage response = new Safe182AmberAlertPage("00", "OK", 0, List.of());
 
 		RecordingMissingAlertService() {
-			super((occurrenceDate, rowSize, page) -> new Safe182AmberAlertPage("00", "OK", 0, List.of()));
+			super(null, null);
 		}
 
 		@Override

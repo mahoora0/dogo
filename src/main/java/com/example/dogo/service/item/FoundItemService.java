@@ -14,7 +14,6 @@ import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.match.FoundItemMatchRequestedEvent;
 import com.example.dogo.service.match.ItemMatchService;
-import com.example.dogo.service.match.embedding.FoundItemEmbeddingRequestedEvent;
 import com.example.dogo.service.police.sync.PoliceFoundItemDetailEnrichmentService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,7 +87,7 @@ public class FoundItemService {
 	@Transactional(readOnly = true)
 	public List<RecentItemView> getRecentItems(int limit) {
 		Pageable pageable = Pageable.ofSize(limit);
-		return foundItemRepository.findByDeletedFalseOrderByFoundAtDescFoundIdDesc(pageable).stream()
+		return foundItemRepository.findByDeletedFalseOrderByRegDateDescFoundIdDesc(pageable).stream()
 				.map(item -> new RecentItemView(
 						item.getFoundId(),
 						"FOUND",
@@ -101,7 +100,8 @@ public class FoundItemService {
 						statusLabel(item.getStatus()),
 						foundItemImageRepository.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(item)
 								.map(FoundItemImage::getImageUrl)
-								.orElse(PLACEHOLDER_IMAGE)
+								.orElse(PLACEHOLDER_IMAGE),
+						item.getRegDate()
 				))
 				.toList();
 	}
@@ -270,8 +270,6 @@ public class FoundItemService {
 			saveImages(item, newImages);
 		}
 
-		itemMatchService.clearMatchesForFoundItem(item.getFoundId());
-		eventPublisher.publishEvent(new FoundItemEmbeddingRequestedEvent(item.getFoundId()));
 		eventPublisher.publishEvent(new FoundItemMatchRequestedEvent(item.getFoundId()));
 	}
 
@@ -317,7 +315,6 @@ public class FoundItemService {
 
 		FoundItem savedItem = foundItemRepository.save(foundItem);
 		saveImages(savedItem, request.getUploadImages());
-		eventPublisher.publishEvent(new FoundItemEmbeddingRequestedEvent(savedItem.getFoundId()));
 		eventPublisher.publishEvent(new FoundItemMatchRequestedEvent(savedItem.getFoundId()));
 
 		return savedItem.getFoundId();

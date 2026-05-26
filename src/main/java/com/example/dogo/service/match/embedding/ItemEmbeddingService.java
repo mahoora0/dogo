@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -71,7 +72,7 @@ public class ItemEmbeddingService {
 	}
 
 	/** DB에서 조회하고, 없는 것은 Python 호출 후 저장해서 전부 반환 */
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public Map<Long, float[]> getOrFetch(String itemType, List<SemanticMatchItem> candidates) {
 		if (candidates.isEmpty()) return Map.of();
 
@@ -120,7 +121,7 @@ public class ItemEmbeddingService {
 		return result;
 	}
 
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public float[] getOrFetchOne(String itemType, SemanticMatchItem item) {
 		String text = textBuilder.build(item);
 		if (!StringUtils.hasText(text)) {
