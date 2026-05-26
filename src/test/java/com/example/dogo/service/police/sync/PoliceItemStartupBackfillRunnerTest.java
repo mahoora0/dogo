@@ -1,6 +1,8 @@
 package com.example.dogo.service.police.sync;
 
 import com.example.dogo.service.missing.MissingAlertSyncRunner;
+import com.example.dogo.service.animal.api.AnimalLossApiSyncRunner;
+import com.example.dogo.service.animal.api.AnimalProtectionApiSyncRunner;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,10 +14,14 @@ class PoliceItemStartupBackfillRunnerTest {
 		RecordingPoliceLostItemSyncRunner lostItemSyncRunner = new RecordingPoliceLostItemSyncRunner();
 		RecordingPoliceFoundItemSyncRunner foundItemSyncRunner = new RecordingPoliceFoundItemSyncRunner();
 		RecordingMissingAlertSyncRunner missingAlertSyncRunner = new RecordingMissingAlertSyncRunner();
+		RecordingAnimalLossApiSyncRunner animalLossApiSyncRunner = new RecordingAnimalLossApiSyncRunner();
+		RecordingAnimalProtectionApiSyncRunner animalProtectionApiSyncRunner = new RecordingAnimalProtectionApiSyncRunner();
 		PoliceItemStartupBackfillRunner runner = new PoliceItemStartupBackfillRunner(
 				lostItemSyncRunner,
 				foundItemSyncRunner,
 				missingAlertSyncRunner,
+				animalLossApiSyncRunner,
+				animalProtectionApiSyncRunner,
 				Runnable::run
 		);
 
@@ -24,6 +30,8 @@ class PoliceItemStartupBackfillRunnerTest {
 		assertThat(lostItemSyncRunner.backfillCount).isEqualTo(1);
 		assertThat(foundItemSyncRunner.backfillCount).isEqualTo(1);
 		assertThat(missingAlertSyncRunner.backfillCount).isEqualTo(1);
+		assertThat(animalLossApiSyncRunner.backfillCount).isEqualTo(1);
+		assertThat(animalProtectionApiSyncRunner.backfillCount).isEqualTo(1);
 	}
 
 	private static class RecordingPoliceLostItemSyncRunner extends PoliceLostItemSyncRunner {
@@ -57,6 +65,32 @@ class PoliceItemStartupBackfillRunnerTest {
 
 		RecordingMissingAlertSyncRunner() {
 			super(null, null, false, false);
+		}
+
+		@Override
+		public void backfillOnStartupIfEmpty() {
+			backfillCount++;
+		}
+	}
+
+	private static class RecordingAnimalLossApiSyncRunner extends AnimalLossApiSyncRunner {
+		private int backfillCount;
+
+		RecordingAnimalLossApiSyncRunner() {
+			super(null, null, null, null, null, 100, 7, 30, false, false);
+		}
+
+		@Override
+		public void backfillOnStartupIfEmpty() {
+			backfillCount++;
+		}
+	}
+
+	private static class RecordingAnimalProtectionApiSyncRunner extends AnimalProtectionApiSyncRunner {
+		private int backfillCount;
+
+		RecordingAnimalProtectionApiSyncRunner() {
+			super(null, null, null, null, null, 100, 7, 30, false, false);
 		}
 
 		@Override

@@ -91,16 +91,31 @@ public class AnimalReportService {
 			String keywordScope,
 			Pageable pageable
 	) {
+		return search(reportType, animalType, region, keyword, keywordScope, null, null, null, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<AnimalReportView> search(
+			String reportType,
+			String animalType,
+			String region,
+			String keyword,
+			String keywordScope,
+			java.time.LocalDate startDate,
+			java.time.LocalDate endDate,
+			String detailPlace,
+			Pageable pageable
+	) {
 		return animalReportRepository.findAll(
-				animalReportSearchSpec(reportType, animalType, region, keyword, keywordScope),
+				animalReportSearchSpec(reportType, animalType, region, keyword, keywordScope, startDate, endDate, detailPlace),
 				pageable
 		).map(this::toListView);
 	}
 
 	@Transactional(readOnly = true)
 	public List<RecentItemView> getRecentItems(int limit) {
-		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "regdate"));
-		return animalReportRepository.findAll(animalReportSearchSpec(null, null, null, null, null), pageable).stream()
+		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "eventDate").and(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "reportId")));
+		return animalReportRepository.findAll(animalReportSearchSpec(null, null, null, null, null, null, null, null), pageable).stream()
 				.map(item -> new RecentItemView(
 						item.getReportId(),
 						"ANIMAL",
@@ -434,9 +449,16 @@ public class AnimalReportService {
 			String animalType,
 			String region,
 			String keyword,
-			String keywordScope
+			String keywordScope,
+			java.time.LocalDate startDate,
+			java.time.LocalDate endDate,
+			String detailPlace
 	) {
 		return (root, query, criteriaBuilder) -> {
+			// 사진이 여러 장인 게시물이 중복 표시되는 것을 방지 (OneToMany images 조인으로 인한 카르테시안 곱 제거)
+			if (query != null) {
+				query.distinct(true);
+			}
 			List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
 			predicates.add(criteriaBuilder.isFalse(root.get("deleted")));
 
@@ -452,7 +474,25 @@ public class AnimalReportService {
 
 			String normalizedRegion = blankToNull(region);
 			if (normalizedRegion != null) {
-				predicates.add(criteriaBuilder.equal(root.get("regionName"), normalizedRegion));
+				predicates.add(criteriaBuilder.like(
+						criteriaBuilder.lower(root.get("regionName")),
+						"%" + normalizedRegion.toLowerCase(Locale.ROOT) + "%"
+				));
+			}
+
+			if (startDate != null) {
+				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("eventDate"), startDate));
+			}
+			if (endDate != null) {
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("eventDate"), endDate));
+			}
+
+			String normalizedDetailPlace = blankToNull(detailPlace);
+			if (normalizedDetailPlace != null) {
+				predicates.add(criteriaBuilder.like(
+						criteriaBuilder.lower(root.get("detailPlace")),
+						"%" + normalizedDetailPlace.toLowerCase(Locale.ROOT) + "%"
+				));
 			}
 
 			String normalizedKeyword = blankToNull(keyword);
@@ -613,7 +653,7 @@ public class AnimalReportService {
 
 	private String ageDisplay(Integer ageValue, String ageUnit) {
 		if (ageValue == null) {
-			return "-";
+			return null;
 		}
 		if (ageValue == 0 && "YEAR".equals(ageUnit)) {
 			return "1년 미만";
@@ -646,14 +686,30 @@ public class AnimalReportService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<AnimalImageSearchResult> searchByImage(byte[] imageBytes, String filename) {
+	public List<AnimalImageSearchResult> searchByImage(
+			byte[] imageBytes,
+			String filename,
+			String reportType,
+			String animalType,
+			String region,
+			String keyword,
+			String keywordScope,
+			java.time.LocalDate startDate,
+			java.time.LocalDate endDate,
+			String detailPlace
+	) {
 		if (imageEmbeddingService.isEmpty()) return List.of();
 		List<AnimalImageEmbeddingService.ImageSearchHit> hits = imageEmbeddingService.get().searchByImage(imageBytes, filename);
 		if (hits.isEmpty()) return List.of();
 		List<Long> reportIds = hits.stream().map(AnimalImageEmbeddingService.ImageSearchHit::reportId).toList();
-		Map<Long, AnimalReport> reportMap = animalReportRepository.findAllById(reportIds).stream()
-				.filter(r -> !r.isDeleted())
+
+		Specification<AnimalReport> spec = animalReportSearchSpec(reportType, animalType, region, keyword, keywordScope, startDate, endDate, detailPlace);
+		Specification<AnimalReport> idSpec = (root, query, cb) -> root.get("reportId").in(reportIds);
+		Specification<AnimalReport> combinedSpec = spec.and(idSpec);
+
+		Map<Long, AnimalReport> reportMap = animalReportRepository.findAll(combinedSpec).stream()
 				.collect(Collectors.toMap(AnimalReport::getReportId, r -> r));
+
 		return hits.stream()
 				.filter(hit -> reportMap.containsKey(hit.reportId()))
 				.map(hit -> new AnimalImageSearchResult(
@@ -661,6 +717,11 @@ public class AnimalReportService {
 						Math.round(hit.score() * 100)
 				))
 				.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<AnimalImageSearchResult> searchByImage(byte[] imageBytes, String filename) {
+		return searchByImage(imageBytes, filename, null, null, null, null, "ALL", null, null, null);
 	}
 
 	@Transactional(readOnly = true)
