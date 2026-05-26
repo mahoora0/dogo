@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface AnimalReportRepository extends JpaRepository<AnimalReport, Long>, JpaSpecificationExecutor<AnimalReport> {
 
@@ -42,4 +43,7 @@ public interface AnimalReportRepository extends JpaRepository<AnimalReport, Long
 	);
 	List<AnimalReport> findByDeletedFalseOrderByRegdateDesc();
 	List<AnimalReport> findByUserAndDeletedFalseOrderByRegdateDesc(com.example.dogo.entity.user.User user);
+	boolean existsBySourceType(String sourceType);
+	boolean existsByApiProviderAndExternalId(String apiProvider, String externalId);
+	Optional<AnimalReport> findByApiProviderAndExternalId(String apiProvider, String externalId);
 }

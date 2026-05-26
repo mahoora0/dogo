@@ -67,6 +67,52 @@ class AnimalReportServiceSearchTest {
 		assertThat(allResult.getTotalElements()).isEqualTo(2);
 	}
 
+	@Test
+	void searchReturnsPublicApiReports() {
+		AnimalReport publicReport = AnimalReport.fromPublicApi(
+				"ANIMAL_LOSS_API",
+				"loss-1",
+				"MISSING",
+				"Public API dog",
+				LocalDate.of(2026, 5, 16),
+				null,
+				null,
+				"Seoul",
+				"Mapo",
+				"010-1111-2222",
+				true,
+				null,
+				"DOG",
+				"Poodle",
+				"FEMALE",
+				"UNKNOWN",
+				null,
+				null,
+				null,
+				"white",
+				"blue collar",
+				"public animal loss record",
+				"<item><id>loss-1</id></item>"
+		);
+		animalReportRepository.save(publicReport);
+
+		Page<AnimalReportView> result = animalReportService.search(
+				"MISSING",
+				"DOG",
+				null,
+				"Poodle",
+				"BREED_FEATURE",
+				PageRequest.of(0, 10)
+		);
+
+		assertThat(result.getTotalElements()).isEqualTo(1);
+		assertThat(result.getContent().get(0).title()).isEqualTo("Public API dog");
+		assertThat(publicReport.getSourceType()).isEqualTo("ANIMAL_LOSS_API");
+		assertThat(publicReport.getApiProvider()).isEqualTo("ANIMAL_LOSS_API");
+		assertThat(publicReport.getExternalId()).isEqualTo("loss-1");
+		assertThat(publicReport.getSyncedAt()).isNotNull();
+	}
+
 	private AnimalReport report(
 			User user,
 			String title,
