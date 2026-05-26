@@ -207,10 +207,11 @@
                 새 비밀번호
                 <span th:if="${#authentication.principal.user.password == null}" class="text-[10px] text-gray-400 font-normal">(소셜 계정은 수정 불가)</span>
               </label>
-              <input type="password" name="password" placeholder="********"
+              <input type="password" name="password" id="modalPassword" placeholder="********"
                      th:readonly="${#authentication.principal.user.password == null}"
                      th:classappend="${#authentication.principal.user.password == null ? 'bg-[#F1F3F5] cursor-not-allowed' : 'bg-white border border-gray-200'}"
                      class="w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none font-medium">
+              <p id="passwordError" class="text-red-500 text-xs ml-2 font-medium hidden">특수문자 포함 8자 이상 써주세요</p>
             </div>
 
             <!-- 새 비밀번호 확인 -->
@@ -219,10 +220,11 @@
                 새 비밀번호 확인
                 <span th:if="${#authentication.principal.user.password == null}" class="text-[10px] text-gray-400 font-normal">(소셜 계정은 수정 불가)</span>
               </label>
-              <input type="password" name="confirmPassword" placeholder="********"
+              <input type="password" name="confirmPassword" id="modalConfirmPassword" placeholder="********"
                      th:readonly="${#authentication.principal.user.password == null}"
                      th:classappend="${#authentication.principal.user.password == null ? 'bg-[#F1F3F5] cursor-not-allowed' : 'bg-white border border-gray-200'}"
                      class="w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none font-medium">
+              <p id="passwordMatchMessage" class="text-xs ml-2 font-medium hidden"></p>
             </div>
 
             <!-- 이메일 (수정 불가) -->
@@ -334,20 +336,80 @@
         }
       });
 
+      // 비밀번호 검증 요소 및 로직 추가
+      const passwordInput = document.getElementById('modalPassword');
+      const passwordConfirmInput = document.getElementById('modalConfirmPassword');
+      const passwordError = document.getElementById('passwordError');
+      const passwordMatchMessage = document.getElementById('passwordMatchMessage');
+
+      // 비밀번호 실시간 유효성 검사
+      passwordInput.addEventListener('input', () => {
+        const password = passwordInput.value;
+        if (!password) {
+          passwordError.classList.add('hidden');
+          passwordMatchMessage.classList.add('hidden');
+          return;
+        }
+
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        if (password.length < 8 || !hasSpecialChar) {
+          passwordError.classList.remove('hidden');
+        } else {
+          passwordError.classList.add('hidden');
+        }
+
+        checkPasswordMatch();
+      });
+
+      // 비밀번호 확인 실시간 검사
+      passwordConfirmInput.addEventListener('input', checkPasswordMatch);
+
+      function checkPasswordMatch() {
+        const password = passwordInput.value;
+        const confirm = passwordConfirmInput.value;
+
+        if (!password || !confirm) {
+          passwordMatchMessage.classList.add('hidden');
+          return;
+        }
+
+        if (password === confirm) {
+          passwordMatchMessage.textContent = '비밀번호가 일치합니다.';
+          passwordMatchMessage.className = 'text-xs ml-2 font-medium text-green-600';
+        } else {
+          passwordMatchMessage.textContent = '비밀번호가 일치하지 않습니다.';
+          passwordMatchMessage.className = 'text-xs ml-2 font-medium text-red-500';
+        }
+        passwordMatchMessage.classList.remove('hidden');
+      }
+
       // 폼 제출 전 검증
       document.querySelector('#editModal form').addEventListener('submit', (e) => {
         if (!isNicknameVerified) {
           e.preventDefault();
           alert('닉네임 중복 확인을 해주세요.');
           modalNickname.focus();
+          return;
         }
         
-        const pwd = document.getElementsByName('password')[0].value;
-        const confirmPwd = document.getElementsByName('confirmPassword')[0].value;
+        const pwd = passwordInput.value;
+        const confirmPwd = passwordConfirmInput.value;
         
-        if (pwd && pwd !== confirmPwd) {
-          e.preventDefault();
-          alert('비밀번호가 일치하지 않습니다.');
+        if (pwd) {
+          const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+          if (pwd.length < 8 || !hasSpecialChar) {
+            e.preventDefault();
+            alert('비밀번호는 특수문자 포함 8자 이상이어야 합니다.');
+            passwordInput.focus();
+            return;
+          }
+          
+          if (pwd !== confirmPwd) {
+            e.preventDefault();
+            alert('비밀번호가 일치하지 않습니다.');
+            passwordConfirmInput.focus();
+            return;
+          }
         }
       });
     </script>
