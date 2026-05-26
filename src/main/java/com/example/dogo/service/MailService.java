@@ -35,13 +35,13 @@ public class MailService {
     public void sendVerificationCode(String toEmail) {
         String code = generateRandomCode();
         
-        // Save code for 5 minutes
-        verificationCodes.put(toEmail, new VerificationInfo(code, TimeUnit.MINUTES.toMillis(5)));
+        // Save code for 30 minutes
+        verificationCodes.put(toEmail, new VerificationInfo(code, TimeUnit.MINUTES.toMillis(30)));
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
         message.setSubject("[두고내림] 회원가입 이메일 인증 번호");
-        message.setText("인증 번호는 [" + code + "] 입니다. 5분 이내에 입력해주세요.");
+        message.setText("인증 번호는 [" + code + "] 입니다. 30분 이내에 입력해주세요.");
         
         mailSender.send(message);
     }
@@ -49,13 +49,13 @@ public class MailService {
     public void sendVerificationCodeForFind(String toEmail) {
         String code = generateRandomCode();
         
-        // Save code for 5 minutes
-        verificationCodes.put(toEmail, new VerificationInfo(code, TimeUnit.MINUTES.toMillis(5)));
+        // Save code for 30 minutes
+        verificationCodes.put(toEmail, new VerificationInfo(code, TimeUnit.MINUTES.toMillis(30)));
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
         message.setSubject("[두고내림] 계정 찾기 이메일 인증 번호");
-        message.setText("인증 번호는 [" + code + "] 입니다. 5분 이내에 입력해주세요.");
+        message.setText("인증 번호는 [" + code + "] 입니다. 30분 이내에 입력해주세요.");
         
         mailSender.send(message);
     }
