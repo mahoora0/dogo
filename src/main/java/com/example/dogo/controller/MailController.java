@@ -37,6 +37,27 @@ public class MailController {
         }
     }
 
+    @PostMapping("/send-for-find")
+    public ResponseEntity<?> sendCodeForFind(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body("이메일을 입력해주세요.");
+        }
+
+        // Check if email exists
+        if (!userRepository.existsByEmail(email)) {
+            return ResponseEntity.badRequest().body("가입되지 않은 이메일입니다.");
+        }
+
+        try {
+            mailService.sendVerificationCodeForFind(email);
+            return ResponseEntity.ok("인증 번호가 발송되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("메일 발송에 실패했습니다.");
+        }
+    }
+
     @PostMapping("/verify")
     public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> request) {
         String email = request.get("email");

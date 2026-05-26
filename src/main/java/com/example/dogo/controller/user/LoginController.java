@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseEntity;
 import lombok.RequiredArgsConstructor;
 import com.example.dogo.repository.user.UserRepository;
@@ -78,6 +79,90 @@ public class LoginController {
   @GetMapping("/join")
   public String joinPage() {
     return "user/join"; // templates/user/join.html을 찾아감
+  }
+
+  @GetMapping("/find-account")
+  public String findAccountPage() {
+    return "user/find-account"; // templates/user/find-account.html을 찾아감
+  }
+
+  @PostMapping("/api/user/find-id")
+  @ResponseBody
+  public ResponseEntity<?> findId(@RequestBody java.util.Map<String, String> request) {
+    String email = request.get("email");
+
+    if (email == null || email.isEmpty()) {
+      return ResponseEntity.badRequest().body("이메일을 입력해주세요.");
+    }
+
+    java.util.Optional<com.example.dogo.entity.user.User> userOpt = userRepository.findByEmail(email);
+    if (userOpt.isPresent()) {
+      com.example.dogo.entity.user.User user = userOpt.get();
+      String loginId = user.getLoginId();
+      if (loginId == null) {
+        return ResponseEntity.ok(java.util.Map.of("success", true, "social", true)); // 소셜 가입 회원
+      }
+      
+      // 마스킹 처리 (아이디 뒷자리 일부 마스킹: 예: admin -> ad***)
+      String maskedId = loginId;
+      if (loginId.length() > 3) {
+        maskedId = loginId.substring(0, 3) + "*".repeat(loginId.length() - 3);
+      } else {
+        maskedId = loginId.substring(0, 1) + "*".repeat(loginId.length() - 1);
+      }
+      return ResponseEntity.ok(java.util.Map.of("success", true, "loginId", maskedId));
+    }
+    
+    return ResponseEntity.badRequest().body("일치하는 회원 정보를 찾을 수 없습니다.");
+  }
+
+  @PostMapping("/api/user/reset-password")
+  @ResponseBody
+  @Transactional
+  public ResponseEntity<?> resetPassword(@RequestBody java.util.Map<String, String> request) {
+    String loginId = request.get("loginId");
+    String email = request.get("email");
+    String password = request.get("password");
+    String passwordConfirm = request.get("passwordConfirm");
+
+    if (loginId == null || loginId.isEmpty() || email == null || email.isEmpty() ||
+        password == null || password.isEmpty() || passwordConfirm == null || passwordConfirm.isEmpty()) {
+      return ResponseEntity.badRequest().body("모든 필드를 입력해주세요.");
+    }
+
+    java.util.Optional<com.example.dogo.entity.user.User> userOpt = userRepository.findByLoginId(loginId);
+    if (userOpt.isPresent()) {
+      com.example.dogo.entity.user.User user = userOpt.get();
+      
+      // 이메일도 일치하는지 검증
+      if (!email.equals(user.getEmail())) {
+        return ResponseEntity.badRequest().body("아이디와 이메일 정보가 일치하지 않습니다.");
+      }
+
+      // 소셜 계정 검증 (비밀번호 없는 계정은 재설정 불가)
+      if (user.getPassword() == null) {
+        return ResponseEntity.badRequest().body("소셜 로그인 계정은 비밀번호를 재설정할 수 없습니다.");
+      }
+
+      // 비밀번호 복잡도 유효성 검사 (특수문자 포함 8자 이상)
+      boolean hasSpecialChar = password.matches(".*[!@#$%^&*(),.?\":{}|<>].*");
+      if (password.length() < 8 || !hasSpecialChar) {
+        return ResponseEntity.badRequest().body("비밀번호는 특수문자 포함 8자 이상이어야 합니다.");
+      }
+
+      // 비밀번호 일치 검사
+      if (!password.equals(passwordConfirm)) {
+        return ResponseEntity.badRequest().body("비밀번호가 일치하지 않습니다.");
+      }
+
+      // 패스워드 암호화 및 업데이트
+      user.setPassword(passwordEncoder.encode(password));
+      userRepository.save(user);
+
+      return ResponseEntity.ok(java.util.Map.of("success", true, "message", "비밀번호가 성공적으로 재설정되었습니다."));
+    }
+
+    return ResponseEntity.badRequest().body("일치하는 회원 정보를 찾을 수 없습니다.");
   }
 
   @GetMapping("/api/user/check-nickname")
