@@ -14,6 +14,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     ChatMessage findTopByChatRoomOrderByCreatedAtDesc(ChatRoom chatRoom);
     int countByChatRoomAndSenderNotAndReadFalse(ChatRoom chatRoom, User sender);
     int countByChatRoomInAndSenderNotAndReadFalse(List<ChatRoom> chatRooms, User sender);
+    int countByChatRoomAndFileGroupId(ChatRoom chatRoom, String fileGroupId);
 
     @Modifying
     @Query("UPDATE ChatMessage m SET m.read = true WHERE m.chatRoom = :chatRoom AND m.sender <> :reader AND m.read = false")

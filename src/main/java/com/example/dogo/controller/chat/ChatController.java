@@ -103,6 +103,20 @@ public class ChatController {
         return savedMessage;
     }
 
+    @PostMapping("/chat/room/{roomId}/uploads")
+    @ResponseBody
+    public ChatMessageDto uploadImages(@PathVariable Long roomId,
+                                       @RequestParam("files") List<MultipartFile> files,
+                                       @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new ChatUnavailableException("Login is required.");
+        }
+
+        ChatMessageDto savedMessage = chatService.saveImageMessages(roomId, files, userDetails.getUser());
+        publishMessage(savedMessage);
+        return savedMessage;
+    }
+
     @MessageMapping("/chat/message")
     public void message(ChatMessageDto message) {
         ChatMessageDto savedMessage = chatService.saveMessage(message);
