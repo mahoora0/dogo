@@ -206,6 +206,12 @@ function textMatchesRegion(item, region) {
   if (!region) return true;
 
   const shortRegion = region.length >= 2 ? region.substring(0, 2) : region;
+  
+  // 대전 검색 시 아산역 유실물센터 방어 코드 (DB 캐시 보정용)
+  if (item.stationName && item.stationName.includes('아산') && shortRegion === '대전') {
+    return false;
+  }
+
   const startsWithRegion = value => {
     const text = String(value || '').trim();
     return text === region || text === shortRegion || text.startsWith(region) || text.startsWith(shortRegion);
@@ -215,6 +221,10 @@ function textMatchesRegion(item, region) {
 
   const stationName = String(item.stationName || '');
   if (stationName.includes(region) || stationName.includes(shortRegion)) return true;
+
+  if (item.type === 'KORAIL' || item.type === 'SUBWAY') {
+    return false;
+  }
 
   const tel = String(item.telNo || item.telno || item.tel || '').replace(/[^0-9]/g, '');
   const areaCode = {
@@ -274,7 +284,10 @@ function updateMap() {
 
   markers.forEach(m => m.setMap(null));
   markers = [];
-  if (currentInfowindow) currentInfowindow.close();
+  if (currentInfowindow) {
+    if (typeof currentInfowindow.close === 'function') currentInfowindow.close();
+    else currentInfowindow.setMap(null);
+  }
 
   if (!region && !keyword) {
     if (listContainer) {
@@ -357,10 +370,15 @@ function renderMarkersOnMap(policeData, korailData, subwayData, selection) {
       const pos = new kakao.maps.LatLng(lat, lng);
       
       let markerImage = null;
-      if (type === 'KORAIL') {
-          markerImage = new kakao.maps.MarkerImage('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png', new kakao.maps.Size(24, 35));
+      const markerSize = new kakao.maps.Size(30, 38);
+      const markerOffset = new kakao.maps.Point(15, 38);
+
+      if (type === 'POLICE') {
+          markerImage = new kakao.maps.MarkerImage('/images/police_marker.png', markerSize, { offset: markerOffset });
+      } else if (type === 'KORAIL') {
+          markerImage = new kakao.maps.MarkerImage('/images/korail_marker.png', markerSize, { offset: markerOffset });
       } else if (type === 'SUBWAY') {
-          markerImage = new kakao.maps.MarkerImage('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png', new kakao.maps.Size(24, 35));
+          markerImage = new kakao.maps.MarkerImage('/images/subway_marker.png', markerSize, { offset: markerOffset });
       }
 
       const marker = new kakao.maps.Marker({
@@ -372,14 +390,60 @@ function renderMarkersOnMap(policeData, korailData, subwayData, selection) {
       const addr = type === 'POLICE' ? (item.addr || item.address) : (type === 'KORAIL' ? item.locationDetails : item.detailLocation);
       const tel = item.telNo || item.telno || item.tel;
 
-      const infowindow = new kakao.maps.InfoWindow({
-        content: `<div style="padding:10px; min-width:200px;"><div style="font-weight:bold;">${name}</div><div style="font-size:12px; color:#666;">${addr || ''}</div><div style="font-size:12px; color:#007bff;">${tel || ''}</div></div>`
+      const contentNode = document.createElement('div');
+      contentNode.className = 'map-custom-overlay';
+
+      const typeClass = type.toLowerCase();
+      const typeLabel = type === 'POLICE' ? '경찰' : type === 'KORAIL' ? '코레일' : '지하철';
+
+      contentNode.innerHTML = `
+        <div class="overlay-header">
+          <span class="overlay-badge ${typeClass}">${typeLabel}</span>
+          <button class="overlay-close-btn" title="닫기">&times;</button>
+        </div>
+        <div class="overlay-body">
+          <h3 class="overlay-title">${name}</h3>
+          <p class="overlay-address">
+            <span class="icon">📍</span>
+            <span class="text">${addr || '주소 정보 없음'}</span>
+          </p>
+          ${tel ? `
+          <p class="overlay-tel">
+            <span class="icon">📞</span>
+            <a href="tel:${tel}" class="text tel-link">${tel}</a>
+          </p>
+          ` : ''}
+        </div>
+      `;
+
+      const overlay = new kakao.maps.CustomOverlay({
+        position: pos,
+        content: contentNode,
+        xAnchor: 0.5,
+        yAnchor: 1.15
+      });
+
+      const closeBtn = contentNode.querySelector('.overlay-close-btn');
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        overlay.setMap(null);
+        if (currentInfowindow === overlay) {
+          currentInfowindow = null;
+        }
       });
 
       kakao.maps.event.addListener(marker, 'click', () => {
-        if (currentInfowindow) currentInfowindow.close();
-        infowindow.open(map, marker);
-        currentInfowindow = infowindow;
+        if (currentInfowindow) {
+          if (typeof currentInfowindow.close === 'function') currentInfowindow.close();
+          else currentInfowindow.setMap(null);
+        }
+        overlay.setMap(map);
+        currentInfowindow = overlay;
+
+        // Smoothly pan to the marker with a slight vertical offset so the popup card is fully visible
+        const currentLevel = map.getLevel();
+        const offsetLat = lat + (0.0012 * Math.pow(2, currentLevel - 5));
+        map.panTo(new kakao.maps.LatLng(offsetLat, lng));
       });
 
       markers.push(marker);
@@ -422,10 +486,10 @@ function renderCenterList(data, keyword) {
   filtered.forEach(item => {
     const typeClass =
         item.type === 'POLICE'
-            ? 'background:#dbeafe;color:#2563eb;'
+            ? 'background:#e0e7ff;color:#1e3a8a;'
             : item.type === 'KORAIL'
-                ? 'background:#dcfce7;color:#16a34a;'
-                : 'background:#f3e8ff;color:#9333ea;';
+                ? 'background:#dbeafe;color:#2563eb;'
+                : 'background:#dcfce7;color:#16a34a;';
 
     const typeLabel =
         item.type === 'POLICE'
@@ -478,8 +542,13 @@ function focusMarker(lat, lng) {
     map.setLevel(5);
   }
   
-  // Pan to the position
-  map.panTo(pos);
+  // Calculate latitude offset to shift the marker downwards on screen for optimal popup visibility
+  const targetLevel = levelChanged ? 5 : currentLevel;
+  const offsetLat = lat + (0.0012 * Math.pow(2, targetLevel - 5));
+  const offsetPos = new kakao.maps.LatLng(offsetLat, lng);
+
+  // Pan to the offset position
+  map.panTo(offsetPos);
   
   const triggerClick = () => {
     markers.forEach(marker => {

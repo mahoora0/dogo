@@ -445,6 +445,10 @@ function initPlaceholderBehavior() {
     element.placeholder = defaultValues[id];
 
     element.addEventListener('focus', function() {
+      // 메인 문구(input-title)와 실종 당시 특징(input-features)은 포커스 시 사라지지 않고 바로 수정할 수 있도록 예외 처리
+      if (id === 'input-title' || id === 'id-features' || id === 'input-features') {
+        return;
+      }
       if (this.value.trim() === defaultValues[id].trim()) {
         this.value = '';
         syncText();
