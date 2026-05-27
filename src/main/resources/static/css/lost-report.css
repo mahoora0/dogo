@@ -365,11 +365,9 @@ input:checked + .slider:before {
 .static-title.theme-white-bg {
     top: 15px;
     height: auto;
-    font-size: 34px;
+    font-size: 44px;
     background-color: transparent;
     color: #e11d48;
-    border-bottom: 4px double #e11d48;
-    padding-bottom: 4px;
     width: calc(100% - 40px);
     left: 20px;
 }
