@@ -9,7 +9,7 @@
     </a>
 
     <section class="home-actions" aria-label="빠른 이동">
-      <a class="home-action-card home-action-card--lost-search" th:href="@{/lost-items}">
+      <a class="home-action-card home-action-card--lost-search" th:href="@{/lost-items/new}">
         <span class="home-action-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="10" cy="10" r="7"></circle>
@@ -112,7 +112,7 @@
     <section class="home-recent" aria-labelledby="recent-title">
       <div class="home-section-head">
         <h2 id="recent-title">최근 등록된 게시물</h2>
-        <a th:href="@{/lost-items}">전체보기</a>
+        <a th:href="@{/lost-items}" id="recent-view-all">전체보기</a>
       </div>
       <div class="home-tabs" aria-label="게시물 유형">
         <a class="recent-tab is-active" data-filter="all" th:href="@{/lost-items}">전체</a>
@@ -160,6 +160,7 @@
         const grid = document.getElementById('recentGrid');
         const cards = grid ? grid.querySelectorAll('.home-recent-card') : [];
         const emptyMsg = document.getElementById('recentEmpty');
+        const viewAllBtn = document.getElementById('recent-view-all');
 
         function applyFilter(filterValue, isInitial) {
           let visibleCount = 0;
@@ -200,6 +201,24 @@
               emptyMsg.style.display = 'flex';
             } else {
               emptyMsg.style.display = 'none';
+            }
+          }
+
+          // Handle the "View All" (전체보기) button visibility and links depending on tab selection
+          if (viewAllBtn) {
+            if (filterValue === 'all') {
+              viewAllBtn.style.display = 'none';
+            } else {
+              viewAllBtn.style.display = 'inline-block';
+              if (filterValue === 'LOST') {
+                viewAllBtn.href = '/lost-items';
+              } else if (filterValue === 'FOUND') {
+                viewAllBtn.href = '/found-items';
+              } else if (filterValue === 'PERSON') {
+                viewAllBtn.href = '/missing-persons';
+              } else if (filterValue === 'ANIMAL') {
+                viewAllBtn.href = '/animal-reports';
+              }
             }
           }
         }

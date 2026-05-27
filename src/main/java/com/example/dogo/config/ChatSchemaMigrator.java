@@ -38,6 +38,7 @@ public class ChatSchemaMigrator implements ApplicationRunner {
         addColumnIfMissing("FILE_URL", "FILE_URL VARCHAR(500) NULL");
         addColumnIfMissing("FILE_NAME", "FILE_NAME VARCHAR(255) NULL");
         addColumnIfMissing("FILE_SIZE", "FILE_SIZE BIGINT NULL");
+        addColumnIfMissing("FILE_GROUP_ID", "FILE_GROUP_ID VARCHAR(80) NULL");
     }
 
     private void addColumnIfMissing(String columnName, String columnDefinition) throws SQLException {

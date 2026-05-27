@@ -1,5 +1,6 @@
 package com.example.dogo.service;
 
+import com.example.dogo.dto.ChatFileDto;
 import com.example.dogo.dto.ChatMessageDto;
 import com.example.dogo.dto.ChatRoomDto;
 import com.example.dogo.entity.*;
@@ -27,13 +28,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 import java.util.Locale;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class ChatService {
 
     private static final String CHAT_UNAVAILABLE_MESSAGE = "이 게시글은 채팅 신청이 불가능합니다.";
+
+    private static final int MAX_MESSAGE_CONTENT_LENGTH = 1000;
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
@@ -130,6 +136,12 @@ public class ChatService {
                     String type = "";
                     String place = "";
                     String dateStr = "";
+                    String lastMessage = lastMsg != null ? lastMsg.getContent() : "\ub300\ud654\ub97c \uc2dc\uc791\ud574\ubcf4\uc138\uc694.";
+
+                    if (lastMsg != null && StringUtils.hasText(lastMsg.getFileGroupId())) {
+                        int groupedFileCount = chatMessageRepository.countByChatRoomAndFileGroupId(room, lastMsg.getFileGroupId());
+                        lastMessage = "\u005b\uc774\ubbf8\uc9c0\u005d " + groupedFileCount + "\uac1c";
+                    }
 
                     if (room.getFoundItem() != null) {
                         title = room.getFoundItem().getTitle();
@@ -157,7 +169,7 @@ public class ChatService {
                             .roomId(room.getRoomId())
                             .itemTitle(title)
                             .itemThumbnail(thumbnail)
-                            .lastMessage(lastMsg != null ? lastMsg.getContent() : "대화를 시작해보세요.")
+                            .lastMessage(lastMessage)
                             .lastMessageTime(lastMsg != null ? lastMsg.getCreatedAt() : room.getCreatedAt())
                             .otherParticipantNickname(other.getNickname())
                             .otherParticipantProfileImage(other.getProfileImageUrl())
@@ -186,19 +198,25 @@ public class ChatService {
     public List<ChatMessageDto> getChatMessages(Long roomId) {
         ChatRoom room = chatRoomRepository.findById(roomId).orElseThrow();
         List<ChatMessage> messages = chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(room);
-        return messages.stream().map(msg -> ChatMessageDto.builder()
-                .roomId(roomId)
-                .senderNo(msg.getSender().getUserNo())
-                .senderNickname(msg.getSender().getNickname())
-                .senderProfileImage(msg.getSender().getProfileImageUrl())
-                .content(msg.getContent())
-                .type(msg.getMessageType().name())
-                .createdAt(msg.getCreatedAt())
-                .clientMessageId(null)
-                .fileUrl(msg.getFileUrl())
-                .fileName(msg.getFileName())
-                .fileSize(msg.getFileSize())
-                .build()).collect(Collectors.toList());
+        List<ChatMessageDto> result = new ArrayList<>();
+        Set<String> renderedGroups = new LinkedHashSet<>();
+
+        for (ChatMessage message : messages) {
+            String fileGroupId = message.getFileGroupId();
+            if (StringUtils.hasText(fileGroupId)) {
+                if (renderedGroups.add(fileGroupId)) {
+                    List<ChatMessage> groupedMessages = messages.stream()
+                            .filter(candidate -> fileGroupId.equals(candidate.getFileGroupId()))
+                            .collect(Collectors.toList());
+                    result.add(toFileGroupDto(roomId, fileGroupId, groupedMessages));
+                }
+                continue;
+            }
+
+            result.add(toMessageDto(roomId, message));
+        }
+
+        return result;
     }
 
     @Transactional
@@ -217,11 +235,12 @@ public class ChatService {
     public ChatMessageDto saveMessage(ChatMessageDto dto) {
         ChatRoom room = chatRoomRepository.findById(dto.getRoomId()).orElseThrow();
         User sender = userRepository.findById(dto.getSenderNo()).orElseThrow();
+        String content = normalizeMessageContent(dto.getContent());
         
         ChatMessage message = new ChatMessage(
                 room,
                 sender,
-                dto.getContent(),
+                content,
                 ChatMessage.MessageType.valueOf(dto.getType()),
                 dto.getFileUrl(),
                 dto.getFileName(),
@@ -234,13 +253,14 @@ public class ChatService {
                 .senderNo(sender.getUserNo())
                 .senderNickname(sender.getNickname())
                 .senderProfileImage(sender.getProfileImageUrl())
-                .content(dto.getContent())
+                .content(content)
                 .type(dto.getType())
                 .createdAt(message.getCreatedAt())
                 .clientMessageId(dto.getClientMessageId())
                 .fileUrl(message.getFileUrl())
                 .fileName(message.getFileName())
                 .fileSize(message.getFileSize())
+                .fileGroupId(message.getFileGroupId())
                 .build();
     }
 
@@ -297,6 +317,150 @@ public class ChatService {
         } catch (IOException exception) {
             throw new UncheckedIOException("파일 저장에 실패했습니다.", exception);
         }
+    }
+
+    @Transactional
+    public ChatMessageDto saveImageMessages(Long roomId, List<MultipartFile> files, User sender) {
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat room not found."));
+
+        List<MultipartFile> uploadFiles = files == null ? List.of() : files.stream()
+                .filter(candidate -> candidate != null && !candidate.isEmpty())
+                .collect(Collectors.toList());
+
+        if (uploadFiles.isEmpty()) {
+            throw new IllegalArgumentException("Upload files are empty.");
+        }
+
+        try {
+            Files.createDirectories(chatUploadPath);
+
+            String fileGroupId = uploadFiles.size() > 1 ? UUID.randomUUID().toString() : null;
+            List<ChatMessage> savedMessages = new ArrayList<>();
+
+            for (MultipartFile file : uploadFiles) {
+                if (!isImageUpload(file)) {
+                    throw new IllegalArgumentException("Only image files can be attached.");
+                }
+
+                ChatFileDto storedFile = storeChatFile(file);
+                ChatMessage message = new ChatMessage(
+                        room,
+                        sender,
+                        "\u005b\ud30c\uc77c\u005d " + storedFile.getFileName(),
+                        ChatMessage.MessageType.FILE,
+                        storedFile.getFileUrl(),
+                        storedFile.getFileName(),
+                        storedFile.getFileSize(),
+                        fileGroupId
+                );
+                chatMessageRepository.save(message);
+                savedMessages.add(message);
+            }
+
+            if (StringUtils.hasText(fileGroupId)) {
+                return toFileGroupDto(roomId, fileGroupId, savedMessages);
+            }
+            return toMessageDto(roomId, savedMessages.get(0));
+        } catch (IOException exception) {
+            throw new UncheckedIOException("Failed to save chat files.", exception);
+        }
+    }
+
+    private ChatFileDto storeChatFile(MultipartFile file) throws IOException {
+        String originalName = StringUtils.cleanPath(StringUtils.hasText(file.getOriginalFilename()) ? file.getOriginalFilename() : "upload");
+        String extension = extractExtension(originalName);
+        String storedName = UUID.randomUUID() + extension;
+        Path targetPath = chatUploadPath.resolve(storedName).normalize();
+
+        if (!targetPath.startsWith(chatUploadPath)) {
+            throw new IllegalArgumentException("Invalid file name.");
+        }
+
+        file.transferTo(targetPath);
+
+        return ChatFileDto.builder()
+                .fileUrl("/uploads/chats/" + storedName)
+                .fileName(originalName)
+                .fileSize(file.getSize())
+                .build();
+    }
+
+    private ChatMessageDto toMessageDto(Long roomId, ChatMessage message) {
+        return ChatMessageDto.builder()
+                .roomId(roomId)
+                .senderNo(message.getSender().getUserNo())
+                .senderNickname(message.getSender().getNickname())
+                .senderProfileImage(message.getSender().getProfileImageUrl())
+                .content(message.getContent())
+                .type(message.getMessageType().name())
+                .createdAt(message.getCreatedAt())
+                .clientMessageId(null)
+                .fileUrl(message.getFileUrl())
+                .fileName(message.getFileName())
+                .fileSize(message.getFileSize())
+                .fileGroupId(message.getFileGroupId())
+                .build();
+    }
+
+    private ChatMessageDto toFileGroupDto(Long roomId, String fileGroupId, List<ChatMessage> messages) {
+        ChatMessage first = messages.get(0);
+        List<ChatFileDto> files = messages.stream()
+                .map(this::toChatFileDto)
+                .collect(Collectors.toList());
+        long totalSize = files.stream()
+                .map(ChatFileDto::getFileSize)
+                .filter(size -> size != null)
+                .mapToLong(Long::longValue)
+                .sum();
+
+        return ChatMessageDto.builder()
+                .roomId(roomId)
+                .senderNo(first.getSender().getUserNo())
+                .senderNickname(first.getSender().getNickname())
+                .senderProfileImage(first.getSender().getProfileImageUrl())
+                .content("\u005b\uc774\ubbf8\uc9c0\u005d " + files.size() + "\uac1c")
+                .type("FILE_GROUP")
+                .createdAt(first.getCreatedAt())
+                .clientMessageId(null)
+                .fileUrl(first.getFileUrl())
+                .fileName(first.getFileName())
+                .fileSize(totalSize)
+                .fileGroupId(fileGroupId)
+                .files(files)
+                .build();
+    }
+
+    private ChatFileDto toChatFileDto(ChatMessage message) {
+        return ChatFileDto.builder()
+                .fileUrl(message.getFileUrl())
+                .fileName(message.getFileName())
+                .fileSize(message.getFileSize())
+                .build();
+    }
+
+    private boolean isImageUpload(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (StringUtils.hasText(contentType) && contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
+            return true;
+        }
+        return isImageFileName(file.getOriginalFilename());
+    }
+
+    private boolean isImageFileName(String filename) {
+        String extension = extractExtension(filename);
+        return List.of(".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg").contains(extension);
+    }
+
+    private String normalizeMessageContent(String content) {
+        String normalized = content == null ? "" : content.trim();
+        if (!StringUtils.hasText(normalized)) {
+            throw new IllegalArgumentException("Message content is empty.");
+        }
+        if (normalized.length() > MAX_MESSAGE_CONTENT_LENGTH) {
+            throw new IllegalArgumentException("Message content is too long.");
+        }
+        return normalized;
     }
 
     private String extractExtension(String filename) {

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>계정 찾기 - 두고내림</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" th:href="@{/css/user-style.css}">
+  <style>
+    /* 활성화 탭 표시 슬라이드 애니메이션 */
+    .tab-active {
+      color: #1A1A1A;
+      font-weight: 800;
+    }
+  </style>
+</head>
+
+<body class="bg-[#F8F9FA] flex items-center justify-center min-h-screen p-4">
+
+  <div class="w-full max-w-[550px]">
+
+    <!-- 로고 영역 -->
+    <div class="bg-white w-full py-6 mb-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center">
+      <a th:href="@{/}" class="flex items-center">
+        <img th:src="@{/images/logo.png}" class="w-10 h-10 object-contain" alt="로고">
+      </a>
+    </div>
+
+    <!-- 메인 카드 -->
+    <div class="bg-white p-8 sm:p-12 rounded-[24px] shadow-sm border border-gray-100 relative overflow-hidden">
+
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">계정 찾기</h1>
+        <p class="text-gray-500 text-sm">아이디를 찾거나 비밀번호를 재설정하세요</p>
+      </div>
+
+      <!-- 탭 컨트롤러 -->
+      <div class="flex border-b border-gray-100 mb-8 relative">
+        <button type="button" id="tabIdBtn" onclick="switchTab('id')"
+          class="flex-1 pb-3 text-center text-sm font-bold text-gray-400 hover:text-gray-600 transition-all border-b-2 border-transparent tab-active">
+          아이디 찾기
+        </button>
+        <button type="button" id="tabPwBtn" onclick="switchTab('pw')"
+          class="flex-1 pb-3 text-center text-sm font-bold text-gray-400 hover:text-gray-600 transition-all border-b-2 border-transparent">
+          비밀번호 재설정
+        </button>
+      </div>
+
+      <!-- 에러/성공 공용 알림창 -->
+      <div id="alertBox" class="mb-6 p-4 rounded-custom hidden">
+        <p id="alertText" class="text-sm font-semibold text-center"></p>
+      </div>
+
+      <!-- [1] 아이디 찾기 폼 -->
+      <form id="findIdForm" onsubmit="handleFindId(event)" class="space-y-5">
+
+        <!-- 이메일 -->
+        <div class="space-y-2">
+          <label class="block text-sm font-bold text-gray-700 ml-1">이메일</label>
+          <div class="flex gap-2">
+            <input type="email" id="idEmail" name="email" placeholder="이메일 입력"
+              class="flex-1 px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400 text-sm font-medium">
+            <button type="button" id="idSendMailBtn" onclick="sendVerification('id')"
+              class="bg-[#868E96] hover:bg-[#495057] text-white px-5 py-3 rounded-custom text-sm font-semibold transition-all whitespace-nowrap">
+              인증 요청
+            </button>
+          </div>
+        </div>
+
+        <!-- 이메일 인증 번호 입력 -->
+        <div id="idVerifySection" class="space-y-2 hidden">
+          <label class="block text-sm font-bold text-gray-700 ml-1">인증 번호</label>
+          <div class="flex gap-2">
+            <input type="text" id="idCode" placeholder="6자리 번호 입력"
+              class="flex-1 px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400 text-sm font-medium">
+            <button type="button" id="idVerifyBtn" onclick="verifyCode('id')"
+              class="bg-[#343A40] hover:bg-black text-white px-5 py-3 rounded-custom text-sm font-semibold transition-all whitespace-nowrap">
+              인증 확인
+            </button>
+          </div>
+        </div>
+
+        <!-- 아이디 찾기 버튼 -->
+        <button type="submit"
+          class="w-full bg-[#333333] text-white py-4 rounded-custom font-bold text-md hover:bg-black transition-all mt-6 shadow-sm">
+          아이디 찾기
+        </button>
+
+        <!-- 아이디 결과 박스 -->
+        <div id="idResultBox" class="mt-6 p-5 bg-blue-50/50 border border-blue-100 rounded-custom hidden text-center">
+          <p class="text-sm text-gray-600 mb-1">인증된 가입 정보로 조회된 아이디입니다.</p>
+          <p id="idResultText" class="text-lg font-extrabold text-blue-600 tracking-wider"></p>
+        </div>
+      </form>
+
+      <!-- [2] 비밀번호 재설정 폼 -->
+      <form id="resetPwForm" onsubmit="handleResetPw(event)" class="space-y-5 hidden">
+        <!-- 아이디 -->
+        <div class="space-y-2">
+          <label class="block text-sm font-bold text-gray-700 ml-1">아이디</label>
+          <input type="text" id="pwLoginId" name="loginId" placeholder="아이디 입력"
+            class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400 text-sm font-medium">
+        </div>
+
+        <!-- 이메일 -->
+        <div class="space-y-2">
+          <label class="block text-sm font-bold text-gray-700 ml-1">이메일</label>
+          <div class="flex gap-2">
+            <input type="email" id="pwEmail" name="email" placeholder="이메일 입력"
+              class="flex-1 px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400 text-sm font-medium">
+            <button type="button" id="pwSendMailBtn" onclick="sendVerification('pw')"
+              class="bg-[#868E96] hover:bg-[#495057] text-white px-5 py-3 rounded-custom text-sm font-semibold transition-all whitespace-nowrap">
+              인증 요청
+            </button>
+          </div>
+        </div>
+
+        <!-- 이메일 인증 번호 입력 -->
+        <div id="pwVerifySection" class="space-y-2 hidden">
+          <label class="block text-sm font-bold text-gray-700 ml-1">인증 번호</label>
+          <div class="flex gap-2">
+            <input type="text" id="pwCode" placeholder="6자리 번호 입력"
+              class="flex-1 px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400 text-sm font-medium">
+            <button type="button" id="pwVerifyBtn" onclick="verifyCode('pw')"
+              class="bg-[#343A40] hover:bg-black text-white px-5 py-3 rounded-custom text-sm font-semibold transition-all whitespace-nowrap">
+              인증 확인
+            </button>
+          </div>
+        </div>
+
+        <!-- 새 비밀번호 입력 구역 (인증 완료 시 노출) -->
+        <div id="newPwSection" class="space-y-5 hidden pt-4 border-t border-gray-100">
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-gray-700 ml-1">새 비밀번호</label>
+            <input type="password" id="newPassword" placeholder="새 비밀번호 (특수문자 포함 8자 이상)"
+              class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400 text-sm font-medium">
+            <p id="passwordError" class="text-red-500 text-xs ml-1 hidden">특수문자 포함 8자 이상 써주세요</p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-gray-700 ml-1">새 비밀번호 확인</label>
+            <input type="password" id="confirmPassword" placeholder="새 비밀번호 재입력"
+              class="w-full px-4 py-3 bg-[#F1F3F5] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-400 text-sm font-medium">
+            <p id="passwordMatchMessage" class="text-xs ml-1 hidden"></p>
+          </div>
+        </div>
+
+        <!-- 비밀번호 변경 버튼 -->
+        <button type="submit" id="resetPwSubmitBtn"
+          class="w-full bg-[#333333] text-white py-4 rounded-custom font-bold text-md hover:bg-black transition-all mt-6 shadow-sm">
+          비밀번호 재설정
+        </button>
+      </form>
+
+      <!-- 로그인 안내 -->
+      <div class="text-center mt-10">
+        <span class="text-sm text-gray-500">계정이 생각나셨나요?</span>
+        <a th:href="@{/login}" class="text-sm font-bold text-gray-900 ml-2 border-b-2 border-gray-900 pb-0.5">로그인하기</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'id';
+    let isIdEmailVerified = false;
+    let isPwEmailVerified = false;
+
+    // 알림창 제어
+    function showAlert(message, type = 'error') {
+      const alertBox = document.getElementById('alertBox');
+      const alertText = document.getElementById('alertText');
+      
+      alertText.textContent = message;
+      if (type === 'error') {
+        alertBox.className = 'mb-6 p-4 bg-red-50 border border-red-100 rounded-custom';
+        alertText.className = 'text-red-500 text-sm font-semibold text-center';
+      } else {
+        alertBox.className = 'mb-6 p-4 bg-green-50 border border-green-100 rounded-custom';
+        alertText.className = 'text-green-600 text-sm font-semibold text-center';
+      }
+      alertBox.classList.remove('hidden');
+    }
+
+    function hideAlert() {
+      document.getElementById('alertBox').classList.add('hidden');
+    }
+
+    // 탭 전환
+    function switchTab(tab) {
+      currentTab = tab;
+      hideAlert();
+      
+      const tabIdBtn = document.getElementById('tabIdBtn');
+      const tabPwBtn = document.getElementById('tabPwBtn');
+      const findIdForm = document.getElementById('findIdForm');
+      const resetPwForm = document.getElementById('resetPwForm');
+
+      if (tab === 'id') {
+        tabIdBtn.classList.add('tab-active');
+        tabIdBtn.style.borderBottomColor = '#1A1A1A';
+        tabPwBtn.classList.remove('tab-active');
+        tabPwBtn.style.borderBottomColor = 'transparent';
+        findIdForm.classList.remove('hidden');
+        resetPwForm.classList.add('hidden');
+      } else {
+        tabPwBtn.classList.add('tab-active');
+        tabPwBtn.style.borderBottomColor = '#1A1A1A';
+        tabIdBtn.classList.remove('tab-active');
+        tabIdBtn.style.borderBottomColor = 'transparent';
+        resetPwForm.classList.remove('hidden');
+        findIdForm.classList.add('hidden');
+      }
+    }
+
+    // 메일 인증 요청 발송
+    async function sendVerification(type) {
+      hideAlert();
+      const emailInput = document.getElementById(type === 'id' ? 'idEmail' : 'pwEmail');
+      const sendBtn = document.getElementById(type === 'id' ? 'idSendMailBtn' : 'pwSendMailBtn');
+      const verifySection = document.getElementById(type === 'id' ? 'idVerifySection' : 'pwVerifySection');
+
+      const email = emailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        showAlert('올바른 이메일 형식을 입력해주세요.');
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = '발송 중...';
+
+      try {
+        const response = await fetch('/api/mail/send-for-find', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await response.text();
+
+        if (response.ok) {
+          showAlert(data, 'success');
+          verifySection.classList.remove('hidden');
+          sendBtn.textContent = '재발송';
+        } else {
+          showAlert(data);
+        }
+      } catch (error) {
+        showAlert('인증 메일 발송 중 오류가 발생했습니다.');
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    // 인증 코드 확인
+    async function verifyCode(type) {
+      hideAlert();
+      const email = document.getElementById(type === 'id' ? 'idEmail' : 'pwEmail').value.trim();
+      const code = document.getElementById(type === 'id' ? 'idCode' : 'pwCode').value.trim();
+      const sendBtn = document.getElementById(type === 'id' ? 'idSendMailBtn' : 'pwSendMailBtn');
+      const verifyBtn = document.getElementById(type === 'id' ? 'idVerifyBtn' : 'pwVerifyBtn');
+      const emailInput = document.getElementById(type === 'id' ? 'idEmail' : 'pwEmail');
+      const codeInput = document.getElementById(type === 'id' ? 'idCode' : 'pwCode');
+
+      if (!code) {
+        showAlert('인증 번호를 입력해주세요.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/mail/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code })
+        });
+
+        const data = await response.text();
+
+        if (response.ok) {
+          showAlert('본인인증이 완료되었습니다.', 'success');
+          if (type === 'id') {
+            isIdEmailVerified = true;
+          } else {
+            isPwEmailVerified = true;
+            // 새 비밀번호 입력란 부드럽게 노출
+            document.getElementById('newPwSection').classList.remove('hidden');
+          }
+          
+          emailInput.readOnly = true;
+          codeInput.readOnly = true;
+          sendBtn.classList.add('hidden');
+          verifyBtn.classList.add('hidden');
+        } else {
+          showAlert(data);
+        }
+      } catch (error) {
+        showAlert('인증 확인 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 아이디 찾기 처리
+    async function handleFindId(event) {
+      event.preventDefault();
+      hideAlert();
+
+      const email = document.getElementById('idEmail').value.trim();
+      const resultBox = document.getElementById('idResultBox');
+      const resultText = document.getElementById('idResultText');
+
+      if (!isIdEmailVerified) {
+        showAlert('이메일 인증을 먼저 완료해주세요.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/user/find-id', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          if (data.social) {
+            resultText.textContent = "SNS 소셜 계정으로 연결된 계정입니다. 해당 소셜 서비스를 이용해 로그인해 주세요.";
+            resultText.className = "text-sm font-semibold text-amber-600";
+          } else {
+            resultText.textContent = data.loginId;
+            resultText.className = "text-lg font-extrabold text-blue-600 tracking-wider";
+          }
+          resultBox.classList.remove('hidden');
+        } else {
+          showAlert('일치하는 회원 정보를 찾을 수 없습니다.');
+        }
+      } catch (error) {
+        showAlert('정보 조회 중 문제가 발생했습니다.');
+      }
+    }
+
+    // 비밀번호 재설정 패스워드 유효성 검사 실시간 감지
+    const passwordInput = document.getElementById('newPassword');
+    const passwordConfirmInput = document.getElementById('confirmPassword');
+    const passwordError = document.getElementById('passwordError');
+    const passwordMatchMessage = document.getElementById('passwordMatchMessage');
+
+    passwordInput.addEventListener('input', () => {
+      const password = passwordInput.value;
+      if (!password) {
+        passwordError.classList.add('hidden');
+        passwordMatchMessage.classList.add('hidden');
+        return;
+      }
+
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+      if (password.length < 8 || !hasSpecialChar) {
+        passwordError.classList.remove('hidden');
+      } else {
+        passwordError.classList.add('hidden');
+      }
+
+      checkPasswordMatch();
+    });
+
+    passwordConfirmInput.addEventListener('input', checkPasswordMatch);
+
+    function checkPasswordMatch() {
+      const password = passwordInput.value;
+      const confirm = passwordConfirmInput.value;
+
+      if (!password || !confirm) {
+        passwordMatchMessage.classList.add('hidden');
+        return;
+      }
+
+      if (password === confirm) {
+        passwordMatchMessage.textContent = '비밀번호가 일치합니다.';
+        passwordMatchMessage.className = 'text-xs ml-1 text-green-500 font-semibold';
+      } else {
+        passwordMatchMessage.textContent = '비밀번호가 일치하지 않습니다.';
+        passwordMatchMessage.className = 'text-xs ml-1 text-red-500 font-semibold';
+      }
+      passwordMatchMessage.classList.remove('hidden');
+    }
+
+    // 비밀번호 재설정 제출 처리
+    async function handleResetPw(event) {
+      event.preventDefault();
+      hideAlert();
+
+      const loginId = document.getElementById('pwLoginId').value.trim();
+      const email = document.getElementById('pwEmail').value.trim();
+      const password = passwordInput.value;
+      const passwordConfirm = passwordConfirmInput.value;
+
+      if (!loginId) {
+        showAlert('아이디를 입력해주세요.');
+        return;
+      }
+
+      if (!isPwEmailVerified) {
+        showAlert('이메일 인증을 먼저 완료해주세요.');
+        return;
+      }
+
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+      if (password.length < 8 || !hasSpecialChar) {
+        showAlert('비밀번호는 특수문자 포함 8자 이상이어야 합니다.');
+        passwordInput.focus();
+        return;
+      }
+
+      if (password !== passwordConfirm) {
+        showAlert('비밀번호가 서로 일치하지 않습니다.');
+        passwordConfirmInput.focus();
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/user/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ loginId, email, password, passwordConfirm })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('비밀번호 재설정이 완료되었습니다. 새로운 비밀번호로 로그인해주세요.');
+          window.location.href = '/login';
+        } else {
+          showAlert(data.message || '비밀번호 설정 중 오류가 발생했습니다.');
+        }
+      } catch (error) {
+        showAlert('비밀번호 재설정 처리 중 문제가 발생했습니다.');
+      }
+    }
+  </script>
+
+</body>
+
+</html>

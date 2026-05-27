@@ -1,13 +1,19 @@
 package com.example.dogo.config;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import com.example.dogo.repository.missing.MissingPersonRepository;
+
 import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class MissingPersonSchemaMigratorTest {
 
@@ -42,6 +48,18 @@ class MissingPersonSchemaMigratorTest {
 				String.class
 		);
 		assertThat(columns).contains("SOURCE_TYPE", "EXTERNAL_ID", "API_PROVIDER", "RAW_PAYLOAD", "SYNCED_AT", "PERSON_NAME", "GENDER");
+	}
+
+	@Test
+	void schemaMigratorRunsBeforeMissingPersonSearchBackfiller() {
+		DataSource dataSource = dataSource();
+		ApplicationRunner migrator = new MissingPersonSchemaMigrator(new JdbcTemplate(dataSource), dataSource);
+		ApplicationRunner backfiller = new MissingPersonSearchBackfiller(mock(MissingPersonRepository.class));
+		List<ApplicationRunner> runners = new ArrayList<>(List.of(backfiller, migrator));
+
+		AnnotationAwareOrderComparator.sort(runners);
+
+		assertThat(runners).containsExactly(migrator, backfiller);
 	}
 
 	private DataSource dataSource() {

@@ -119,6 +119,7 @@
                                         <div class="flex items-center gap-3">
                                             <img th:if="${user.profileImageUrl != null and !#strings.isEmpty(user.profileImageUrl)}" 
                                                  th:src="${user.profileImageUrl}" 
+                                                 referrerpolicy="no-referrer"
                                                  class="w-10 h-10 rounded-full object-cover border border-slate-200" 
                                                  alt="프로필"/>
                                             <div th:unless="${user.profileImageUrl != null and !#strings.isEmpty(user.profileImageUrl)}" 
