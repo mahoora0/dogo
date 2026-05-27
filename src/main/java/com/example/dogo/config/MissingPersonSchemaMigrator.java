@@ -2,6 +2,8 @@ package com.example.dogo.config;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class MissingPersonSchemaMigrator implements ApplicationRunner {
 
 	private static final String TABLE_NAME = "MISSING_PERSON_REPORT";
