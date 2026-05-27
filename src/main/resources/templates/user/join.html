@@ -157,33 +157,7 @@
           <p id="verificationMessage" class="text-xs ml-1 hidden"></p>
         </div>
 
-        <!-- 연락처 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-bold text-gray-900 ml-1">연락처</label>
-          <div class="flex gap-2">
-            <input type="text" id="phone" name="phone" placeholder="연락처 입력"
-              class="flex-1 px-4 py-3 bg-[#E9ECEF] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-500 text-sm">
-            <button type="button" id="sendSmsBtn" onclick="sendVerificationSms()"
-              class="bg-[#868E96] hover:bg-[#495057] text-white px-5 py-3 rounded-custom text-sm font-semibold transition-all whitespace-nowrap">
-              인증 요청
-            </button>
-          </div>
-          <p id="phoneError" class="text-red-500 text-xs ml-1 hidden"></p>
-        </div>
 
-        <!-- 연락처 인증 번호 -->
-        <div id="smsVerifySection" class="space-y-2 hidden">
-          <label class="block text-sm font-bold text-gray-900 ml-1">인증 번호</label>
-          <div class="flex gap-2">
-            <input type="text" id="smsCode" placeholder="6자리 번호 입력"
-              class="flex-1 px-4 py-3 bg-[#E9ECEF] border-none rounded-custom focus:ring-2 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-500 text-sm">
-            <button type="button" id="verifySmsBtn" onclick="verifySmsCode()"
-              class="bg-[#343A40] hover:bg-black text-white px-5 py-3 rounded-custom text-sm font-semibold transition-all whitespace-nowrap">
-              인증 확인
-            </button>
-          </div>
-          <p id="smsMessage" class="text-xs ml-1 hidden"></p>
-        </div>
 
         <!-- 회원가입 완료 버튼 -->
         <button type="submit"
@@ -258,15 +232,7 @@
     const verificationMessage = document.getElementById('verificationMessage');
     const sendMailBtn = document.getElementById('sendMailBtn');
 
-    const phoneInput = document.getElementById('phone');
-    const phoneError = document.getElementById('phoneError');
-    const smsVerifySection = document.getElementById('smsVerifySection');
-    const smsCodeInput = document.getElementById('smsCode');
-    const smsMessage = document.getElementById('smsMessage');
-    const sendSmsBtn = document.getElementById('sendSmsBtn');
-
     let isEmailVerified = false;
-    let isPhoneVerified = false;
     let isNicknameChecked = false;
 
     // 닉네임 중복 확인
@@ -495,15 +461,13 @@
       const isPasswordValid = password.length >= 8 && /[!@#$%^&*(),.?":{}|<>]/.test(password);
       const isMatch = password === confirm && confirm !== '';
 
-      if (!isLoginIdValid || !isPasswordValid || !isMatch || !isEmailVerified || !isPhoneVerified || !isNicknameChecked) {
+      if (!isLoginIdValid || !isPasswordValid || !isMatch || !isEmailVerified || !isNicknameChecked) {
         e.preventDefault();
 
         if (!isNicknameChecked) {
           alert('닉네임 중복 확인을 완료해주세요.');
         } else if (!isEmailVerified) {
           alert('이메일 인증을 완료해주세요.');
-        } else if (!isPhoneVerified) {
-          alert('연락처 인증을 완료해주세요.');
         } else {
           alert('입력 정보를 다시 확인해주세요.');
         }

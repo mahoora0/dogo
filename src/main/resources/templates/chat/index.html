@@ -21,7 +21,7 @@
                         <img th:src="${room.itemThumbnail ?: '/images/noImageSize.png'}" class="chat-room-thumb" alt="">
                         <div class="chat-room-info">
                             <div class="chat-room-row">
-                                <div class="chat-room-name" th:text="${room.otherParticipantNickname}">상대방 닉네임</div>
+                                <div class="chat-room-name" th:text="${room.itemTitle}">게시글 제목</div>
                                 <span class="chat-room-time" th:text="${#temporals.format(room.lastMessageTime, 'HH:mm')}">오전 9:30</span>
                             </div>
                             <div class="chat-room-row">
@@ -39,16 +39,10 @@
             <div class="chat-main">
                 <div id="chat-header" class="chat-header hidden">
                     <div class="flex items-center gap-3">
-                        <button class="lg:hidden text-slate-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                        </button>
                         <div>
                             <h3 id="current-room-name" class="font-bold text-slate-800">게시글 제목</h3>
                             <p class="text-[11px] text-slate-400">최근 접속: 오늘 오전 9:25</p>
                         </div>
-                    </div>
-                    <div class="flex gap-4 text-slate-400">
-                        <button><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
                     </div>
                 </div>
 
@@ -61,12 +55,21 @@
                 </div>
 
                 <div id="input-area" class="chat-input-area hidden">
+                    <div id="pending-attachments" class="chat-pending-attachments hidden">
+                        <div class="chat-pending-header">
+                            <span id="pending-image-count" class="chat-pending-count">이미지 0개</span>
+                            <button type="button" class="chat-clear-attachments" onclick="clearPendingImages()">전체 삭제</button>
+                        </div>
+                        <div id="pending-image-list" class="chat-pending-image-list"></div>
+                    </div>
                     <div class="chat-input-container">
-                        <input type="file" id="file-input" style="display:none" onchange="uploadFile(this)">
-                        <input type="text" id="message-input" class="chat-input" placeholder="메시지를 입력하세요..." onkeypress="if(event.keyCode==13) sendMessage()">
-                        <button onclick="triggerFileSelect()" class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg></button>
-                        <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
-                        <button onclick="sendMessage()" class="chat-send-btn">전송</button>
+                        <input type="file" id="file-input" style="display:none" multiple accept="image/*" onchange="queueSelectedImages(this)">
+                        <textarea id="message-input" class="chat-input" placeholder="메시지를 입력하세요..." maxlength="1000" rows="1" oninput="handleMessageInput()" onkeydown="handleMessageInputKeydown(event)"></textarea>
+                        <button type="button" id="attach-image-btn" onclick="triggerFileSelect()" class="text-slate-400" aria-label="이미지 첨부"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg></button>
+                        <button type="button" onclick="sendMessage()" class="chat-send-btn">전송</button>
+                    </div>
+                    <div class="chat-input-meta">
+                        <span id="message-length-counter" class="message-length-counter">0 / 1000</span>
                     </div>
                 </div>
             </div>
@@ -74,7 +77,6 @@
             <!-- Right Panel: Info -->
             <div id="info-panel" class="chat-info-panel hidden">
                 <div class="chat-panel-title-row">
-                    <button class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
                     <h4 class="text-sm font-bold">습득물 정보</h4>
                     <button id="item-detail-btn" class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg></button>
                 </div>
@@ -96,14 +98,13 @@
                 <div class="mt-4">
                     <h5 class="text-xs font-bold text-slate-400 mb-2">대화 중인 사용자</h5>
                     <div class="participant-info mb-4">
-                        <img id="participant-img" th:src="@{/images/logoNoName.png}" class="participant-avatar" alt="">
+                        <img id="participant-img" th:src="@{/images/logoNoName.png}" referrerpolicy="no-referrer" class="participant-avatar" alt="">
                         <div>
                             <div id="participant-name" class="font-bold text-sm">상대방 이름</div>
                             <div class="text-[10px] text-slate-400">습득자</div>
                         </div>
                         <button id="view-profile-btn" class="btn-outline ml-auto w-auto px-4">프로필 보기</button>
                     </div>
-                    <button class="btn-primary-large">대화 계속하기</button>
                 </div>
             </div>
         </div>
@@ -119,7 +120,7 @@
                 
                 <!-- Profile Header (Avatar) -->
                 <div class="relative mb-4 mt-4">
-                    <img id="profile-modal-img" src="/images/logoNoName.png" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-sm" alt="Avatar">
+                    <img id="profile-modal-img" src="/images/logoNoName.png" referrerpolicy="no-referrer" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-sm" alt="Avatar">
                 </div>
                 
                 <!-- User Details -->
@@ -168,7 +169,7 @@
 
                 <!-- Item Image -->
                 <div class="relative w-full h-[200px] bg-slate-100 flex items-center justify-center overflow-hidden">
-                    <img id="item-modal-img" src="/images/noImageSize.png" class="w-full h-full object-cover" alt="Item Image">
+                    <img id="item-modal-img" src="/images/noImageSize.png" class="w-full h-full object-contain" alt="Item Image">
                     <div id="item-modal-status-badge" class="absolute bottom-4 left-4 bg-teal-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-md">
                         보관중
                     </div>
@@ -231,11 +232,16 @@
             const rooms = [[${rooms}]];
             const DEFAULT_ITEM_IMAGE = '/images/noImageSize.png';
             const DEFAULT_PROFILE_IMAGE = '/images/logoNoName.png';
+            const MAX_CHAT_MESSAGE_LENGTH = 1000;
             
             let currentRoomId = null;
             let stompClient = null;
             let subscription = null;
+            let isSendingMessage = false;
+            let pendingImageSeq = 0;
+            let dragDepth = 0;
             const renderedMessageIds = new Set();
+            const pendingImages = [];
 
             function connect() {
                 const socket = new SockJS('/ws-stomp');
@@ -252,6 +258,11 @@
             }
 
             function selectRoom(roomId) {
+                if (currentRoomId !== null && currentRoomId != roomId) {
+                    clearPendingImages();
+                    dragDepth = 0;
+                    setDropActive(false);
+                }
                 currentRoomId = roomId;
                 const room = rooms.find(r => r.roomId == roomId);
                 
@@ -338,8 +349,13 @@
             }
 
             function appendMessage(msg) {
+                if (Array.isArray(msg)) {
+                    msg.forEach(item => appendMessage(item));
+                    return;
+                }
+
                 const container = document.getElementById('messages-container');
-                const messageKey = msg.clientMessageId || [msg.roomId, msg.senderNo, msg.createdAt, msg.content].join('|');
+                const messageKey = msg.clientMessageId || msg.fileGroupId || [msg.roomId, msg.senderNo, msg.createdAt, msg.content].join('|');
                 if (renderedMessageIds.has(messageKey)) {
                     return;
                 }
@@ -353,7 +369,9 @@
                 const timeStr = new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 let bubbleContent = '';
-                if (msg.type === 'FILE') {
+                if (msg.files && msg.files.length > 0) {
+                    bubbleContent = renderFileGroupBubble(msg.files);
+                } else if (msg.type === 'FILE') {
                     if (isImageFile(msg.fileName)) {
                         bubbleContent = `
                             <div class="message-bubble" style="padding: 0; overflow: hidden; background: transparent; box-shadow: none; border-radius: 0.75rem;">
@@ -382,7 +400,7 @@
                 }
 
                 msgDiv.innerHTML = `
-                    ${isMe ? '' : `<img src="${escapeHtml(msg.senderProfileImage || DEFAULT_PROFILE_IMAGE)}" class="message-avatar" alt="">`}
+                    ${isMe ? '' : `<img src="${escapeHtml(msg.senderProfileImage || DEFAULT_PROFILE_IMAGE)}" referrerpolicy="no-referrer" class="message-avatar" alt="">`}
                     <div class="message-content">
                         ${bubbleContent}
                         <div class="message-time">${timeStr}</div>
@@ -391,11 +409,48 @@
                 container.appendChild(msgDiv);
             }
 
-            function sendMessage() {
+            function renderFileGroupBubble(files) {
+                const imageItems = files.map(file => `
+                    <a href="${escapeHtml(file.fileUrl)}" target="_blank" class="chat-image-grid-item" title="${escapeHtml(file.fileName || '첨부 이미지')}">
+                        <img src="${escapeHtml(file.fileUrl)}" alt="${escapeHtml(file.fileName || '첨부 이미지')}">
+                    </a>
+                `).join('');
+
+                return `
+                    <div class="message-bubble chat-image-group-bubble">
+                        <div class="chat-image-group-count">이미지 ${files.length}개</div>
+                        <div class="chat-image-grid">${imageItems}</div>
+                    </div>
+                `;
+            }
+
+            async function sendMessage() {
                 const input = document.getElementById('message-input');
                 const content = input.value.trim();
-                if (!content || !currentRoomId) return;
+                if ((!content && pendingImages.length === 0) || !currentRoomId || isSendingMessage) return;
+                if (content.length > MAX_CHAT_MESSAGE_LENGTH) {
+                    alert('메시지는 1000자 이하로 입력해 주세요.');
+                    return;
+                }
 
+                setSendingState(true);
+                try {
+                    if (pendingImages.length > 0) {
+                        await uploadPendingImages();
+                    }
+                    if (content) {
+                        input.value = '';
+                        handleMessageInput();
+                        await sendTextMessage(content);
+                    }
+                } catch (err) {
+                    alert('이미지 전송에 실패했습니다: ' + err.message);
+                } finally {
+                    setSendingState(false);
+                }
+            }
+
+            function sendTextMessage(content) {
                 const clientMessageId = 'client-' + Date.now() + '-' + Math.random().toString(36).slice(2);
                 const messageDto = {
                     roomId: currentRoomId,
@@ -415,7 +470,7 @@
                 const container = document.getElementById('messages-container');
                 container.scrollTop = container.scrollHeight;
 
-                fetch(`/chat/room/${currentRoomId}/messages`, {
+                return fetch(`/chat/room/${currentRoomId}/messages`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(messageDto)
@@ -432,7 +487,169 @@
                             stompClient.send("/pub/chat/message", {}, JSON.stringify(messageDto));
                         }
                     });
+            }
+
+            async function uploadPendingImages() {
+                const imagesToUpload = [...pendingImages];
+                await uploadImageFiles(imagesToUpload.map(item => item.file));
+                imagesToUpload.forEach(item => removePendingImage(item.id));
+            }
+
+            async function uploadImageFiles(files) {
+                if (!currentRoomId || files.length === 0) return;
+
+                const formData = new FormData();
+                files.forEach(file => formData.append('files', file, file.name));
+
+                const res = await fetch(`/chat/room/${currentRoomId}/uploads`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!res.ok) {
+                    throw new Error('이미지 업로드 실패');
+                }
+
+                const savedMessage = await res.json();
+                handleIncomingMessage(savedMessage);
+            }
+
+            function setSendingState(sending) {
+                isSendingMessage = sending;
+                const sendButton = document.querySelector('.chat-send-btn');
+                if (sendButton) {
+                    sendButton.disabled = sending;
+                }
+                const input = document.getElementById('message-input');
+                if (input) {
+                    input.disabled = sending;
+                }
+                const attachButton = document.getElementById('attach-image-btn');
+                if (attachButton) {
+                    attachButton.disabled = sending;
+                }
+            }
+
+            function handleMessageInputKeydown(event) {
+                if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            }
+
+            function handleMessageInput() {
+                const input = document.getElementById('message-input');
+                if (!input) return;
+                autoResizeMessageInput(input);
+                updateMessageLengthCounter(input.value.length);
+            }
+
+            function autoResizeMessageInput(input) {
+                input.style.height = 'auto';
+                input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+            }
+
+            function updateMessageLengthCounter(length) {
+                const counter = document.getElementById('message-length-counter');
+                if (!counter) return;
+
+                counter.innerText = `${length} / ${MAX_CHAT_MESSAGE_LENGTH}`;
+                counter.classList.toggle('warning', length >= MAX_CHAT_MESSAGE_LENGTH * 0.9);
+            }
+
+            function queueSelectedImages(input) {
+                if (!input.files || input.files.length === 0) return;
+                queueImageFiles(input.files);
                 input.value = '';
+            }
+
+            function queueImageFiles(fileList) {
+                if (!currentRoomId) return;
+
+                const files = Array.from(fileList || []);
+                const imageFiles = files.filter(isImageUploadFile);
+                const existingFingerprints = new Set(pendingImages.map(item => item.fingerprint));
+                let duplicateCount = 0;
+
+                imageFiles.forEach(file => {
+                    const fingerprint = getFileFingerprint(file);
+                    if (existingFingerprints.has(fingerprint)) {
+                        duplicateCount += 1;
+                        return;
+                    }
+
+                    existingFingerprints.add(fingerprint);
+                    pendingImages.push({
+                        id: ++pendingImageSeq,
+                        file: file,
+                        fingerprint: fingerprint,
+                        previewUrl: URL.createObjectURL(file)
+                    });
+                });
+
+                renderPendingImages();
+                if (files.length !== imageFiles.length) {
+                    alert('이미지 파일만 첨부할 수 있습니다.');
+                }
+                if (duplicateCount > 0) {
+                    alert('이미지는 중복 첨부할 수 없습니다.');
+                }
+            }
+
+            function getFileFingerprint(file) {
+                return [file.name, file.size, file.lastModified, file.type].join('|');
+            }
+
+            function renderPendingImages() {
+                const panel = document.getElementById('pending-attachments');
+                const list = document.getElementById('pending-image-list');
+                const count = document.getElementById('pending-image-count');
+                if (!panel || !list || !count) return;
+
+                panel.classList.toggle('hidden', pendingImages.length === 0);
+                count.innerText = `이미지 ${pendingImages.length}개`;
+                list.innerHTML = '';
+
+                pendingImages.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'chat-pending-image';
+                    card.title = item.file.name || '첨부 이미지';
+
+                    const img = document.createElement('img');
+                    img.src = item.previewUrl;
+                    img.alt = item.file.name || '첨부 이미지';
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'chat-pending-image-remove';
+                    removeButton.setAttribute('aria-label', '이미지 제거');
+                    removeButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>';
+                    removeButton.onclick = function () {
+                        removePendingImage(item.id);
+                    };
+
+                    card.appendChild(img);
+                    card.appendChild(removeButton);
+                    list.appendChild(card);
+                });
+            }
+
+            function removePendingImage(id) {
+                const index = pendingImages.findIndex(item => item.id === id);
+                if (index === -1) return;
+
+                URL.revokeObjectURL(pendingImages[index].previewUrl);
+                pendingImages.splice(index, 1);
+                renderPendingImages();
+            }
+
+            function clearPendingImages() {
+                pendingImages.forEach(item => URL.revokeObjectURL(item.previewUrl));
+                pendingImages.length = 0;
+                renderPendingImages();
+            }
+
+            function isImageUploadFile(file) {
+                return file && ((file.type && file.type.startsWith('image/')) || isImageFile(file.name));
             }
 
             function escapeHtml(value) {
@@ -538,34 +755,66 @@
                 }, 300);
             }
 
-            function triggerFileSelect() {
-                document.getElementById('file-input').click();
+            function setupImageDrop() {
+                const dropTarget = document.querySelector('.chat-main');
+                if (!dropTarget) return;
+
+                dropTarget.addEventListener('dragenter', handleImageDragEnter);
+                dropTarget.addEventListener('dragover', handleImageDragOver);
+                dropTarget.addEventListener('dragleave', handleImageDragLeave);
+                dropTarget.addEventListener('drop', handleImageDrop);
             }
 
-            function uploadFile(input) {
-                if (!input.files || input.files.length === 0 || !currentRoomId) return;
-                const file = input.files[0];
-                input.value = '';
+            function hasDraggedFiles(event) {
+                return event.dataTransfer && Array.from(event.dataTransfer.types || []).includes('Files');
+            }
 
-                const formData = new FormData();
-                formData.append('file', file);
+            function handleImageDragEnter(event) {
+                if (!hasDraggedFiles(event)) return;
+                event.preventDefault();
+                if (!currentRoomId) return;
 
-                fetch(`/chat/room/${currentRoomId}/upload`, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error('파일 업로드 실패');
-                    }
-                    return res.json();
-                })
-                .then(savedMessage => {
-                    handleIncomingMessage(savedMessage);
-                })
-                .catch(err => {
-                    alert('파일 업로드에 실패했습니다: ' + err.message);
-                });
+                dragDepth += 1;
+                setDropActive(true);
+            }
+
+            function handleImageDragOver(event) {
+                if (!hasDraggedFiles(event)) return;
+                event.preventDefault();
+                if (event.dataTransfer) {
+                    event.dataTransfer.dropEffect = currentRoomId ? 'copy' : 'none';
+                }
+            }
+
+            function handleImageDragLeave(event) {
+                if (!hasDraggedFiles(event) || !currentRoomId) return;
+
+                dragDepth = Math.max(0, dragDepth - 1);
+                if (dragDepth === 0) {
+                    setDropActive(false);
+                }
+            }
+
+            function handleImageDrop(event) {
+                if (!hasDraggedFiles(event)) return;
+                event.preventDefault();
+
+                dragDepth = 0;
+                setDropActive(false);
+                if (!currentRoomId) return;
+
+                queueImageFiles(event.dataTransfer.files);
+            }
+
+            function setDropActive(active) {
+                const inputArea = document.getElementById('input-area');
+                if (inputArea) {
+                    inputArea.classList.toggle('drag-over', active);
+                }
+            }
+
+            function triggerFileSelect() {
+                document.getElementById('file-input').click();
             }
 
             function isImageFile(fileName) {
@@ -582,6 +831,8 @@
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
             }
 
+            setupImageDrop();
+            handleMessageInput();
             connect();
         </script>
         </div>

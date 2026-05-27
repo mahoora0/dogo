@@ -48,6 +48,9 @@ public class ChatMessage {
     @Column(name = "FILE_SIZE")
     private Long fileSize;
 
+    @Column(name = "FILE_GROUP_ID", length = 80)
+    private String fileGroupId;
+
     public enum MessageType {
         ENTER, TALK, FILE
     }
@@ -61,6 +64,10 @@ public class ChatMessage {
     }
 
     public ChatMessage(ChatRoom chatRoom, User sender, String content, MessageType messageType, String fileUrl, String fileName, Long fileSize) {
+        this(chatRoom, sender, content, messageType, fileUrl, fileName, fileSize, null);
+    }
+
+    public ChatMessage(ChatRoom chatRoom, User sender, String content, MessageType messageType, String fileUrl, String fileName, Long fileSize, String fileGroupId) {
         this.chatRoom = chatRoom;
         this.sender = sender;
         this.content = content;
@@ -68,6 +75,7 @@ public class ChatMessage {
         this.fileUrl = fileUrl;
         this.fileName = fileName;
         this.fileSize = fileSize;
+        this.fileGroupId = fileGroupId;
         this.createdAt = LocalDateTime.now();
     }
 }
