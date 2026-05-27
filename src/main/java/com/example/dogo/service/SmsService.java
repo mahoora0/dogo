@@ -50,8 +50,8 @@ public class SmsService {
     public void sendVerificationCode(String toPhoneNumber) {
         String code = generateRandomCode();
         
-        // Save code for 5 minutes
-        verificationCodes.put(toPhoneNumber, new VerificationInfo(code, TimeUnit.MINUTES.toMillis(5)));
+        // Save code for 30 minutes
+        verificationCodes.put(toPhoneNumber, new VerificationInfo(code, TimeUnit.MINUTES.toMillis(30)));
 
         // [DEVELOPMENT MODE] Log instead of sending real SMS
         log.info("[SMS Verification] to={}, code={}", toPhoneNumber, code);

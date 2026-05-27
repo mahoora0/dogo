@@ -96,7 +96,7 @@
                 <div class="mt-4">
                     <h5 class="text-xs font-bold text-slate-400 mb-2">대화 중인 사용자</h5>
                     <div class="participant-info mb-4">
-                        <img id="participant-img" th:src="@{/images/logoNoName.png}" class="participant-avatar" alt="">
+                        <img id="participant-img" th:src="@{/images/logoNoName.png}" referrerpolicy="no-referrer" class="participant-avatar" alt="">
                         <div>
                             <div id="participant-name" class="font-bold text-sm">상대방 이름</div>
                             <div class="text-[10px] text-slate-400">습득자</div>
@@ -119,7 +119,7 @@
                 
                 <!-- Profile Header (Avatar) -->
                 <div class="relative mb-4 mt-4">
-                    <img id="profile-modal-img" src="/images/logoNoName.png" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-sm" alt="Avatar">
+                    <img id="profile-modal-img" src="/images/logoNoName.png" referrerpolicy="no-referrer" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-sm" alt="Avatar">
                 </div>
                 
                 <!-- User Details -->
@@ -382,7 +382,7 @@
                 }
 
                 msgDiv.innerHTML = `
-                    ${isMe ? '' : `<img src="${escapeHtml(msg.senderProfileImage || DEFAULT_PROFILE_IMAGE)}" class="message-avatar" alt="">`}
+                    ${isMe ? '' : `<img src="${escapeHtml(msg.senderProfileImage || DEFAULT_PROFILE_IMAGE)}" referrerpolicy="no-referrer" class="message-avatar" alt="">`}
                     <div class="message-content">
                         ${bubbleContent}
                         <div class="message-time">${timeStr}</div>
