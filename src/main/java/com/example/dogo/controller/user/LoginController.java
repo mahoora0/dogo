@@ -34,8 +34,10 @@ import com.example.dogo.repository.animal.AnimalReportMatchRepository;
 import com.example.dogo.repository.Support.InquiryRepository;
 import com.example.dogo.repository.ChatMessageRepository;
 import com.example.dogo.repository.ChatRoomRepository;
+import com.example.dogo.repository.missing.MissingPersonImageRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
 import com.example.dogo.entity.animal.AnimalReport;
+import com.example.dogo.entity.missing.MissingPersonImage;
 import com.example.dogo.entity.missing.MissingPersonReport;
 import com.example.dogo.dto.item.RecentItemView;
 import org.springframework.ui.Model;
@@ -63,6 +65,7 @@ public class LoginController {
   private final ChatRoomRepository chatRoomRepository;
   private final OAuth2Service oauth2Service;
   private final MissingPersonRepository missingPersonRepository;
+  private final MissingPersonImageRepository missingPersonImageRepository;
 
   @GetMapping("/login")
   public String loginPage(@RequestParam(value = "error", required = false) String error,
@@ -265,6 +268,7 @@ public class LoginController {
     }
 
     for (MissingPersonReport report : personReports) {
+      String imageUrl = missingPersonThumbnailImageUrl(report);
       String statusLabel = "OPEN".equals(report.getStatus()) ? "접수" : "해결완료";
 
       userActivities.add(new RecentItemView(
@@ -277,7 +281,7 @@ public class LoginController {
           report.getRegdate() != null ? report.getRegdate() : java.time.LocalDateTime.now(),
           report.getStatus(),
           statusLabel,
-          "/images/noImageSize.png"
+          imageUrl
       ));
     }
 
@@ -303,6 +307,37 @@ public class LoginController {
       case "RETURNED" -> "수령완료";
       default -> "보관중";
     };
+  }
+
+  private String missingPersonThumbnailImageUrl(MissingPersonReport report) {
+    return missingPersonImageRepository.findFirstByReportOrderBySortOrderAscImageIdAsc(report)
+        .map(MissingPersonImage::getImageUrl)
+        .orElseGet(() -> {
+          String base64Image = extractBase64Image(report.getRawPayload());
+          return base64Image != null ? base64Image : "/images/noImageSize.png";
+        });
+  }
+
+  private String extractBase64Image(String rawPayload) {
+    if (rawPayload == null || !rawPayload.contains("<tknphotoFile>")) {
+      return null;
+    }
+    try {
+      int start = rawPayload.indexOf("<tknphotoFile>");
+      int end = rawPayload.indexOf("</tknphotoFile>", start);
+      if (start != -1 && end != -1) {
+        String content = rawPayload.substring(start + "<tknphotoFile>".length(), end).trim();
+        if (content.startsWith("<![CDATA[")) {
+          content = content.substring("<![CDATA[".length(), content.length() - "]]>".length()).trim();
+        }
+        if (!content.isEmpty() && !content.equalsIgnoreCase("null")) {
+          return "data:image/jpeg;base64," + content;
+        }
+      }
+    } catch (Exception e) {
+      // ignore malformed public payload image data
+    }
+    return null;
   }
 
   @PostMapping("/join")

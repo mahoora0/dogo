@@ -2,6 +2,7 @@ package com.example.dogo.dto.missing;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record MissingPersonView(
 		Long id,
@@ -21,6 +22,7 @@ public record MissingPersonView(
 		String statusLabel,
 		String sourceType,
 		String sourceLabel,
-		String base64Image
+		String base64Image,
+		List<String> imageUrls
 ) {
 }

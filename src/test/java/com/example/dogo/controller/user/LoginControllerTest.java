@@ -16,6 +16,7 @@ import com.example.dogo.repository.animal.AnimalReportMatchRepository;
 import com.example.dogo.repository.Support.InquiryRepository;
 import com.example.dogo.repository.ChatMessageRepository;
 import com.example.dogo.repository.ChatRoomRepository;
+import com.example.dogo.repository.missing.MissingPersonImageRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
 
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,7 @@ class LoginControllerTest {
     private final ChatRoomRepository chatRoomRepository = mock(ChatRoomRepository.class);
     private final OAuth2Service oauth2Service = mock(OAuth2Service.class);
     private final MissingPersonRepository missingPersonRepository = mock(MissingPersonRepository.class);
+    private final MissingPersonImageRepository missingPersonImageRepository = mock(MissingPersonImageRepository.class);
 
     private final MockMvc mockMvc = MockMvcBuilders
             .standaloneSetup(new LoginController(
@@ -68,7 +70,8 @@ class LoginControllerTest {
                     chatMessageRepository,
                     chatRoomRepository,
                     oauth2Service,
-                    missingPersonRepository
+                    missingPersonRepository,
+                    missingPersonImageRepository
             ))
             .build();
 
