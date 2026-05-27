@@ -28,7 +28,7 @@ class MissingAlertSyncRunnerTest {
 	}
 
 	@Test
-	void backfillOnStartupSkipsWhenPublicApiDataAlreadyExists() {
+	void backfillOnStartupRunsIncrementalWhenPublicApiDataAlreadyExists() {
 		RecordingMissingAlertSyncService syncService = new RecordingMissingAlertSyncService();
 		MissingAlertSyncRunner runner = new MissingAlertSyncRunner(
 				syncService,
@@ -40,6 +40,7 @@ class MissingAlertSyncRunnerTest {
 		runner.backfillOnStartupIfEmpty();
 
 		assertThat(syncService.backfillCount).isZero();
+		assertThat(syncService.incrementalCount).isEqualTo(1);
 	}
 
 	@Test
