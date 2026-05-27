@@ -14,9 +14,17 @@
         <div class="w-full shrink-0 md:w-72">
           <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
             <div class="relative aspect-[3/4] w-full overflow-hidden flex items-center justify-center">
-              <img th:src="${report.base64Image != null ? report.base64Image : '/images/noImageSize.png'}" 
-                   alt="실종자 이미지" 
+              <img th:src="${report.imageUrls != null and !#lists.isEmpty(report.imageUrls) ? report.imageUrls[0] : (report.base64Image != null ? report.base64Image : '/images/noImageSize.png')}"
+                   alt="실종자 이미지"
                    class="h-full w-full object-cover transition duration-300 hover:scale-105" />
+            </div>
+          </div>
+          <div th:if="${report.imageUrls != null and report.imageUrls.size() > 1}"
+               class="mt-3 grid grid-cols-3 gap-2">
+            <div th:each="url, iter : ${report.imageUrls}"
+                 th:if="${iter.index > 0}"
+                 class="aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+              <img th:src="${url}" alt="실종자 추가 이미지" class="h-full w-full object-cover" />
             </div>
           </div>
         </div>
