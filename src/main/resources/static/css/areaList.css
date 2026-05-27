@@ -191,3 +191,160 @@
     height: 42px;
     font-size: 16px;
 }
+
+/* 지도 커스텀 오버레이 스타일 (Premium Info Card) */
+.map-custom-overlay {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px;
+    width: 230px;
+    box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.12), 0 8px 12px -6px rgba(15, 23, 42, 0.08);
+    z-index: 1000;
+    font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    animation: fadeInOverlay 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: normal; /* Kakao 지도 상위 컨테이너의 nowrap 강제 해제 */
+}
+
+/* 말꼬리 기하형태 (삼각형 포인터) */
+.map-custom-overlay::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px 8px 0;
+    border-style: solid;
+    border-color: #ffffff transparent transparent transparent;
+    display: block;
+    width: 0;
+}
+
+.map-custom-overlay::before {
+    content: '';
+    position: absolute;
+    bottom: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 9px 9px 0;
+    border-style: solid;
+    border-color: #e2e8f0 transparent transparent transparent;
+    display: block;
+    width: 0;
+    z-index: -1;
+}
+
+@keyframes fadeInOverlay {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.overlay-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 750;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.overlay-badge.police {
+    background: #e0e7ff;
+    color: #1e3a8a;
+}
+
+.overlay-badge.korail {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.overlay-badge.subway {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.overlay-close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    font-weight: 400;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+}
+
+.overlay-close-btn:hover {
+    color: #334155;
+    background: #f1f5f9;
+}
+
+.overlay-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.overlay-title {
+    font-size: 14.5px;
+    font-weight: 850;
+    color: #111827;
+    line-height: 1.45;
+    margin: 0 0 2px 0;
+    word-break: break-all; /* 박스 밖으로 튀어나가지 않게 단어 단위 강제 줄바꿈 */
+}
+
+.overlay-address,
+.overlay-tel {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    font-size: 13px;
+    color: #4b5563;
+    margin: 0;
+    line-height: 1.45;
+}
+
+.overlay-address .icon,
+.overlay-tel .icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.overlay-address .text,
+.overlay-tel .text {
+    flex: 1;
+    word-break: break-all; /* 주소 및 긴 텍스트 줄바꿈 허용 */
+}
+
+.overlay-tel .tel-link {
+    color: #2563eb;
+    font-weight: 700;
+    transition: color 0.18s ease;
+}
+
+.overlay-tel .tel-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
