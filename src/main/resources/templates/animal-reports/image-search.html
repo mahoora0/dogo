@@ -9,7 +9,7 @@
           <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">사진으로 비슷한 동물 찾기</h1>
           <p class="mt-2 text-sm text-slate-500">업로드한 사진과 외형이 비슷한 동물 게시글을 보여줍니다.</p>
         </div>
-        <a th:href="@{/animal-reports}"
+        <a th:href="@{/animal-reports(keyword=${keyword}, keywordScope=${keywordScope}, reportType=${reportType}, animalType=${animalType}, region=${region}, startDate=${startDate}, endDate=${endDate}, detailPlace=${detailPlace})}"
            class="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
           목록으로
         </a>
@@ -21,6 +21,14 @@
       <div class="px-6 py-5">
         <form action="/animal-reports/image-search" method="post" enctype="multipart/form-data"
               class="flex flex-col gap-4 sm:flex-row sm:items-end">
+          <input type="hidden" name="reportType" th:value="${reportType}">
+          <input type="hidden" name="animalType" th:value="${animalType}">
+          <input type="hidden" name="region" th:value="${region}">
+          <input type="hidden" name="keyword" th:value="${keyword}">
+          <input type="hidden" name="keywordScope" th:value="${keywordScope}">
+          <input type="hidden" name="startDate" th:value="${startDate}">
+          <input type="hidden" name="endDate" th:value="${endDate}">
+          <input type="hidden" name="detailPlace" th:value="${detailPlace}">
           <div class="flex-1">
             <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-400">다른 사진으로 검색</label>
             <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 transition hover:border-slate-400 hover:bg-slate-100">

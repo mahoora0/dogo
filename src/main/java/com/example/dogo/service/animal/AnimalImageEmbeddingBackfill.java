@@ -66,11 +66,17 @@ public class AnimalImageEmbeddingBackfill {
 				int chunkSize = Math.max(1, inferenceBatchSize);
 				for (int start = 0; start < pageReports.size(); start += chunkSize) {
 					int end = Math.min(start + chunkSize, pageReports.size());
-					AnimalImageEmbeddingService.BatchEmbedStatus status =
-							embeddingService.embedAndSaveBatch(pageReports.subList(start, end), forceBackfill);
-					saved += status.saved();
-					skipped += status.skipped();
-					failed += status.failed();
+					try {
+						AnimalImageEmbeddingService.BatchEmbedStatus status =
+								embeddingService.embedAndSaveBatch(pageReports.subList(start, end), forceBackfill);
+						saved += status.saved();
+						skipped += status.skipped();
+						failed += status.failed();
+					} catch (org.springframework.web.client.ResourceAccessException exception) {
+						log.warn("[pet-embedding-backfill] 임베딩 서버(http://localhost:8001)에 연결할 수 없습니다. 파이썬 임베딩 사이드카 서버가 실행 중인지 확인해주세요. (이유: {})", exception.getMessage());
+						log.info("[pet-embedding-backfill] 서버 미기동으로 백필을 조기 종료합니다. 누적 처리 상태 - saved={}, skipped={}, failed={}", saved, skipped, failed);
+						return;
+					}
 				}
 				log.info("[pet-embedding-backfill] page {} complete: saved={}, skipped={}, failed={}",
 						page + 1, saved, skipped, failed);

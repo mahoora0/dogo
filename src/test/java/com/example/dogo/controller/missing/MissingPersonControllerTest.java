@@ -4,7 +4,7 @@ import com.example.dogo.dto.missing.MissingPersonCreateRequest;
 import com.example.dogo.dto.missing.MissingPersonDetailView;
 import com.example.dogo.dto.missing.MissingPersonView;
 import com.example.dogo.service.missing.MissingPersonService;
-import com.example.dogo.service.missing.sync.Safe182MissingPersonSyncService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -31,9 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MissingPersonControllerTest {
 
 	private final MissingPersonService missingPersonService = mock(MissingPersonService.class);
-	private final Safe182MissingPersonSyncService safe182MissingPersonSyncService = mock(Safe182MissingPersonSyncService.class);
 	private final MockMvc mockMvc = MockMvcBuilders
-			.standaloneSetup(new MissingPersonController(missingPersonService, safe182MissingPersonSyncService))
+			.standaloneSetup(new MissingPersonController(missingPersonService))
 			.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
 			.build();
 
@@ -54,8 +53,6 @@ class MissingPersonControllerTest {
 				.andExpect(model().attribute("keyword", "Korea"))
 				.andExpect(model().attribute("status", "OPEN"))
 				.andExpect(model().attribute("sourceType", "PUBLIC_API"));
-
-		verify(safe182MissingPersonSyncService).syncSearch("Korea");
 	}
 
 	@Test
@@ -116,7 +113,8 @@ class MissingPersonControllerTest {
 				"OPEN",
 				"접수",
 				sourceType,
-				sourceLabel
+				sourceLabel,
+				null
 		);
 	}
 
@@ -138,7 +136,13 @@ class MissingPersonControllerTest {
 				"OPEN",
 				"접수",
 				sourceType,
-				sourceLabel
+				sourceLabel,
+				null,
+				15,
+				"010",
+				"정상아동(18세미만)",
+				"남자",
+				"특이사항 테스트"
 		);
 	}
 }

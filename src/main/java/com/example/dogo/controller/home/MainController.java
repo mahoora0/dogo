@@ -36,7 +36,18 @@ public class MainController {
     recentItems.addAll(foundItemService.getRecentItems(RECENT_ITEM_LIMIT));
     recentItems.addAll(missingPersonService.getRecentItems(RECENT_ITEM_LIMIT));
     recentItems.addAll(animalReportService.getRecentItems(RECENT_ITEM_LIMIT));
-    recentItems.sort(Comparator.comparing(RecentItemView::itemAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
+    recentItems.sort((a, b) -> {
+      java.time.LocalDateTime dateA = ("PERSON".equals(a.type()) || "ANIMAL".equals(a.type())) ? a.itemAt() : a.regDate();
+      java.time.LocalDateTime dateB = ("PERSON".equals(b.type()) || "ANIMAL".equals(b.type())) ? b.itemAt() : b.regDate();
+      if (dateA == null && dateB == null) return 0;
+      if (dateA == null) return 1;
+      if (dateB == null) return -1;
+      int compareDate = dateB.compareTo(dateA);
+      if (compareDate != 0) {
+        return compareDate;
+      }
+      return b.id().compareTo(a.id());
+    });
 
     // 회원이 최소 1개 이상 분실물을 등록했을 때만 매칭 알림 조회
     if (userDetails != null) {

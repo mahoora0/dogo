@@ -83,17 +83,23 @@
       </h3>
       <select onchange="applySort(this.value)"
               class="cursor-pointer rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 outline-none">
-        <option value="regdate,desc" th:selected="${sortBy == 'regdate' and sortDir == 'desc'}">등록일 최신순</option>
-        <option value="regdate,asc" th:selected="${sortBy == 'regdate' and sortDir == 'asc'}">등록일 오래된순</option>
         <option value="occurredAt,desc" th:selected="${sortBy == 'occurredAt' and sortDir == 'desc'}">발생일 최신순</option>
         <option value="occurredAt,asc" th:selected="${sortBy == 'occurredAt' and sortDir == 'asc'}">발생일 오래된순</option>
+        <option value="regdate,desc" th:selected="${sortBy == 'regdate' and sortDir == 'desc'}">등록일 최신순</option>
+        <option value="regdate,asc" th:selected="${sortBy == 'regdate' and sortDir == 'asc'}">등록일 오래된순</option>
       </select>
     </div>
 
     <section th:if="${!#lists.isEmpty(reports)}" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
       <a th:each="report : ${reports}" th:href="@{/missing-persons/{id}(id=${report.id})}"
-         class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md">
-        <div class="p-5">
+         class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md flex flex-col">
+        <!-- 실종자 이미지 영역 -->
+        <div class="relative h-56 w-full overflow-hidden bg-slate-100 border-b border-slate-100 flex items-center justify-center">
+          <img th:src="${report.base64Image != null ? report.base64Image : '/images/noImageSize.png'}" 
+               alt="실종자 이미지" 
+               class="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+        </div>
+        <div class="p-5 flex-1 flex flex-col justify-between">
           <div class="flex flex-wrap items-start justify-between gap-2">
             <span th:text="${report.statusLabel}"
                   th:classappend="${report.status == 'FOUND' ? ' bg-emerald-600' : (report.status == 'CLOSED' ? ' bg-slate-700' : ' bg-rose-500')}"
@@ -104,13 +110,21 @@
           <h2 th:text="${report.summary}" class="mt-4 line-clamp-1 text-lg font-bold text-slate-900">13세 Korea 실종</h2>
           <p th:text="${report.occurredPlace}" class="mt-2 line-clamp-1 text-sm font-semibold text-slate-600">Seoul</p>
           <time th:text="${#temporals.format(report.occurredAt, 'yyyy.MM.dd HH:mm')}" class="mt-2 block text-xs font-semibold text-slate-400">2026.05.18 09:30</time>
-          <div class="mt-4 flex flex-wrap gap-1.5">
-            <span th:text="${report.heightCm != null ? report.heightCm + 'cm' : '키 미상'}" class="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">170cm</span>
-            <span th:text="${report.weightKg != null ? report.weightKg + 'kg' : '몸무게 미상'}" class="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">58kg</span>
-            <span th:text="${report.bodyType}" class="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">Slim</span>
-            <span th:text="${report.hairColor + ' / ' + report.hairStyle}" class="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">Black / Short</span>
+          <div class="mt-4 flex flex-wrap gap-1.5"
+               th:if="${(report.heightCm != null && report.heightCm > 0) || 
+                        (report.weightKg != null) || 
+                        (report.bodyType != null && report.bodyType != '미상' && report.bodyType != '') || 
+                        (report.hairColor != null && report.hairColor != '미상' && report.hairColor != '') || 
+                        (report.hairStyle != null && report.hairStyle != '미상' && report.hairStyle != '')}">
+            <span th:if="${report.heightCm != null && report.heightCm > 0}" th:text="${report.heightCm + 'cm'}" class="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">170cm</span>
+            <span th:if="${report.weightKg != null}" th:text="${report.weightKg + 'kg'}" class="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">58kg</span>
+            <span th:if="${report.bodyType != null && report.bodyType != '미상' && report.bodyType != ''}" th:text="${report.bodyType}" class="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">Slim</span>
+            <span th:if="${(report.hairColor != null && report.hairColor != '미상' && report.hairColor != '') || (report.hairStyle != null && report.hairStyle != '미상' && report.hairStyle != '')}"
+                  th:text="${(report.hairColor != null && report.hairColor != '미상' ? report.hairColor : '') + (report.hairColor != null && report.hairColor != '미상' && report.hairStyle != null && report.hairStyle != '미상' ? ' / ' : '') + (report.hairStyle != null && report.hairStyle != '미상' ? report.hairStyle : '')}"
+                  class="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">Black / Short</span>
           </div>
-          <p th:text="${report.clothing}" class="mt-4 line-clamp-2 text-sm leading-6 text-slate-500">Blue hoodie</p>
+          <p th:if="${report.clothing != null && report.clothing != '착의 정보 없음' && report.clothing != '미상' && report.clothing != ''}"
+             th:text="${report.clothing}" class="mt-4 line-clamp-2 text-sm leading-6 text-slate-500">Blue hoodie</p>
         </div>
       </a>
     </section>
