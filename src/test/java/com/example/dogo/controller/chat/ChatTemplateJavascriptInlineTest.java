@@ -79,6 +79,55 @@ class ChatTemplateJavascriptInlineTest {
     }
 
     @Test
+    void chatTemplateQueuesMultipleImagesBeforeUpload() throws Exception {
+        String html = Files.readString(TEMPLATE);
+        String css = Files.readString(CSS);
+
+        assertThat(html).contains("multiple accept=\"image/*\"");
+        assertThat(html).contains("id=\"pending-image-list\"");
+        assertThat(html).contains("const pendingImages = []");
+        assertThat(html).contains("function queueSelectedImages(input)");
+        assertThat(html).contains("function uploadPendingImages()");
+        assertThat(html).contains("fetch(`/chat/room/${currentRoomId}/uploads`");
+        assertThat(html).contains("formData.append('files', file, file.name)");
+        assertThat(html).contains("function getFileFingerprint(file)");
+        assertThat(html).contains("existingFingerprints.has(fingerprint)");
+        assertThat(html).contains("renderFileGroupBubble(msg.files)");
+        assertThat(html).contains("dropTarget.addEventListener('drop', handleImageDrop)");
+        assertThat(html).doesNotContain("onchange=\"uploadFile(this)\"");
+        assertThat(html).doesNotContain("function uploadFile");
+        assertThat(css).contains(".chat-pending-attachments");
+        assertThat(css).contains(".chat-image-grid");
+        assertThat(css).contains(".chat-input-area.drag-over");
+    }
+
+    @Test
+    void chatRoomListUsesItemTitleAndDetailModalDoesNotCropImage() throws Exception {
+        String html = Files.readString(TEMPLATE);
+
+        assertThat(html).contains("class=\"chat-room-name\" th:text=\"${room.itemTitle}\"");
+        assertThat(html).doesNotContain("class=\"chat-room-name\" th:text=\"${room.otherParticipantNickname}\"");
+        assertThat(html).contains("id=\"item-modal-img\" src=\"/images/noImageSize.png\" class=\"w-full h-full object-contain\"");
+    }
+
+    @Test
+    void chatTemplateSendsAttachmentsBeforeTextAndLimitsLongMessages() throws Exception {
+        String html = Files.readString(TEMPLATE);
+        String css = Files.readString(CSS);
+
+        assertThat(html).contains("<textarea id=\"message-input\"");
+        assertThat(html).contains("maxlength=\"1000\"");
+        assertThat(html).contains("const MAX_CHAT_MESSAGE_LENGTH = 1000");
+        assertThat(html).contains("function handleMessageInputKeydown(event)");
+        assertThat(html).contains("function updateMessageLengthCounter(length)");
+        assertThat(html.indexOf("await uploadPendingImages();"))
+                .isLessThan(html.indexOf("await sendTextMessage(content);"));
+        assertThat(css).contains("white-space: pre-wrap");
+        assertThat(css).contains(".message-length-counter");
+        assertThat(css).contains("max-height: 120px");
+    }
+
+    @Test
     void chatUnreadBadgesCapCountsOverNinetyNine() throws Exception {
         String chat = Files.readString(TEMPLATE);
         String layout = Files.readString(LAYOUT);

@@ -34,22 +34,22 @@ public class MissingAlertSyncRunner {
 		if (!syncEnabled || !backfillOnStartup) {
 			return;
 		}
-		if (missingPersonRepository.existsBySourceType(PUBLIC_API_SOURCE_TYPE)) {
-			log.info("안전Dream 실종 경보 초기 동기화를 건너뜁니다. 이미 저장된 공공데이터가 있습니다.");
-			return;
-		}
 
 		try {
-			MissingAlertSyncResult result = syncService.syncBackfillFromToday();
+			boolean hasPublicApiData = missingPersonRepository.existsBySourceType(PUBLIC_API_SOURCE_TYPE);
+			MissingAlertSyncResult result = hasPublicApiData
+					? syncService.syncIncrementalFromToday()
+					: syncService.syncBackfillFromToday();
 			log.info(
-					"안전Dream 실종 경보 초기 동기화 완료. fetched={}, saved={}, skipped={}, pages={}",
+					"Safe182 missing person startup {} sync completed. fetched={}, saved={}, skipped={}, pages={}",
+					hasPublicApiData ? "incremental" : "backfill",
 					result.fetchedCount(),
 					result.savedCount(),
 					result.skippedCount(),
 					result.pageCount()
 			);
 		} catch (Exception exception) {
-			log.error("안전Dream 실종 경보 초기 동기화에 실패했습니다.", exception);
+			log.error("Safe182 missing person startup sync failed.", exception);
 		}
 	}
 
@@ -62,14 +62,14 @@ public class MissingAlertSyncRunner {
 		try {
 			MissingAlertSyncResult result = syncService.syncIncrementalFromToday();
 			log.info(
-					"안전Dream 실종 경보 증분 동기화 완료. fetched={}, saved={}, skipped={}, pages={}",
+					"Safe182 missing person incremental sync completed. fetched={}, saved={}, skipped={}, pages={}",
 					result.fetchedCount(),
 					result.savedCount(),
 					result.skippedCount(),
 					result.pageCount()
 			);
 		} catch (Exception exception) {
-			log.error("안전Dream 실종 경보 증분 동기화에 실패했습니다.", exception);
+			log.error("Safe182 missing person incremental sync failed.", exception);
 		}
 	}
 }

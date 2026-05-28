@@ -159,6 +159,7 @@ public class KorailDataInitializer implements CommandLineRunner {
         if (stationName.contains("광명")) return "경기 광명시";
         if (stationName.contains("대전")) return "대전 동구";
         if (stationName.contains("천안")) return "충남 천안시";
+        if (stationName.contains("아산")) return "충남 아산시";
         if (stationName.contains("광주송정")) return "광주 광산구";
         if (stationName.contains("동대구")) return "대구 동구";
         if (stationName.contains("울산")) return "울산 남구";
@@ -171,7 +172,35 @@ public class KorailDataInitializer implements CommandLineRunner {
         if (stationName.contains("대구")) return "대구 동구";
         if (stationName.contains("인천")) return "인천 중구";
 
-        // 2. Use Tel No area code to determine region
+        // 2. Parse from location details physical address (Most reliable fallback)
+        if (details != null && !details.isBlank()) {
+            String province = extractProvinceFromAddress(details);
+            String[] parts = details.split("\\s+");
+            String localUnit = null;
+            for (String part : parts) {
+                if (part.endsWith("구")) {
+                    localUnit = part;
+                    break;
+                }
+                if (part.endsWith("시") && !part.equals(parts[0])) {
+                    localUnit = part;
+                }
+                if (part.endsWith("군") && localUnit == null) {
+                    localUnit = part;
+                }
+            }
+            if (province != null) {
+                if (localUnit != null) {
+                    return province + " " + localUnit;
+                }
+                return province;
+            }
+            if (localUnit != null) {
+                return localUnit;
+            }
+        }
+
+        // 3. Use Tel No area code to determine region (only if not a 042 corporate phone number, since KORAIL uses 042 centrally)
         if (telNo != null && !telNo.isBlank()) {
             String cleanTel = telNo.replaceAll("[^0-9]", "");
             if (cleanTel.startsWith("02")) return "서울";
@@ -179,7 +208,12 @@ public class KorailDataInitializer implements CommandLineRunner {
             if (cleanTel.startsWith("032")) return "인천";
             if (cleanTel.startsWith("033")) return "강원";
             if (cleanTel.startsWith("041")) return "충남";
-            if (cleanTel.startsWith("042")) return "대전";
+            // KORAIL corporate numbers start with 042, so we ignore 042 here to prevent false mapping to Daejeon
+            if (cleanTel.startsWith("042") && !stationName.contains("대전")) {
+                // Ignore!
+            } else if (cleanTel.startsWith("042")) {
+                return "대전";
+            }
             if (cleanTel.startsWith("043")) return "충북";
             if (cleanTel.startsWith("044")) return "세종";
             if (cleanTel.startsWith("051")) return "부산";
@@ -193,18 +227,30 @@ public class KorailDataInitializer implements CommandLineRunner {
             if (cleanTel.startsWith("064")) return "제주";
         }
 
-        if (details == null || details.isBlank()) return null;
+        return null;
+    }
 
-        // 3. Fallback: Parse from location details address
-        String[] parts = details.split("\\s+");
-        String result = null;
-        
-        for (String part : parts) {
-            if (part.endsWith("구")) return part;
-            if (part.endsWith("시") && !part.equals(parts[0])) result = part; 
-            if (part.endsWith("군") && result == null) result = part;
-        }
-        return result;
+    private String extractProvinceFromAddress(String details) {
+        if (details == null || details.isBlank()) return null;
+        String cleanDetails = details.trim();
+        if (cleanDetails.startsWith("서울")) return "서울";
+        if (cleanDetails.startsWith("부산")) return "부산";
+        if (cleanDetails.startsWith("대구")) return "대구";
+        if (cleanDetails.startsWith("인천")) return "인천";
+        if (cleanDetails.startsWith("광주")) return "광주";
+        if (cleanDetails.startsWith("대전")) return "대전";
+        if (cleanDetails.startsWith("울산")) return "울산";
+        if (cleanDetails.startsWith("세종")) return "세종";
+        if (cleanDetails.startsWith("경기")) return "경기";
+        if (cleanDetails.startsWith("강원")) return "강원";
+        if (cleanDetails.startsWith("충북") || cleanDetails.startsWith("충청북")) return "충북";
+        if (cleanDetails.startsWith("충남") || cleanDetails.startsWith("충청남")) return "충남";
+        if (cleanDetails.startsWith("전북") || cleanDetails.startsWith("전라북")) return "전북";
+        if (cleanDetails.startsWith("전남") || cleanDetails.startsWith("전라남")) return "전남";
+        if (cleanDetails.startsWith("경북") || cleanDetails.startsWith("경상북")) return "경북";
+        if (cleanDetails.startsWith("경남") || cleanDetails.startsWith("경상남")) return "경남";
+        if (cleanDetails.startsWith("제주")) return "제주";
+        return null;
     }
 
 

@@ -6,12 +6,13 @@
       <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <span class="mb-2 inline-block text-sm font-semibold text-slate-500">실종자 제보와 공공데이터 조회</span>
-          <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">실종자 검색 게시판</h1>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">실종자 검색</h1>
           <p class="mt-2 text-sm text-slate-500">이름, 발생장소, 국적, 신체 특징, 착의사항으로 등록된 실종자 정보를 검색합니다.</p>
         </div>
         <a th:href="@{/missing-persons/new}"
-           class="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-slate-700">
-          실종자 제보
+           class="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-slate-700 hover:shadow-lg active:scale-[0.98]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          실종자 제보하기
         </a>
       </div>
     </section>
@@ -95,8 +96,8 @@
          class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md flex flex-col">
         <!-- 실종자 이미지 영역 -->
         <div class="relative h-56 w-full overflow-hidden bg-slate-100 border-b border-slate-100 flex items-center justify-center">
-          <img th:src="${report.base64Image != null ? report.base64Image : '/images/noImageSize.png'}" 
-               alt="실종자 이미지" 
+          <img th:src="${report.imageUrls != null and !#lists.isEmpty(report.imageUrls) ? report.imageUrls[0] : (report.base64Image != null ? report.base64Image : '/images/noImageSize.png')}"
+               alt="실종자 이미지"
                class="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
         </div>
         <div class="p-5 flex-1 flex flex-col justify-between">

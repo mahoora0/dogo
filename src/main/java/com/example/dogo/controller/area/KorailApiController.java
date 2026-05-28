@@ -52,11 +52,15 @@ public class KorailApiController {
     private Predicate<Map<String, Object>> matchesRegion(String region) {
         if (region == null || region.isBlank()) return c -> true;
         String normalizedRegion = region.length() >= 2 ? region.substring(0, 2) : region;
-        String areaCode = getAreaCodeByRegion(normalizedRegion);
 
-        return c -> startsWithRegion((String) c.get("subRegion"), region, normalizedRegion)
-            || containsAny((String) c.get("stationName"), region, normalizedRegion)
-            || telMatchesAreaCode((String) c.get("telNo"), areaCode);
+        return c -> {
+            String stationName = (String) c.get("stationName");
+            if (stationName != null && stationName.contains("아산") && "대전".equals(normalizedRegion)) {
+                return false;
+            }
+            return startsWithRegion((String) c.get("subRegion"), region, normalizedRegion)
+                || containsAny(stationName, region, normalizedRegion);
+        };
     }
 
     private Predicate<Map<String, Object>> matchesSubRegion(String subRegion) {
