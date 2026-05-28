@@ -234,13 +234,21 @@ public class InquiryService {
 
     private AdminInquiryRow toAdminRow(Inquiry inquiry) {
         Long userId = inquiry.getUser() == null ? null : inquiry.getUser().getUserNo();
-        return new AdminInquiryRow(inquiry.getInquiryId(), inquiry.getTitle(), userId, statusLabel(inquiry.getStatus()));
+        String userNickname = inquiry.getUser() == null ? "-" : inquiry.getUser().getNickname();
+        String userEmail = inquiry.getUser() == null ? "-" : inquiry.getUser().getEmail();
+        return new AdminInquiryRow(inquiry.getInquiryId(), inquiry.getTitle(), userId, userNickname, userEmail, statusLabel(inquiry.getStatus()));
     }
 
     private AdminInquiryDetail toAdminDetail(Inquiry inquiry) {
         Long userId = inquiry.getUser() == null ? null : inquiry.getUser().getUserNo();
+        String userNickname = inquiry.getUser() == null ? "-" : inquiry.getUser().getNickname();
+        String userEmail = inquiry.getUser() == null ? "-" : inquiry.getUser().getEmail();
         String createdAt = inquiry.getRegdate() == null ? "" : inquiry.getRegdate().format(CREATED_AT_FORMATTER);
         String answeredAt = inquiry.getAnsweredAt() == null ? "" : inquiry.getAnsweredAt().format(CREATED_AT_FORMATTER);
+
+        List<InquiryFileView> files = inquiryFileRepository.findByInquiryOrderByFileIdAsc(inquiry).stream()
+                .map(f -> new InquiryFileView(f.getFileId(), f.getOriginalName(), f.getFileUrl(), f.getFileSize()))
+                .toList();
 
         return new AdminInquiryDetail(
                 inquiry.getInquiryId(),
@@ -249,10 +257,13 @@ public class InquiryService {
                 inquiry.getTitle(),
                 inquiry.getContent(),
                 userId,
+                userNickname,
+                userEmail,
                 statusLabel(inquiry.getStatus()),
                 inquiry.getAnswer(),
                 createdAt,
-                answeredAt
+                answeredAt,
+                files
         );
     }
 

@@ -1,54 +1,211 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: setContent(~{::content})}">
-<th:block th:fragment="content">
-    <section class="max-w-4xl mx-auto">
-        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-                <p class="text-sm font-semibold text-indigo-700">관리자</p>
-                <h2 th:text="${inquiry.title}" class="mt-2 text-3xl font-extrabold text-slate-900">문의 제목</h2>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dogo Admin - 1:1 문의 상세</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <div class="flex h-screen overflow-hidden relative">
+        <!-- Mobile Sidebar Backdrop overlay -->
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/50 z-30 hidden transition-opacity duration-300 opacity-0"></div>
+
+        <!-- Sidebar -->
+        <aside id="adminSidebar" class="w-64 bg-white border-r border-slate-200 fixed inset-y-0 left-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out md:static flex flex-col">
+            <div class="p-6 flex items-center justify-between">
+                <a href="/" class="flex items-center gap-2 font-bold text-2xl text-blue-600">
+                    <i data-lucide="package-search"></i>
+                    <span>Dogo Admin</span>
+                </a>
+                <!-- Close menu button for mobile only -->
+                <button id="closeSidebarBtn" class="md:hidden text-slate-500 hover:text-slate-700 p-2 focus:outline-none">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
             </div>
-            <a th:href="@{/admin/inquiries}" class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                목록
-            </a>
-        </div>
-
-        <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-            <dl class="grid gap-4 text-sm sm:grid-cols-2">
-                <div>
-                    <dt class="font-semibold text-slate-500">유저 ID</dt>
-                    <dd th:text="${inquiry.userId ?: '-'}" class="mt-1 text-slate-900">1</dd>
-                </div>
-                <div>
-                    <dt class="font-semibold text-slate-500">상태</dt>
-                    <dd th:text="${inquiry.status}" class="mt-1 text-slate-900">접수</dd>
-                </div>
-                <div>
-                    <dt class="font-semibold text-slate-500">문의 종류</dt>
-                    <dd th:text="${inquiry.categoryLabel}" class="mt-1 text-slate-900">분실물 문의</dd>
-                </div>
-                <div>
-                    <dt class="font-semibold text-slate-500">등록일</dt>
-                    <dd th:text="${inquiry.createdAt}" class="mt-1 text-slate-900">2026.05.12 11:00</dd>
-                </div>
-            </dl>
-
-            <div class="mt-6 border-t border-slate-100 pt-6">
-                <h3 class="text-sm font-semibold text-slate-500">문의 내용</h3>
-                <p th:text="${inquiry.content}" class="mt-3 whitespace-pre-line rounded-lg bg-slate-50 p-4 text-sm leading-6 text-slate-700">문의 내용</p>
-            </div>
-
-            <form th:action="@{/admin/inquiries/{id}/answer(id=${inquiry.id})}" method="post" class="mt-6 border-t border-slate-100 pt-6">
-                <label for="answer" class="block text-sm font-semibold text-slate-700">답변</label>
-                <textarea id="answer" name="answer" required rows="7" th:text="${inquiry.answer}" placeholder="답변 내용을 입력해주세요."
-                          class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-700 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"></textarea>
-                <p th:if="${inquiry.answeredAt != ''}" th:text="'마지막 답변일: ' + ${inquiry.answeredAt}" class="mt-2 text-xs text-slate-500">마지막 답변일</p>
-                <div class="mt-4 flex justify-end">
-                    <button type="submit" class="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
-                        답변 저장
+            <nav class="flex-1 px-4 space-y-1">
+                <a href="/admin" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    대시보드
+                </a>
+                <a href="/admin/users" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    회원 관리
+                </a>
+                <a href="/admin/lost-items" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    분실물 관리
+                </a>
+                <a href="/admin/found-items" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="package" class="w-5 h-5"></i>
+                    습득물 관리
+                </a>
+                <a href="/admin/animals" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="dog" class="w-5 h-5"></i>
+                    실종동물 관리
+                </a>
+                <a href="/admin/missing-persons" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="user-round-search" class="w-5 h-5"></i>
+                    실종자 관리
+                </a>
+                <a href="/admin/inquiries" class="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-medium">
+                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    1:1 문의
+                </a>
+            </nav>
+            <div class="p-4 border-t border-slate-100">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="flex items-center gap-3 w-full px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors font-medium">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                        로그아웃
                     </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <!-- Top Header -->
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-20">
+                <div class="flex items-center gap-2">
+                    <button type="button" id="mobileMenuBtn" class="md:hidden text-slate-500 hover:text-slate-700 focus:outline-none p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold">1:1 문의 관리</h1>
                 </div>
-            </form>
-        </div>
-    </section>
-</th:block>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                            A
+                        </div>
+                        <span class="font-medium text-sm">관리자님</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-8">
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-blue-600">문의 정보 및 답변 등록</p>
+                        <h2 th:text="${inquiry.title}" class="mt-2 text-2xl font-extrabold text-slate-900">문의 제목</h2>
+                    </div>
+                    <a th:href="@{/admin/inquiries}" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+                        목록으로 돌아가기
+                    </a>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <dl class="grid gap-4 text-sm sm:grid-cols-2">
+                        <div>
+                            <dt class="font-semibold text-slate-500 text-xs">작성자 닉네임</dt>
+                            <dd th:text="${inquiry.userNickname}" class="mt-1 text-slate-900 font-medium">홍길동</dd>
+                        </div>
+                        <div>
+                            <dt class="font-semibold text-slate-500 text-xs">작성자 이메일</dt>
+                            <dd th:text="${inquiry.userEmail}" class="mt-1 text-slate-900 font-mono">user@example.com</dd>
+                        </div>
+                        <div>
+                            <dt class="font-semibold text-slate-500 text-xs">유저 ID</dt>
+                            <dd th:text="${inquiry.userId ?: '-'}" class="mt-1 text-slate-900 font-medium">1</dd>
+                        </div>
+                        <div>
+                            <dt class="font-semibold text-slate-500 text-xs">상태</dt>
+                            <dd th:text="${inquiry.status}" class="mt-1 text-slate-900 font-bold text-blue-600">접수</dd>
+                        </div>
+                        <div>
+                            <dt class="font-semibold text-slate-500 text-xs">문의 종류</dt>
+                            <dd th:text="${inquiry.categoryLabel}" class="mt-1 text-slate-900 font-medium">분실물 문의</dd>
+                        </div>
+                        <div>
+                            <dt class="font-semibold text-slate-500 text-xs">등록일</dt>
+                            <dd th:text="${inquiry.createdAt}" class="mt-1 text-slate-900 font-medium">2026.05.12 11:00</dd>
+                        </div>
+                    </dl>
+
+                    <div class="mt-6 border-t border-slate-100 pt-6">
+                        <h3 class="text-sm font-semibold text-slate-500 text-xs">문의 내용</h3>
+                        <p th:text="${inquiry.content}" class="mt-3 whitespace-pre-line rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">문의 내용</p>
+                    </div>
+
+                    <!-- 첨부파일 및 이미지 미리보기 -->
+                    <div th:if="${inquiry.files != null and not #lists.isEmpty(inquiry.files)}" class="mt-6 border-t border-slate-100 pt-6">
+                        <h3 class="text-sm font-semibold text-slate-500 text-xs mb-3">첨부파일</h3>
+                        <ul class="space-y-2 mb-4">
+                            <li th:each="file : ${inquiry.files}" class="flex items-center gap-2">
+                                <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                </svg>
+                                <a th:href="${file.fileUrl}" target="_blank" th:text="${file.originalName}" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">파일명.jpg</a>
+                                <span class="text-xs text-slate-400" th:text="'(' + ${file.fileSize / 1024} + ' KB)'">(100 KB)</span>
+                            </li>
+                        </ul>
+                        
+                        <!-- 이미지 미리보기 영역 -->
+                        <div class="space-y-3 mt-4">
+                            <div th:each="file : ${inquiry.files}" th:if="${#strings.endsWith(#strings.toLowerCase(file.originalName), '.jpg') or #strings.endsWith(#strings.toLowerCase(file.originalName), '.jpeg') or #strings.endsWith(#strings.toLowerCase(file.originalName), '.png') or #strings.endsWith(#strings.toLowerCase(file.originalName), '.gif') or #strings.endsWith(#strings.toLowerCase(file.originalName), '.webp')}">
+                                <p class="text-xs text-slate-400 mb-1" th:text="${file.originalName}"></p>
+                                <img th:src="${file.fileUrl}" class="max-w-full sm:max-w-md rounded-lg border border-slate-200 shadow-sm object-contain max-h-[300px]" alt="첨부 이미지"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/admin/inquiries/{id}/answer(id=${inquiry.id})}" method="post" class="mt-6 border-t border-slate-100 pt-6">
+                        <label for="answer" class="block text-sm font-semibold text-slate-700 text-xs">답변</label>
+                        <textarea id="answer" name="answer" required rows="7" th:text="${inquiry.answer}" placeholder="답변 내용을 입력해주세요."
+                                  class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all"></textarea>
+                        <p th:if="${inquiry.answeredAt != null and inquiry.answeredAt != ''}" th:text="'마지막 답변일: ' + ${inquiry.answeredAt}" class="mt-2 text-xs text-slate-400">마지막 답변일</p>
+                        <div class="mt-4 flex justify-end">
+                            <button type="submit" class="rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-sm">
+                                답변 저장
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Responsive Mobile Sidebar Toggle Logic
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        const adminSidebar = document.getElementById('adminSidebar');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+        function openSidebar() {
+            adminSidebar.classList.remove('-translate-x-full');
+            sidebarBackdrop.classList.remove('hidden');
+            setTimeout(() => {
+                sidebarBackdrop.classList.remove('opacity-0');
+                sidebarBackdrop.classList.add('opacity-100');
+            }, 50);
+        }
+
+        function closeSidebar() {
+            adminSidebar.classList.add('-translate-x-full');
+            sidebarBackdrop.classList.remove('opacity-100');
+            sidebarBackdrop.classList.add('opacity-0');
+            setTimeout(() => {
+                sidebarBackdrop.classList.add('hidden');
+            }, 300);
+        }
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', openSidebar);
+        }
+
+        if (closeSidebarBtn) {
+            closeSidebarBtn.addEventListener('click', closeSidebar);
+        }
+
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', closeSidebar);
+        }
+    </script>
+</body>
 </html>
