@@ -54,7 +54,26 @@
               <h1 th:text="${report.summary}" class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">13세 Korea 실종</h1>
               <p th:text="${report.occurredPlace}" class="mt-2 text-sm font-semibold text-slate-600">Seoul</p>
             </div>
-            <time th:text="${#temporals.format(report.occurredAt, 'yyyy.MM.dd HH:mm')}" class="text-sm font-bold text-slate-500">2026.05.18 09:30</time>
+            
+            <div class="flex items-center gap-3">
+              <time th:text="${#temporals.format(report.occurredAt, 'yyyy.MM.dd HH:mm')}" class="text-sm font-bold text-slate-500">2026.05.18 09:30</time>
+              
+              <!-- More actions (Kebab Menu) -->
+              <div class="relative shrink-0" th:if="${!isOwner && report.userNo != null}">
+                <button type="button" id="moreMenuBtn" class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 transition focus:outline-none" aria-label="더보기">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
+                </button>
+                <div id="moreDropdown" class="absolute right-0 mt-2 w-36 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black/5 divide-y divide-slate-100 focus:outline-none hidden z-30">
+                  <div class="py-1">
+                    <button type="button" data-report-open
+                            class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-red-500 hover:bg-red-50 transition">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 2H21l-3 6 3 6h-8.5l-1-2H5a2 2 0 00-2 2z"/></svg>
+                      게시글 신고
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div th:with="showPhysicalInfo=${(report.heightCm != null && report.heightCm > 0) || 
                                            (report.weightKg != null && report.weightKg.compareTo(T(java.math.BigDecimal).ZERO) > 0) || 
@@ -183,11 +202,6 @@
                 특이사항이 여기에 표시됩니다.
               </div>
             </div>
-            <button type="button" th:if="${!isOwner && report.userNo != null}" data-report-open
-                    class="mt-6 inline-flex items-center justify-center gap-1.5 self-start text-sm font-semibold text-slate-400 transition hover:text-red-500">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 2H21l-3 6 3 6h-8.5l-1-2H5a2 2 0 00-2 2z"/></svg>
-              게시글 신고
-            </button>
 
             <div th:if="${!isOwner && report.userNo != null}" data-report-modal
                  class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
@@ -234,9 +248,35 @@
       (function () {
         var openBtn = document.querySelector('[data-report-open]');
         var modal = document.querySelector('[data-report-modal]');
+        var moreBtn = document.getElementById('moreMenuBtn');
+        var moreDropdown = document.getElementById('moreDropdown');
+        
+        // Kebab menu dropdown toggle
+        if (moreBtn && moreDropdown) {
+          moreBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            moreDropdown.classList.toggle('hidden');
+          });
+          document.addEventListener('click', function (e) {
+            if (!moreDropdown.classList.contains('hidden') && !moreDropdown.contains(e.target)) {
+              moreDropdown.classList.add('hidden');
+            }
+          });
+        }
+
+        // Report modal show/hide
         if (!openBtn || !modal) return;
-        function open() { modal.classList.remove('hidden'); modal.classList.add('flex'); }
-        function close() { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+        function open() {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+          if (moreDropdown) {
+            moreDropdown.classList.add('hidden');
+          }
+        }
+        function close() {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
         openBtn.addEventListener('click', open);
         modal.querySelectorAll('[data-report-close]').forEach(function (btn) { btn.addEventListener('click', close); });
         modal.addEventListener('click', function (event) { if (event.target === modal) close(); });
