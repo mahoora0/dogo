@@ -28,6 +28,7 @@ public record MissingPersonDetailView(
 		String targetLabel,
 		String gender,
 		String etcSpfeatr,
-		List<String> imageUrls
+		List<String> imageUrls,
+		Long userNo
 ) {
 }

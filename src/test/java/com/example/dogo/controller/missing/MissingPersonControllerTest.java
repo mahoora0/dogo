@@ -144,7 +144,8 @@ class MissingPersonControllerTest {
 				"정상아동(18세미만)",
 				"남자",
 				"특이사항 테스트",
-				java.util.List.of()
+				java.util.List.of(),
+				99L
 		);
 	}
 }

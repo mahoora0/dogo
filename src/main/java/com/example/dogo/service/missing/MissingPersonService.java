@@ -270,7 +270,8 @@ public class MissingPersonService {
 				targetLabel,
 				gender,
 				etcSpfeatr,
-				findImageUrls(report)
+				findImageUrls(report),
+				report.getUser() != null ? report.getUser().getUserNo() : null
 		);
 	}
 
