@@ -134,7 +134,7 @@ function selectElement(event) {
           
           <div style="display: flex; gap: 6px; align-items: center;">
             <button onclick="adjustZoom(-0.1)" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s;">-</button>
-            <input type="range" id="floating-zoom-slider" min="1" max="4" step="0.05" value="${currentScale}" 
+            <input type="range" id="floating-zoom-slider" min="0.2" max="4" step="0.05" value="${currentScale}" 
                    style="flex: 1; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.2); outline: none; accent-color: #38bdf8; cursor: pointer; margin: 0;"
                    oninput="syncFloatingZoom(this.value)">
             <button onclick="adjustZoom(0.1)" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s;">+</button>
@@ -290,6 +290,12 @@ function doResize(e) {
 
   if (selectedElement.classList.contains('feature-bubble')) {
     updateFeatureLines();
+  }
+
+  // 만약 이미지 요소라면 내부 이미지 크기 조절
+  const img = selectedElement.querySelector('.uploaded-image');
+  if (img) {
+    updateImageSizeToFit(img, newWidth, newHeight);
   }
 }
 
@@ -610,31 +616,85 @@ function uploadImage(event, input) {
     const parent = input.closest('.element-content');
     const element = parent.closest('.element');
     
-    // Remove placeholder class and set up direct image tag covering the box
-    parent.classList.remove('image-placeholder');
-    parent.innerHTML = `
-      <img src="${dataUrl}" class="uploaded-image" data-scale="1" data-x="0" data-y="0"
-           onmousedown="startPanning(event, this)"
-           onwheel="handleWheelZoom(event, this)"
-           style="position: absolute; left: 50%; top: 50%; width: 100%; height: 100%; object-fit: cover; transform: translate(-50%, -50%) translate(0px, 0px) scale(1); transform-origin: center center; cursor: grab; pointer-events: auto;">
-      <input type="file" accept="image/*" class="file-input" style="display: none;" onchange="uploadImage(event, this)">
-    `;
-    
-    // Remove any legacy floating toolbar to keep clean
-    const oldToolbar = element.querySelector('.image-adjust-toolbar');
-    if (oldToolbar) oldToolbar.remove();
-    
-    parent.onclick = null;
-    
-    // 업로드 즉시 해당 요소를 활성 선택하여 사이드바 조절창이 열리게 함
-    selectElement({
-      stopPropagation: () => {},
-      currentTarget: element,
-      clientX: parseFloat(element.style.left) || 0,
-      clientY: parseFloat(element.style.top) || 0
-    });
+    // 이미지 파일 로딩하여 원래 크기 정보 획득
+    const tempImg = new Image();
+    tempImg.onload = function() {
+      const naturalWidth = tempImg.naturalWidth;
+      const naturalHeight = tempImg.naturalHeight;
+      
+      const containerWidth = element.offsetWidth || 210;
+      const containerHeight = element.offsetHeight || 250;
+      
+      const imageRatio = naturalWidth / naturalHeight;
+      const containerRatio = containerWidth / containerHeight;
+      
+      let width, height;
+      if (imageRatio > containerRatio) {
+        // 가로가 더 긴 이미지 -> 높이를 100% 맞추고 가로는 비율에 따라 키움 (cover 효과)
+        height = containerHeight;
+        width = containerHeight * imageRatio;
+      } else {
+        // 세로가 더 긴 이미지 -> 너비를 100% 맞추고 세로는 비율에 따라 키움 (cover 효과)
+        width = containerWidth;
+        height = containerWidth / imageRatio;
+      }
+      
+      // Remove placeholder class and set up direct image tag covering the box
+      parent.classList.remove('image-placeholder');
+      parent.innerHTML = `
+        <img src="${dataUrl}" class="uploaded-image" data-scale="1" data-x="0" data-y="0"
+             data-natural-width="${naturalWidth}" data-natural-height="${naturalHeight}"
+             onmousedown="startPanning(event, this)"
+             onwheel="handleWheelZoom(event, this)"
+             style="position: absolute; left: 50%; top: 50%; width: ${width}px; height: ${height}px; transform: translate(-50%, -50%) translate(0px, 0px) scale(1); transform-origin: center center; cursor: grab; pointer-events: auto;">
+        <input type="file" accept="image/*" class="file-input" style="display: none;" onchange="uploadImage(event, this)">
+      `;
+      
+      // Remove any legacy floating toolbar to keep clean
+      const oldToolbar = element.querySelector('.image-adjust-toolbar');
+      if (oldToolbar) oldToolbar.remove();
+      
+      parent.onclick = null;
+      
+      // 업로드 즉시 해당 요소를 활성 선택하여 사이드바 조절창이 열리게 함
+      selectElement({
+        stopPropagation: () => {},
+        currentTarget: element,
+        clientX: parseFloat(element.style.left) || 0,
+        clientY: parseFloat(element.style.top) || 0
+      });
+    };
+    tempImg.src = dataUrl;
   };
   reader.readAsDataURL(file);
+}
+
+// 컨테이너 크기 변경에 따른 이미지 크기 재조정 헬퍼 함수
+function updateImageSizeToFit(img, containerWidth, containerHeight) {
+  const naturalWidth = parseFloat(img.getAttribute('data-natural-width'));
+  const naturalHeight = parseFloat(img.getAttribute('data-natural-height'));
+  if (!naturalWidth || !naturalHeight) return;
+
+  const imageRatio = naturalWidth / naturalHeight;
+  const containerRatio = containerWidth / containerHeight;
+
+  let width, height;
+  if (imageRatio > containerRatio) {
+    height = containerHeight;
+    width = containerHeight * imageRatio;
+  } else {
+    width = containerWidth;
+    height = containerWidth / imageRatio;
+  }
+
+  img.style.width = `${width}px`;
+  img.style.height = `${height}px`;
+
+  // 기존 x, y, scale 값 유지하여 transform 적용
+  const x = img.getAttribute('data-x') || '0';
+  const y = img.getAttribute('data-y') || '0';
+  const scale = img.getAttribute('data-scale') || '1';
+  img.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(${scale})`;
 }
 
 // =========================
@@ -650,8 +710,8 @@ function handleWheelZoom(e, img) {
     // 휠 올림 -> 확대 (최대 4배)
     scale = Math.min(4, scale + zoomSpeed);
   } else {
-    // 휠 내림 -> 축소 (최소 1배)
-    scale = Math.max(1, scale - zoomSpeed);
+    // 휠 내림 -> 축소 (최소 0.2배)
+    scale = Math.max(0.2, scale - zoomSpeed);
   }
   
   img.setAttribute('data-scale', scale);
@@ -746,7 +806,7 @@ function adjustZoom(amount) {
   const img = selectedElement.querySelector('.uploaded-image');
   if (img) {
     let scale = parseFloat(img.getAttribute('data-scale')) || 1.0;
-    scale = Math.max(1, Math.min(4, scale + amount));
+    scale = Math.max(0.2, Math.min(4, scale + amount));
     
     img.setAttribute('data-scale', scale);
     
