@@ -5,6 +5,8 @@
   const sizeInput = document.getElementById("missingAlertSize");
   const refreshButton = document.getElementById("missingAlertRefresh");
   const summary = document.getElementById("homeMissingAlertSummary");
+  const pagination = document.getElementById("missingAlertPagination");
+  let currentPage = 1;
 
   if (!grid && !summary) {
     return;
@@ -158,9 +160,73 @@
     summary.textContent = `${alertSummary(alerts[0])} 실종 경보가 접수되었습니다.`;
   }
 
+  // 페이징 컨트롤 동적 렌더링 함수
+  function renderPagination(totalCount, rowSize) {
+    if (!pagination) return;
+    pagination.innerHTML = "";
+
+    const totalPages = Math.ceil(totalCount / rowSize);
+    if (totalPages <= 1) {
+      return;
+    }
+
+    // 다른 리스트 페이지들과 통일성 있는 Tailwind 클래스 추가
+    pagination.className = "mt-12 flex items-center justify-center gap-3 text-sm";
+
+    // 1. [이전] 버튼 생성
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 active:scale-95";
+    if (currentPage === 1) {
+      prevBtn.classList.add("pointer-events-none", "opacity-40");
+    }
+    prevBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    `;
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadAlerts();
+      }
+    });
+    pagination.appendChild(prevBtn);
+
+    // 2. [현재페이지 / 총페이지] 캡슐 생성
+    const midDisplay = document.createElement("div");
+    midDisplay.className = "flex items-center gap-1 rounded-full bg-white px-4 py-2 shadow-sm border border-slate-100 font-semibold";
+    midDisplay.innerHTML = `
+      <span class="text-slate-900">${currentPage}</span>
+      <span class="text-slate-300 mx-1">/</span>
+      <span class="text-slate-500">${totalPages}</span>
+    `;
+    pagination.appendChild(midDisplay);
+
+    // 3. [다음] 버튼 생성
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 active:scale-95";
+    if (currentPage === totalPages) {
+      nextBtn.classList.add("pointer-events-none", "opacity-40");
+    }
+    nextBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+      </svg>
+    `;
+    nextBtn.addEventListener("click", () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadAlerts();
+      }
+    });
+    pagination.appendChild(nextBtn);
+  }
+
   async function loadAlerts() {
     const params = new URLSearchParams();
-    params.set("rowSize", sizeInput ? sizeInput.value : "1");
+    const rowSize = sizeInput ? parseInt(sizeInput.value) : 10;
+    params.set("rowSize", rowSize.toString());
+    params.set("page", currentPage.toString());
 
     const dateValue = dateInput ? formatDateForApi(dateInput.value) : "";
     if (dateValue) {
@@ -175,26 +241,52 @@
         throw new Error("missing-alert-request-failed");
       }
 
-      const page = await response.json();
-      const alerts = Array.isArray(page.alerts) ? page.alerts : [];
+      const pageData = await response.json();
+      const alerts = Array.isArray(pageData.alerts) ? pageData.alerts : [];
       renderHomeSummary(alerts);
 
       if (alerts.length === 0) {
         renderCards([]);
+        if (pagination) pagination.innerHTML = "";
         setStatus("조회된 실종 경보가 없습니다.", "empty");
         return;
       }
 
       renderCards(alerts);
-      setStatus(`총 ${page.totalCount || alerts.length}건 중 ${alerts.length}건을 표시합니다.`, "success");
+      
+      // 페이징 컨트롤 렌더링
+      const totalCount = pageData.totalCount || alerts.length;
+      renderPagination(totalCount, rowSize);
+      
+      const startNum = (currentPage - 1) * rowSize + 1;
+      const endNum = Math.min(currentPage * rowSize, totalCount);
+      setStatus(`총 ${totalCount}건 중 ${startNum}~${endNum}건을 표시합니다. (페이지 ${currentPage}/${Math.ceil(totalCount / rowSize)})`, "success");
     } catch (error) {
       renderCards([]);
+      if (pagination) pagination.innerHTML = "";
       setStatus("실종 경보 API 정보를 불러오지 못했습니다. 인증 정보 또는 네트워크 상태를 확인해주세요.", "error");
     }
   }
 
   if (refreshButton) {
-    refreshButton.addEventListener("click", loadAlerts);
+    refreshButton.addEventListener("click", () => {
+      currentPage = 1;
+      loadAlerts();
+    });
+  }
+
+  if (sizeInput) {
+    sizeInput.addEventListener("change", () => {
+      currentPage = 1;
+      loadAlerts();
+    });
+  }
+
+  if (dateInput) {
+    dateInput.addEventListener("change", () => {
+      currentPage = 1;
+      loadAlerts();
+    });
   }
 
   loadAlerts();
