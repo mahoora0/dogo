@@ -32,12 +32,14 @@ import com.example.dogo.repository.item.LostItemImageRepository;
 import com.example.dogo.repository.item.FoundItemImageRepository;
 import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.animal.AnimalReportMatchRepository;
+import com.example.dogo.repository.animal.AnimalReportImageRepository;
 import com.example.dogo.repository.Support.InquiryRepository;
 import com.example.dogo.repository.ChatMessageRepository;
 import com.example.dogo.repository.ChatRoomRepository;
 import com.example.dogo.repository.missing.MissingPersonImageRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
 import com.example.dogo.entity.animal.AnimalReport;
+import com.example.dogo.entity.animal.AnimalReportImage;
 import com.example.dogo.entity.missing.MissingPersonImage;
 import com.example.dogo.entity.missing.MissingPersonReport;
 import com.example.dogo.dto.item.RecentItemView;
@@ -45,6 +47,8 @@ import org.springframework.ui.Model;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -61,6 +65,7 @@ public class LoginController {
   private final ItemMatchRepository itemMatchRepository;
   private final AnimalReportRepository animalReportRepository;
   private final AnimalReportMatchRepository animalReportMatchRepository;
+  private final AnimalReportImageRepository animalReportImageRepository;
   private final InquiryRepository inquiryRepository;
   private final ChatMessageRepository chatMessageRepository;
   private final ChatRoomRepository chatRoomRepository;
@@ -267,13 +272,15 @@ public class LoginController {
     List<com.example.dogo.entity.Support.Inquiry> inquiries = inquiryRepository.findByUserOrderByRegdateDescInquiryIdDesc(user);
     List<AnimalReport> animalReports = animalReportRepository.findByUserAndDeletedFalseOrderByRegdateDesc(user);
     List<MissingPersonReport> personReports = missingPersonRepository.findByUserAndDeletedFalseOrderByRegdateDesc(user);
+    Map<Long, String> lostThumbnails = resolveLostThumbnails(lostItems);
+    Map<Long, String> foundThumbnails = resolveFoundThumbnails(foundItems);
+    Map<Long, String> animalThumbnails = resolveAnimalThumbnails(animalReports);
+    Map<Long, String> missingPersonThumbnails = resolveMissingPersonThumbnails(personReports);
 
     List<RecentItemView> userActivities = new ArrayList<>();
 
     for (com.example.dogo.entity.item.LostItem item : lostItems) {
-      String imageUrl = lostItemImageRepository.findFirstByLostItemOrderBySortOrderAscImageIdAsc(item)
-          .map(com.example.dogo.entity.item.LostItemImage::getImageUrl)
-          .orElse("/images/noImageSize.png");
+      String imageUrl = lostThumbnails.getOrDefault(item.getLostId(), "/images/noImageSize.png");
 
       userActivities.add(new RecentItemView(
           item.getLostId(),
@@ -290,9 +297,7 @@ public class LoginController {
     }
 
     for (com.example.dogo.entity.item.FoundItem item : foundItems) {
-      String imageUrl = foundItemImageRepository.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(item)
-          .map(com.example.dogo.entity.item.FoundItemImage::getImageUrl)
-          .orElse("/images/noImageSize.png");
+      String imageUrl = foundThumbnails.getOrDefault(item.getFoundId(), "/images/noImageSize.png");
 
       userActivities.add(new RecentItemView(
           item.getFoundId(),
@@ -330,10 +335,7 @@ public class LoginController {
     }
 
     for (AnimalReport report : animalReports) {
-      String imageUrl = "/images/noImageSize.png";
-      if (report.getImages() != null && !report.getImages().isEmpty()) {
-        imageUrl = report.getImages().get(0).getImageUrl();
-      }
+      String imageUrl = animalThumbnails.getOrDefault(report.getReportId(), "/images/noImageSize.png");
 
       String typeLabel = "MISSING".equals(report.getReportType()) ? "실종동물 신고" : "제보 및 목격";
       String statusLabel = "OPEN".equals(report.getStatus()) ? "접수" : ("MATCHING".equals(report.getStatus()) ? "매칭중" : "해결완료");
@@ -353,7 +355,7 @@ public class LoginController {
     }
 
     for (MissingPersonReport report : personReports) {
-      String imageUrl = missingPersonThumbnailImageUrl(report);
+      String imageUrl = missingPersonThumbnailImageUrl(report, missingPersonThumbnails);
       String statusLabel = "OPEN".equals(report.getStatus()) ? "접수" : "해결완료";
 
       userActivities.add(new RecentItemView(
@@ -394,13 +396,57 @@ public class LoginController {
     };
   }
 
-  private String missingPersonThumbnailImageUrl(MissingPersonReport report) {
-    return missingPersonImageRepository.findFirstByReportOrderBySortOrderAscImageIdAsc(report)
-        .map(MissingPersonImage::getImageUrl)
-        .orElseGet(() -> {
-          String base64Image = extractBase64Image(report.getRawPayload());
-          return base64Image != null ? base64Image : "/images/noImageSize.png";
-        });
+  private String missingPersonThumbnailImageUrl(MissingPersonReport report, Map<Long, String> thumbnails) {
+    return thumbnails.getOrDefault(report.getReportId(), fallbackMissingPersonImageUrl(report));
+  }
+
+  private String fallbackMissingPersonImageUrl(MissingPersonReport report) {
+    String base64Image = extractBase64Image(report.getRawPayload());
+    return base64Image != null ? base64Image : "/images/noImageSize.png";
+  }
+
+  private Map<Long, String> resolveLostThumbnails(List<com.example.dogo.entity.item.LostItem> items) {
+    if (items.isEmpty()) {
+      return Map.of();
+    }
+    Map<Long, String> thumbnails = new HashMap<>();
+    for (com.example.dogo.entity.item.LostItemImage image : lostItemImageRepository.findByLostItemInOrderBySortOrderAscImageIdAsc(items)) {
+      thumbnails.putIfAbsent(image.getLostItem().getLostId(), image.getImageUrl());
+    }
+    return thumbnails;
+  }
+
+  private Map<Long, String> resolveFoundThumbnails(List<com.example.dogo.entity.item.FoundItem> items) {
+    if (items.isEmpty()) {
+      return Map.of();
+    }
+    Map<Long, String> thumbnails = new HashMap<>();
+    for (com.example.dogo.entity.item.FoundItemImage image : foundItemImageRepository.findByFoundItemInOrderBySortOrderAscImageIdAsc(items)) {
+      thumbnails.putIfAbsent(image.getFoundItem().getFoundId(), image.getImageUrl());
+    }
+    return thumbnails;
+  }
+
+  private Map<Long, String> resolveAnimalThumbnails(List<AnimalReport> reports) {
+    if (reports.isEmpty()) {
+      return Map.of();
+    }
+    Map<Long, String> thumbnails = new HashMap<>();
+    for (AnimalReportImage image : animalReportImageRepository.findByAnimalReportInOrderBySortOrderAscImageIdAsc(reports)) {
+      thumbnails.putIfAbsent(image.getAnimalReport().getReportId(), image.getImageUrl());
+    }
+    return thumbnails;
+  }
+
+  private Map<Long, String> resolveMissingPersonThumbnails(List<MissingPersonReport> reports) {
+    if (reports.isEmpty()) {
+      return Map.of();
+    }
+    Map<Long, String> thumbnails = new HashMap<>();
+    for (MissingPersonImage image : missingPersonImageRepository.findByReportInOrderBySortOrderAscImageIdAsc(reports)) {
+      thumbnails.putIfAbsent(image.getReport().getReportId(), image.getImageUrl());
+    }
+    return thumbnails;
   }
 
   private String extractBase64Image(String rawPayload) {

@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -106,16 +107,20 @@ public class AnimalReportService {
 			String detailPlace,
 			Pageable pageable
 	) {
-		return animalReportRepository.findAll(
+		Page<AnimalReport> page = animalReportRepository.findAll(
 				animalReportSearchSpec(reportType, animalType, region, keyword, keywordScope, startDate, endDate, detailPlace),
 				pageable
-		).map(this::toListView);
+		);
+		Map<Long, String> thumbnails = resolveThumbnails(page.getContent());
+		return page.map(report -> toListView(report, thumbnails));
 	}
 
 	@Transactional(readOnly = true)
 	public List<RecentItemView> getRecentItems(int limit) {
 		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "eventDate").and(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "reportId")));
-		return animalReportRepository.findAll(animalReportSearchSpec(null, null, null, null, null, null, null, null), pageable).stream()
+		List<AnimalReport> reports = animalReportRepository.findAll(animalReportSearchSpec(null, null, null, null, null, null, null, null), pageable).getContent();
+		Map<Long, String> thumbnails = resolveThumbnails(reports);
+		return reports.stream()
 				.map(item -> new RecentItemView(
 						item.getReportId(),
 						"ANIMAL",
@@ -126,9 +131,7 @@ public class AnimalReportService {
 						item.getEventDate() != null ? item.getEventDate().atStartOfDay() : null,
 						item.getStatus(),
 						statusLabel(item.getStatus()),
-						animalReportImageRepository.findFirstByAnimalReportOrderBySortOrderAscImageIdAsc(item)
-								.map(AnimalReportImage::getImageUrl)
-								.orElse(PLACEHOLDER_IMAGE),
+						thumbnails.getOrDefault(item.getReportId(), PLACEHOLDER_IMAGE),
 						item.getRegdate()
 				))
 				.toList();
@@ -341,10 +344,19 @@ public class AnimalReportService {
 		}
 	}
 
-	private AnimalReportView toListView(AnimalReport report) {
-		String imageUrl = animalReportImageRepository.findFirstByAnimalReportOrderBySortOrderAscImageIdAsc(report)
-				.map(AnimalReportImage::getImageUrl)
-				.orElse(PLACEHOLDER_IMAGE);
+	private Map<Long, String> resolveThumbnails(List<AnimalReport> reports) {
+		if (reports.isEmpty()) {
+			return Map.of();
+		}
+		Map<Long, String> thumbnails = new HashMap<>();
+		for (AnimalReportImage image : animalReportImageRepository.findByAnimalReportInOrderBySortOrderAscImageIdAsc(reports)) {
+			thumbnails.putIfAbsent(image.getAnimalReport().getReportId(), image.getImageUrl());
+		}
+		return thumbnails;
+	}
+
+	private AnimalReportView toListView(AnimalReport report, Map<Long, String> thumbnails) {
+		String imageUrl = thumbnails.getOrDefault(report.getReportId(), PLACEHOLDER_IMAGE);
 
 		return new AnimalReportView(
 				report.getReportId(),
@@ -709,11 +721,12 @@ public class AnimalReportService {
 
 		Map<Long, AnimalReport> reportMap = animalReportRepository.findAll(combinedSpec).stream()
 				.collect(Collectors.toMap(AnimalReport::getReportId, r -> r));
+		Map<Long, String> thumbnails = resolveThumbnails(reportMap.values().stream().toList());
 
 		return hits.stream()
 				.filter(hit -> reportMap.containsKey(hit.reportId()))
 				.map(hit -> new AnimalImageSearchResult(
-						toListView(reportMap.get(hit.reportId())),
+						toListView(reportMap.get(hit.reportId()), thumbnails),
 						Math.round(hit.score() * 100)
 				))
 				.toList();
@@ -730,12 +743,14 @@ public class AnimalReportService {
 				? animalReportMatchRepository.findByMissingReportId(reportId)
 				: animalReportMatchRepository.findBySightingReportId(reportId);
 
+		List<AnimalReport> candidates = matches.stream()
+				.map(m -> reportType.equals("MISSING") ? m.getSightingReport() : m.getMissingReport())
+				.toList();
+		Map<Long, String> thumbnails = resolveThumbnails(candidates);
+
 		return matches.stream().map(m -> {
 			AnimalReport candidate = reportType.equals("MISSING") ? m.getSightingReport() : m.getMissingReport();
-			String imageUrl = animalReportImageRepository
-					.findFirstByAnimalReportOrderBySortOrderAscImageIdAsc(candidate)
-					.map(AnimalReportImage::getImageUrl)
-					.orElse(PLACEHOLDER_IMAGE);
+			String imageUrl = thumbnails.getOrDefault(candidate.getReportId(), PLACEHOLDER_IMAGE);
 			return new AnimalMatchCandidateView(
 					candidate.getReportId(),
 					candidate.getReportType(),

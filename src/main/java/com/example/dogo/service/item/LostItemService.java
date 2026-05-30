@@ -32,8 +32,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -73,11 +75,13 @@ public class LostItemService {
 
 	@Transactional(readOnly = true)
 	public List<LostItemView> search(String keyword, String category, String area, String status) {
-		return lostItemRepository.findAll(
-						lostItemSearchSpec(keyword, "ALL", category, area, status),
-						Sort.by(Sort.Direction.DESC, "lostAt").and(Sort.by(Sort.Direction.DESC, "lostId"))
-				).stream()
-				.map(this::toListView)
+		List<LostItem> items = lostItemRepository.findAll(
+				lostItemSearchSpec(keyword, "ALL", category, area, status),
+				Sort.by(Sort.Direction.DESC, "lostAt").and(Sort.by(Sort.Direction.DESC, "lostId"))
+		);
+		Map<Long, String> thumbnails = resolveThumbnails(items);
+		return items.stream()
+				.map(item -> toListView(item, thumbnails))
 				.toList();
 	}
 
@@ -95,14 +99,18 @@ public class LostItemService {
 			String status,
 			Pageable pageable
 	) {
-		return lostItemRepository.findAll(lostItemSearchSpec(keyword, keywordScope, category, area, status), pageable)
-				.map(this::toListView);
+		Page<LostItem> page = lostItemRepository.findAll(
+				lostItemSearchSpec(keyword, keywordScope, category, area, status), pageable);
+		Map<Long, String> thumbnails = resolveThumbnails(page.getContent());
+		return page.map(item -> toListView(item, thumbnails));
 	}
 
 	@Transactional(readOnly = true)
 	public List<RecentItemView> getRecentItems(int limit) {
 		Pageable pageable = Pageable.ofSize(limit);
-		return lostItemRepository.findByDeletedFalseOrderByRegDateDescLostIdDesc(pageable).stream()
+		List<LostItem> items = lostItemRepository.findByDeletedFalseOrderByRegDateDescLostIdDesc(pageable);
+		Map<Long, String> thumbnails = resolveThumbnails(items);
+		return items.stream()
 				.map(item -> new RecentItemView(
 						item.getLostId(),
 						"LOST",
@@ -113,9 +121,7 @@ public class LostItemService {
 						item.getLostAt(),
 						item.getStatus(),
 						statusLabel(item.getStatus()),
-						lostItemImageRepository.findFirstByLostItemOrderBySortOrderAscImageIdAsc(item)
-								.map(LostItemImage::getImageUrl)
-								.orElse(PLACEHOLDER_IMAGE),
+						thumbnails.getOrDefault(item.getLostId(), PLACEHOLDER_IMAGE),
 						item.getRegDate()
 				))
 				.toList();
@@ -339,10 +345,19 @@ public class LostItemService {
 		return savedItem.getLostId();
 	}
 
-	private LostItemView toListView(LostItem lostItem) {
-		String imageUrl = lostItemImageRepository.findFirstByLostItemOrderBySortOrderAscImageIdAsc(lostItem)
-				.map(LostItemImage::getImageUrl)
-				.orElse(PLACEHOLDER_IMAGE);
+	private Map<Long, String> resolveThumbnails(List<LostItem> items) {
+		if (items.isEmpty()) {
+			return Map.of();
+		}
+		Map<Long, String> thumbnails = new HashMap<>();
+		for (LostItemImage image : lostItemImageRepository.findByLostItemInOrderBySortOrderAscImageIdAsc(items)) {
+			thumbnails.putIfAbsent(image.getLostItem().getLostId(), image.getImageUrl());
+		}
+		return thumbnails;
+	}
+
+	private LostItemView toListView(LostItem lostItem, Map<Long, String> thumbnails) {
+		String imageUrl = thumbnails.getOrDefault(lostItem.getLostId(), PLACEHOLDER_IMAGE);
 
 		return new LostItemView(
 				lostItem.getLostId(),

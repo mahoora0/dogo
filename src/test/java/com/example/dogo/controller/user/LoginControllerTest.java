@@ -13,6 +13,7 @@ import com.example.dogo.repository.item.FoundItemImageRepository;
 import com.example.dogo.repository.item.ItemMatchRepository;
 import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.animal.AnimalReportMatchRepository;
+import com.example.dogo.repository.animal.AnimalReportImageRepository;
 import com.example.dogo.repository.Support.InquiryRepository;
 import com.example.dogo.repository.ChatMessageRepository;
 import com.example.dogo.repository.ChatRoomRepository;
@@ -46,6 +47,7 @@ class LoginControllerTest {
     private final ItemMatchRepository itemMatchRepository = mock(ItemMatchRepository.class);
     private final AnimalReportRepository animalReportRepository = mock(AnimalReportRepository.class);
     private final AnimalReportMatchRepository animalReportMatchRepository = mock(AnimalReportMatchRepository.class);
+    private final AnimalReportImageRepository animalReportImageRepository = mock(AnimalReportImageRepository.class);
     private final InquiryRepository inquiryRepository = mock(InquiryRepository.class);
     private final ChatMessageRepository chatMessageRepository = mock(ChatMessageRepository.class);
     private final ChatRoomRepository chatRoomRepository = mock(ChatRoomRepository.class);
@@ -66,6 +68,7 @@ class LoginControllerTest {
                     itemMatchRepository,
                     animalReportRepository,
                     animalReportMatchRepository,
+                    animalReportImageRepository,
                     inquiryRepository,
                     chatMessageRepository,
                     chatRoomRepository,
