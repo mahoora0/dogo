@@ -1,7 +1,6 @@
 package com.example.dogo.config;
 
 import com.example.dogo.service.user.CustomOAuth2UserService;
-import com.example.dogo.service.CustomUserDetailsService;
 import com.example.dogo.security.CustomAuthenticationFailureHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
@@ -15,9 +14,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 
 @Configuration
 @EnableWebSecurity
@@ -25,7 +21,6 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final CustomUserDetailsService customUserDetailsService;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final UserDetailsService userDetailsService;
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider;
@@ -50,8 +45,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
 
                 // 비로그인 사용자도 공지사항 목록 및 상세조회가 가능하도록 /notice/** 경로 허용 추가
-                .requestMatchers("/inquiry", "/inqiry").permitAll() // 목록 페이지는 누구나 접근 가능
-                .requestMatchers("/inquiry/**", "/inqiry/**").authenticated() // 상세조회, 등록 등은 로그인 필요
+                .requestMatchers("/inquiry").permitAll() // 목록 페이지는 누구나 접근 가능
+                .requestMatchers("/inquiry/**").authenticated() // 상세조회, 등록 등은 로그인 필요
                 .requestMatchers("/", "/login", "/join", "/find-account", "/api/user/**", "/api/mail/**", "/api/sms/**", "/api/place/**", "/missing-alerts", "/api/missing-alerts/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/animal-reports/**", "/missing-persons/**", "/lost-report", "/lost-report/**", "/areas/**", "/api/areas/**", "/api/police/**", "/api/korail/**", "/api/subway/**", "/api/lost-items/*/rematch", "/api/found-items/*/rematch", "/api/lost-items/*/stream", "/api/found-items/*/stream", "/api/animal-reports/*/stream", "/faq", "/faq/**", "/notice/**", "/guide", "/error", "/uploads/**").permitAll()
                 .requestMatchers("/admin/api/emergency/status").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -74,7 +69,7 @@ public class SecurityConfig {
             .rememberMe(remember -> remember
                 .key("uniqueAndSecret")
                 .tokenValiditySeconds(86400 * 30) // 30일 유지
-                .userDetailsService(clientRegistrationRepositoryProvider.getIfAvailable() == null ? null : null) // Will be auto-injected if bean exists
+                .userDetailsService(userDetailsService)
             );
 
         ClientRegistrationRepository clientRegistrationRepository = clientRegistrationRepositoryProvider.getIfAvailable();
