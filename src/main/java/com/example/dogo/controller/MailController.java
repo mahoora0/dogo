@@ -69,4 +69,16 @@ public class MailController {
             return ResponseEntity.badRequest().body("인증 번호가 일치하지 않거나 만료되었습니다.");
         }
     }
+
+    @PostMapping("/verify-for-reset")
+    public ResponseEntity<?> verifyCodeForPasswordReset(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String code = request.get("code");
+        String resetToken = mailService.verifyCodeAndIssuePasswordResetToken(email, code);
+
+        if (resetToken == null) {
+            return ResponseEntity.badRequest().body("인증 번호가 일치하지 않거나 만료되었습니다.");
+        }
+        return ResponseEntity.ok(Map.of("resetToken", resetToken));
+    }
 }

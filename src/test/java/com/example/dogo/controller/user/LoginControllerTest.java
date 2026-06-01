@@ -5,6 +5,7 @@ import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.repository.user.UserSocialAccountRepository;
 import com.example.dogo.service.user.ProfileService;
 import com.example.dogo.service.OAuth2Service;
+import com.example.dogo.service.MailService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -54,6 +56,7 @@ class LoginControllerTest {
     private final OAuth2Service oauth2Service = mock(OAuth2Service.class);
     private final MissingPersonRepository missingPersonRepository = mock(MissingPersonRepository.class);
     private final MissingPersonImageRepository missingPersonImageRepository = mock(MissingPersonImageRepository.class);
+    private final MailService mailService = mock(MailService.class);
 
     private final MockMvc mockMvc = MockMvcBuilders
             .standaloneSetup(new LoginController(
@@ -74,7 +77,8 @@ class LoginControllerTest {
                     chatRoomRepository,
                     oauth2Service,
                     missingPersonRepository,
-                    missingPersonImageRepository
+                    missingPersonImageRepository,
+                    mailService
             ))
             .build();
 
@@ -83,8 +87,6 @@ class LoginControllerTest {
         User user = mock(User.class);
         when(user.getNickname()).thenReturn("테스트유저");
         when(user.getProfileImageUrl()).thenReturn("/uploads/profiles/test.png");
-        when(user.getEmail()).thenReturn("test@dogo.com");
-        when(user.getPhone()).thenReturn("010-1234-5678");
         when(user.getRegDate()).thenReturn(LocalDateTime.of(2026, 5, 20, 10, 0));
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -95,11 +97,54 @@ class LoginControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nickname", is("테스트유저")))
                 .andExpect(jsonPath("$.profileImageUrl", is("/uploads/profiles/test.png")))
-                .andExpect(jsonPath("$.email", is("test@dogo.com")))
-                .andExpect(jsonPath("$.phone", is("010-1234-5678")))
+                .andExpect(jsonPath("$.email").doesNotExist())
+                .andExpect(jsonPath("$.phone").doesNotExist())
                 .andExpect(jsonPath("$.regDate", is("2026.05.20")))
                 .andExpect(jsonPath("$.lostCount", is(0)))
                 .andExpect(jsonPath("$.foundCount", is(0)));
+    }
+
+    @Test
+    void resetPasswordRejectsRequestWithoutVerificationToken() throws Exception {
+        mockMvc.perform(post("/api/user/reset-password")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "loginId": "tester",
+                                  "email": "test@dogo.com",
+                                  "password": "newPassword!",
+                                  "passwordConfirm": "newPassword!"
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(mailService);
+    }
+
+    @Test
+    void resetPasswordUpdatesPasswordAfterValidVerificationToken() throws Exception {
+        User user = mock(User.class);
+        when(user.getEmail()).thenReturn("test@dogo.com");
+        when(user.getPassword()).thenReturn("old-password-hash");
+        when(userRepository.findByLoginId("tester")).thenReturn(Optional.of(user));
+        when(mailService.consumePasswordResetToken("valid-token", "test@dogo.com")).thenReturn(true);
+        when(passwordEncoder.encode("newPassword!")).thenReturn("new-password-hash");
+
+        mockMvc.perform(post("/api/user/reset-password")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "loginId": "tester",
+                                  "email": "test@dogo.com",
+                                  "password": "newPassword!",
+                                  "passwordConfirm": "newPassword!",
+                                  "resetToken": "valid-token"
+                                }
+                                """))
+                .andExpect(status().isOk());
+
+        verify(user).setPassword("new-password-hash");
+        verify(userRepository).save(user);
     }
 
     @Test

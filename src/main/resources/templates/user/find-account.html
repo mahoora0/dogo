@@ -166,6 +166,7 @@
     let currentTab = 'id';
     let isIdEmailVerified = false;
     let isPwEmailVerified = false;
+    let passwordResetToken = null;
 
     // 알림창 제어
     function showAlert(message, type = 'error') {
@@ -269,13 +270,13 @@
       }
 
       try {
-        const response = await fetch('/api/mail/verify', {
+        const response = await fetch(type === 'pw' ? '/api/mail/verify-for-reset' : '/api/mail/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, code })
         });
 
-        const data = await response.text();
+        const data = type === 'pw' && response.ok ? await response.json() : await response.text();
 
         if (response.ok) {
           showAlert('본인인증이 완료되었습니다.', 'success');
@@ -283,6 +284,7 @@
             isIdEmailVerified = true;
           } else {
             isPwEmailVerified = true;
+            passwordResetToken = data.resetToken;
             // 새 비밀번호 입력란 부드럽게 노출
             document.getElementById('newPwSection').classList.remove('hidden');
           }
@@ -421,7 +423,7 @@
         const response = await fetch('/api/user/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ loginId, email, password, passwordConfirm })
+          body: JSON.stringify({ loginId, email, password, passwordConfirm, resetToken: passwordResetToken })
         });
 
         const data = await response.json();

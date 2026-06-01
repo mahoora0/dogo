@@ -5,7 +5,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.util.Random;
+import java.security.SecureRandom;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -13,10 +14,13 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class MailService {
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private final JavaMailSender mailSender;
     
     // In-memory storage for verification codes: <email, VerificationInfo>
     private final ConcurrentHashMap<String, VerificationInfo> verificationCodes = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, PasswordResetTokenInfo> passwordResetTokens = new ConcurrentHashMap<>();
 
     private static class VerificationInfo {
         String code;
@@ -24,6 +28,20 @@ public class MailService {
 
         VerificationInfo(String code, long durationMillis) {
             this.code = code;
+            this.expiryTime = System.currentTimeMillis() + durationMillis;
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() > expiryTime;
+        }
+    }
+
+    private static class PasswordResetTokenInfo {
+        String email;
+        long expiryTime;
+
+        PasswordResetTokenInfo(String email, long durationMillis) {
+            this.email = email;
             this.expiryTime = System.currentTimeMillis() + durationMillis;
         }
 
@@ -69,8 +87,30 @@ public class MailService {
         return false;
     }
 
+    public String verifyCodeAndIssuePasswordResetToken(String email, String code) {
+        if (!verifyCode(email, code)) {
+            return null;
+        }
+
+        String token = UUID.randomUUID().toString();
+        passwordResetTokens.put(token, new PasswordResetTokenInfo(email, TimeUnit.MINUTES.toMillis(10)));
+        return token;
+    }
+
+    public boolean consumePasswordResetToken(String token, String email) {
+        if (token == null || email == null) {
+            return false;
+        }
+
+        PasswordResetTokenInfo info = passwordResetTokens.get(token);
+        if (info == null || info.isExpired() || !info.email.equals(email)) {
+            passwordResetTokens.remove(token);
+            return false;
+        }
+        return passwordResetTokens.remove(token, info);
+    }
+
     private String generateRandomCode() {
-        Random random = new Random();
-        return String.format("%06d", random.nextInt(1000000));
+        return String.format("%06d", SECURE_RANDOM.nextInt(1000000));
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.security.Principal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.eq;
@@ -55,10 +56,12 @@ class ChatControllerTest {
                 .type("TALK")
                 .build();
 
-        when(chatService.saveMessage(message)).thenReturn(saved);
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn("sender");
+        when(chatService.saveMessage(message, "sender")).thenReturn(saved);
         when(chatService.getChatParticipantUserNos(7L)).thenReturn(java.util.List.of(1L, 2L));
 
-        controller.message(message);
+        controller.message(message, principal);
 
         verify(messagingTemplate).convertAndSend("/sub/chat/room/7", saved);
         verify(messagingTemplate).convertAndSend(eq("/sub/users/2/messages"), eq(saved));
@@ -84,7 +87,7 @@ class ChatControllerTest {
                 .clientMessageId("client-1")
                 .build();
 
-        when(chatService.saveMessage(org.mockito.ArgumentMatchers.any())).thenReturn(saved);
+        when(chatService.saveMessage(org.mockito.ArgumentMatchers.any(), eq(user))).thenReturn(saved);
         when(chatService.getChatParticipantUserNos(7L)).thenReturn(java.util.List.of(1L, 2L));
 
         com.example.dogo.dto.ChatMessageDto response = controller.sendMessage(7L, request, userDetails);
@@ -108,7 +111,7 @@ class ChatControllerTest {
                         .build()
         );
 
-        when(chatService.getChatMessages(7L)).thenReturn(messages);
+        when(chatService.getChatMessages(7L, user)).thenReturn(messages);
 
         List<com.example.dogo.dto.ChatMessageDto> response = controller.getMessages(7L, userDetails);
 

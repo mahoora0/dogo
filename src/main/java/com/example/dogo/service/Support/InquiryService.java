@@ -201,7 +201,7 @@ public class InquiryService {
                 inquiry.getCategory(),
                 categoryLabel(inquiry.getCategory()),
                 displayTitle,
-                inquiry.getContent(),
+                isSecret ? "" : inquiry.getContent(),
                 createdAt,
                 statusLabel(inquiry.getStatus()),
                 isSecret

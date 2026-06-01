@@ -72,6 +72,7 @@ public class LoginController {
   private final OAuth2Service oauth2Service;
   private final MissingPersonRepository missingPersonRepository;
   private final MissingPersonImageRepository missingPersonImageRepository;
+  private final com.example.dogo.service.MailService mailService;
 
   @GetMapping("/login")
   public String loginPage(@RequestParam(value = "error", required = false) String error,
@@ -132,9 +133,11 @@ public class LoginController {
     String email = request.get("email");
     String password = request.get("password");
     String passwordConfirm = request.get("passwordConfirm");
+    String resetToken = request.get("resetToken");
 
     if (loginId == null || loginId.isEmpty() || email == null || email.isEmpty() ||
-        password == null || password.isEmpty() || passwordConfirm == null || passwordConfirm.isEmpty()) {
+        password == null || password.isEmpty() || passwordConfirm == null || passwordConfirm.isEmpty() ||
+        resetToken == null || resetToken.isEmpty()) {
       return ResponseEntity.badRequest().body("모든 필드를 입력해주세요.");
     }
 
@@ -161,6 +164,10 @@ public class LoginController {
       // 비밀번호 일치 검사
       if (!password.equals(passwordConfirm)) {
         return ResponseEntity.badRequest().body("비밀번호가 일치하지 않습니다.");
+      }
+
+      if (!mailService.consumePasswordResetToken(resetToken, email)) {
+        return ResponseEntity.badRequest().body("이메일 인증이 만료되었거나 유효하지 않습니다.");
       }
 
       // 패스워드 암호화 및 업데이트
@@ -191,8 +198,6 @@ public class LoginController {
             return ResponseEntity.ok(java.util.Map.of(
                 "nickname", user.getNickname(),
                 "profileImageUrl", user.getProfileImageUrl() != null ? user.getProfileImageUrl() : "/images/logoNoName.png",
-                "email", user.getEmail() != null ? user.getEmail() : "이메일 없음",
-                "phone", user.getPhone() != null ? user.getPhone() : "연락처 없음",
                 "regDate", user.getRegDate() != null ? user.getRegDate().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")) : "가입일 없음",
                 "lostCount", lostCount,
                 "foundCount", foundCount
