@@ -9,6 +9,7 @@ import com.example.dogo.dto.item.RecentItemView;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.entity.item.FoundItemImage;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.service.upload.UploadFileValidator;
 import com.example.dogo.repository.item.FoundItemImageRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
@@ -30,8 +31,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -80,14 +83,18 @@ public class FoundItemService {
 			String status,
 			Pageable pageable
 	) {
-		return foundItemRepository.findAll(foundItemSearchSpec(keyword, keywordScope, category, area, status), pageable)
-				.map(this::toListView);
+		Page<FoundItem> page = foundItemRepository.findAll(
+				foundItemSearchSpec(keyword, keywordScope, category, area, status), pageable);
+		Map<Long, String> thumbnails = resolveThumbnails(page.getContent());
+		return page.map(item -> toListView(item, thumbnails));
 	}
 
 	@Transactional(readOnly = true)
 	public List<RecentItemView> getRecentItems(int limit) {
 		Pageable pageable = Pageable.ofSize(limit);
-		return foundItemRepository.findByDeletedFalseOrderByRegDateDescFoundIdDesc(pageable).stream()
+		List<FoundItem> items = foundItemRepository.findByDeletedFalseOrderByRegDateDescFoundIdDesc(pageable);
+		Map<Long, String> thumbnails = resolveThumbnails(items);
+		return items.stream()
 				.map(item -> new RecentItemView(
 						item.getFoundId(),
 						"FOUND",
@@ -98,9 +105,7 @@ public class FoundItemService {
 						item.getFoundAt(),
 						item.getStatus(),
 						statusLabel(item.getStatus()),
-						foundItemImageRepository.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(item)
-								.map(FoundItemImage::getImageUrl)
-								.orElse(PLACEHOLDER_IMAGE),
+						thumbnails.getOrDefault(item.getFoundId(), PLACEHOLDER_IMAGE),
 						item.getRegDate()
 				))
 				.toList();
@@ -320,10 +325,19 @@ public class FoundItemService {
 		return savedItem.getFoundId();
 	}
 
-	private FoundItemView toListView(FoundItem foundItem) {
-		String imageUrl = foundItemImageRepository.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(foundItem)
-				.map(FoundItemImage::getImageUrl)
-				.orElse(PLACEHOLDER_IMAGE);
+	private Map<Long, String> resolveThumbnails(List<FoundItem> items) {
+		if (items.isEmpty()) {
+			return Map.of();
+		}
+		Map<Long, String> thumbnails = new HashMap<>();
+		for (FoundItemImage image : foundItemImageRepository.findByFoundItemInOrderBySortOrderAscImageIdAsc(items)) {
+			thumbnails.putIfAbsent(image.getFoundItem().getFoundId(), image.getImageUrl());
+		}
+		return thumbnails;
+	}
+
+	private FoundItemView toListView(FoundItem foundItem, Map<Long, String> thumbnails) {
+		String imageUrl = thumbnails.getOrDefault(foundItem.getFoundId(), PLACEHOLDER_IMAGE);
 
 		return new FoundItemView(
 				foundItem.getFoundId(),
@@ -356,7 +370,7 @@ public class FoundItemService {
 			Files.createDirectories(foundItemUploadPath);
 
 			String originalName = StringUtils.cleanPath(String.valueOf(image.getOriginalFilename()));
-			String extension = extractExtension(originalName);
+			String extension = UploadFileValidator.imageExtension(image);
 			String storedName = UUID.randomUUID() + extension;
 			Path targetPath = foundItemUploadPath.resolve(storedName).normalize();
 			if (!targetPath.startsWith(foundItemUploadPath)) {
@@ -437,17 +451,6 @@ public class FoundItemService {
 			return province.trim();
 		}
 		return blankToNull(fallback);
-	}
-
-	private String extractExtension(String filename) {
-		if (!StringUtils.hasText(filename) || !filename.contains(".")) {
-			return "";
-		}
-		String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
-		if (extension.length() > 12) {
-			return "";
-		}
-		return extension;
 	}
 
 	private String statusLabel(String status) {

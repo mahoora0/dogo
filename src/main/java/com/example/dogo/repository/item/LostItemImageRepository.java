@@ -12,4 +12,6 @@ public interface LostItemImageRepository extends JpaRepository<LostItemImage, Lo
 	Optional<LostItemImage> findFirstByLostItemOrderBySortOrderAscImageIdAsc(LostItem lostItem);
 
 	List<LostItemImage> findByLostItemOrderBySortOrderAscImageIdAsc(LostItem lostItem);
+
+	List<LostItemImage> findByLostItemInOrderBySortOrderAscImageIdAsc(List<LostItem> lostItems);
 }

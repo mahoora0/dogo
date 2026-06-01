@@ -69,4 +69,34 @@ public class MailController {
             return ResponseEntity.badRequest().body("인증 번호가 일치하지 않거나 만료되었습니다.");
         }
     }
+
+    @PostMapping("/verify-for-reset")
+    public ResponseEntity<?> verifyCodeForPasswordReset(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String code = request.get("code");
+        String resetToken = mailService.verifyCodeAndIssuePasswordResetToken(email, code);
+
+        if (resetToken == null) {
+            return ResponseEntity.badRequest().body("인증 번호가 일치하지 않거나 만료되었습니다.");
+        }
+        return ResponseEntity.ok(Map.of("resetToken", resetToken));
+    }
+
+    @PostMapping("/verify-for-join")
+    public ResponseEntity<?> verifyCodeForJoin(@RequestBody Map<String, String> request) {
+        return verifyCodeAndIssueToken(request, MailService.VerificationPurpose.JOIN);
+    }
+
+    @PostMapping("/verify-for-find-id")
+    public ResponseEntity<?> verifyCodeForFindId(@RequestBody Map<String, String> request) {
+        return verifyCodeAndIssueToken(request, MailService.VerificationPurpose.FIND_ID);
+    }
+
+    private ResponseEntity<?> verifyCodeAndIssueToken(Map<String, String> request, MailService.VerificationPurpose purpose) {
+        String token = mailService.verifyCodeAndIssueToken(request.get("email"), request.get("code"), purpose);
+        if (token == null) {
+            return ResponseEntity.badRequest().body("인증 번호가 일치하지 않거나 만료되었습니다.");
+        }
+        return ResponseEntity.ok(Map.of("verificationToken", token));
+    }
 }

@@ -59,12 +59,12 @@ class ChatServiceTest {
         User sender = mock(User.class);
         
         when(chatRoomRepository.findById(roomId)).thenReturn(Optional.of(room));
-        when(userRepository.findById(senderNo)).thenReturn(Optional.of(sender));
+        when(room.getInquirer()).thenReturn(sender);
         when(sender.getUserNo()).thenReturn(senderNo);
         when(sender.getNickname()).thenReturn("테스터");
 
         // when
-        ChatMessageDto result = chatService.saveMessage(dto);
+        ChatMessageDto result = chatService.saveMessage(dto, sender);
 
         // then
         assertEquals("안녕하세요", result.getContent());
@@ -87,9 +87,10 @@ class ChatServiceTest {
         User sender = mock(User.class);
 
         when(chatRoomRepository.findById(roomId)).thenReturn(Optional.of(room));
-        when(userRepository.findById(senderNo)).thenReturn(Optional.of(sender));
+        when(room.getInquirer()).thenReturn(sender);
+        when(sender.getUserNo()).thenReturn(senderNo);
 
-        assertThrows(IllegalArgumentException.class, () -> chatService.saveMessage(dto));
+        assertThrows(IllegalArgumentException.class, () -> chatService.saveMessage(dto, sender));
         verify(chatMessageRepository, never()).save(any());
     }
 
@@ -147,7 +148,7 @@ class ChatServiceTest {
     @Test
     @DisplayName("저장된 메시지 이력 조회는 지연 로딩을 처리할 수 있도록 읽기 트랜잭션에서 실행한다")
     void getChatMessagesRunsInReadOnlyTransaction() throws Exception {
-        Method method = ChatService.class.getMethod("getChatMessages", Long.class);
+        Method method = ChatService.class.getMethod("getChatMessages", Long.class, User.class);
         Transactional transactional = method.getAnnotation(Transactional.class);
 
         assertTrue(transactional != null && transactional.readOnly());
@@ -249,6 +250,8 @@ class ChatServiceTest {
         ChatRoom room = mock(ChatRoom.class);
 
         when(chatRoomRepository.findById(7L)).thenReturn(Optional.of(room));
+        when(room.getInquirer()).thenReturn(user);
+        when(user.getUserNo()).thenReturn(1L);
 
         chatService.markRoomMessagesAsRead(7L, user);
 
@@ -268,6 +271,7 @@ class ChatServiceTest {
         when(multipartFile.getOriginalFilename()).thenReturn("test_file.txt");
         when(multipartFile.getSize()).thenReturn(1024L);
         when(chatRoomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(room.getInquirer()).thenReturn(sender);
         when(sender.getUserNo()).thenReturn(1L);
         when(sender.getNickname()).thenReturn("테스터");
 
@@ -302,6 +306,7 @@ class ChatServiceTest {
         when(second.getContentType()).thenReturn("image/jpeg");
         when(second.getSize()).thenReturn(200L);
         when(chatRoomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(room.getInquirer()).thenReturn(sender);
         when(sender.getUserNo()).thenReturn(1L);
         when(sender.getNickname()).thenReturn("sender");
 
@@ -314,5 +319,61 @@ class ChatServiceTest {
         verify(chatMessageRepository, times(2)).save(any());
         verify(first, times(1)).transferTo(any(java.nio.file.Path.class));
         verify(second, times(1)).transferTo(any(java.nio.file.Path.class));
+    }
+
+    @Test
+    @DisplayName("채팅방 비참여자는 메시지를 저장할 수 없다")
+    void saveMessageRejectsNonParticipant() {
+        ChatMessageDto dto = ChatMessageDto.builder()
+                .roomId(7L)
+                .content("침입 메시지")
+                .type("TALK")
+                .build();
+        User outsider = mock(User.class);
+        User inquirer = mock(User.class);
+        User owner = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(outsider.getUserNo()).thenReturn(3L);
+        when(inquirer.getUserNo()).thenReturn(1L);
+        when(owner.getUserNo()).thenReturn(2L);
+        when(room.getInquirer()).thenReturn(inquirer);
+        when(room.getOwner()).thenReturn(owner);
+        when(chatRoomRepository.findById(7L)).thenReturn(Optional.of(room));
+
+        assertThrows(ChatUnavailableException.class, () -> chatService.saveMessage(dto, outsider));
+        verify(chatMessageRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("채팅방 비참여자는 STOMP 방 채널을 구독할 수 없다")
+    void authorizeSubscriptionRejectsNonParticipantRoomChannel() {
+        User outsider = mock(User.class);
+        User inquirer = mock(User.class);
+        User owner = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(userRepository.findByEmail("outsider@example.com")).thenReturn(Optional.of(outsider));
+        when(outsider.getUserNo()).thenReturn(3L);
+        when(inquirer.getUserNo()).thenReturn(1L);
+        when(owner.getUserNo()).thenReturn(2L);
+        when(room.getInquirer()).thenReturn(inquirer);
+        when(room.getOwner()).thenReturn(owner);
+        when(chatRoomRepository.findById(7L)).thenReturn(Optional.of(room));
+
+        assertThrows(ChatUnavailableException.class,
+                () -> chatService.authorizeSubscription("/sub/chat/room/7", "outsider@example.com"));
+    }
+
+    @Test
+    @DisplayName("사용자는 다른 사용자의 STOMP 알림 채널을 구독할 수 없다")
+    void authorizeSubscriptionRejectsOtherUserNotificationChannel() {
+        User user = mock(User.class);
+
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+        when(user.getUserNo()).thenReturn(1L);
+
+        assertThrows(ChatUnavailableException.class,
+                () -> chatService.authorizeSubscription("/sub/users/2/messages", "user@example.com"));
     }
 }

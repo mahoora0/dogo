@@ -7,6 +7,7 @@ import com.example.dogo.dto.missing.MissingPersonView;
 import com.example.dogo.entity.missing.MissingPersonImage;
 import com.example.dogo.entity.missing.MissingPersonReport;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.service.upload.UploadFileValidator;
 import com.example.dogo.repository.missing.MissingPersonImageRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
 import com.example.dogo.repository.user.UserRepository;
@@ -23,8 +24,11 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -51,8 +55,9 @@ public class MissingPersonService {
 
 	@Transactional(readOnly = true)
 	public Page<MissingPersonView> search(String keyword, String status, String sourceType, Pageable pageable) {
-		return missingPersonRepository.findAll(searchSpec(keyword, status, sourceType), pageable)
-				.map(this::toListView);
+		Page<MissingPersonReport> page = missingPersonRepository.findAll(searchSpec(keyword, status, sourceType), pageable);
+		Map<Long, List<String>> imageUrls = resolveImageUrls(page.getContent());
+		return page.map(report -> toListView(report, imageUrls));
 	}
 
 	@Transactional(readOnly = true)
@@ -63,7 +68,9 @@ public class MissingPersonService {
 	@Transactional(readOnly = true)
 	public List<RecentItemView> getRecentItems(int limit) {
 		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "occurredAt").and(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "reportId")));
-		return missingPersonRepository.findAll(searchSpec(null, null, null), pageable).stream()
+		List<MissingPersonReport> reports = missingPersonRepository.findAll(searchSpec(null, null, null), pageable).getContent();
+		Map<Long, String> thumbnails = resolveThumbnails(reports);
+		return reports.stream()
 				.map(item -> new RecentItemView(
 						item.getReportId(),
 						"PERSON",
@@ -74,7 +81,7 @@ public class MissingPersonService {
 						item.getOccurredAt(),
 						item.getStatus(),
 						statusLabel(item.getStatus()),
-						thumbnailImageUrl(item),
+						thumbnailImageUrl(item, thumbnails),
 						item.getRegdate()
 				))
 				.toList();
@@ -120,7 +127,7 @@ public class MissingPersonService {
 			Files.createDirectories(missingPersonUploadPath);
 
 			String originalName = StringUtils.cleanPath(String.valueOf(image.getOriginalFilename()));
-			String extension = extractExtension(originalName);
+			String extension = UploadFileValidator.imageExtension(image);
 			String storedName = UUID.randomUUID() + extension;
 			Path targetPath = missingPersonUploadPath.resolve(storedName).normalize();
 			if (!targetPath.startsWith(missingPersonUploadPath)) {
@@ -143,27 +150,14 @@ public class MissingPersonService {
 		}
 	}
 
-	private String extractExtension(String filename) {
-		if (!StringUtils.hasText(filename) || !filename.contains(".")) {
-			return "";
-		}
-		String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
-		if (extension.length() > 12) {
-			return "";
-		}
-		return extension;
-	}
-
 	private List<String> findImageUrls(MissingPersonReport report) {
 		return missingPersonImageRepository.findByReportOrderBySortOrderAscImageIdAsc(report).stream()
 				.map(MissingPersonImage::getImageUrl)
 				.toList();
 	}
 
-	private String thumbnailImageUrl(MissingPersonReport report) {
-		return missingPersonImageRepository.findFirstByReportOrderBySortOrderAscImageIdAsc(report)
-				.map(MissingPersonImage::getImageUrl)
-				.orElseGet(() -> extractBase64Image(report.getRawPayload()));
+	private String thumbnailImageUrl(MissingPersonReport report, Map<Long, String> thumbnails) {
+		return thumbnails.getOrDefault(report.getReportId(), extractBase64Image(report.getRawPayload()));
 	}
 
 	@Transactional(readOnly = true)
@@ -199,7 +193,30 @@ public class MissingPersonService {
 		};
 	}
 
-	private MissingPersonView toListView(MissingPersonReport report) {
+	private Map<Long, String> resolveThumbnails(List<MissingPersonReport> reports) {
+		if (reports.isEmpty()) {
+			return Map.of();
+		}
+		Map<Long, String> thumbnails = new HashMap<>();
+		for (MissingPersonImage image : missingPersonImageRepository.findByReportInOrderBySortOrderAscImageIdAsc(reports)) {
+			thumbnails.putIfAbsent(image.getReport().getReportId(), image.getImageUrl());
+		}
+		return thumbnails;
+	}
+
+	private Map<Long, List<String>> resolveImageUrls(List<MissingPersonReport> reports) {
+		if (reports.isEmpty()) {
+			return Map.of();
+		}
+		Map<Long, List<String>> imageUrls = new HashMap<>();
+		for (MissingPersonImage image : missingPersonImageRepository.findByReportInOrderBySortOrderAscImageIdAsc(reports)) {
+			imageUrls.computeIfAbsent(image.getReport().getReportId(), ignored -> new ArrayList<>())
+					.add(image.getImageUrl());
+		}
+		return imageUrls;
+	}
+
+	private MissingPersonView toListView(MissingPersonReport report, Map<Long, List<String>> imageUrls) {
 		return new MissingPersonView(
 				report.getReportId(),
 				summary(report),
@@ -219,7 +236,7 @@ public class MissingPersonService {
 				report.getSourceType(),
 				report.getSourceLabel(),
 				extractBase64Image(report.getRawPayload()),
-				findImageUrls(report)
+				imageUrls.getOrDefault(report.getReportId(), List.of())
 		);
 	}
 

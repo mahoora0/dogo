@@ -7,14 +7,17 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class SmsService {
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Value("${twilio.account-sid}")
     private String accountSid;
@@ -30,6 +33,10 @@ public class SmsService {
 
     @PostConstruct
     public void init() {
+        if (!StringUtils.hasText(accountSid) || !StringUtils.hasText(authToken)) {
+            log.info("Twilio credentials are not configured. SMS verification will run in development logging mode.");
+            return;
+        }
         Twilio.init(accountSid, authToken);
     }
 
@@ -83,8 +90,7 @@ public class SmsService {
     }
 
     private String generateRandomCode() {
-        Random random = new Random();
-        return String.format("%06d", random.nextInt(1000000));
+        return String.format("%06d", SECURE_RANDOM.nextInt(1000000));
     }
 
     private String formatToE164(String phone) {
