@@ -99,9 +99,13 @@ public class LoginController {
   @ResponseBody
   public ResponseEntity<?> findId(@RequestBody java.util.Map<String, String> request) {
     String email = request.get("email");
+    String verificationToken = request.get("verificationToken");
 
-    if (email == null || email.isEmpty()) {
+    if (email == null || email.isEmpty() || verificationToken == null || verificationToken.isEmpty()) {
       return ResponseEntity.badRequest().body("이메일을 입력해주세요.");
+    }
+    if (!mailService.consumeToken(verificationToken, email, com.example.dogo.service.MailService.VerificationPurpose.FIND_ID)) {
+      return ResponseEntity.badRequest().body("이메일 인증이 만료되었거나 유효하지 않습니다.");
     }
 
     java.util.Optional<com.example.dogo.entity.user.User> userOpt = userRepository.findByEmail(email);
@@ -478,6 +482,12 @@ public class LoginController {
 
   @PostMapping("/join")
   public String joinProcess(@ModelAttribute com.example.dogo.dto.user.UserJoinDto userJoinDto) {
+    if (!mailService.consumeToken(
+            userJoinDto.getEmailVerificationToken(),
+            userJoinDto.getEmail(),
+            com.example.dogo.service.MailService.VerificationPurpose.JOIN)) {
+      return "redirect:/join?error=verification";
+    }
 
     // 프로필 이미지 저장
     String profileImageUrl = profileService.saveProfileImage(userJoinDto.getProfileImage());

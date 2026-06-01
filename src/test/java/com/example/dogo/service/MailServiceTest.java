@@ -36,4 +36,26 @@ class MailServiceTest {
         assertTrue(mailService.consumePasswordResetToken(token, email));
         assertFalse(mailService.consumePasswordResetToken(token, email));
     }
+
+    @Test
+    void verificationTokenCannotBeUsedForAnotherPurpose() {
+        JavaMailSender mailSender = mock(JavaMailSender.class);
+        MailService mailService = new MailService(mailSender);
+        String email = "user@example.com";
+
+        mailService.sendVerificationCodeForFind(email);
+
+        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender).send(messageCaptor.capture());
+        Matcher codeMatcher = Pattern.compile("\\[(\\d{6})]").matcher(messageCaptor.getValue().getText());
+        assertTrue(codeMatcher.find());
+
+        String token = mailService.verifyCodeAndIssueToken(
+                email,
+                codeMatcher.group(1),
+                MailService.VerificationPurpose.FIND_ID
+        );
+
+        assertFalse(mailService.consumeToken(token, email, MailService.VerificationPurpose.JOIN));
+    }
 }

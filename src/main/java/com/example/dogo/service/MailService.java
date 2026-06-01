@@ -20,7 +20,13 @@ public class MailService {
     
     // In-memory storage for verification codes: <email, VerificationInfo>
     private final ConcurrentHashMap<String, VerificationInfo> verificationCodes = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, PasswordResetTokenInfo> passwordResetTokens = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, VerificationTokenInfo> verificationTokens = new ConcurrentHashMap<>();
+
+    public enum VerificationPurpose {
+        JOIN,
+        FIND_ID,
+        PASSWORD_RESET
+    }
 
     private static class VerificationInfo {
         String code;
@@ -36,12 +42,14 @@ public class MailService {
         }
     }
 
-    private static class PasswordResetTokenInfo {
+    private static class VerificationTokenInfo {
         String email;
+        VerificationPurpose purpose;
         long expiryTime;
 
-        PasswordResetTokenInfo(String email, long durationMillis) {
+        VerificationTokenInfo(String email, VerificationPurpose purpose, long durationMillis) {
             this.email = email;
+            this.purpose = purpose;
             this.expiryTime = System.currentTimeMillis() + durationMillis;
         }
 
@@ -88,26 +96,34 @@ public class MailService {
     }
 
     public String verifyCodeAndIssuePasswordResetToken(String email, String code) {
+        return verifyCodeAndIssueToken(email, code, VerificationPurpose.PASSWORD_RESET);
+    }
+
+    public String verifyCodeAndIssueToken(String email, String code, VerificationPurpose purpose) {
         if (!verifyCode(email, code)) {
             return null;
         }
 
         String token = UUID.randomUUID().toString();
-        passwordResetTokens.put(token, new PasswordResetTokenInfo(email, TimeUnit.MINUTES.toMillis(10)));
+        verificationTokens.put(token, new VerificationTokenInfo(email, purpose, TimeUnit.MINUTES.toMillis(10)));
         return token;
     }
 
     public boolean consumePasswordResetToken(String token, String email) {
+        return consumeToken(token, email, VerificationPurpose.PASSWORD_RESET);
+    }
+
+    public boolean consumeToken(String token, String email, VerificationPurpose purpose) {
         if (token == null || email == null) {
             return false;
         }
 
-        PasswordResetTokenInfo info = passwordResetTokens.get(token);
-        if (info == null || info.isExpired() || !info.email.equals(email)) {
-            passwordResetTokens.remove(token);
+        VerificationTokenInfo info = verificationTokens.get(token);
+        if (info == null || info.isExpired() || !info.email.equals(email) || info.purpose != purpose) {
+            verificationTokens.remove(token);
             return false;
         }
-        return passwordResetTokens.remove(token, info);
+        return verificationTokens.remove(token, info);
     }
 
     private String generateRandomCode() {

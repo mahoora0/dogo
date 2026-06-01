@@ -32,6 +32,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -145,6 +146,57 @@ class LoginControllerTest {
 
         verify(user).setPassword("new-password-hash");
         verify(userRepository).save(user);
+    }
+
+    @Test
+    void findIdRejectsRequestWithoutVerificationToken() throws Exception {
+        mockMvc.perform(post("/api/user/find-id")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "email": "test@dogo.com"
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(mailService);
+    }
+
+    @Test
+    void findIdReturnsMaskedIdAfterValidVerificationToken() throws Exception {
+        User user = mock(User.class);
+        when(mailService.consumeToken(
+                "find-id-token",
+                "test@dogo.com",
+                MailService.VerificationPurpose.FIND_ID
+        )).thenReturn(true);
+        when(userRepository.findByEmail("test@dogo.com")).thenReturn(Optional.of(user));
+        when(user.getLoginId()).thenReturn("tester");
+
+        mockMvc.perform(post("/api/user/find-id")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "email": "test@dogo.com",
+                                  "verificationToken": "find-id-token"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.loginId", is("tes***")));
+    }
+
+    @Test
+    void joinRejectsRequestWithoutEmailVerificationToken() throws Exception {
+        mockMvc.perform(multipart("/join")
+                        .param("loginId", "tester")
+                        .param("nickname", "테스터")
+                        .param("password", "newPassword!")
+                        .param("passwordConfirm", "newPassword!")
+                        .param("email", "test@dogo.com"))
+                .andExpect(status().is3xxRedirection());
+
+        verify(userRepository, never()).save(any(User.class));
+        verifyNoInteractions(profileService);
     }
 
     @Test
