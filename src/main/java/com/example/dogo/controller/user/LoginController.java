@@ -186,8 +186,6 @@ public class LoginController {
             return ResponseEntity.ok(java.util.Map.of(
                 "nickname", user.getNickname(),
                 "profileImageUrl", user.getProfileImageUrl() != null ? user.getProfileImageUrl() : "/images/logoNoName.png",
-                "email", user.getEmail() != null ? user.getEmail() : "이메일 없음",
-                "phone", user.getPhone() != null ? user.getPhone() : "연락처 없음",
                 "regDate", user.getRegDate() != null ? user.getRegDate().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")) : "가입일 없음",
                 "lostCount", lostCount,
                 "foundCount", foundCount

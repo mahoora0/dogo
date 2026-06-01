@@ -128,6 +128,18 @@ class ChatTemplateJavascriptInlineTest {
     }
 
     @Test
+    void chatProfileModalDoesNotExposeContactDetails() throws Exception {
+        String html = Files.readString(TEMPLATE);
+
+        assertThat(html).doesNotContain("profile-modal-email");
+        assertThat(html).doesNotContain("profile-modal-phone");
+        assertThat(html).doesNotContain("data.email");
+        assertThat(html).doesNotContain("data.phone");
+        assertThat(html).doesNotContain("이메일 정보");
+        assertThat(html).doesNotContain("연락처 정보");
+    }
+
+    @Test
     void chatTemplateRecalculatesMessageInputHeightAfterOpeningRoom() throws Exception {
         String html = Files.readString(TEMPLATE);
 

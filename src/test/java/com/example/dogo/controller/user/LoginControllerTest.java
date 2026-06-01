@@ -76,12 +76,10 @@ class LoginControllerTest {
             .build();
 
     @Test
-    void getUserProfileReturnsUserDataAndCounts() throws Exception {
+    void getUserProfileReturnsPublicUserDataAndCounts() throws Exception {
         User user = mock(User.class);
         when(user.getNickname()).thenReturn("테스트유저");
         when(user.getProfileImageUrl()).thenReturn("/uploads/profiles/test.png");
-        when(user.getEmail()).thenReturn("test@dogo.com");
-        when(user.getPhone()).thenReturn("010-1234-5678");
         when(user.getRegDate()).thenReturn(LocalDateTime.of(2026, 5, 20, 10, 0));
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -92,8 +90,8 @@ class LoginControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nickname", is("테스트유저")))
                 .andExpect(jsonPath("$.profileImageUrl", is("/uploads/profiles/test.png")))
-                .andExpect(jsonPath("$.email", is("test@dogo.com")))
-                .andExpect(jsonPath("$.phone", is("010-1234-5678")))
+                .andExpect(jsonPath("$.email").doesNotExist())
+                .andExpect(jsonPath("$.phone").doesNotExist())
                 .andExpect(jsonPath("$.regDate", is("2026.05.20")))
                 .andExpect(jsonPath("$.lostCount", is(0)))
                 .andExpect(jsonPath("$.foundCount", is(0)));
