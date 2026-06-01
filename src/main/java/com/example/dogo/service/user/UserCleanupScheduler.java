@@ -36,38 +36,7 @@ public class UserCleanupScheduler {
             log.info("[WITHDRAWN USER CLEANUP] 회원 ID: {} ({}) 관련 모든 데이터 및 계정 영구 삭제 시작", userNo, nickname);
 
             try {
-                jdbcTemplate.update("DELETE FROM CHAT_MESSAGE WHERE SENDER_NO = ?", userNo);
-
-                // 3. 채팅방 삭제
-                jdbcTemplate.update("DELETE FROM CHAT_ROOM WHERE INQUIRER_NO = ? OR OWNER_NO = ?", userNo, userNo);
-
-                // 4. 1:1 문의 파일 및 문의 게시글 삭제
-                jdbcTemplate.update("DELETE FROM INQUIRY_FILE WHERE INQUIRY_ID IN (SELECT INQUIRY_ID FROM INQUIRY WHERE USER_NO = ?)", userNo);
-                jdbcTemplate.update("DELETE FROM INQUIRY WHERE USER_NO = ?", userNo);
-
-                // 5. 실종동물 신고 매칭, 이미지 임베딩, 이미지, 실종동물 본글 삭제
-                jdbcTemplate.update("DELETE FROM ANIMAL_REPORT_MATCH WHERE MISSING_REPORT_ID IN (SELECT REPORT_ID FROM ANIMAL_REPORT WHERE USER_NO = ?) " +
-                        "OR SIGHTING_REPORT_ID IN (SELECT REPORT_ID FROM ANIMAL_REPORT WHERE USER_NO = ?)", userNo, userNo);
-                jdbcTemplate.update("DELETE FROM ANIMAL_REPORT_IMAGE_EMBEDDING WHERE REPORT_ID IN (SELECT REPORT_ID FROM ANIMAL_REPORT WHERE USER_NO = ?)", userNo);
-                jdbcTemplate.update("DELETE FROM ANIMAL_REPORT_IMAGE WHERE REPORT_ID IN (SELECT REPORT_ID FROM ANIMAL_REPORT WHERE USER_NO = ?)", userNo);
-                jdbcTemplate.update("DELETE FROM ANIMAL_REPORT WHERE USER_NO = ?", userNo);
-
-                // 6. 실종자 신고 데이터 삭제
-                jdbcTemplate.update("DELETE FROM MISSING_PERSON_REPORT WHERE USER_NO = ?", userNo);
-
-                // 7. 분실물 매칭, 이미지, 분실물 본글 삭제
-                jdbcTemplate.update("DELETE FROM ITEM_MATCH WHERE LOST_ID IN (SELECT LOST_ID FROM LOST_ITEM WHERE USER_NO = ?)", userNo);
-                jdbcTemplate.update("DELETE FROM LOST_ITEM_IMAGE WHERE LOST_ID IN (SELECT LOST_ID FROM LOST_ITEM WHERE USER_NO = ?)", userNo);
-                jdbcTemplate.update("DELETE FROM LOST_ITEM WHERE USER_NO = ?", userNo);
-
-                // 8. 습득물 매칭, 이미지, 습득물 본글 삭제
-                jdbcTemplate.update("DELETE FROM ITEM_MATCH WHERE FOUND_ID IN (SELECT FOUND_ID FROM FOUND_ITEM WHERE USER_NO = ?)", userNo);
-                jdbcTemplate.update("DELETE FROM FOUND_ITEM_IMAGE WHERE FOUND_ID IN (SELECT FOUND_ID FROM FOUND_ITEM WHERE USER_NO = ?)", userNo);
-                jdbcTemplate.update("DELETE FROM FOUND_ITEM WHERE USER_NO = ?", userNo);
-
-                // 9. 최종적으로 USERS 테이블에서 회원 영구 삭제
-                jdbcTemplate.update("DELETE FROM USERS WHERE USER_NO = ?", userNo);
-
+                userHardDeleteService.deleteUser(userNo);
                 log.info("[WITHDRAWN USER CLEANUP] 회원 ID: {} ({}) 관련 연관 데이터 및 계정이 데이터베이스에서 영구 삭제되었습니다.", userNo, nickname);
             } catch (Exception e) {
                 log.error("[WITHDRAWN USER CLEANUP] 회원 ID: {} 데이터 삭제 중 에러 발생: {}", userNo, e.getMessage(), e);
