@@ -16,6 +16,7 @@ import com.example.dogo.repository.item.LostItemImageRepository;
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.chat.ChatUnavailableException;
+import com.example.dogo.service.upload.UploadFileValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.util.StringUtils;
@@ -26,7 +27,6 @@ import java.nio.file.Path;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
-import java.util.Locale;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -302,7 +302,7 @@ public class ChatService {
             Files.createDirectories(chatUploadPath);
 
             String originalName = StringUtils.cleanPath(String.valueOf(file.getOriginalFilename()));
-            String extension = extractExtension(originalName);
+            String extension = UploadFileValidator.attachmentExtension(file);
             String storedName = UUID.randomUUID() + extension;
             Path targetPath = chatUploadPath.resolve(storedName).normalize();
             
@@ -363,10 +363,6 @@ public class ChatService {
             List<ChatMessage> savedMessages = new ArrayList<>();
 
             for (MultipartFile file : uploadFiles) {
-                if (!isImageUpload(file)) {
-                    throw new IllegalArgumentException("Only image files can be attached.");
-                }
-
                 ChatFileDto storedFile = storeChatFile(file);
                 ChatMessage message = new ChatMessage(
                         room,
@@ -393,7 +389,7 @@ public class ChatService {
 
     private ChatFileDto storeChatFile(MultipartFile file) throws IOException {
         String originalName = StringUtils.cleanPath(StringUtils.hasText(file.getOriginalFilename()) ? file.getOriginalFilename() : "upload");
-        String extension = extractExtension(originalName);
+        String extension = UploadFileValidator.imageExtension(file);
         String storedName = UUID.randomUUID() + extension;
         Path targetPath = chatUploadPath.resolve(storedName).normalize();
 
@@ -463,19 +459,6 @@ public class ChatService {
                 .build();
     }
 
-    private boolean isImageUpload(MultipartFile file) {
-        String contentType = file.getContentType();
-        if (StringUtils.hasText(contentType) && contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
-            return true;
-        }
-        return isImageFileName(file.getOriginalFilename());
-    }
-
-    private boolean isImageFileName(String filename) {
-        String extension = extractExtension(filename);
-        return List.of(".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg").contains(extension);
-    }
-
     private String normalizeMessageContent(String content) {
         String normalized = content == null ? "" : content.trim();
         if (!StringUtils.hasText(normalized)) {
@@ -521,14 +504,4 @@ public class ChatService {
         }
     }
 
-    private String extractExtension(String filename) {
-        if (!StringUtils.hasText(filename) || !filename.contains(".")) {
-            return "";
-        }
-        String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
-        if (extension.length() > 12) {
-            return "";
-        }
-        return extension;
-    }
 }

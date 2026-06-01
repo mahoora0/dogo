@@ -9,6 +9,7 @@ import com.example.dogo.dto.item.RecentItemView;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.entity.item.FoundItemImage;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.service.upload.UploadFileValidator;
 import com.example.dogo.repository.item.FoundItemImageRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
@@ -369,7 +370,7 @@ public class FoundItemService {
 			Files.createDirectories(foundItemUploadPath);
 
 			String originalName = StringUtils.cleanPath(String.valueOf(image.getOriginalFilename()));
-			String extension = extractExtension(originalName);
+			String extension = UploadFileValidator.imageExtension(image);
 			String storedName = UUID.randomUUID() + extension;
 			Path targetPath = foundItemUploadPath.resolve(storedName).normalize();
 			if (!targetPath.startsWith(foundItemUploadPath)) {
@@ -450,17 +451,6 @@ public class FoundItemService {
 			return province.trim();
 		}
 		return blankToNull(fallback);
-	}
-
-	private String extractExtension(String filename) {
-		if (!StringUtils.hasText(filename) || !filename.contains(".")) {
-			return "";
-		}
-		String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
-		if (extension.length() > 12) {
-			return "";
-		}
-		return extension;
 	}
 
 	private String statusLabel(String status) {

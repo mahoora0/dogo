@@ -7,6 +7,7 @@ import com.example.dogo.dto.missing.MissingPersonView;
 import com.example.dogo.entity.missing.MissingPersonImage;
 import com.example.dogo.entity.missing.MissingPersonReport;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.service.upload.UploadFileValidator;
 import com.example.dogo.repository.missing.MissingPersonImageRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
 import com.example.dogo.repository.user.UserRepository;
@@ -126,7 +127,7 @@ public class MissingPersonService {
 			Files.createDirectories(missingPersonUploadPath);
 
 			String originalName = StringUtils.cleanPath(String.valueOf(image.getOriginalFilename()));
-			String extension = extractExtension(originalName);
+			String extension = UploadFileValidator.imageExtension(image);
 			String storedName = UUID.randomUUID() + extension;
 			Path targetPath = missingPersonUploadPath.resolve(storedName).normalize();
 			if (!targetPath.startsWith(missingPersonUploadPath)) {
@@ -147,17 +148,6 @@ public class MissingPersonService {
 		} catch (IOException exception) {
 			throw new UncheckedIOException("이미지 저장에 실패했습니다.", exception);
 		}
-	}
-
-	private String extractExtension(String filename) {
-		if (!StringUtils.hasText(filename) || !filename.contains(".")) {
-			return "";
-		}
-		String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
-		if (extension.length() > 12) {
-			return "";
-		}
-		return extension;
 	}
 
 	private List<String> findImageUrls(MissingPersonReport report) {

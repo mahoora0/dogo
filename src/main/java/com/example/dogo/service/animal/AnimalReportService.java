@@ -12,6 +12,7 @@ import com.example.dogo.entity.animal.AnimalReportImage;
 import com.example.dogo.entity.animal.AnimalReportMatch;
 import com.example.dogo.entity.area.Area;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.service.upload.UploadFileValidator;
 import com.example.dogo.repository.animal.AnimalReportImageRepository;
 import com.example.dogo.repository.animal.AnimalReportMatchRepository;
 import com.example.dogo.repository.animal.AnimalReportRepository;
@@ -424,7 +425,7 @@ public class AnimalReportService {
 			Files.createDirectories(animalReportUploadPath);
 
 			String originalName = StringUtils.cleanPath(String.valueOf(image.getOriginalFilename()));
-			String extension = extractExtension(originalName);
+			String extension = UploadFileValidator.imageExtension(image);
 			String storedName = UUID.randomUUID() + extension;
 			Path targetPath = animalReportUploadPath.resolve(storedName).normalize();
 			if (!targetPath.startsWith(animalReportUploadPath)) {
@@ -578,17 +579,6 @@ public class AnimalReportService {
 			return "-";
 		}
 		return report.getContactPhone();
-	}
-
-	private String extractExtension(String filename) {
-		if (!StringUtils.hasText(filename) || !filename.contains(".")) {
-			return "";
-		}
-		String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
-		if (extension.length() > 12) {
-			return "";
-		}
-		return extension;
 	}
 
 	private String defaultInSet(String value, Set<String> allowed, String fallback) {

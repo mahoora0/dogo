@@ -9,6 +9,7 @@ import com.example.dogo.dto.item.RecentItemView;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.entity.item.LostItemImage;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.service.upload.UploadFileValidator;
 import com.example.dogo.repository.item.LostItemImageRepository;
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.user.UserRepository;
@@ -404,7 +405,7 @@ public class LostItemService {
 			Files.createDirectories(lostItemUploadPath);
 
 			String originalName = StringUtils.cleanPath(String.valueOf(image.getOriginalFilename()));
-			String extension = extractExtension(originalName);
+			String extension = UploadFileValidator.imageExtension(image);
 			String storedName = UUID.randomUUID() + extension;
 			Path targetPath = lostItemUploadPath.resolve(storedName).normalize();
 			if (!targetPath.startsWith(lostItemUploadPath)) {
@@ -485,17 +486,6 @@ public class LostItemService {
 			return province.trim();
 		}
 		return blankToNull(fallback);
-	}
-
-	private String extractExtension(String filename) {
-		if (!StringUtils.hasText(filename) || !filename.contains(".")) {
-			return "";
-		}
-		String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
-		if (extension.length() > 12) {
-			return "";
-		}
-		return extension;
 	}
 
 	private String categoryName(LostItem lostItem) {
