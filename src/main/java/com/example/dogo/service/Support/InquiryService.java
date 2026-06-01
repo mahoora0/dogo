@@ -95,7 +95,7 @@ public class InquiryService {
         boolean isOwner = currentUser != null && inquiry.getUser() != null && 
                           inquiry.getUser().getUserNo().equals(currentUser.getUserNo());
         
-        if (!isAdmin && !isOwner) {
+        if (inquiry.isPrivateInquiry() && !isAdmin && !isOwner) {
             throw new IllegalArgumentException("이 문의사항은 비밀글입니다. 작성자 본인만 확인할 수 있습니다.");
         }
         
@@ -103,11 +103,11 @@ public class InquiryService {
     }
 
     @Transactional
-    public void create(String category, String title, String content, List<MultipartFile> files, User user) {
+    public void create(String category, String title, String content, boolean privateInquiry, List<MultipartFile> files, User user) {
         if (user == null) {
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
         }
-        Inquiry savedInquiry = inquiryRepository.save(new Inquiry(user, category, title, content));
+        Inquiry savedInquiry = inquiryRepository.save(new Inquiry(user, category, title, content, privateInquiry));
         
         if (files != null && !files.isEmpty()) {
             saveFiles(savedInquiry, files);
@@ -181,7 +181,7 @@ public class InquiryService {
                           inquiry.getUser().getUserNo().equals(currentUser.getUserNo());
         
         // 비밀글 여부: 관리자가 아니고, 본인 글도 아닌 경우
-        boolean isSecret = !isAdmin && !isOwner;
+        boolean isSecret = inquiry.isPrivateInquiry() && !isAdmin && !isOwner;
         
         String displayTitle = isSecret ? "비밀글입니다." : inquiry.getTitle();
 
