@@ -85,8 +85,8 @@ class LostItemServiceTest {
 		LostItem lostItem = lostItem(1L, "검정 지갑을 찾습니다", "카드가 들어있습니다");
 		when(lostItemRepository.findAll(org.mockito.ArgumentMatchers.<Specification<LostItem>>any(), any(Sort.class)))
 				.thenReturn(List.of(lostItem));
-		when(lostItemImageRepository.findFirstByLostItemOrderBySortOrderAscImageIdAsc(lostItem))
-				.thenReturn(Optional.of(image(lostItem, "/uploads/lost-items/wallet.jpg")));
+		when(lostItemImageRepository.findByLostItemInOrderBySortOrderAscImageIdAsc(List.of(lostItem)))
+				.thenReturn(List.of(image(lostItem, "/uploads/lost-items/wallet.jpg")));
 
 		List<LostItemView> result = lostItemService.search("지갑", "지갑", "서울", "WAITING");
 

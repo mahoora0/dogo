@@ -12,4 +12,6 @@ public interface AnimalReportImageRepository extends JpaRepository<AnimalReportI
 	Optional<AnimalReportImage> findFirstByAnimalReportOrderBySortOrderAscImageIdAsc(AnimalReport animalReport);
 
 	List<AnimalReportImage> findByAnimalReportOrderBySortOrderAscImageIdAsc(AnimalReport animalReport);
+
+	List<AnimalReportImage> findByAnimalReportInOrderBySortOrderAscImageIdAsc(List<AnimalReport> animalReports);
 }

@@ -27,6 +27,7 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -200,15 +201,14 @@ public class ItemMatchService {
 			matches.forEach(ItemMatch::markAsRead);
 		}
 
-		return matches.stream()
-				.limit(MAX_CANDIDATES)
+		List<ItemMatch> limited = matches.stream().limit(MAX_CANDIDATES).toList();
+		Map<Long, String> thumbnails = resolveFoundThumbnails(
+				limited.stream().map(ItemMatch::getFoundItem).toList());
+		return limited.stream()
 				.map(match -> {
 					FoundItem found = match.getFoundItem();
 					LostItem lost = match.getLostItem();
-					String imageUrl = foundItemImageRepository
-							.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(found)
-							.map(FoundItemImage::getImageUrl)
-							.orElse(null);
+					String imageUrl = thumbnails.get(found.getFoundId());
 					return new MatchCandidateView(
 							found.getFoundId(),
 							"found",
@@ -243,14 +243,13 @@ public class ItemMatchService {
 			return List.of();
 		}
 
-		return itemMatchRepository.findTop3ByLostItemUserUserNoOrderByFinalScoreDescMatchIdDesc(user.getUserNo())
-				.stream()
+		List<ItemMatch> matches = itemMatchRepository.findTop3ByLostItemUserUserNoOrderByFinalScoreDescMatchIdDesc(user.getUserNo());
+		Map<Long, String> thumbnails = resolveFoundThumbnails(
+				matches.stream().map(ItemMatch::getFoundItem).toList());
+		return matches.stream()
 				.map(match -> {
 					FoundItem found = match.getFoundItem();
-					String imageUrl = foundItemImageRepository
-							.findFirstByFoundItemOrderBySortOrderAscImageIdAsc(found)
-							.map(FoundItemImage::getImageUrl)
-							.orElse(null);
+					String imageUrl = thumbnails.get(found.getFoundId());
 					return new MatchCandidateView(
 							found.getFoundId(),
 							"found",
@@ -279,15 +278,15 @@ public class ItemMatchService {
 
 	@Transactional(readOnly = true)
 	public List<MatchCandidateView> getMatchesForFoundItem(Long foundId) {
-		return itemMatchRepository.findByFoundIdWithLostItem(foundId).stream()
-				.limit(MAX_CANDIDATES)
+		List<ItemMatch> limited = itemMatchRepository.findByFoundIdWithLostItem(foundId).stream()
+				.limit(MAX_CANDIDATES).toList();
+		Map<Long, String> thumbnails = resolveLostThumbnails(
+				limited.stream().map(ItemMatch::getLostItem).toList());
+		return limited.stream()
 				.map(match -> {
 					LostItem lost = match.getLostItem();
 					FoundItem found = match.getFoundItem();
-					String imageUrl = lostItemImageRepository
-							.findFirstByLostItemOrderBySortOrderAscImageIdAsc(lost)
-							.map(LostItemImage::getImageUrl)
-							.orElse(null);
+					String imageUrl = thumbnails.get(lost.getLostId());
 					return new MatchCandidateView(
 							lost.getLostId(),
 							"lost",
@@ -305,6 +304,28 @@ public class ItemMatchService {
 					);
 				})
 				.toList();
+	}
+
+	private Map<Long, String> resolveFoundThumbnails(List<FoundItem> founds) {
+		if (founds.isEmpty()) {
+			return Map.of();
+		}
+		Map<Long, String> thumbnails = new HashMap<>();
+		for (FoundItemImage image : foundItemImageRepository.findByFoundItemInOrderBySortOrderAscImageIdAsc(founds)) {
+			thumbnails.putIfAbsent(image.getFoundItem().getFoundId(), image.getImageUrl());
+		}
+		return thumbnails;
+	}
+
+	private Map<Long, String> resolveLostThumbnails(List<LostItem> losts) {
+		if (losts.isEmpty()) {
+			return Map.of();
+		}
+		Map<Long, String> thumbnails = new HashMap<>();
+		for (LostItemImage image : lostItemImageRepository.findByLostItemInOrderBySortOrderAscImageIdAsc(losts)) {
+			thumbnails.putIfAbsent(image.getLostItem().getLostId(), image.getImageUrl());
+		}
+		return thumbnails;
 	}
 
 	private SemanticFetchResult fetchSemanticScores(SemanticMatchItem query, List<SemanticMatchItem> candidates) {

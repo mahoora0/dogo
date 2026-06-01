@@ -13,5 +13,6 @@ public class UserJoinDto {
     private String passwordConfirm;
     private String email;
     private String phone;
+    private String emailVerificationToken;
     private MultipartFile profileImage;
 }

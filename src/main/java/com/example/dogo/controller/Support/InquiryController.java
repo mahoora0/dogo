@@ -22,7 +22,7 @@ public class InquiryController {
         this.inquiryService = inquiryService;
     }
 
-    @GetMapping({"/inquiry", "/inqiry"})
+    @GetMapping("/inquiry")
     public String inquiryList(@RequestParam(required = false, defaultValue = "all") String viewMode,
                               @RequestParam(required = false) String status,
                               @RequestParam(defaultValue = "0") int page,
@@ -55,7 +55,7 @@ public class InquiryController {
         return "inquiry/list";
     }
 
-    @GetMapping({"/inquiry/new", "/inqiry/new"})
+    @GetMapping("/inquiry/new")
     public String inquiryForm(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         model.addAttribute("currentUri", "/inquiry");
 
@@ -66,7 +66,7 @@ public class InquiryController {
         return "inquiry/inquiry";
     }
 
-    @GetMapping({"/inquiry/{id}", "/inqiry/{id}"})
+    @GetMapping("/inquiry/{id}")
     public String inquiryDetail(@PathVariable Long id, 
                                 @AuthenticationPrincipal CustomUserDetails userDetails,
                                 Model model) {
@@ -90,17 +90,18 @@ public class InquiryController {
         }
     }
 
-    @PostMapping({"/inquiry", "/inqiry"})
+    @PostMapping("/inquiry")
     public String createInquiry(@RequestParam String category,
                                 @RequestParam String title,
                                 @RequestParam String content,
+                                @RequestParam(value = "publicVisible", defaultValue = "false") boolean publicVisible,
                                 @RequestParam(value = "files", required = false) org.springframework.web.multipart.MultipartFile[] files,
                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
         
         java.util.List<org.springframework.web.multipart.MultipartFile> fileList = 
                 (files != null) ? java.util.Arrays.asList(files) : null;
         
-        inquiryService.create(category, title, content, fileList, 
+        inquiryService.create(category, title, content, !publicVisible, fileList,
                 userDetails != null ? userDetails.getUser() : null);
         
         return "redirect:/inquiry";
