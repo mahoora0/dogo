@@ -94,13 +94,14 @@ public class InquiryController {
     public String createInquiry(@RequestParam String category,
                                 @RequestParam String title,
                                 @RequestParam String content,
+                                @RequestParam(value = "publicVisible", defaultValue = "false") boolean publicVisible,
                                 @RequestParam(value = "files", required = false) org.springframework.web.multipart.MultipartFile[] files,
                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
         
         java.util.List<org.springframework.web.multipart.MultipartFile> fileList = 
                 (files != null) ? java.util.Arrays.asList(files) : null;
         
-        inquiryService.create(category, title, content, fileList, 
+        inquiryService.create(category, title, content, !publicVisible, fileList,
                 userDetails != null ? userDetails.getUser() : null);
         
         return "redirect:/inquiry";

@@ -33,7 +33,7 @@ public class FAQController {
         model.addAttribute("currentUri", "/admin/faq");
         model.addAttribute("faqList", faqService.getActiveFAQs());
         model.addAttribute("isAdmin", true); // 관리자 페이지이므로 무조건 true
-        return "FAQ/FAQ"; 
+        return "admin/FAQ/FAQ"; 
     }
 
     // [Admin] 등록 화면
@@ -41,7 +41,7 @@ public class FAQController {
     public String faqForm(Model model) {
         model.addAttribute("currentUri", "/admin/faq");
         model.addAttribute("isAdmin", true);
-        return "FAQ/FAQ-write";
+        return "admin/FAQ/FAQ-write";
     }
 
     // [Admin] 등록 처리

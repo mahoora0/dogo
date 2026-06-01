@@ -49,17 +49,21 @@ public class Inquiry {
     @Column(name = "ANSWERED_AT")
     private LocalDateTime answeredAt;
 
+    @Column(name = "IS_PRIVATE", nullable = false)
+    private boolean privateInquiry = true;
+
     @Column(name = "REGDATE", insertable = false, updatable = false)
     private LocalDateTime regdate;
 
     @Column(name = "MODDATE", insertable = false, updatable = false)
     private LocalDateTime moddate;
 
-    public Inquiry(User user, String category, String title, String content) {
+    public Inquiry(User user, String category, String title, String content, boolean privateInquiry) {
         this.user = user;
         this.category = category;
         this.title = title;
         this.content = content;
+        this.privateInquiry = privateInquiry;
     }
 
     public void markChecking() {

@@ -39,6 +39,16 @@ public class NoticeController {
         return "notice/list";
     }
 
+    // [User] 사용자용 상세
+    @GetMapping("/notice/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        Notice notice = noticeService.getNoticeDetail(id);
+        model.addAttribute("currentUri", "/notice");
+        model.addAttribute("notice", notice);
+        model.addAttribute("isAdmin", false);
+        return "notice/detail";
+    }
+
     // [Admin] 관리자용 목록
     @GetMapping("/admin/notice")
     public String adminList(@RequestParam(required = false) String category,
@@ -59,17 +69,7 @@ public class NoticeController {
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
 
-        return "notice/list";
-    }
-
-    // [User] 사용자용 상세
-    @GetMapping("/notice/{id}")
-    public String detail(@PathVariable Long id, Model model) {
-        Notice notice = noticeService.getNoticeDetail(id);
-        model.addAttribute("currentUri", "/notice");
-        model.addAttribute("notice", notice);
-        model.addAttribute("isAdmin", false);
-        return "notice/detail";
+        return "admin/notice/list";
     }
 
     // [Admin] 관리자용 상세 (수정/삭제 버튼 노출)
@@ -79,7 +79,7 @@ public class NoticeController {
         model.addAttribute("currentUri", "/admin/notice");
         model.addAttribute("notice", notice);
         model.addAttribute("isAdmin", true);
-        return "notice/detail";
+        return "admin/notice/detail";
     }
 
     // [Admin] 등록 폼
@@ -88,7 +88,7 @@ public class NoticeController {
         model.addAttribute("currentUri", "/admin/notice");
         model.addAttribute("notice", new Notice());
         model.addAttribute("isAdmin", true);
-        return "notice/form";
+        return "admin/notice/form";
     }
 
     // [Admin] 등록 처리
@@ -108,7 +108,7 @@ public class NoticeController {
         model.addAttribute("currentUri", "/admin/notice");
         model.addAttribute("notice", notice);
         model.addAttribute("isAdmin", true);
-        return "notice/form";
+        return "admin/notice/form";
     }
 
     // [Admin] 수정 처리

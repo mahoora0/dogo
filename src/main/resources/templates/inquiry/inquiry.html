@@ -35,6 +35,18 @@
                     <textarea id="content" name="content" required rows="6" placeholder="문의하실 내용을 상세히 적어주세요." class="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 resize-none"></textarea>
                 </div>
 
+                <!-- 공개 설정 -->
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                    <label for="publicVisible" class="flex items-start gap-3 cursor-pointer">
+                        <input id="publicVisible" name="publicVisible" type="checkbox" value="true"
+                               class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                        <span>
+                            <span class="block text-sm font-semibold text-slate-800">다른 사람에게 공개</span>
+                            <span class="mt-1 block text-xs text-slate-500">체크하지 않으면 제목과 내용이 작성자와 관리자에게만 보입니다.</span>
+                        </span>
+                    </label>
+                </div>
+
                 <!-- 첨부파일 -->
                 <div>
                     <label for="file-upload" class="block text-sm font-medium text-slate-700 mb-2">첨부파일</label>
