@@ -24,7 +24,7 @@ public class AdminInquiryController {
         return "admin/inquiries/list";
     }
 
-    @GetMapping("/admin/inquiries/{id}")
+    @GetMapping({"/admin/inquiries/{id}", "/admin/inquiry/{id}"})
     public String detail(@PathVariable Long id, Model model) {
         model.addAttribute("currentUri", "/admin/inquiries");
         model.addAttribute("inquiry", inquiryService.getAdminInquiryDetail(id));

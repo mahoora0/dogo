@@ -125,8 +125,8 @@ class MissingPersonServiceTest {
 		MissingPersonReport report = createReport();
 		when(missingPersonRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class)))
 				.thenReturn(new PageImpl<>(List.of(report)));
-		when(missingPersonImageRepository.findFirstByReportOrderBySortOrderAscImageIdAsc(report))
-				.thenReturn(Optional.of(new MissingPersonImage(
+		when(missingPersonImageRepository.findByReportInOrderBySortOrderAscImageIdAsc(List.of(report)))
+				.thenReturn(List.of(new MissingPersonImage(
 						report,
 						"person.png",
 						"stored.png",

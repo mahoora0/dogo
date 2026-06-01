@@ -12,4 +12,6 @@ public interface FoundItemImageRepository extends JpaRepository<FoundItemImage, 
 	Optional<FoundItemImage> findFirstByFoundItemOrderBySortOrderAscImageIdAsc(FoundItem foundItem);
 
 	List<FoundItemImage> findByFoundItemOrderBySortOrderAscImageIdAsc(FoundItem foundItem);
+
+	List<FoundItemImage> findByFoundItemInOrderBySortOrderAscImageIdAsc(List<FoundItem> foundItems);
 }

@@ -12,4 +12,6 @@ public interface MissingPersonImageRepository extends JpaRepository<MissingPerso
 	Optional<MissingPersonImage> findFirstByReportOrderBySortOrderAscImageIdAsc(MissingPersonReport report);
 
 	List<MissingPersonImage> findByReportOrderBySortOrderAscImageIdAsc(MissingPersonReport report);
+
+	List<MissingPersonImage> findByReportInOrderBySortOrderAscImageIdAsc(List<MissingPersonReport> reports);
 }

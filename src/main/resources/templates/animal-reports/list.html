@@ -248,22 +248,49 @@
 
     <!-- Pagination -->
     <nav th:if="${reportPage != null && reportPage.totalPages > 1}"
-         class="mt-12 flex items-center justify-center gap-3 text-sm">
-      <a th:classappend="${reportPage.first} ? ' pointer-events-none opacity-40'"
-         th:href="@{/animal-reports(keyword=${keyword}, keywordScope=${keywordScope}, reportType=${reportType}, animalType=${animalType}, region=${region}, startDate=${startDate}, endDate=${endDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page - 1}, size=${size})}"
-         class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 active:scale-95">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-      </a>
-      <div class="flex items-center gap-1 rounded-full bg-white px-4 py-2 shadow-sm border border-slate-100 font-semibold">
-        <span th:text="${page + 1}" class="text-slate-900">1</span>
-        <span class="text-slate-300 mx-1">/</span>
-        <span th:text="${reportPage.totalPages}" class="text-slate-500">1</span>
+         th:with="startPage=${T(java.lang.Math).max(0, T(java.lang.Math).min(page - 4, reportPage.totalPages - 10))}, endPage=${T(java.lang.Math).min(reportPage.totalPages - 1, startPage + 9)}"
+         class="mt-12 flex justify-center text-sm">
+      <div class="inline-flex items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm divide-x divide-slate-200">
+
+        <!-- 맨 처음 -->
+        <a th:classappend="${reportPage.first} ? ' pointer-events-none opacity-40'"
+           th:href="@{/animal-reports(keyword=${keyword}, keywordScope=${keywordScope}, reportType=${reportType}, animalType=${animalType}, region=${region}, startDate=${startDate}, endDate=${endDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=0, size=${size})}"
+           aria-label="첫 페이지"
+           class="flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+        </a>
+
+        <!-- 이전 -->
+        <a th:classappend="${reportPage.first} ? ' pointer-events-none opacity-40'"
+           th:href="@{/animal-reports(keyword=${keyword}, keywordScope=${keywordScope}, reportType=${reportType}, animalType=${animalType}, region=${region}, startDate=${startDate}, endDate=${endDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page - 1}, size=${size})}"
+           aria-label="이전 페이지"
+           class="flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+
+        <!-- 번호 윈도우 (현재 페이지 주변 최대 10칸) -->
+        <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
+           th:href="@{/animal-reports(keyword=${keyword}, keywordScope=${keywordScope}, reportType=${reportType}, animalType=${animalType}, region=${region}, startDate=${startDate}, endDate=${endDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${i}, size=${size})}"
+           th:text="${i + 1}"
+           th:classappend="${i == page} ? ' bg-slate-900 text-white font-semibold' : ' text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+           class="flex h-10 w-10 items-center justify-center transition-colors">1</a>
+
+        <!-- 다음 -->
+        <a th:classappend="${reportPage.last} ? ' pointer-events-none opacity-40'"
+           th:href="@{/animal-reports(keyword=${keyword}, keywordScope=${keywordScope}, reportType=${reportType}, animalType=${animalType}, region=${region}, startDate=${startDate}, endDate=${endDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page + 1}, size=${size})}"
+           aria-label="다음 페이지"
+           class="flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+        <!-- 맨 끝 -->
+        <a th:classappend="${reportPage.last} ? ' pointer-events-none opacity-40'"
+           th:href="@{/animal-reports(keyword=${keyword}, keywordScope=${keywordScope}, reportType=${reportType}, animalType=${animalType}, region=${region}, startDate=${startDate}, endDate=${endDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${reportPage.totalPages - 1}, size=${size})}"
+           aria-label="마지막 페이지"
+           class="flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+        </a>
       </div>
-      <a th:classappend="${reportPage.last} ? ' pointer-events-none opacity-40'"
-         th:href="@{/animal-reports(keyword=${keyword}, keywordScope=${keywordScope}, reportType=${reportType}, animalType=${animalType}, region=${region}, startDate=${startDate}, endDate=${endDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page + 1}, size=${size})}"
-         class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 active:scale-95">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-      </a>
     </nav>
 
     <script>
