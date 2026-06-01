@@ -1,8 +1,10 @@
 package com.example.dogo.service.missing;
 
 import com.example.dogo.dto.missing.MissingPersonCreateRequest;
+import com.example.dogo.entity.missing.MissingPersonImage;
 import com.example.dogo.entity.missing.MissingPersonReport;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.repository.missing.MissingPersonImageRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
 import com.example.dogo.repository.user.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -24,8 +26,14 @@ import static org.mockito.Mockito.when;
 class MissingPersonServiceTest {
 
 	private final MissingPersonRepository missingPersonRepository = mock(MissingPersonRepository.class);
+	private final MissingPersonImageRepository missingPersonImageRepository = mock(MissingPersonImageRepository.class);
 	private final UserRepository userRepository = mock(UserRepository.class);
-	private final MissingPersonService missingPersonService = new MissingPersonService(missingPersonRepository, userRepository);
+	private final MissingPersonService missingPersonService = new MissingPersonService(
+			missingPersonRepository,
+			missingPersonImageRepository,
+			userRepository,
+			"build/test-uploads"
+	);
 
 	@Test
 	void createStoresRequiredMissingPersonFields() {
@@ -110,6 +118,28 @@ class MissingPersonServiceTest {
 		missingPersonService.search("Seoul", "OPEN", "PUBLIC_API", PageRequest.of(0, 9));
 
 		verify(missingPersonRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class));
+	}
+
+	@Test
+	void recentItemsUseUploadedMissingPersonImageFirst() {
+		MissingPersonReport report = createReport();
+		when(missingPersonRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class)))
+				.thenReturn(new PageImpl<>(List.of(report)));
+		when(missingPersonImageRepository.findFirstByReportOrderBySortOrderAscImageIdAsc(report))
+				.thenReturn(Optional.of(new MissingPersonImage(
+						report,
+						"person.png",
+						"stored.png",
+						"/uploads/missing-persons/stored.png",
+						"image/png",
+						123L,
+						0
+				)));
+
+		var result = missingPersonService.getRecentItems(5);
+
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).imageUrl()).isEqualTo("/uploads/missing-persons/stored.png");
 	}
 
 	private MissingPersonReport createReport() {

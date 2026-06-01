@@ -1,5 +1,9 @@
 from contextlib import asynccontextmanager
+import os
+import time
 
+from anyio import CapacityLimiter
+from anyio.to_thread import run_sync
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 
 from app.clip_embedding import CLIP_MODEL_NAME, _load_clip_model, encode_image, encode_images
@@ -19,9 +23,34 @@ from app.similarity import MODEL_BACKEND, MODEL_NAME, _load_model, compute_embed
 logger = get_logger("main")
 
 
+def _pet_embedding_max_concurrency() -> int:
+    raw_value = os.getenv("PET_IMAGE_EMBEDDING_MAX_CONCURRENCY", "1")
+    try:
+        return max(1, int(raw_value))
+    except ValueError:
+        logger.warning("Invalid PET_IMAGE_EMBEDDING_MAX_CONCURRENCY=%r, using 1", raw_value)
+        return 1
+
+
+PET_IMAGE_EMBEDDING_MAX_CONCURRENCY = _pet_embedding_max_concurrency()
+_pet_embedding_limiter = CapacityLimiter(PET_IMAGE_EMBEDDING_MAX_CONCURRENCY)
+
+
+async def _run_pet_embedding_work(label: str, func, *args):
+    wait_started = time.perf_counter()
+    async with _pet_embedding_limiter:
+        wait_ms = (time.perf_counter() - wait_started) * 1000
+        work_started = time.perf_counter()
+        result = await run_sync(func, *args)
+        elapsed_ms = (time.perf_counter() - work_started) * 1000
+        logger.info("%s complete: wait=%.1fms, work=%.1fms", label, wait_ms, elapsed_ms)
+        return result
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("dogo-python-match 서버 시작")
+    logger.info("Pet image embedding max concurrency=%d", PET_IMAGE_EMBEDDING_MAX_CONCURRENCY)
     try:
         _load_model()
     except Exception:
@@ -62,7 +91,12 @@ async def pet_image_embedding(
     animalType: str | None = Form(None),
 ) -> PetImageEmbeddingResponse:
     image_bytes = await image.read()
-    vector, model, crop_type = encode_image(image_bytes, animalType)
+    vector, model, crop_type = await _run_pet_embedding_work(
+        "pet-image-embedding",
+        encode_image,
+        image_bytes,
+        animalType,
+    )
     return PetImageEmbeddingResponse(vector=vector, model=model, cropType=crop_type)
 
 
@@ -81,7 +115,11 @@ async def pet_image_embeddings(
         animal_type = animal_types[index] if index < len(animal_types) and animal_types[index] else None
         image_items.append((await image.read(), animal_type))
 
-    vectors, model, crop_types = encode_images(image_items)
+    vectors, model, crop_types = await _run_pet_embedding_work(
+        "pet-image-embeddings",
+        encode_images,
+        image_items,
+    )
     embeddings = [
         PetImageEmbeddingItem(id=image_id, vector=vector, model=model, cropType=crop_type)
         for image_id, vector, crop_type in zip(ids, vectors, crop_types)

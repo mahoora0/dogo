@@ -114,7 +114,8 @@ class MissingPersonControllerTest {
 				"접수",
 				sourceType,
 				sourceLabel,
-				null
+				null,
+				java.util.List.of()
 		);
 	}
 
@@ -142,7 +143,9 @@ class MissingPersonControllerTest {
 				"010",
 				"정상아동(18세미만)",
 				"남자",
-				"특이사항 테스트"
+				"특이사항 테스트",
+				java.util.List.of(),
+				99L
 		);
 	}
 }

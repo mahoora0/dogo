@@ -32,7 +32,7 @@ class ChatSchemaMigratorTest {
                 "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'CHAT_MESSAGE'",
                 String.class
         );
-        assertThat(columns).contains("IS_READ");
+        assertThat(columns).contains("IS_READ", "FILE_GROUP_ID");
     }
 
     private DataSource dataSource() {

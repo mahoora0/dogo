@@ -4,19 +4,28 @@ import com.example.dogo.dto.item.RecentItemView;
 import com.example.dogo.dto.missing.MissingPersonCreateRequest;
 import com.example.dogo.dto.missing.MissingPersonDetailView;
 import com.example.dogo.dto.missing.MissingPersonView;
+import com.example.dogo.entity.missing.MissingPersonImage;
 import com.example.dogo.entity.missing.MissingPersonReport;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.repository.missing.MissingPersonImageRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
 import com.example.dogo.repository.user.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 @Service
 public class MissingPersonService {
@@ -24,11 +33,20 @@ public class MissingPersonService {
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 
 	private final MissingPersonRepository missingPersonRepository;
+	private final MissingPersonImageRepository missingPersonImageRepository;
 	private final UserRepository userRepository;
+	private final Path missingPersonUploadPath;
 
-	public MissingPersonService(MissingPersonRepository missingPersonRepository, UserRepository userRepository) {
+	public MissingPersonService(
+			MissingPersonRepository missingPersonRepository,
+			MissingPersonImageRepository missingPersonImageRepository,
+			UserRepository userRepository,
+			@Value("${file.upload-dir}") String uploadDir
+	) {
 		this.missingPersonRepository = missingPersonRepository;
+		this.missingPersonImageRepository = missingPersonImageRepository;
 		this.userRepository = userRepository;
+		this.missingPersonUploadPath = Path.of(uploadDir, "missing-persons").toAbsolutePath().normalize();
 	}
 
 	@Transactional(readOnly = true)
@@ -56,7 +74,7 @@ public class MissingPersonService {
 						item.getOccurredAt(),
 						item.getStatus(),
 						statusLabel(item.getStatus()),
-						extractBase64Image(item.getRawPayload()),
+						thumbnailImageUrl(item),
 						item.getRegdate()
 				))
 				.toList();
@@ -82,7 +100,70 @@ public class MissingPersonService {
 				request.getClothing().trim()
 		);
 
-		return missingPersonRepository.save(report).getReportId();
+		MissingPersonReport saved = missingPersonRepository.save(report);
+		saveImages(saved, request.getUploadImages());
+		return saved.getReportId();
+	}
+
+	private void saveImages(MissingPersonReport report, List<MultipartFile> images) {
+		for (int index = 0; index < images.size(); index++) {
+			saveImageIfPresent(report, images.get(index), index);
+		}
+	}
+
+	private void saveImageIfPresent(MissingPersonReport report, MultipartFile image, int sortOrder) {
+		if (image == null || image.isEmpty()) {
+			return;
+		}
+
+		try {
+			Files.createDirectories(missingPersonUploadPath);
+
+			String originalName = StringUtils.cleanPath(String.valueOf(image.getOriginalFilename()));
+			String extension = extractExtension(originalName);
+			String storedName = UUID.randomUUID() + extension;
+			Path targetPath = missingPersonUploadPath.resolve(storedName).normalize();
+			if (!targetPath.startsWith(missingPersonUploadPath)) {
+				throw new IllegalArgumentException("올바르지 않은 이미지 파일명입니다.");
+			}
+
+			image.transferTo(targetPath);
+
+			missingPersonImageRepository.save(new MissingPersonImage(
+					report,
+					originalName,
+					storedName,
+					"/uploads/missing-persons/" + storedName,
+					image.getContentType(),
+					image.getSize(),
+					sortOrder
+			));
+		} catch (IOException exception) {
+			throw new UncheckedIOException("이미지 저장에 실패했습니다.", exception);
+		}
+	}
+
+	private String extractExtension(String filename) {
+		if (!StringUtils.hasText(filename) || !filename.contains(".")) {
+			return "";
+		}
+		String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
+		if (extension.length() > 12) {
+			return "";
+		}
+		return extension;
+	}
+
+	private List<String> findImageUrls(MissingPersonReport report) {
+		return missingPersonImageRepository.findByReportOrderBySortOrderAscImageIdAsc(report).stream()
+				.map(MissingPersonImage::getImageUrl)
+				.toList();
+	}
+
+	private String thumbnailImageUrl(MissingPersonReport report) {
+		return missingPersonImageRepository.findFirstByReportOrderBySortOrderAscImageIdAsc(report)
+				.map(MissingPersonImage::getImageUrl)
+				.orElseGet(() -> extractBase64Image(report.getRawPayload()));
 	}
 
 	@Transactional(readOnly = true)
@@ -137,7 +218,8 @@ public class MissingPersonService {
 				statusLabel(report.getStatus()),
 				report.getSourceType(),
 				report.getSourceLabel(),
-				extractBase64Image(report.getRawPayload())
+				extractBase64Image(report.getRawPayload()),
+				findImageUrls(report)
 		);
 	}
 
@@ -187,7 +269,9 @@ public class MissingPersonService {
 				targetCode,
 				targetLabel,
 				gender,
-				etcSpfeatr
+				etcSpfeatr,
+				findImageUrls(report),
+				report.getUser() != null ? report.getUser().getUserNo() : null
 		);
 	}
 

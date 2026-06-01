@@ -115,4 +115,28 @@ class ChatControllerTest {
         assertThat(response).isEqualTo(messages);
         verify(chatService).markRoomMessagesAsRead(7L, user);
     }
+
+    @Test
+    @DisplayName("HTTP 이미지 묶음 업로드는 한 메시지로 저장하고 배포한다")
+    void uploadImagesPersistsAndPublishesGroupedMessage() {
+        User user = new User("sender@example.com", "보낸사람", "010-0000-0000");
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+        org.springframework.web.multipart.MultipartFile file = mock(org.springframework.web.multipart.MultipartFile.class);
+        com.example.dogo.dto.ChatMessageDto saved = com.example.dogo.dto.ChatMessageDto.builder()
+                .roomId(7L)
+                .senderNo(1L)
+                .content("[이미지] 2개")
+                .type("FILE_GROUP")
+                .fileGroupId("group-1")
+                .build();
+
+        when(chatService.saveImageMessages(eq(7L), org.mockito.ArgumentMatchers.anyList(), eq(user))).thenReturn(saved);
+        when(chatService.getChatParticipantUserNos(7L)).thenReturn(List.of(1L, 2L));
+
+        com.example.dogo.dto.ChatMessageDto response = controller.uploadImages(7L, List.of(file), userDetails);
+
+        assertThat(response).isEqualTo(saved);
+        verify(messagingTemplate).convertAndSend("/sub/chat/room/7", saved);
+        verify(messagingTemplate).convertAndSend(eq("/sub/users/2/messages"), eq(saved));
+    }
 }

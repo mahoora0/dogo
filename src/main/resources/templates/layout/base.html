@@ -119,6 +119,7 @@
             <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="profile-link">
               <img th:if="${#authentication.principal.user.profileImageUrl != null}"
                    th:src="${#authentication.principal.user.profileImageUrl}"
+                   referrerpolicy="no-referrer"
                    class="profile-image" alt="프로필">
               <span th:unless="${#authentication.principal.user.profileImageUrl != null}" class="profile-placeholder" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">

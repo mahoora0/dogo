@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -22,4 +23,6 @@ public class ChatMessageDto {
     private String fileUrl;
     private String fileName;
     private Long fileSize;
+    private String fileGroupId;
+    private List<ChatFileDto> files;
 }

@@ -74,6 +74,27 @@ class ChatServiceTest {
 
     @Test
     @DisplayName("작성자가 없는 습득물은 채팅방을 만들 수 없다")
+    void saveMessageRejectsTooLongContent() {
+        Long roomId = 1L;
+        Long senderNo = 1L;
+        ChatMessageDto dto = ChatMessageDto.builder()
+                .roomId(roomId)
+                .senderNo(senderNo)
+                .content("a".repeat(1001))
+                .type("TALK")
+                .build();
+        ChatRoom room = mock(ChatRoom.class);
+        User sender = mock(User.class);
+
+        when(chatRoomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(userRepository.findById(senderNo)).thenReturn(Optional.of(sender));
+
+        assertThrows(IllegalArgumentException.class, () -> chatService.saveMessage(dto));
+        verify(chatMessageRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("rejects chat messages over 1000 characters")
     void createOrGetRoomRejectsFoundItemWithoutOwner() {
         FoundItem foundItem = mock(FoundItem.class);
         User inquirer = mock(User.class);
@@ -261,5 +282,37 @@ class ChatServiceTest {
         assertTrue(result.getFileUrl().startsWith("/uploads/chats/"));
         verify(chatMessageRepository, times(1)).save(any());
         verify(multipartFile, times(1)).transferTo(any(java.nio.file.Path.class));
+    }
+
+    @Test
+    @DisplayName("여러 이미지는 하나의 파일 묶음 메시지로 저장한다")
+    void saveImageMessagesGroupsMultipleImages() throws Exception {
+        Long roomId = 1L;
+        org.springframework.web.multipart.MultipartFile first = mock(org.springframework.web.multipart.MultipartFile.class);
+        org.springframework.web.multipart.MultipartFile second = mock(org.springframework.web.multipart.MultipartFile.class);
+        User sender = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(first.isEmpty()).thenReturn(false);
+        when(first.getOriginalFilename()).thenReturn("first.png");
+        when(first.getContentType()).thenReturn("image/png");
+        when(first.getSize()).thenReturn(100L);
+        when(second.isEmpty()).thenReturn(false);
+        when(second.getOriginalFilename()).thenReturn("second.jpg");
+        when(second.getContentType()).thenReturn("image/jpeg");
+        when(second.getSize()).thenReturn(200L);
+        when(chatRoomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(sender.getUserNo()).thenReturn(1L);
+        when(sender.getNickname()).thenReturn("sender");
+
+        ChatMessageDto result = chatService.saveImageMessages(roomId, List.of(first, second), sender);
+
+        assertEquals("FILE_GROUP", result.getType());
+        assertEquals(2, result.getFiles().size());
+        assertEquals(300L, result.getFileSize());
+        assertTrue(result.getFileGroupId() != null && !result.getFileGroupId().isBlank());
+        verify(chatMessageRepository, times(2)).save(any());
+        verify(first, times(1)).transferTo(any(java.nio.file.Path.class));
+        verify(second, times(1)).transferTo(any(java.nio.file.Path.class));
     }
 }

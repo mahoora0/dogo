@@ -88,8 +88,13 @@ public class MissingPersonController {
 	}
 
 	@GetMapping("/missing-persons/{id}")
-	public String detail(@PathVariable Long id, Model model) {
-		model.addAttribute("report", missingPersonService.getDetail(id));
+	public String detail(@PathVariable Long id,
+						 @AuthenticationPrincipal CustomUserDetails userDetails,
+						 Model model) {
+		var report = missingPersonService.getDetail(id);
+		Long currentUserNo = userDetails != null ? userDetails.getUser().getUserNo() : null;
+		model.addAttribute("report", report);
+		model.addAttribute("isOwner", currentUserNo != null && currentUserNo.equals(report.userNo()));
 		model.addAttribute("currentUri", "/missing-persons");
 		return "missing-persons/detail";
 	}
