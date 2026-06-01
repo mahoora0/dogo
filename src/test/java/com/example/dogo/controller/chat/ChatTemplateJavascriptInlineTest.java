@@ -128,6 +128,19 @@ class ChatTemplateJavascriptInlineTest {
     }
 
     @Test
+    void chatTemplateRecalculatesMessageInputHeightAfterOpeningRoom() throws Exception {
+        String html = Files.readString(TEMPLATE);
+
+        int showInputArea = html.indexOf("document.getElementById('input-area').classList.remove('hidden');");
+        int refreshInputHeight = html.indexOf("handleMessageInput();", showInputArea);
+        int loadMessages = html.indexOf("// Load Messages", showInputArea);
+
+        assertThat(showInputArea).isNotNegative();
+        assertThat(loadMessages).isNotNegative();
+        assertThat(refreshInputHeight).isBetween(showInputArea, loadMessages);
+    }
+
+    @Test
     void chatUnreadBadgesCapCountsOverNinetyNine() throws Exception {
         String chat = Files.readString(TEMPLATE);
         String layout = Files.readString(LAYOUT);
