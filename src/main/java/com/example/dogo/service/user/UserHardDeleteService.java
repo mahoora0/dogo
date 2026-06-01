@@ -52,10 +52,12 @@ public class UserHardDeleteService {
         jdbcTemplate.update("DELETE FROM MISSING_PERSON_REPORT WHERE USER_NO = ?", userNo);
 
         jdbcTemplate.update("DELETE FROM ITEM_MATCH WHERE LOST_ID IN (SELECT LOST_ID FROM LOST_ITEM WHERE USER_NO = ?)", userNo);
+        jdbcTemplate.update("DELETE FROM ITEM_EMBEDDING WHERE ITEM_TYPE = 'LOST' AND ITEM_ID IN (SELECT LOST_ID FROM LOST_ITEM WHERE USER_NO = ?)", userNo);
         jdbcTemplate.update("DELETE FROM LOST_ITEM_IMAGE WHERE LOST_ID IN (SELECT LOST_ID FROM LOST_ITEM WHERE USER_NO = ?)", userNo);
         jdbcTemplate.update("DELETE FROM LOST_ITEM WHERE USER_NO = ?", userNo);
 
         jdbcTemplate.update("DELETE FROM ITEM_MATCH WHERE FOUND_ID IN (SELECT FOUND_ID FROM FOUND_ITEM WHERE USER_NO = ?)", userNo);
+        jdbcTemplate.update("DELETE FROM ITEM_EMBEDDING WHERE ITEM_TYPE = 'FOUND' AND ITEM_ID IN (SELECT FOUND_ID FROM FOUND_ITEM WHERE USER_NO = ?)", userNo);
         jdbcTemplate.update("DELETE FROM FOUND_ITEM_IMAGE WHERE FOUND_ID IN (SELECT FOUND_ID FROM FOUND_ITEM WHERE USER_NO = ?)", userNo);
         jdbcTemplate.update("DELETE FROM FOUND_ITEM WHERE USER_NO = ?", userNo);
 
