@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.security.Principal;
 
 @Controller
 @RequiredArgsConstructor
@@ -61,11 +62,12 @@ public class ChatController {
     @GetMapping("/chat/room/{roomId}/messages")
     @ResponseBody
     public List<ChatMessageDto> getMessages(@PathVariable Long roomId,
-                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails != null) {
-            chatService.markRoomMessagesAsRead(roomId, userDetails.getUser());
+                                             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new ChatUnavailableException("로그인이 필요합니다.");
         }
-        return chatService.getChatMessages(roomId);
+        chatService.markRoomMessagesAsRead(roomId, userDetails.getUser());
+        return chatService.getChatMessages(roomId, userDetails.getUser());
     }
 
     @PostMapping("/chat/room/{roomId}/messages")
@@ -84,7 +86,7 @@ public class ChatController {
                 .type(message.getType())
                 .clientMessageId(message.getClientMessageId())
                 .build();
-        ChatMessageDto savedMessage = chatService.saveMessage(request);
+        ChatMessageDto savedMessage = chatService.saveMessage(request, userDetails.getUser());
         publishMessage(savedMessage);
         return savedMessage;
     }
@@ -118,8 +120,11 @@ public class ChatController {
     }
 
     @MessageMapping("/chat/message")
-    public void message(ChatMessageDto message) {
-        ChatMessageDto savedMessage = chatService.saveMessage(message);
+    public void message(ChatMessageDto message, Principal principal) {
+        if (principal == null) {
+            throw new ChatUnavailableException("로그인이 필요합니다.");
+        }
+        ChatMessageDto savedMessage = chatService.saveMessage(message, principal.getName());
         publishMessage(savedMessage);
     }
 

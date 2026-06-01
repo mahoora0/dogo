@@ -141,6 +141,7 @@
             </button>
           </div>
           <p id="emailError" class="text-red-500 text-xs ml-1 hidden"></p>
+          <input type="hidden" id="emailVerificationToken" name="emailVerificationToken">
         </div>
 
         <!-- 이메일 인증 번호 -->
@@ -356,18 +357,19 @@
       const code = verificationCodeInput.value;
 
       try {
-        const response = await fetch('/api/mail/verify', {
+        const response = await fetch('/api/mail/verify-for-join', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, code })
         });
 
-        const data = await response.text();
+        const data = response.ok ? await response.json() : await response.text();
 
         if (response.ok) {
-          verificationMessage.textContent = data;
+          verificationMessage.textContent = '인증에 성공했습니다.';
           verificationMessage.className = 'text-green-500 text-xs ml-1';
           isEmailVerified = true;
+          document.getElementById('emailVerificationToken').value = data.verificationToken;
           emailInput.readOnly = true;
           verificationCodeInput.readOnly = true;
           sendMailBtn.classList.add('hidden');

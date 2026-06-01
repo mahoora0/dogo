@@ -16,6 +16,7 @@ import com.example.dogo.repository.item.LostItemImageRepository;
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.chat.ChatUnavailableException;
+import com.example.dogo.service.upload.UploadFileValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.util.StringUtils;
@@ -26,7 +27,6 @@ import java.nio.file.Path;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
-import java.util.Locale;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -109,6 +109,9 @@ public class ChatService {
     }
 
     private boolean isSameUser(User owner, User inquirer) {
+        if (owner == null || inquirer == null) {
+            return false;
+        }
         if (owner.getUserNo() != null && inquirer.getUserNo() != null) {
             return owner.getUserNo().equals(inquirer.getUserNo());
         }
@@ -195,8 +198,8 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatMessageDto> getChatMessages(Long roomId) {
-        ChatRoom room = chatRoomRepository.findById(roomId).orElseThrow();
+    public List<ChatMessageDto> getChatMessages(Long roomId, User reader) {
+        ChatRoom room = getAuthorizedRoom(roomId, reader);
         List<ChatMessage> messages = chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(room);
         List<ChatMessageDto> result = new ArrayList<>();
         Set<String> renderedGroups = new LinkedHashSet<>();
@@ -221,7 +224,7 @@ public class ChatService {
 
     @Transactional
     public void markRoomMessagesAsRead(Long roomId, User reader) {
-        ChatRoom room = chatRoomRepository.findById(roomId).orElseThrow();
+        ChatRoom room = getAuthorizedRoom(roomId, reader);
         chatMessageRepository.markRoomMessagesAsRead(room, reader);
     }
 
@@ -232,9 +235,8 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatMessageDto saveMessage(ChatMessageDto dto) {
-        ChatRoom room = chatRoomRepository.findById(dto.getRoomId()).orElseThrow();
-        User sender = userRepository.findById(dto.getSenderNo()).orElseThrow();
+    public ChatMessageDto saveMessage(ChatMessageDto dto, User sender) {
+        ChatRoom room = getAuthorizedRoom(dto.getRoomId(), sender);
         String content = normalizeMessageContent(dto.getContent());
         
         ChatMessage message = new ChatMessage(
@@ -265,9 +267,32 @@ public class ChatService {
     }
 
     @Transactional
+    public ChatMessageDto saveMessage(ChatMessageDto dto, String loginId) {
+        User sender = findUserByIdentity(loginId);
+        return saveMessage(dto, sender);
+    }
+
+    @Transactional(readOnly = true)
+    public void authorizeSubscription(String destination, String identity) {
+        User user = findUserByIdentity(identity);
+        if (destination != null && destination.startsWith("/sub/chat/room/")) {
+            Long roomId = parseDestinationId(destination, "/sub/chat/room/");
+            getAuthorizedRoom(roomId, user);
+            return;
+        }
+        if (destination != null && destination.startsWith("/sub/users/") && destination.endsWith("/messages")) {
+            String userNoText = destination.substring("/sub/users/".length(), destination.length() - "/messages".length());
+            if (!user.getUserNo().equals(parseId(userNoText))) {
+                throw new ChatUnavailableException("알림 채널에 접근할 수 없습니다.");
+            }
+            return;
+        }
+        throw new ChatUnavailableException("구독할 수 없는 채널입니다.");
+    }
+
+    @Transactional
     public ChatMessageDto saveFileMessage(Long roomId, MultipartFile file, User sender) {
-        ChatRoom room = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+        ChatRoom room = getAuthorizedRoom(roomId, sender);
         
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("업로드할 파일이 비어 있습니다.");
@@ -277,7 +302,7 @@ public class ChatService {
             Files.createDirectories(chatUploadPath);
 
             String originalName = StringUtils.cleanPath(String.valueOf(file.getOriginalFilename()));
-            String extension = extractExtension(originalName);
+            String extension = UploadFileValidator.attachmentExtension(file);
             String storedName = UUID.randomUUID() + extension;
             Path targetPath = chatUploadPath.resolve(storedName).normalize();
             
@@ -321,8 +346,7 @@ public class ChatService {
 
     @Transactional
     public ChatMessageDto saveImageMessages(Long roomId, List<MultipartFile> files, User sender) {
-        ChatRoom room = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Chat room not found."));
+        ChatRoom room = getAuthorizedRoom(roomId, sender);
 
         List<MultipartFile> uploadFiles = files == null ? List.of() : files.stream()
                 .filter(candidate -> candidate != null && !candidate.isEmpty())
@@ -339,10 +363,6 @@ public class ChatService {
             List<ChatMessage> savedMessages = new ArrayList<>();
 
             for (MultipartFile file : uploadFiles) {
-                if (!isImageUpload(file)) {
-                    throw new IllegalArgumentException("Only image files can be attached.");
-                }
-
                 ChatFileDto storedFile = storeChatFile(file);
                 ChatMessage message = new ChatMessage(
                         room,
@@ -369,7 +389,7 @@ public class ChatService {
 
     private ChatFileDto storeChatFile(MultipartFile file) throws IOException {
         String originalName = StringUtils.cleanPath(StringUtils.hasText(file.getOriginalFilename()) ? file.getOriginalFilename() : "upload");
-        String extension = extractExtension(originalName);
+        String extension = UploadFileValidator.imageExtension(file);
         String storedName = UUID.randomUUID() + extension;
         Path targetPath = chatUploadPath.resolve(storedName).normalize();
 
@@ -439,19 +459,6 @@ public class ChatService {
                 .build();
     }
 
-    private boolean isImageUpload(MultipartFile file) {
-        String contentType = file.getContentType();
-        if (StringUtils.hasText(contentType) && contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
-            return true;
-        }
-        return isImageFileName(file.getOriginalFilename());
-    }
-
-    private boolean isImageFileName(String filename) {
-        String extension = extractExtension(filename);
-        return List.of(".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg").contains(extension);
-    }
-
     private String normalizeMessageContent(String content) {
         String normalized = content == null ? "" : content.trim();
         if (!StringUtils.hasText(normalized)) {
@@ -463,14 +470,38 @@ public class ChatService {
         return normalized;
     }
 
-    private String extractExtension(String filename) {
-        if (!StringUtils.hasText(filename) || !filename.contains(".")) {
-            return "";
+    private ChatRoom getAuthorizedRoom(Long roomId, User user) {
+        if (user == null || user.getUserNo() == null) {
+            throw new ChatUnavailableException("로그인이 필요합니다.");
         }
-        String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
-        if (extension.length() > 12) {
-            return "";
+
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ChatUnavailableException("채팅방을 찾을 수 없습니다."));
+        if (!isSameUser(room.getInquirer(), user) && !isSameUser(room.getOwner(), user)) {
+            throw new ChatUnavailableException("채팅방에 접근할 수 없습니다.");
         }
-        return extension;
+        return room;
     }
+
+    private User findUserByIdentity(String identity) {
+        if (!StringUtils.hasText(identity)) {
+            throw new ChatUnavailableException("로그인이 필요합니다.");
+        }
+        return userRepository.findByEmail(identity)
+                .or(() -> userRepository.findByLoginId(identity))
+                .orElseThrow(() -> new ChatUnavailableException("사용자를 찾을 수 없습니다."));
+    }
+
+    private Long parseDestinationId(String destination, String prefix) {
+        return parseId(destination.substring(prefix.length()));
+    }
+
+    private Long parseId(String value) {
+        try {
+            return Long.valueOf(value);
+        } catch (NumberFormatException exception) {
+            throw new ChatUnavailableException("올바르지 않은 구독 채널입니다.");
+        }
+    }
+
 }

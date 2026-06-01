@@ -5,7 +5,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.util.Random;
+import java.security.SecureRandom;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -13,10 +14,19 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class MailService {
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private final JavaMailSender mailSender;
     
     // In-memory storage for verification codes: <email, VerificationInfo>
     private final ConcurrentHashMap<String, VerificationInfo> verificationCodes = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, VerificationTokenInfo> verificationTokens = new ConcurrentHashMap<>();
+
+    public enum VerificationPurpose {
+        JOIN,
+        FIND_ID,
+        PASSWORD_RESET
+    }
 
     private static class VerificationInfo {
         String code;
@@ -24,6 +34,22 @@ public class MailService {
 
         VerificationInfo(String code, long durationMillis) {
             this.code = code;
+            this.expiryTime = System.currentTimeMillis() + durationMillis;
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() > expiryTime;
+        }
+    }
+
+    private static class VerificationTokenInfo {
+        String email;
+        VerificationPurpose purpose;
+        long expiryTime;
+
+        VerificationTokenInfo(String email, VerificationPurpose purpose, long durationMillis) {
+            this.email = email;
+            this.purpose = purpose;
             this.expiryTime = System.currentTimeMillis() + durationMillis;
         }
 
@@ -69,8 +95,38 @@ public class MailService {
         return false;
     }
 
+    public String verifyCodeAndIssuePasswordResetToken(String email, String code) {
+        return verifyCodeAndIssueToken(email, code, VerificationPurpose.PASSWORD_RESET);
+    }
+
+    public String verifyCodeAndIssueToken(String email, String code, VerificationPurpose purpose) {
+        if (!verifyCode(email, code)) {
+            return null;
+        }
+
+        String token = UUID.randomUUID().toString();
+        verificationTokens.put(token, new VerificationTokenInfo(email, purpose, TimeUnit.MINUTES.toMillis(10)));
+        return token;
+    }
+
+    public boolean consumePasswordResetToken(String token, String email) {
+        return consumeToken(token, email, VerificationPurpose.PASSWORD_RESET);
+    }
+
+    public boolean consumeToken(String token, String email, VerificationPurpose purpose) {
+        if (token == null || email == null) {
+            return false;
+        }
+
+        VerificationTokenInfo info = verificationTokens.get(token);
+        if (info == null || info.isExpired() || !info.email.equals(email) || info.purpose != purpose) {
+            verificationTokens.remove(token);
+            return false;
+        }
+        return verificationTokens.remove(token, info);
+    }
+
     private String generateRandomCode() {
-        Random random = new Random();
-        return String.format("%06d", random.nextInt(1000000));
+        return String.format("%06d", SECURE_RANDOM.nextInt(1000000));
     }
 }

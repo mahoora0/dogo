@@ -3,6 +3,7 @@ package com.example.dogo.service.Support;
 import com.example.dogo.entity.Support.Inquiry;
 import com.example.dogo.entity.Support.InquiryFile;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.service.upload.UploadFileValidator;
 import com.example.dogo.repository.Support.InquiryFileRepository;
 import com.example.dogo.repository.Support.InquiryRepository;
 import com.example.dogo.repository.user.UserRepository;
@@ -26,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -149,7 +149,7 @@ public class InquiryService {
                 Files.createDirectories(inquiryUploadPath);
 
                 String originalName = StringUtils.cleanPath(String.valueOf(file.getOriginalFilename()));
-                String extension = extractExtension(originalName);
+                String extension = UploadFileValidator.attachmentExtension(file);
                 String storedName = UUID.randomUUID() + extension;
                 Path targetPath = inquiryUploadPath.resolve(storedName).normalize();
                 
@@ -173,17 +173,6 @@ public class InquiryService {
         }
     }
 
-    private String extractExtension(String filename) {
-        if (!StringUtils.hasText(filename) || !filename.contains(".")) {
-            return "";
-        }
-        String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
-        if (extension.length() > 12) {
-            return "";
-        }
-        return extension;
-    }
-
     private InquirySummary toSummaryWithPrivacy(Inquiry inquiry, User currentUser, boolean isAdmin) {
         String createdAt = inquiry.getRegdate() == null ? "" : inquiry.getRegdate().format(CREATED_AT_FORMATTER);
         
@@ -201,7 +190,7 @@ public class InquiryService {
                 inquiry.getCategory(),
                 categoryLabel(inquiry.getCategory()),
                 displayTitle,
-                inquiry.getContent(),
+                isSecret ? "" : inquiry.getContent(),
                 createdAt,
                 statusLabel(inquiry.getStatus()),
                 isSecret
