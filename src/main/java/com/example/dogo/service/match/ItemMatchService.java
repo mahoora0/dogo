@@ -554,7 +554,6 @@ public class ItemMatchService {
 
 	private String foundStatusLabel(String status) {
 		return switch (status) {
-			case "MATCHING" -> "매칭중";
 			case "RETURNED" -> "수령완료";
 			default -> "보관중";
 		};
@@ -562,7 +561,6 @@ public class ItemMatchService {
 
 	private String lostStatusLabel(String status) {
 		return switch (status) {
-			case "MATCHING" -> "매칭중";
 			case "FOUND" -> "회수완료";
 			default -> "대기중";
 		};
@@ -575,7 +573,7 @@ public class ItemMatchService {
 		}
 
 		List<LostItem> activeLostItems = lostItemRepository.findByUserAndDeletedFalseAndStatusIn(
-				user, List.of("WAITING", "MATCHING"));
+				user, List.of("WAITING"));
 
 		for (LostItem lostItem : activeLostItems) {
 			try {

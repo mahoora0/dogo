@@ -500,7 +500,6 @@ public class LostItemService {
 
 	private String statusLabel(String status) {
 		return switch (status) {
-			case "MATCHING" -> "매칭중";
 			case "FOUND" -> "회수완료";
 			default -> "대기중";
 		};
