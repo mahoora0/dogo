@@ -150,7 +150,6 @@
                                             <select name="status" onchange="this.form.submit()" 
                                                     class="text-xs font-bold rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                                 <option value="WAITING" th:selected="${item.status == 'WAITING'}">접수/대기</option>
-                                                <option value="MATCHING" th:selected="${item.status == 'MATCHING'}">매칭중</option>
                                                 <option value="RESOLVED" th:selected="${item.status == 'RESOLVED'}">해결됨</option>
                                                 <option value="CLOSED" th:selected="${item.status == 'CLOSED'}">종료됨</option>
                                             </select>

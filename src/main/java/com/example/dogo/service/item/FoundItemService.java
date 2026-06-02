@@ -455,7 +455,6 @@ public class FoundItemService {
 
 	private String statusLabel(String status) {
 		return switch (status) {
-			case "MATCHING" -> "매칭중";
 			case "RETURNED" -> "수령완료";
 			default -> "보관중";
 		};

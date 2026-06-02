@@ -20,7 +20,7 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long>, Jpa
 			SELECT item
 			FROM FoundItem item
 			WHERE item.deleted = false
-				AND item.status IN ('KEEPING', 'MATCHING')
+				AND item.status = 'KEEPING'
 				AND item.foundAt BETWEEN :foundFrom AND :foundTo
 				AND (:category IS NULL OR :category = ''
 					OR item.categoryMain IS NULL
