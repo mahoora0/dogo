@@ -261,7 +261,6 @@ public class LoginController {
     if (status == null) return "알수없음";
     switch (status.toUpperCase()) {
       case "KEEPING": return "보관중";
-      case "MATCHING": return "매칭중";
       case "COMPLETED": return "완료";
       case "WAITING": return "대기중";
       default: return status;
@@ -390,7 +389,6 @@ public class LoginController {
   private String lostStatusLabel(String status) {
     if (status == null) return "대기중";
     return switch (status) {
-      case "MATCHING" -> "매칭중";
       case "FOUND" -> "회수완료";
       default -> "대기중";
     };
@@ -399,7 +397,6 @@ public class LoginController {
   private String foundStatusLabel(String status) {
     if (status == null) return "보관중";
     return switch (status) {
-      case "MATCHING" -> "매칭중";
       case "RETURNED" -> "수령완료";
       default -> "보관중";
     };

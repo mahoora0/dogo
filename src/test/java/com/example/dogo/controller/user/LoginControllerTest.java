@@ -84,7 +84,7 @@ class LoginControllerTest {
             .build();
 
     @Test
-    void getUserProfileReturnsUserDataAndCounts() throws Exception {
+    void getUserProfileReturnsPublicUserDataAndCounts() throws Exception {
         User user = mock(User.class);
         when(user.getNickname()).thenReturn("테스트유저");
         when(user.getProfileImageUrl()).thenReturn("/uploads/profiles/test.png");

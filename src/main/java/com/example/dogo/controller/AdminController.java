@@ -21,11 +21,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminController {
+
+    private static final Set<String> LOST_ITEM_STATUSES = Set.of("WAITING", "FOUND");
+    private static final Set<String> FOUND_ITEM_STATUSES = Set.of("KEEPING", "RETURNED");
 
     private final AnimalReportRepository animalReportRepository;
     private final MissingPersonRepository missingPersonRepository;
@@ -133,6 +137,7 @@ public class AdminController {
     public String updateLostItemStatus(@PathVariable("id") Long id, 
                                        @RequestParam("status") String status,
                                        @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType) {
+        validateStatus(status, LOST_ITEM_STATUSES);
         LostItem item = lostItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item Id:" + id));
         item.setStatus(status);
@@ -171,11 +176,18 @@ public class AdminController {
     public String updateFoundItemStatus(@PathVariable("id") Long id, 
                                         @RequestParam("status") String status,
                                         @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType) {
+        validateStatus(status, FOUND_ITEM_STATUSES);
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item Id:" + id));
         item.setStatus(status);
         foundItemRepository.save(item);
         return "redirect:/admin/found-items?sourceType=" + sourceType;
+    }
+
+    private void validateStatus(String status, Set<String> allowedStatuses) {
+        if (!allowedStatuses.contains(status)) {
+            throw new IllegalArgumentException("Invalid item status: " + status);
+        }
     }
 
     @PostMapping("/found-items/{id}/delete")

@@ -179,11 +179,11 @@ public class ItemMatchScorer {
 	// ─── Private helpers ──────────────────────────────────────────────────────
 
 	private boolean isOpenLostStatus(String status) {
-		return status == null || status.equals("WAITING") || status.equals("MATCHING");
+		return status == null || status.equals("WAITING");
 	}
 
 	private boolean isOpenFoundStatus(String status) {
-		return status == null || status.equals("KEEPING") || status.equals("MATCHING");
+		return status == null || status.equals("KEEPING");
 	}
 
 	private boolean hasConflictingCategory(LostItem lost, FoundItem found) {

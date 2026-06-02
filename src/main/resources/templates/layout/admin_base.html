@@ -58,6 +58,10 @@
                     <i data-lucide="message-square" class="w-5 h-5"></i>
                     1:1 문의
                 </a>
+                <a href="/admin/reports" th:classappend="${currentMenu == 'reports' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                    신고 관리
+                </a>
                 <a href="/admin/notice" th:classappend="${currentMenu == 'notice' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
                     <i data-lucide="message-square" class="w-5 h-5"></i>
                     공지사항 관리

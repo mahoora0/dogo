@@ -128,6 +128,31 @@ class ChatTemplateJavascriptInlineTest {
     }
 
     @Test
+    void chatProfileModalDoesNotExposeContactDetails() throws Exception {
+        String html = Files.readString(TEMPLATE);
+
+        assertThat(html).doesNotContain("profile-modal-email");
+        assertThat(html).doesNotContain("profile-modal-phone");
+        assertThat(html).doesNotContain("data.email");
+        assertThat(html).doesNotContain("data.phone");
+        assertThat(html).doesNotContain("이메일 정보");
+        assertThat(html).doesNotContain("연락처 정보");
+    }
+
+    @Test
+    void chatTemplateRecalculatesMessageInputHeightAfterOpeningRoom() throws Exception {
+        String html = Files.readString(TEMPLATE);
+
+        int showInputArea = html.indexOf("document.getElementById('input-area').classList.remove('hidden');");
+        int refreshInputHeight = html.indexOf("handleMessageInput();", showInputArea);
+        int loadMessages = html.indexOf("// Load Messages", showInputArea);
+
+        assertThat(showInputArea).isNotNegative();
+        assertThat(loadMessages).isNotNegative();
+        assertThat(refreshInputHeight).isBetween(showInputArea, loadMessages);
+    }
+
+    @Test
     void chatUnreadBadgesCapCountsOverNinetyNine() throws Exception {
         String chat = Files.readString(TEMPLATE);
         String layout = Files.readString(LAYOUT);
@@ -136,5 +161,22 @@ class ChatTemplateJavascriptInlineTest {
         assertThat(layout).contains("unreadChatCount != null && unreadChatCount > 99 ? '99+' : (unreadChatCount ?: 0)");
         assertThat(layout).contains("th:style=\"${currentUri != '/chat' && unreadChatCount != null && unreadChatCount > 0 ? '' : 'display: none;'}\"");
         assertThat(layout).contains("id=\"global-chat-badge\"");
+    }
+
+    @Test
+    void chatItemDetailModalIncludesPostReportForm() throws Exception {
+        String html = Files.readString(TEMPLATE);
+
+        assertThat(html).contains("id=\"item-report-form\"");
+        assertThat(html).contains("th:action=\"@{/reports}\"");
+        assertThat(html).contains("name=\"targetType\"");
+        assertThat(html).contains("id=\"item-report-target-type\"");
+        assertThat(html).contains("name=\"targetId\"");
+        assertThat(html).contains("id=\"item-report-target-id\"");
+        assertThat(html).contains("name=\"returnUrl\"");
+        assertThat(html).contains("id=\"item-report-return-url\"");
+        assertThat(html).contains(">신고</button>");
+        assertThat(html).contains("setItemReportForm(room.itemType, room.itemId, room.roomId)");
+        assertThat(html).contains("function setItemReportForm(itemType, itemId, roomId)");
     }
 }
