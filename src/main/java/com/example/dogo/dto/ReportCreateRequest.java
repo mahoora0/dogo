@@ -9,6 +9,7 @@ public class ReportCreateRequest {
 	private Long targetId;
 	private ReportReasonType reasonType;
 	private String reasonDetail;
+	private String returnUrl;
 
 	public ReportTargetType getTargetType() {
 		return targetType;
@@ -40,5 +41,13 @@ public class ReportCreateRequest {
 
 	public void setReasonDetail(String reasonDetail) {
 		this.reasonDetail = reasonDetail;
+	}
+
+	public String getReturnUrl() {
+		return returnUrl;
+	}
+
+	public void setReturnUrl(String returnUrl) {
+		this.returnUrl = returnUrl;
 	}
 }

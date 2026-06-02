@@ -28,13 +28,30 @@ public class PostReportController {
 			return "redirect:/login";
 		}
 
-		String redirectUrl = postReportService.fallbackTargetUrl(request.getTargetType(), request.getTargetId());
+		String redirectUrl = safeReturnUrl(request.getReturnUrl());
+		if (redirectUrl == null) {
+			redirectUrl = postReportService.fallbackTargetUrl(request.getTargetType(), request.getTargetId());
+		}
 		try {
-			redirectUrl = postReportService.create(request, userDetails.getUser());
+			String targetUrl = postReportService.create(request, userDetails.getUser());
+			if (safeReturnUrl(request.getReturnUrl()) == null) {
+				redirectUrl = targetUrl;
+			}
 			redirectAttributes.addFlashAttribute("reportSuccessMessage", "신고가 접수되었습니다.");
 		} catch (IllegalArgumentException exception) {
 			redirectAttributes.addFlashAttribute("reportErrorMessage", exception.getMessage());
 		}
 		return "redirect:" + redirectUrl;
+	}
+
+	private String safeReturnUrl(String returnUrl) {
+		if (returnUrl == null || returnUrl.isBlank()) {
+			return null;
+		}
+		String trimmed = returnUrl.trim();
+		if (!trimmed.startsWith("/") || trimmed.startsWith("//") || trimmed.contains("\r") || trimmed.contains("\n")) {
+			return null;
+		}
+		return trimmed;
 	}
 }
