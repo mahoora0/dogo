@@ -6,11 +6,21 @@
         <!-- SockJS and STOMP are now loaded globally in base.html -->
 
         <div class="chat-page">
+        <div th:if="${reportSuccessMessage}"
+             th:text="${reportSuccessMessage}"
+             class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            신고가 접수되었습니다.
+        </div>
+        <div th:if="${reportErrorMessage}"
+             th:text="${reportErrorMessage}"
+             class="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            신고 처리 중 오류가 발생했습니다.
+        </div>
         <div class="chat-wrapper">
             <!-- Sidebar: Room List -->
             <div class="chat-sidebar">
                 <div class="chat-sidebar-header">
-                    <h2 class="text-xl font-bold mb-4">습득채팅</h2>
+                    <h2 class="text-xl font-bold mb-4">채팅 목록</h2>
                     <input type="text" class="chat-search" placeholder="검색">
                 </div>
                 <div class="chat-room-list">
@@ -195,6 +205,27 @@
                             상세내용이 표시됩니다.
                         </div>
                     </div>
+                    <form id="item-report-form" th:action="@{/reports}" method="post" class="mt-4 border-t border-slate-100 pt-4">
+                        <input type="hidden" name="targetType" id="item-report-target-type">
+                        <input type="hidden" name="targetId" id="item-report-target-id">
+                        <input type="hidden" name="returnUrl" id="item-report-return-url">
+                        <label for="item-report-reason" class="mb-1.5 block text-xs font-bold text-slate-500">신고 사유</label>
+                        <select id="item-report-reason" name="reasonType" required class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                            <option value="">신고 사유 선택</option>
+                            <option value="SPAM">광고/도배</option>
+                            <option value="FRAUD">사기 의심</option>
+                            <option value="INAPPROPRIATE">부적절한 내용</option>
+                            <option value="PRIVACY">개인정보 노출</option>
+                            <option value="WRONG_INFO">허위/잘못된 정보</option>
+                            <option value="ETC">기타</option>
+                        </select>
+                        <label for="item-report-detail" class="mb-1.5 mt-3 block text-xs font-bold text-slate-500">상세 사유 <span class="font-normal text-slate-400">(선택)</span></label>
+                        <textarea id="item-report-detail" name="reasonDetail" rows="2" maxlength="1000" placeholder="상세 사유를 입력해 주세요"
+                                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"></textarea>
+                        <div class="mt-3 flex justify-end">
+                            <button type="submit" class="rounded-xl bg-red-500 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-red-600">신고</button>
+                        </div>
+                    </form>
                 </div>
 
                 <!-- Footer with navigation link -->
@@ -264,6 +295,7 @@
                 document.getElementById('chat-header').classList.remove('hidden');
                 document.getElementById('input-area').classList.remove('hidden');
                 document.getElementById('info-panel').classList.remove('hidden');
+                setItemReportForm(room.itemType, room.itemId, room.roomId);
                 handleMessageInput();
                 
                 document.getElementById('current-room-name').innerText = room.itemTitle;
@@ -736,6 +768,17 @@
                 setTimeout(() => {
                     modal.classList.add('hidden');
                 }, 300);
+            }
+
+            function setItemReportForm(itemType, itemId, roomId) {
+                const targetTypeInput = document.getElementById('item-report-target-type');
+                const targetIdInput = document.getElementById('item-report-target-id');
+                const returnUrlInput = document.getElementById('item-report-return-url');
+                if (!targetTypeInput || !targetIdInput || !returnUrlInput) return;
+
+                targetTypeInput.value = itemType === 'FOUND' ? 'FOUND_ITEM' : 'LOST_ITEM';
+                targetIdInput.value = itemId || '';
+                returnUrlInput.value = roomId ? `/chat?roomId=${encodeURIComponent(roomId)}` : '/chat';
             }
 
             function setupImageDrop() {

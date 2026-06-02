@@ -162,4 +162,21 @@ class ChatTemplateJavascriptInlineTest {
         assertThat(layout).contains("th:style=\"${currentUri != '/chat' && unreadChatCount != null && unreadChatCount > 0 ? '' : 'display: none;'}\"");
         assertThat(layout).contains("id=\"global-chat-badge\"");
     }
+
+    @Test
+    void chatItemDetailModalIncludesPostReportForm() throws Exception {
+        String html = Files.readString(TEMPLATE);
+
+        assertThat(html).contains("id=\"item-report-form\"");
+        assertThat(html).contains("th:action=\"@{/reports}\"");
+        assertThat(html).contains("name=\"targetType\"");
+        assertThat(html).contains("id=\"item-report-target-type\"");
+        assertThat(html).contains("name=\"targetId\"");
+        assertThat(html).contains("id=\"item-report-target-id\"");
+        assertThat(html).contains("name=\"returnUrl\"");
+        assertThat(html).contains("id=\"item-report-return-url\"");
+        assertThat(html).contains(">신고</button>");
+        assertThat(html).contains("setItemReportForm(room.itemType, room.itemId, room.roomId)");
+        assertThat(html).contains("function setItemReportForm(itemType, itemId, roomId)");
+    }
 }
