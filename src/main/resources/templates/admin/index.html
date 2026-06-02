@@ -59,6 +59,14 @@
                     <i data-lucide="shield-alert" class="w-5 h-5"></i>
                     신고 관리
                 </a>
+                <a href="/admin/notice" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    공지사항 관리
+                </a>
+                <a href="/admin/faq" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    FAQ 관리
+                </a>
             </nav>
             <div class="p-4 border-t border-slate-100">
                 <form th:action="@{/logout}" method="post">
@@ -126,7 +134,7 @@
                         </a>
 
                         <!-- Card 2: 🚨 게시판 신고 처리 -->
-                        <a href="/admin/inquiries" class="p-5 bg-slate-50 hover:bg-rose-50/50 border border-slate-100 hover:border-rose-100 rounded-2xl transition-all duration-300 group text-left flex flex-col justify-between min-h-[140px] relative overflow-hidden">
+                        <a href="/admin/reports" class="p-5 bg-slate-50 hover:bg-rose-50/50 border border-slate-100 hover:border-rose-100 rounded-2xl transition-all duration-300 group text-left flex flex-col justify-between min-h-[140px] relative overflow-hidden">
                             <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-rose-100/10 rounded-full blur-xl group-hover:bg-rose-100/20 transition-all"></div>
                             <div class="flex items-center justify-between z-10">
                                 <div class="p-2.5 bg-rose-100 text-rose-600 rounded-xl group-hover:bg-rose-600 group-hover:text-white transition-all duration-300">
