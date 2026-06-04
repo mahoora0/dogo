@@ -31,6 +31,11 @@
     if (!status) {
       return;
     }
+    if (!message) {
+      status.style.display = "none";
+      return;
+    }
+    status.style.display = "block";
     status.textContent = message;
     status.dataset.tone = tone || "neutral";
   }
@@ -260,7 +265,7 @@
       
       const startNum = (currentPage - 1) * rowSize + 1;
       const endNum = Math.min(currentPage * rowSize, totalCount);
-      setStatus(`총 ${totalCount}건 중 ${startNum}~${endNum}건을 표시합니다. (페이지 ${currentPage}/${Math.ceil(totalCount / rowSize)})`, "success");
+      setStatus("", "success");
     } catch (error) {
       renderCards([]);
       if (pagination) pagination.innerHTML = "";
