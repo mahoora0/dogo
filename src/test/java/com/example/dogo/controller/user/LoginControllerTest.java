@@ -223,7 +223,7 @@ class LoginControllerTest {
                 .andExpect(jsonPath("$.color", is("검정색")))
                 .andExpect(jsonPath("$.place", is("홍대입구역 2번 출구")))
                 .andExpect(jsonPath("$.date", is("2026.05.20 10:00")))
-                .andExpect(jsonPath("$.status", is("보관중")))
+                .andExpect(jsonPath("$.status", is("보관")))
                 .andExpect(jsonPath("$.content", is("상세내용")))
                 .andExpect(jsonPath("$.imageUrl", is("/images/noImageSize.png")));
     }
@@ -252,7 +252,7 @@ class LoginControllerTest {
                 .andExpect(jsonPath("$.color", is("흰색")))
                 .andExpect(jsonPath("$.place", is("강남역")))
                 .andExpect(jsonPath("$.date", is("2026.05.20 11:30")))
-                .andExpect(jsonPath("$.status", is("대기중")))
+                .andExpect(jsonPath("$.status", is("접수")))
                 .andExpect(jsonPath("$.content", is("아이폰 분실")))
                 .andExpect(jsonPath("$.imageUrl", is("/images/noImageSize.png")));
     }

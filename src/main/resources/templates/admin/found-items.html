@@ -155,9 +155,9 @@
                                         <form th:action="@{/admin/found-items/{id}/status(id=${item.foundId}, sourceType=${sourceType})}" method="post">
                                             <select name="status" onchange="this.form.submit()" 
                                                     class="text-xs font-bold rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                <option value="KEEPING" th:selected="${item.status == 'KEEPING'}">보관중</option>
-                                                <option value="RESOLVED" th:selected="${item.status == 'RESOLVED'}">해결됨</option>
-                                                <option value="CLOSED" th:selected="${item.status == 'CLOSED'}">종료됨</option>
+                                                <option value="KEEPING" th:selected="${item.status == 'KEEPING'}">보관</option>
+                                                <option value="RETURNED" th:selected="${item.status == 'RETURNED'}">반환</option>
+                                                <option value="TRANSFERRED" th:selected="${item.status == 'TRANSFERRED'}">연계</option>
                                             </select>
                                         </form>
                                     </td>

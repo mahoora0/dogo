@@ -142,7 +142,10 @@
               </svg>
               <span th:text="${item.place ?: '위치 미상'}">서울 강남역</span>
             </p>
-            <time th:text="${#temporals.format(item.itemAt, 'yyyy.MM.dd')}">2024.05.20</time>
+            <div class="flex items-center justify-between" style="margin-top: 7px;">
+              <time th:text="${#temporals.format(item.itemAt, 'yyyy.MM.dd')}" style="margin-top: 0; display: inline-block;">2024.05.20</time>
+              <span th:if="${item.type == 'PERSON'}" style="font-size: 11px; color: #94a3b8; font-weight: 600; display: inline-block;">데이터 출처: 경찰청</span>
+            </div>
           </div>
         </a>
       </div>

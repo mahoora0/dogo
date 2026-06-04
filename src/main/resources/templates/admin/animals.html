@@ -130,8 +130,8 @@
                                 <tr th:each="report : ${reports}" class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 font-bold text-slate-400" th:text="${report.reportId}">#</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span th:class="${report.reportType == 'MISSING' ? 'text-rose-600 bg-rose-50 border-rose-100' : 'text-blue-600 bg-blue-50 border-blue-100'} + ' px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap inline-block'" 
-                                              th:text="${report.reportType == 'MISSING' ? '실종' : '목격'}">실종</span>
+                                        <span th:class="${report.reportType == 'MISSING' ? 'text-rose-600 bg-rose-50 border-rose-100' : (report.reportType == 'SIGHTING' ? 'text-blue-600 bg-blue-50 border-blue-100' : (report.reportType == 'PROTECTING' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : (report.reportType == 'RETURNED' ? 'text-sky-600 bg-sky-50 border-sky-100' : 'text-amber-600 bg-amber-50 border-amber-100')))} + ' px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap inline-block'" 
+                                              th:text="${report.reportType == 'MISSING' ? '실종' : (report.reportType == 'SIGHTING' ? '목격' : (report.reportType == 'PROTECTING' ? '보호' : (report.reportType == 'RETURNED' ? '귀가' : '연계')))}">실종</span>
                                     </td>
                                     <td class="px-6 py-4 text-slate-700 text-sm font-medium" th:text="${report.animalType + (report.breedName != null ? ' (' + report.breedName + ')' : '')}">DOG</td>
                                     <td class="px-6 py-4 font-semibold text-slate-900 text-sm">

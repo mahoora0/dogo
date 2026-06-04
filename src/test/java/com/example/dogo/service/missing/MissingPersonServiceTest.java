@@ -105,7 +105,7 @@ class MissingPersonServiceTest {
 
 		assertThat(result.getContent()).hasSize(1);
 		assertThat(result.getContent().get(0).summary()).isEqualTo("13세 Korea 실종");
-		assertThat(result.getContent().get(0).statusLabel()).isEqualTo("접수");
+		assertThat(result.getContent().get(0).statusLabel()).isEqualTo("실종");
 		assertThat(result.getContent().get(0).sourceType()).isEqualTo("USER");
 		assertThat(result.getContent().get(0).sourceLabel()).isEqualTo("사용자 제보");
 	}
@@ -116,6 +116,16 @@ class MissingPersonServiceTest {
 				.thenReturn(new PageImpl<>(List.of()));
 
 		missingPersonService.search("Seoul", "OPEN", "PUBLIC_API", PageRequest.of(0, 9));
+
+		verify(missingPersonRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class));
+	}
+
+	@Test
+	void searchAcceptsNewFilters() {
+		when(missingPersonRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class)))
+				.thenReturn(new PageImpl<>(List.of()));
+
+		missingPersonService.search("Seoul", "OPEN", "PUBLIC_API", "서울특별시", java.time.LocalDate.now(), "강남역", PageRequest.of(0, 9));
 
 		verify(missingPersonRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class));
 	}

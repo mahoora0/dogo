@@ -48,11 +48,11 @@ public class AnimalReportService {
 
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
-	private static final Set<String> REPORT_TYPES = Set.of("MISSING", "SIGHTING");
+	private static final Set<String> REPORT_TYPES = Set.of("MISSING", "SIGHTING", "PROTECTING", "RETURNED", "TRANSFERRED");
 	private static final Set<String> ANIMAL_TYPES = Set.of("DOG", "CAT", "OTHER");
 	private static final Set<String> GENDERS = Set.of("MALE", "FEMALE", "UNKNOWN");
 	private static final Set<String> NEUTERED_STATUSES = Set.of("NEUTERED", "NOT_NEUTERED", "UNKNOWN");
-	private static final Set<String> AGE_UNITS = Set.of("MONTH", "YEAR", "UNKNOWN");
+	private static final Set<String> AGE_UNITS = Set.of("MONTH", "YEAR", "UNKNOWN", "RANGE_0_1", "RANGE_2_5", "RANGE_6_10", "RANGE_10_OVER", "ESTIMATED");
 	private static final Set<String> CARE_STATUSES = Set.of("NONE", "PROTECTING", "TRANSFERRED", "UNKNOWN");
 
 	private final AnimalReportRepository animalReportRepository;
@@ -544,10 +544,14 @@ public class AnimalReportService {
 			return title.trim();
 		}
 		String subject = StringUtils.hasText(breedName) ? breedName.trim() : animalTypeLabel(animalType);
-		if ("MISSING".equals(reportType)) {
-			return subject + "을 찾습니다";
-		}
-		return subject + "을 목격했어요";
+		return switch (reportType) {
+			case "MISSING" -> subject + "을 찾습니다";
+			case "SIGHTING" -> subject + "을 목격했어요";
+			case "PROTECTING" -> subject + "을 보호하고 있어요";
+			case "RETURNED" -> subject + "가 귀가했어요";
+			case "TRANSFERRED" -> subject + "를 인계했어요";
+			default -> subject + " 관련 신고";
+		};
 	}
 
 	private String normalizedCareStatus(String reportType, String careStatus) {
@@ -607,6 +611,9 @@ public class AnimalReportService {
 		return switch (defaultText(reportType, "")) {
 			case "MISSING" -> "실종";
 			case "SIGHTING" -> "목격";
+			case "PROTECTING" -> "보호";
+			case "RETURNED" -> "귀가";
+			case "TRANSFERRED" -> "연계";
 			default -> "신고";
 		};
 	}
@@ -648,19 +655,29 @@ public class AnimalReportService {
 	private String ageUnitLabel(String ageUnit) {
 		return switch (defaultText(ageUnit, "")) {
 			case "MONTH" -> "개월";
-			case "YEAR" -> "살";
+			case "YEAR" -> "세";
+			case "RANGE_0_1" -> "0~1세";
+			case "RANGE_2_5" -> "2~5세";
+			case "RANGE_6_10" -> "6~10세";
+			case "RANGE_10_OVER" -> "10세 이상";
+			case "ESTIMATED" -> "미상";
 			default -> "";
 		};
 	}
 
 	private String ageDisplay(Integer ageValue, String ageUnit) {
+		String unitLabel = ageUnitLabel(ageUnit);
+		// 구간 방식: ageValue 없이 ageUnit만으로 표시
+		if (ageUnit != null && (ageUnit.startsWith("RANGE_") || "ESTIMATED".equals(ageUnit))) {
+			return unitLabel;
+		}
 		if (ageValue == null) {
 			return null;
 		}
 		if (ageValue == 0 && "YEAR".equals(ageUnit)) {
 			return "1년 미만";
 		}
-		return ageValue + ageUnitLabel(ageUnit);
+		return ageValue + unitLabel;
 	}
 
 	private String weightDisplay(BigDecimal weightKg) {

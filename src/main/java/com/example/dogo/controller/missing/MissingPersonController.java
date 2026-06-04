@@ -27,12 +27,21 @@ public class MissingPersonController {
 	private static final java.util.Set<String> SORT_FIELDS = java.util.Set.of("regdate", "occurredAt");
 
 	private final MissingPersonService missingPersonService;
+	private final com.example.dogo.service.item.RegistrationOptionService registrationOptionService;
+
+	@ModelAttribute("regionOptions")
+	public java.util.List<String> regionOptions() {
+		return registrationOptionService.getRegionOptions();
+	}
 
 	@GetMapping("/missing-persons")
 	public String list(
 			@RequestParam(required = false) String keyword,
 			@RequestParam(required = false) String status,
 			@RequestParam(required = false) String sourceType,
+			@RequestParam(required = false) String region,
+			@RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+			@RequestParam(required = false) String detailPlace,
 			@RequestParam(defaultValue = "occurredAt") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
@@ -45,10 +54,10 @@ public class MissingPersonController {
 		int safePage = Math.max(page, 0);
 		int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
 
-		Page<?> reportPage = missingPersonService.search(keyword, status, sourceType, PageRequest.of(safePage, safeSize, sort));
+		Page<?> reportPage = missingPersonService.search(keyword, status, sourceType, region, startDate, detailPlace, PageRequest.of(safePage, safeSize, sort));
 		if (safePage > 0 && safePage >= reportPage.getTotalPages() && reportPage.getTotalPages() > 0) {
 			safePage = reportPage.getTotalPages() - 1;
-			reportPage = missingPersonService.search(keyword, status, sourceType, PageRequest.of(safePage, safeSize, sort));
+			reportPage = missingPersonService.search(keyword, status, sourceType, region, startDate, detailPlace, PageRequest.of(safePage, safeSize, sort));
 		}
 
 		model.addAttribute("reportPage", reportPage);
@@ -56,6 +65,9 @@ public class MissingPersonController {
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("status", status);
 		model.addAttribute("sourceType", sourceType);
+		model.addAttribute("region", region);
+		model.addAttribute("startDate", startDate);
+		model.addAttribute("detailPlace", detailPlace);
 		model.addAttribute("sortBy", safeField);
 		model.addAttribute("sortDir", sortDir);
 		model.addAttribute("page", safePage);

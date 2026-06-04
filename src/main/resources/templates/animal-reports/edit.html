@@ -4,6 +4,7 @@
   <th:block th:fragment="content">
     <div class="mb-6">
       <a th:href="@{/animal-reports/{id}(id=${editData.id()})}" class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         상세보기로 돌아가기
       </a>
     </div>
@@ -24,14 +25,14 @@
 
         <div class="md:col-span-2">
           <span class="text-sm font-semibold text-slate-700">구분 <span class="text-red-400">*</span></span>
-          <div class="mt-2 grid gap-3 sm:grid-cols-2">
+          <div class="mt-2 flex flex-wrap gap-2">
             <label th:each="option : ${reportTypeOptions}"
-                   class="flex cursor-pointer items-center gap-3 rounded-full border border-slate-200 bg-slate-50 p-1 text-sm font-semibold text-slate-700 transition has-[:checked]:border-slate-900 has-[:checked]:bg-slate-900">
+                   class="flex cursor-pointer items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-100 has-[:checked]:border-slate-900 has-[:checked]:bg-slate-900">
               <input type="radio" name="reportType" th:value="${option.value}"
                      th:checked="${editData.reportType() == option.value}"
                      class="peer sr-only report-type-radio">
               <span th:text="${option.label}"
-                    class="flex w-full items-center justify-center rounded-full px-3 py-2 text-slate-700 transition peer-checked:bg-slate-900 peer-checked:text-white">실종</span>
+                    class="text-slate-600 transition peer-checked:text-white">실종</span>
             </label>
           </div>
         </div>
@@ -141,14 +142,15 @@
         <div class="grid gap-3 sm:grid-cols-2">
           <label class="block">
             <span class="text-sm font-semibold text-slate-700">나이</span>
-            <select name="ageValue" id="ageValueSelect"
+            <select name="ageUnit"
                     class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
-              <option value="">모름</option>
-              <option value="0" th:selected="${editData.ageValue() != null && editData.ageValue() == 0}">1년 미만</option>
-              <option th:each="i : ${#numbers.sequence(1, 20)}" th:value="${i}" th:text="${i + '살'}"
-                      th:selected="${editData.ageValue() != null && editData.ageValue() == i}"></option>
+              <option value="UNKNOWN" th:selected="${editData.ageUnit() == null || editData.ageUnit() == 'UNKNOWN'}">모름</option>
+              <option value="RANGE_0_1" th:selected="${editData.ageUnit() == 'RANGE_0_1'}">0~1세</option>
+              <option value="RANGE_2_5" th:selected="${editData.ageUnit() == 'RANGE_2_5'}">2~5세</option>
+              <option value="RANGE_6_10" th:selected="${editData.ageUnit() == 'RANGE_6_10'}">6~10세</option>
+              <option value="RANGE_10_OVER" th:selected="${editData.ageUnit() == 'RANGE_10_OVER'}">10세 이상</option>
+              <option value="ESTIMATED" th:selected="${editData.ageUnit() == 'ESTIMATED'}">미상</option>
             </select>
-            <input type="hidden" name="ageUnit" id="ageUnitHidden" th:value="${editData.ageUnit() != null ? editData.ageUnit() : 'UNKNOWN'}">
           </label>
 
           <label class="block">
@@ -287,14 +289,31 @@
       })();
 
       (function() {
-        var ageSelect = document.getElementById('ageValueSelect');
-        var ageUnitHidden = document.getElementById('ageUnitHidden');
-        if (!ageSelect || !ageUnitHidden) return;
-        function syncAgeUnit() {
-          ageUnitHidden.value = ageSelect.value === "" ? "UNKNOWN" : "YEAR";
+        var ageInput = document.getElementById('ageValueInput');
+        var ageUnitSelect = document.getElementById('ageUnitSelect');
+        if (!ageInput || !ageUnitSelect) return;
+
+        function syncAge() {
+          if (ageInput.value !== '') {
+            if (ageUnitSelect.value === 'UNKNOWN') {
+              ageUnitSelect.value = 'YEAR';
+            }
+          } else {
+            ageUnitSelect.value = 'UNKNOWN';
+          }
         }
-        ageSelect.addEventListener('change', syncAgeUnit);
-        syncAgeUnit();
+
+        ageInput.addEventListener('input', syncAge);
+
+        ageUnitSelect.addEventListener('change', function() {
+          if (ageUnitSelect.value === 'UNKNOWN') {
+            ageInput.value = '';
+          } else {
+            if (ageInput.value === '') {
+              ageInput.value = '1';
+            }
+          }
+        });
       })();
 
       function formatPhoneNumber(input) {

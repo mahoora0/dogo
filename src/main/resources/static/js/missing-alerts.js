@@ -5,6 +5,8 @@
   const sizeInput = document.getElementById("missingAlertSize");
   const refreshButton = document.getElementById("missingAlertRefresh");
   const summary = document.getElementById("homeMissingAlertSummary");
+  const pagination = document.getElementById("missingAlertPagination");
+  let currentPage = 1;
 
   if (!grid && !summary) {
     return;
@@ -29,6 +31,11 @@
     if (!status) {
       return;
     }
+    if (!message) {
+      status.style.display = "none";
+      return;
+    }
+    status.style.display = "block";
     status.textContent = message;
     status.dataset.tone = tone || "neutral";
   }
@@ -158,9 +165,135 @@
     summary.textContent = `${alertSummary(alerts[0])} 실종 경보가 접수되었습니다.`;
   }
 
+  // 페이징 컨트롤 동적 렌더링 함수
+  function renderPagination(totalCount, rowSize) {
+    if (!pagination) return;
+    pagination.innerHTML = "";
+
+    const totalPages = Math.ceil(totalCount / rowSize);
+    if (totalPages <= 1) {
+      return;
+    }
+
+    pagination.className = "mt-12 flex justify-center text-sm";
+
+    const container = document.createElement("div");
+    container.className = "inline-flex items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm divide-x divide-slate-200";
+
+    // 1. 맨 처음 (First Page)
+    const firstBtn = document.createElement("button");
+    firstBtn.type = "button";
+    firstBtn.ariaLabel = "첫 페이지";
+    firstBtn.className = "flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900";
+    if (currentPage === 1) {
+      firstBtn.classList.add("pointer-events-none", "opacity-40");
+    }
+    firstBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+      </svg>
+    `;
+    firstBtn.addEventListener("click", () => {
+      if (currentPage !== 1) {
+        currentPage = 1;
+        loadAlerts();
+      }
+    });
+    container.appendChild(firstBtn);
+
+    // 2. 이전 (Prev Page)
+    const prevBtn = document.createElement("button");
+    prevBtn.type = "button";
+    prevBtn.ariaLabel = "이전 페이지";
+    prevBtn.className = "flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900";
+    if (currentPage === 1) {
+      prevBtn.classList.add("pointer-events-none", "opacity-40");
+    }
+    prevBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    `;
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadAlerts();
+      }
+    });
+    container.appendChild(prevBtn);
+
+    // 3. 번호 버튼들 (현재 페이지 주변 최대 10개)
+    const pageZero = currentPage - 1;
+    let startPage = Math.max(0, Math.min(pageZero - 4, totalPages - 10));
+    let endPage = Math.min(totalPages - 1, startPage + 9);
+    if (startPage < 0) startPage = 0;
+
+    for (let i = startPage; i <= endPage; i++) {
+      const pageBtn = document.createElement("button");
+      pageBtn.type = "button";
+      pageBtn.textContent = (i + 1).toString();
+      if (i + 1 === currentPage) {
+        pageBtn.className = "flex h-10 w-10 items-center justify-center bg-slate-900 text-white font-semibold";
+      } else {
+        pageBtn.className = "flex h-10 w-10 items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors";
+        pageBtn.addEventListener("click", () => {
+          currentPage = i + 1;
+          loadAlerts();
+        });
+      }
+      container.appendChild(pageBtn);
+    }
+
+    // 4. 다음 (Next Page)
+    const nextBtn = document.createElement("button");
+    nextBtn.type = "button";
+    nextBtn.ariaLabel = "다음 페이지";
+    nextBtn.className = "flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900";
+    if (currentPage === totalPages) {
+      nextBtn.classList.add("pointer-events-none", "opacity-40");
+    }
+    nextBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+      </svg>
+    `;
+    nextBtn.addEventListener("click", () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadAlerts();
+      }
+    });
+    container.appendChild(nextBtn);
+
+    // 5. 맨 끝 (Last Page)
+    const lastBtn = document.createElement("button");
+    lastBtn.type = "button";
+    lastBtn.ariaLabel = "마지막 페이지";
+    lastBtn.className = "flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900";
+    if (currentPage === totalPages) {
+      lastBtn.classList.add("pointer-events-none", "opacity-40");
+    }
+    lastBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+      </svg>
+    `;
+    lastBtn.addEventListener("click", () => {
+      if (currentPage !== totalPages) {
+        currentPage = totalPages;
+        loadAlerts();
+      }
+    });
+    container.appendChild(lastBtn);
+
+    pagination.appendChild(container);
+  }
+
   async function loadAlerts() {
     const params = new URLSearchParams();
-    params.set("rowSize", sizeInput ? sizeInput.value : "1");
+    const rowSize = sizeInput ? parseInt(sizeInput.value) : 10;
+    params.set("rowSize", rowSize.toString());
+    params.set("page", currentPage.toString());
 
     const dateValue = dateInput ? formatDateForApi(dateInput.value) : "";
     if (dateValue) {
@@ -175,26 +308,52 @@
         throw new Error("missing-alert-request-failed");
       }
 
-      const page = await response.json();
-      const alerts = Array.isArray(page.alerts) ? page.alerts : [];
+      const pageData = await response.json();
+      const alerts = Array.isArray(pageData.alerts) ? pageData.alerts : [];
       renderHomeSummary(alerts);
 
       if (alerts.length === 0) {
         renderCards([]);
+        if (pagination) pagination.innerHTML = "";
         setStatus("조회된 실종 경보가 없습니다.", "empty");
         return;
       }
 
       renderCards(alerts);
-      setStatus(`총 ${page.totalCount || alerts.length}건 중 ${alerts.length}건을 표시합니다.`, "success");
+      
+      // 페이징 컨트롤 렌더링
+      const totalCount = pageData.totalCount || alerts.length;
+      renderPagination(totalCount, rowSize);
+      
+      const startNum = (currentPage - 1) * rowSize + 1;
+      const endNum = Math.min(currentPage * rowSize, totalCount);
+      setStatus("", "success");
     } catch (error) {
       renderCards([]);
+      if (pagination) pagination.innerHTML = "";
       setStatus("실종 경보 API 정보를 불러오지 못했습니다. 인증 정보 또는 네트워크 상태를 확인해주세요.", "error");
     }
   }
 
   if (refreshButton) {
-    refreshButton.addEventListener("click", loadAlerts);
+    refreshButton.addEventListener("click", () => {
+      currentPage = 1;
+      loadAlerts();
+    });
+  }
+
+  if (sizeInput) {
+    sizeInput.addEventListener("change", () => {
+      currentPage = 1;
+      loadAlerts();
+    });
+  }
+
+  if (dateInput) {
+    dateInput.addEventListener("change", () => {
+      currentPage = 1;
+      loadAlerts();
+    });
   }
 
   loadAlerts();

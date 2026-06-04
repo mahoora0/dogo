@@ -149,9 +149,8 @@
                                         <form th:action="@{/admin/missing-persons/{id}/status(id=${report.reportId})}" method="post">
                                             <select name="status" onchange="this.form.submit()" 
                                                     class="text-xs font-bold rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                <option value="OPEN" th:selected="${report.status == 'OPEN'}">접수됨</option>
-                                                <option value="FOUND" th:selected="${report.status == 'FOUND'}">발견됨</option>
-                                                <option value="CLOSED" th:selected="${report.status == 'CLOSED'}">종료됨</option>
+                                                <option value="OPEN" th:selected="${report.status == 'OPEN'}">실종</option>
+                                                <option value="CLOSED" th:selected="${report.status == 'CLOSED'}">귀가</option>
                                             </select>
                                         </form>
                                     </td>
