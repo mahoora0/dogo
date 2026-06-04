@@ -64,7 +64,7 @@
             <div class="flex-1 min-w-0">
               <div class="mb-4 flex flex-wrap items-center gap-2">
                 <span th:text="${report.reportTypeLabel}"
-                      th:classappend="${report.reportType == 'MISSING' ? ' bg-rose-100 text-rose-800 ring-rose-200' : ' bg-indigo-100 text-indigo-800 ring-indigo-200'}"
+                      th:classappend="${report.reportType == 'MISSING' ? ' bg-rose-100 text-rose-800 ring-rose-200' : (report.reportType == 'SIGHTING' ? ' bg-indigo-100 text-indigo-800 ring-indigo-200' : (report.reportType == 'PROTECTING' ? ' bg-emerald-100 text-emerald-800 ring-emerald-200' : (report.reportType == 'RETURNED' ? ' bg-sky-100 text-sky-800 ring-sky-200' : ' bg-amber-100 text-amber-800 ring-amber-200')))}"
                       class="rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset shadow-sm">실종</span>
                 <span th:text="${report.statusLabel}" class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 shadow-sm">진행중</span>
                 <span th:if="${report.sightingCareStatusLabel}" th:text="${report.sightingCareStatusLabel}"
@@ -259,7 +259,7 @@
       </div>
     </section>
 
-    <section class="mt-12">
+    <section class="mt-12" th:if="${report.reportType == 'MISSING' || report.reportType == 'SIGHTING'}">
       <h2 class="mb-1 text-xl font-extrabold text-slate-900">
         <span th:text="${report.reportType == 'MISSING' ? '목격 매칭 후보' : '실종 매칭 후보'}">매칭 후보</span>
       </h2>

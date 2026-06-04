@@ -29,7 +29,7 @@ import java.util.Set;
 public class AdminController {
 
     private static final Set<String> LOST_ITEM_STATUSES = Set.of("WAITING", "FOUND");
-    private static final Set<String> FOUND_ITEM_STATUSES = Set.of("KEEPING", "RETURNED");
+    private static final Set<String> FOUND_ITEM_STATUSES = Set.of("KEEPING", "RETURNED", "TRANSFERRED");
 
     private final AnimalReportRepository animalReportRepository;
     private final MissingPersonRepository missingPersonRepository;

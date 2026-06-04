@@ -24,14 +24,14 @@
 
         <div class="md:col-span-2">
           <span class="text-sm font-semibold text-slate-700">구분 <span class="text-red-400">*</span></span>
-          <div class="mt-2 grid gap-3 sm:grid-cols-2">
+          <div class="mt-2 flex flex-wrap gap-2">
             <label th:each="option : ${reportTypeOptions}"
-                   class="flex cursor-pointer items-center gap-3 rounded-full border border-slate-200 bg-slate-50 p-1 text-sm font-semibold text-slate-700 transition has-[:checked]:border-slate-900 has-[:checked]:bg-slate-900">
+                   class="flex cursor-pointer items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-100 has-[:checked]:border-slate-900 has-[:checked]:bg-slate-900">
               <input type="radio" name="reportType" th:value="${option.value}"
                      th:checked="${editData.reportType() == option.value}"
                      class="peer sr-only report-type-radio">
               <span th:text="${option.label}"
-                    class="flex w-full items-center justify-center rounded-full px-3 py-2 text-slate-700 transition peer-checked:bg-slate-900 peer-checked:text-white">실종</span>
+                    class="text-slate-600 transition peer-checked:text-white">실종</span>
             </label>
           </div>
         </div>

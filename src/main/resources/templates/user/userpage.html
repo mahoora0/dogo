@@ -95,8 +95,8 @@
               <!-- 상태 배지 (우측 상단) -->
               <div class="absolute right-3 top-3 z-10">
                 <span th:text="${activity.statusLabel}"
-                      th:classappend="${activity.status == 'RETURNED' || activity.status == 'FOUND'} ? 'bg-emerald-600 text-white' : (activity.status == 'MATCHING' ? 'bg-amber-500 text-white' : (activity.status == 'ANSWERED' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-white'))"
-                      class="block rounded-full px-3 py-1.5 text-xs font-extrabold shadow-sm">보관중</span>
+                      th:classappend="${activity.status == 'RETURNED' || activity.status == 'FOUND'} ? 'bg-emerald-600 text-white' : (activity.status == 'TRANSFERRED' ? 'bg-blue-600 text-white' : (activity.status == 'MATCHING' ? 'bg-amber-500 text-white' : (activity.status == 'ANSWERED' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-white')))"
+                      class="block rounded-full px-3 py-1.5 text-xs font-extrabold shadow-sm">보관</span>
               </div>
             </div>
             

@@ -28,13 +28,13 @@
     <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <form th:action="@{/animal-reports}" method="get" id="searchForm" class="space-y-4">
         
-        <!-- Top Row: Category Selection (Chips & Dropdown) -->
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Top Row: Category Selection (Chips) -->
+        <div class="grid gap-4 sm:grid-cols-2">
           
           <!-- 신고 구분 Chips -->
           <div class="space-y-2">
             <label class="text-xs font-bold uppercase tracking-wider text-slate-400">신고 구분</label>
-            <div class="flex flex-nowrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <div class="flex flex-wrap gap-2">
               <label class="shrink-0 cursor-pointer">
                 <input type="radio" name="reportType" value="" class="peer sr-only" th:checked="${reportType == null || reportType == ''}" onchange="this.closest('form').submit()">
                 <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">전체</span>
@@ -47,13 +47,25 @@
                 <input type="radio" name="reportType" value="SIGHTING" class="peer sr-only" th:checked="${reportType == 'SIGHTING'}" onchange="this.closest('form').submit()">
                 <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-indigo-600 peer-checked:bg-indigo-600 peer-checked:text-white hover:bg-slate-50">목격</span>
               </label>
+              <label class="shrink-0 cursor-pointer">
+                <input type="radio" name="reportType" value="PROTECTING" class="peer sr-only" th:checked="${reportType == 'PROTECTING'}" onchange="this.closest('form').submit()">
+                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-emerald-600 peer-checked:bg-emerald-600 peer-checked:text-white hover:bg-slate-50">보호</span>
+              </label>
+              <label class="shrink-0 cursor-pointer">
+                <input type="radio" name="reportType" value="RETURNED" class="peer sr-only" th:checked="${reportType == 'RETURNED'}" onchange="this.closest('form').submit()">
+                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-sky-600 peer-checked:bg-sky-600 peer-checked:text-white hover:bg-slate-50">귀가</span>
+              </label>
+              <label class="shrink-0 cursor-pointer">
+                <input type="radio" name="reportType" value="TRANSFERRED" class="peer sr-only" th:checked="${reportType == 'TRANSFERRED'}" onchange="this.closest('form').submit()">
+                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-amber-600 peer-checked:bg-amber-600 peer-checked:text-white hover:bg-slate-50">연계</span>
+              </label>
             </div>
           </div>
 
           <!-- 동물 종류 Chips -->
           <div class="space-y-2">
             <label class="text-xs font-bold uppercase tracking-wider text-slate-400">동물 종류</label>
-            <div class="flex flex-nowrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <div class="flex flex-wrap gap-2">
               <label class="shrink-0 cursor-pointer">
                 <input type="radio" name="animalType" value="" class="peer sr-only" th:checked="${animalType == null || animalType == ''}" onchange="this.closest('form').submit()">
                 <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">전체</span>
@@ -73,6 +85,11 @@
             </div>
           </div>
 
+        </div>
+
+        <!-- Middle Row: Filters & Detailed Location -->
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 border-t border-slate-100 pt-4">
+          
           <!-- 지역 Dropdown -->
           <div class="space-y-2">
             <label class="text-xs font-bold uppercase tracking-wider text-slate-400">지역</label>
@@ -85,24 +102,11 @@
             </div>
           </div>
 
-        </div>
-
-        <!-- Middle Row: Date Range & Detailed Location -->
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 border-t border-slate-100 pt-4">
-          
           <!-- 발생 시작일 -->
           <div class="space-y-2">
             <label class="text-xs font-bold uppercase tracking-wider text-slate-400">발생 시작일</label>
             <div class="relative">
               <input type="date" name="startDate" th:value="${startDate}" class="w-full rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white">
-            </div>
-          </div>
-
-          <!-- 발생 종료일 -->
-          <div class="space-y-2">
-            <label class="text-xs font-bold uppercase tracking-wider text-slate-400">발생 종료일</label>
-            <div class="relative">
-              <input type="date" name="endDate" th:value="${endDate}" class="w-full rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white">
             </div>
           </div>
 
@@ -205,7 +209,7 @@
           <img th:src="${report.imageUrl}" alt="" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110">
           <div class="absolute left-3 top-3 flex gap-1.5">
             <span th:text="${report.reportTypeLabel}"
-                  th:classappend="${report.reportType == 'MISSING' ? ' bg-rose-500' : ' bg-indigo-500'}"
+                  th:classappend="${report.reportType == 'MISSING' ? ' bg-rose-500' : (report.reportType == 'SIGHTING' ? ' bg-indigo-500' : (report.reportType == 'PROTECTING' ? ' bg-emerald-500' : (report.reportType == 'RETURNED' ? ' bg-sky-500' : ' bg-amber-500')))}"
                   class="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm">실종</span>
             <span th:if="${report.sightingCareStatus == 'PROTECTING'}"
                   class="rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-sm">보호 중</span>
@@ -307,7 +311,7 @@
       function submitImageSearch(form) {
         const searchForm = document.getElementById('searchForm');
         if (searchForm) {
-          const filters = ['reportType', 'animalType', 'region', 'startDate', 'endDate', 'detailPlace', 'keyword', 'keywordScope'];
+          const filters = ['reportType', 'animalType', 'region', 'startDate', 'detailPlace', 'keyword', 'keywordScope'];
           filters.forEach(name => {
             let val = '';
             if (name === 'reportType' || name === 'animalType') {

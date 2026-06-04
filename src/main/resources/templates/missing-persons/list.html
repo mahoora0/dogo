@@ -46,15 +46,11 @@
             </label>
             <label class="shrink-0 cursor-pointer">
               <input type="radio" name="status" value="OPEN" class="peer hidden" th:checked="${status == 'OPEN'}">
-              <span class="inline-block rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-rose-600 peer-checked:bg-rose-600 peer-checked:text-white">접수</span>
-            </label>
-            <label class="shrink-0 cursor-pointer">
-              <input type="radio" name="status" value="FOUND" class="peer hidden" th:checked="${status == 'FOUND'}">
-              <span class="inline-block rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-emerald-600 peer-checked:bg-emerald-600 peer-checked:text-white">발견</span>
+              <span class="inline-block rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-rose-600 peer-checked:bg-rose-600 peer-checked:text-white">실종</span>
             </label>
             <label class="shrink-0 cursor-pointer">
               <input type="radio" name="status" value="CLOSED" class="peer hidden" th:checked="${status == 'CLOSED'}">
-              <span class="inline-block rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-700 peer-checked:bg-slate-700 peer-checked:text-white">종료</span>
+              <span class="inline-block rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-700 peer-checked:bg-slate-700 peer-checked:text-white">귀가</span>
             </label>
           </div>
         </div>
@@ -103,8 +99,8 @@
         <div class="p-5 flex-1 flex flex-col justify-between">
           <div class="flex flex-wrap items-start justify-between gap-2">
             <span th:text="${report.statusLabel}"
-                  th:classappend="${report.status == 'FOUND' ? ' bg-emerald-600' : (report.status == 'CLOSED' ? ' bg-slate-700' : ' bg-rose-500')}"
-                  class="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm">접수</span>
+                  th:classappend="${report.status == 'CLOSED' ? ' bg-slate-700' : ' bg-rose-500'}"
+                  class="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm">실종</span>
             <span th:text="${report.sourceLabel}"
                   class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">사용자 제보</span>
           </div>

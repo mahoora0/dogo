@@ -105,7 +105,7 @@ class MissingPersonServiceTest {
 
 		assertThat(result.getContent()).hasSize(1);
 		assertThat(result.getContent().get(0).summary()).isEqualTo("13세 Korea 실종");
-		assertThat(result.getContent().get(0).statusLabel()).isEqualTo("접수");
+		assertThat(result.getContent().get(0).statusLabel()).isEqualTo("실종");
 		assertThat(result.getContent().get(0).sourceType()).isEqualTo("USER");
 		assertThat(result.getContent().get(0).sourceLabel()).isEqualTo("사용자 제보");
 	}

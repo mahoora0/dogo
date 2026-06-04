@@ -94,11 +94,15 @@
               </label>
               <label class="shrink-0 cursor-pointer">
                 <input type="radio" name="status" value="KEEPING" class="peer hidden" th:checked="${status == 'KEEPING'}">
-                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">보관중</span>
+                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">보관</span>
               </label>
               <label class="shrink-0 cursor-pointer">
                 <input type="radio" name="status" value="RETURNED" class="peer hidden" th:checked="${status == 'RETURNED'}">
-                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">수령완료</span>
+                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">반환</span>
+              </label>
+              <label class="shrink-0 cursor-pointer">
+                <input type="radio" name="status" value="TRANSFERRED" class="peer hidden" th:checked="${status == 'TRANSFERRED'}">
+                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">연계</span>
               </label>
             </div>
           </div>
@@ -141,8 +145,8 @@
           </div>
           <div class="absolute right-3 top-3 z-10">
             <span th:text="${item.statusLabel}"
-                  th:classappend="${item.status == 'RETURNED' ? ' bg-emerald-600 text-white' : ' bg-slate-800 text-white'}"
-                  class="block rounded-full px-3 py-1 text-xs font-bold shadow-sm">보관중</span>
+                  th:classappend="${item.status == 'RETURNED' ? ' bg-emerald-600 text-white' : (item.status == 'TRANSFERRED' ? ' bg-blue-600 text-white' : ' bg-slate-800 text-white')}"
+                  class="block rounded-full px-3 py-1 text-xs font-bold shadow-sm">보관</span>
           </div>
         </div>
         

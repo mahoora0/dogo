@@ -455,8 +455,9 @@ public class FoundItemService {
 
 	private String statusLabel(String status) {
 		return switch (status) {
-			case "RETURNED" -> "수령완료";
-			default -> "보관중";
+			case "RETURNED" -> "반환";
+			case "TRANSFERRED" -> "연계";
+			default -> "보관";
 		};
 	}
 }

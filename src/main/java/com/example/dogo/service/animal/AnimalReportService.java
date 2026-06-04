@@ -48,7 +48,7 @@ public class AnimalReportService {
 
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
-	private static final Set<String> REPORT_TYPES = Set.of("MISSING", "SIGHTING");
+	private static final Set<String> REPORT_TYPES = Set.of("MISSING", "SIGHTING", "PROTECTING", "RETURNED", "TRANSFERRED");
 	private static final Set<String> ANIMAL_TYPES = Set.of("DOG", "CAT", "OTHER");
 	private static final Set<String> GENDERS = Set.of("MALE", "FEMALE", "UNKNOWN");
 	private static final Set<String> NEUTERED_STATUSES = Set.of("NEUTERED", "NOT_NEUTERED", "UNKNOWN");
@@ -544,10 +544,14 @@ public class AnimalReportService {
 			return title.trim();
 		}
 		String subject = StringUtils.hasText(breedName) ? breedName.trim() : animalTypeLabel(animalType);
-		if ("MISSING".equals(reportType)) {
-			return subject + "을 찾습니다";
-		}
-		return subject + "을 목격했어요";
+		return switch (reportType) {
+			case "MISSING" -> subject + "을 찾습니다";
+			case "SIGHTING" -> subject + "을 목격했어요";
+			case "PROTECTING" -> subject + "을 보호하고 있어요";
+			case "RETURNED" -> subject + "가 귀가했어요";
+			case "TRANSFERRED" -> subject + "를 인계했어요";
+			default -> subject + " 관련 신고";
+		};
 	}
 
 	private String normalizedCareStatus(String reportType, String careStatus) {
@@ -607,6 +611,9 @@ public class AnimalReportService {
 		return switch (defaultText(reportType, "")) {
 			case "MISSING" -> "실종";
 			case "SIGHTING" -> "목격";
+			case "PROTECTING" -> "보호";
+			case "RETURNED" -> "귀가";
+			case "TRANSFERRED" -> "연계";
 			default -> "신고";
 		};
 	}

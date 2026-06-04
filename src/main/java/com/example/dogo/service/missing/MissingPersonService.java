@@ -398,9 +398,8 @@ public class MissingPersonService {
 
 	private String statusLabel(String status) {
 		return switch (status) {
-			case "FOUND" -> "발견";
-			case "CLOSED" -> "종료";
-			default -> "접수";
+			case "CLOSED" -> "귀가";
+			default -> "실종";
 		};
 	}
 
