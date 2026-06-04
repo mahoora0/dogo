@@ -175,12 +175,37 @@
       return;
     }
 
-    // 다른 리스트 페이지들과 통일성 있는 Tailwind 클래스 추가
-    pagination.className = "mt-12 flex items-center justify-center gap-3 text-sm";
+    pagination.className = "mt-12 flex justify-center text-sm";
 
-    // 1. [이전] 버튼 생성
+    const container = document.createElement("div");
+    container.className = "inline-flex items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm divide-x divide-slate-200";
+
+    // 1. 맨 처음 (First Page)
+    const firstBtn = document.createElement("button");
+    firstBtn.type = "button";
+    firstBtn.ariaLabel = "첫 페이지";
+    firstBtn.className = "flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900";
+    if (currentPage === 1) {
+      firstBtn.classList.add("pointer-events-none", "opacity-40");
+    }
+    firstBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+      </svg>
+    `;
+    firstBtn.addEventListener("click", () => {
+      if (currentPage !== 1) {
+        currentPage = 1;
+        loadAlerts();
+      }
+    });
+    container.appendChild(firstBtn);
+
+    // 2. 이전 (Prev Page)
     const prevBtn = document.createElement("button");
-    prevBtn.className = "flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 active:scale-95";
+    prevBtn.type = "button";
+    prevBtn.ariaLabel = "이전 페이지";
+    prevBtn.className = "flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900";
     if (currentPage === 1) {
       prevBtn.classList.add("pointer-events-none", "opacity-40");
     }
@@ -195,21 +220,35 @@
         loadAlerts();
       }
     });
-    pagination.appendChild(prevBtn);
+    container.appendChild(prevBtn);
 
-    // 2. [현재페이지 / 총페이지] 캡슐 생성
-    const midDisplay = document.createElement("div");
-    midDisplay.className = "flex items-center gap-1 rounded-full bg-white px-4 py-2 shadow-sm border border-slate-100 font-semibold";
-    midDisplay.innerHTML = `
-      <span class="text-slate-900">${currentPage}</span>
-      <span class="text-slate-300 mx-1">/</span>
-      <span class="text-slate-500">${totalPages}</span>
-    `;
-    pagination.appendChild(midDisplay);
+    // 3. 번호 버튼들 (현재 페이지 주변 최대 10개)
+    const pageZero = currentPage - 1;
+    let startPage = Math.max(0, Math.min(pageZero - 4, totalPages - 10));
+    let endPage = Math.min(totalPages - 1, startPage + 9);
+    if (startPage < 0) startPage = 0;
 
-    // 3. [다음] 버튼 생성
+    for (let i = startPage; i <= endPage; i++) {
+      const pageBtn = document.createElement("button");
+      pageBtn.type = "button";
+      pageBtn.textContent = (i + 1).toString();
+      if (i + 1 === currentPage) {
+        pageBtn.className = "flex h-10 w-10 items-center justify-center bg-slate-900 text-white font-semibold";
+      } else {
+        pageBtn.className = "flex h-10 w-10 items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors";
+        pageBtn.addEventListener("click", () => {
+          currentPage = i + 1;
+          loadAlerts();
+        });
+      }
+      container.appendChild(pageBtn);
+    }
+
+    // 4. 다음 (Next Page)
     const nextBtn = document.createElement("button");
-    nextBtn.className = "flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 active:scale-95";
+    nextBtn.type = "button";
+    nextBtn.ariaLabel = "다음 페이지";
+    nextBtn.className = "flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900";
     if (currentPage === totalPages) {
       nextBtn.classList.add("pointer-events-none", "opacity-40");
     }
@@ -224,7 +263,30 @@
         loadAlerts();
       }
     });
-    pagination.appendChild(nextBtn);
+    container.appendChild(nextBtn);
+
+    // 5. 맨 끝 (Last Page)
+    const lastBtn = document.createElement("button");
+    lastBtn.type = "button";
+    lastBtn.ariaLabel = "마지막 페이지";
+    lastBtn.className = "flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900";
+    if (currentPage === totalPages) {
+      lastBtn.classList.add("pointer-events-none", "opacity-40");
+    }
+    lastBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+      </svg>
+    `;
+    lastBtn.addEventListener("click", () => {
+      if (currentPage !== totalPages) {
+        currentPage = totalPages;
+        loadAlerts();
+      }
+    });
+    container.appendChild(lastBtn);
+
+    pagination.appendChild(container);
   }
 
   async function loadAlerts() {

@@ -55,7 +55,23 @@ public class MissingPersonService {
 
 	@Transactional(readOnly = true)
 	public Page<MissingPersonView> search(String keyword, String status, String sourceType, Pageable pageable) {
-		Page<MissingPersonReport> page = missingPersonRepository.findAll(searchSpec(keyword, status, sourceType), pageable);
+		return search(keyword, status, sourceType, null, null, null, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<MissingPersonView> search(
+			String keyword,
+			String status,
+			String sourceType,
+			String region,
+			java.time.LocalDate startDate,
+			String detailPlace,
+			Pageable pageable
+	) {
+		Page<MissingPersonReport> page = missingPersonRepository.findAll(
+				searchSpec(keyword, status, sourceType, region, startDate, detailPlace),
+				pageable
+		);
 		Map<Long, List<String>> imageUrls = resolveImageUrls(page.getContent());
 		return page.map(report -> toListView(report, imageUrls));
 	}
@@ -169,6 +185,17 @@ public class MissingPersonService {
 	}
 
 	private Specification<MissingPersonReport> searchSpec(String keyword, String status, String sourceType) {
+		return searchSpec(keyword, status, sourceType, null, null, null);
+	}
+
+	private Specification<MissingPersonReport> searchSpec(
+			String keyword,
+			String status,
+			String sourceType,
+			String region,
+			java.time.LocalDate startDate,
+			String detailPlace
+	) {
 		return (root, query, criteriaBuilder) -> {
 			List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
 			predicates.add(criteriaBuilder.isFalse(root.get("deleted")));
@@ -183,10 +210,30 @@ public class MissingPersonService {
 				predicates.add(criteriaBuilder.equal(root.get("sourceType"), normalizedSourceType));
 			}
 
+			String normalizedRegion = blankToNull(region);
+			if (normalizedRegion != null) {
+				predicates.add(criteriaBuilder.like(
+						criteriaBuilder.lower(root.get("occurredPlace")),
+						"%" + normalizedRegion.toLowerCase(Locale.ROOT) + "%"
+				));
+			}
+
+			if (startDate != null) {
+				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("occurredAt"), startDate.atStartOfDay()));
+			}
+
+			String normalizedDetailPlace = blankToNull(detailPlace);
+			if (normalizedDetailPlace != null) {
+				predicates.add(criteriaBuilder.like(
+						criteriaBuilder.lower(root.get("occurredPlace")),
+						"%" + normalizedDetailPlace.toLowerCase(Locale.ROOT) + "%"
+				));
+			}
+
 			String normalizedKeyword = blankToNull(keyword);
 			if (normalizedKeyword != null) {
 				String pattern = "%" + normalizedKeyword.toLowerCase(Locale.ROOT) + "%";
-				predicates.add(criteriaBuilder.like(root.get("searchContent"), pattern));
+				predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("searchContent")), pattern));
 			}
 
 			return criteriaBuilder.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));

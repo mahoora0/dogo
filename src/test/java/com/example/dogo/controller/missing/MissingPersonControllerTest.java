@@ -31,15 +31,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MissingPersonControllerTest {
 
 	private final MissingPersonService missingPersonService = mock(MissingPersonService.class);
+	private final com.example.dogo.service.item.RegistrationOptionService registrationOptionService = mock(com.example.dogo.service.item.RegistrationOptionService.class);
 	private final MockMvc mockMvc = MockMvcBuilders
-			.standaloneSetup(new MissingPersonController(missingPersonService))
+			.standaloneSetup(new MissingPersonController(missingPersonService, registrationOptionService))
 			.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
 			.build();
 
 	@Test
 	void listShowsMissingPersonBoard() throws Exception {
 		MissingPersonView report = missingPersonView("USER", "사용자 제보");
-		when(missingPersonService.search(eq("Korea"), eq("OPEN"), eq("PUBLIC_API"), any(PageRequest.class)))
+		when(missingPersonService.search(eq("Korea"), eq("OPEN"), eq("PUBLIC_API"), any(), any(), any(), any(PageRequest.class)))
 				.thenReturn(new PageImpl<>(List.of(report)));
 
 		mockMvc.perform(get("/missing-persons")

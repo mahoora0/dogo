@@ -121,6 +121,16 @@ class MissingPersonServiceTest {
 	}
 
 	@Test
+	void searchAcceptsNewFilters() {
+		when(missingPersonRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class)))
+				.thenReturn(new PageImpl<>(List.of()));
+
+		missingPersonService.search("Seoul", "OPEN", "PUBLIC_API", "서울특별시", java.time.LocalDate.now(), "강남역", PageRequest.of(0, 9));
+
+		verify(missingPersonRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class));
+	}
+
+	@Test
 	void recentItemsUseUploadedMissingPersonImageFirst() {
 		MissingPersonReport report = createReport();
 		when(missingPersonRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class)))
