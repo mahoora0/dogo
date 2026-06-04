@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -71,9 +72,8 @@ class PoliceLostItemSyncServiceTest {
 				"L202605090000001",
 				"https://example.com/lost/wallet.jpg"
 		)));
-		when(lostItemRepository.existsByAtcId("L202605090000001")).thenReturn(false);
-		when(lostItemRepository.existsByAtcId("L202605080000001")).thenReturn(true);
-		when(lostItemRepository.existsByAtcId("L202605070000001")).thenReturn(true);
+		when(lostItemRepository.findByAtcId("L202605080000001")).thenReturn(Optional.of(existingLostItem("L202605080000001")));
+		when(lostItemRepository.findByAtcId("L202605070000001")).thenReturn(Optional.of(existingLostItem("L202605070000001")));
 
 		PoliceLostItemSyncResult result = syncService.syncIncremental(startDate, endDate);
 
@@ -111,8 +111,7 @@ class PoliceLostItemSyncServiceTest {
 				"L202605090000001",
 				"https://minwon24.police.go.kr/images/sub/img02_no_img.gif"
 		)));
-		when(lostItemRepository.existsByAtcId("L202605090000001")).thenReturn(false);
-		when(lostItemRepository.existsByAtcId("L202605080000001")).thenReturn(true);
+		when(lostItemRepository.findByAtcId("L202605080000001")).thenReturn(Optional.of(existingLostItem("L202605080000001")));
 
 		PoliceLostItemSyncResult result = syncService.syncBackfill(startDate, endDate);
 
@@ -125,6 +124,37 @@ class PoliceLostItemSyncServiceTest {
 	}
 
 	@Test
+	void incrementalSyncUpdatesExistingPoliceLostItemDetail() {
+		LocalDate startDate = LocalDate.of(2026, 4, 11);
+		LocalDate endDate = LocalDate.of(2026, 5, 11);
+		LostItem existing = LostItem.fromPolice("L202605090000001", "old title", null,
+				"old item", "old category", null, null,
+				LocalDate.of(2026, 5, 8).atStartOfDay(), "old area", "old place", null);
+		ReflectionTestUtils.setField(existing, "lostId", 55L);
+
+		when(client.fetchLostItems(startDate, endDate, 1, 100)).thenReturn(page(item("L202605090000001")));
+		when(client.fetchLostItems(startDate, endDate, 2, 100)).thenReturn(page());
+		when(lostItemRepository.findByAtcId("L202605090000001")).thenReturn(Optional.of(existing));
+		when(client.fetchLostItemDetail("L202605090000001")).thenReturn(Optional.of(detail(
+				"L202605090000001",
+				"https://example.com/lost/updated-wallet.jpg"
+		)));
+
+		PoliceLostItemSyncResult result = syncService.syncIncremental(startDate, endDate);
+
+		assertThat(result.fetchedCount()).isEqualTo(1);
+		assertThat(result.savedCount()).isZero();
+		assertThat(result.skippedCount()).isEqualTo(1);
+		assertThat(existing.getTitle()).isNotEqualTo("old title");
+		assertThat(existing.getItemName()).isNotEqualTo("old item");
+		assertThat(existing.getLostArea()).isNotEqualTo("old area");
+		assertThat(existing.getLostPlace()).isNotEqualTo("old place");
+		assertThat(existing.getContact()).contains("042-271-0112");
+		verify(lostItemRepository, never()).save(any(LostItem.class));
+		verify(imageService, never()).saveImageIfPresent(any(LostItem.class), any(PoliceLostItemDetailResponse.class));
+	}
+
+	@Test
 	void configuredBackfillLookbackUsesOneDayByDefaultForDevelopment() {
 		LocalDate today = LocalDate.now();
 		when(client.fetchLostItems(today.minusDays(1), today, 1, 100)).thenReturn(page());
@@ -134,8 +164,24 @@ class PoliceLostItemSyncServiceTest {
 		verify(client).fetchLostItems(today.minusDays(1), today, 1, 100);
 	}
 
+	@Test
+	void publicSyncEntrypointsAreTransactionalForExistingItemUpdates() throws Exception {
+		assertThat(PoliceLostItemSyncService.class.getMethod("syncBackfillLastMonth").isAnnotationPresent(Transactional.class))
+				.isTrue();
+		assertThat(PoliceLostItemSyncService.class.getMethod("syncIncrementalLastMonth").isAnnotationPresent(Transactional.class))
+				.isTrue();
+	}
+
 	private PoliceLostItemPage page(PoliceLostItemResponse... items) {
 		return new PoliceLostItemPage("00", "NORMAL SERVICE", items.length, List.of(items));
+	}
+
+	private LostItem existingLostItem(String atcId) {
+		LostItem item = LostItem.fromPolice(atcId, "existing title", null,
+				"existing item", "existing category", null, null,
+				LocalDate.of(2026, 5, 8).atStartOfDay(), "existing area", "existing place", null);
+		ReflectionTestUtils.setField(item, "lostId", 200L);
+		return item;
 	}
 
 	private PoliceLostItemResponse item(String atcId) {

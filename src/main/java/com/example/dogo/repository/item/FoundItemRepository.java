@@ -9,10 +9,13 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface FoundItemRepository extends JpaRepository<FoundItem, Long>, JpaSpecificationExecutor<FoundItem> {
 
 	boolean existsByAtcIdAndFdSn(String atcId, Integer fdSn);
+
+	Optional<FoundItem> findByAtcIdAndFdSn(String atcId, Integer fdSn);
 
 	boolean existsBySourceType(String sourceType);
 

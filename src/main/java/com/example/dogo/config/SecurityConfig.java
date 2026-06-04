@@ -4,6 +4,7 @@ import com.example.dogo.service.user.CustomOAuth2UserService;
 import com.example.dogo.security.CustomAuthenticationFailureHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +16,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.util.StringUtils;
+
+import java.util.UUID;
+import java.util.function.Supplier;
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +30,9 @@ public class SecurityConfig {
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final UserDetailsService userDetailsService;
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider;
+
+    @Value("${security.remember-me.key:${REMEMBER_ME_KEY:}}")
+    private String rememberMeKey;
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
@@ -68,7 +76,7 @@ public class SecurityConfig {
                 .permitAll()
             )
             .rememberMe(remember -> remember
-                .key("uniqueAndSecret")
+                .key(resolveRememberMeKey(rememberMeKey, () -> UUID.randomUUID().toString()))
                 .tokenValiditySeconds(86400 * 30) // 30일 유지
                 .userDetailsService(userDetailsService)
             );
@@ -86,5 +94,12 @@ public class SecurityConfig {
         }
 
         return http.build();
+    }
+
+    static String resolveRememberMeKey(String configuredKey, Supplier<String> fallbackKeySupplier) {
+        if (StringUtils.hasText(configuredKey)) {
+            return configuredKey.trim();
+        }
+        return fallbackKeySupplier.get();
     }
 }

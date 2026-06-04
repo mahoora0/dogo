@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import com.example.dogo.entity.user.User;
 public interface LostItemRepository extends JpaRepository<LostItem, Long>, JpaSpecificationExecutor<LostItem> {
@@ -22,6 +23,8 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long>, JpaSp
 	boolean existsByUserAndDeletedFalse(User user);
 
 	boolean existsByAtcId(String atcId);
+
+	Optional<LostItem> findByAtcId(String atcId);
 
 	boolean existsBySourceType(String sourceType);
 

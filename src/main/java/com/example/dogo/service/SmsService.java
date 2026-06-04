@@ -60,8 +60,8 @@ public class SmsService {
         // Save code for 30 minutes
         verificationCodes.put(toPhoneNumber, new VerificationInfo(code, TimeUnit.MINUTES.toMillis(30)));
 
-        // [DEVELOPMENT MODE] Log instead of sending real SMS
-        log.info("[SMS Verification] to={}, code={}", toPhoneNumber, code);
+        // [DEVELOPMENT MODE] Log request without exposing the verification code.
+        log.info("[SMS Verification] code generated for phone suffix={}", phoneSuffix(toPhoneNumber));
 
         /* Twilio sending logic commented out for development
         String formattedNumber = formatToE164(toPhoneNumber);
@@ -91,6 +91,14 @@ public class SmsService {
 
     private String generateRandomCode() {
         return String.format("%06d", SECURE_RANDOM.nextInt(1000000));
+    }
+
+    private String phoneSuffix(String phone) {
+        String clean = phone == null ? "" : phone.replaceAll("[^0-9]", "");
+        if (clean.length() <= 4) {
+            return clean;
+        }
+        return clean.substring(clean.length() - 4);
     }
 
     private String formatToE164(String phone) {

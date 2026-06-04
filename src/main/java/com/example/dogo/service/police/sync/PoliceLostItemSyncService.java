@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -57,11 +58,13 @@ public class PoliceLostItemSyncService {
 		this.incrementalLookbackDays = Math.max(incrementalLookbackDays, 1);
 	}
 
+	@Transactional
 	public PoliceLostItemSyncResult syncBackfillLastMonth() {
 		LocalDate endDate = LocalDate.now();
 		return syncBackfill(endDate.minusDays(backfillLookbackDays), endDate);
 	}
 
+	@Transactional
 	public PoliceLostItemSyncResult syncIncrementalLastMonth() {
 		LocalDate endDate = LocalDate.now();
 		return syncIncremental(endDate.minusDays(incrementalLookbackDays), endDate);
@@ -131,7 +134,9 @@ public class PoliceLostItemSyncService {
 		}
 
 		String atcId = response.atcId().trim();
-		if (lostItemRepository.existsByAtcId(atcId)) {
+		Optional<LostItem> existingItem = lostItemRepository.findByAtcId(atcId);
+		if (existingItem.isPresent()) {
+			updateExisting(existingItem.get(), response, includeDetail);
 			return false;
 		}
 
@@ -149,6 +154,23 @@ public class PoliceLostItemSyncService {
 			log.warn("경찰청 분실물 응답을 저장하지 못했습니다. atcId={}, reason={}", atcId, exception.getMessage());
 			return false;
 		}
+	}
+
+	private void updateExisting(LostItem existingItem, PoliceLostItemResponse response, boolean includeDetail) {
+		Optional<PoliceLostItemDetailResponse> detail = includeDetail ? fetchDetail(existingItem.getAtcId()) : Optional.empty();
+		LostItem mappedItem = mapper.toLostItem(response, detail.orElse(null));
+		existingItem.updatePoliceDetail(
+				mappedItem.getTitle(),
+				mappedItem.getContent(),
+				mappedItem.getItemName(),
+				mappedItem.getCategoryMain(),
+				mappedItem.getCategorySub(),
+				mappedItem.getColorName(),
+				mappedItem.getLostAt(),
+				mappedItem.getLostArea(),
+				mappedItem.getLostPlace(),
+				mappedItem.getContact()
+		);
 	}
 
 	private Optional<PoliceLostItemDetailResponse> fetchDetail(String atcId) {

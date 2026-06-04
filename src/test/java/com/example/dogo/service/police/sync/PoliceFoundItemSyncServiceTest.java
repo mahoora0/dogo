@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -81,9 +82,8 @@ class PoliceFoundItemSyncServiceTest {
 		when(client.fetchFoundItems(startDate, endDate, 2, 100, "LCA000")).thenReturn(page(item("F202605100000001", "1")));
 		when(client.fetchFoundItems(startDate, endDate, 3, 100, "LCA000")).thenReturn(page(item("F202605090000001", "1")));
 		when(client.fetchFoundItemDetail("F202605110000001", 1)).thenReturn(Optional.of(detail("F202605110000001", "1")));
-		when(foundItemRepository.existsByAtcIdAndFdSn("F202605110000001", 1)).thenReturn(false);
-		when(foundItemRepository.existsByAtcIdAndFdSn("F202605100000001", 1)).thenReturn(true);
-		when(foundItemRepository.existsByAtcIdAndFdSn("F202605090000001", 1)).thenReturn(true);
+		when(foundItemRepository.findByAtcIdAndFdSn("F202605100000001", 1)).thenReturn(Optional.of(existingFoundItem("F202605100000001", 1)));
+		when(foundItemRepository.findByAtcIdAndFdSn("F202605090000001", 1)).thenReturn(Optional.of(existingFoundItem("F202605090000001", 1)));
 
 		PoliceFoundItemSyncResult result = syncService.syncIncremental(startDate, endDate);
 
@@ -158,8 +158,55 @@ class PoliceFoundItemSyncServiceTest {
 		verify(client).fetchFoundItems(startDate, endDate, 1, 100, "LCI000");
 	}
 
+	@Test
+	void incrementalSyncUpdatesExistingPoliceFoundItemDetail() {
+		LocalDate startDate = LocalDate.of(2026, 4, 11);
+		LocalDate endDate = LocalDate.of(2026, 5, 11);
+		FoundItem existing = FoundItem.fromPolice("F202605110000001", 1, "old title", null,
+				"old item", "old category", null, null,
+				LocalDate.of(2026, 5, 11).atStartOfDay(), "old area", "old found place",
+				"old keep place", null, null, null, "KEEPING");
+		ReflectionTestUtils.setField(existing, "foundId", 77L);
+
+		when(client.fetchFoundItems(startDate, endDate, 1, 100, "LCA000")).thenReturn(page(item("F202605110000001", "1")));
+		when(client.fetchFoundItems(startDate, endDate, 2, 100, "LCA000")).thenReturn(page());
+		when(foundItemRepository.findByAtcIdAndFdSn("F202605110000001", 1)).thenReturn(Optional.of(existing));
+		when(client.fetchFoundItemDetail("F202605110000001", 1)).thenReturn(Optional.of(detail("F202605110000001", "1")));
+
+		PoliceFoundItemSyncResult result = syncService.syncIncremental(startDate, endDate);
+
+		assertThat(result.fetchedCount()).isEqualTo(1);
+		assertThat(result.savedCount()).isZero();
+		assertThat(result.skippedCount()).isEqualTo(1);
+		assertThat(existing.getTitle()).isNotEqualTo("old title");
+		assertThat(existing.getItemName()).isNotEqualTo("old item");
+		assertThat(existing.getFoundArea()).isNotEqualTo("old area");
+		assertThat(existing.getFoundPlace()).isNotEqualTo("old found place");
+		assertThat(existing.getKeepPlace()).isNotEqualTo("old keep place");
+		assertThat(existing.getContact()).contains("02-3149-2531");
+		verify(foundItemRepository, never()).save(any(FoundItem.class));
+		verify(imageService, never()).saveImageIfPresent(any(FoundItem.class), any(PoliceFoundItemDetailResponse.class));
+	}
+
+	@Test
+	void publicSyncEntrypointsAreTransactionalForExistingItemUpdates() throws Exception {
+		assertThat(PoliceFoundItemSyncService.class.getMethod("syncBackfillLastMonth").isAnnotationPresent(Transactional.class))
+				.isTrue();
+		assertThat(PoliceFoundItemSyncService.class.getMethod("syncIncrementalLastMonth").isAnnotationPresent(Transactional.class))
+				.isTrue();
+	}
+
 	private PoliceFoundItemPage page(PoliceFoundItemResponse... items) {
 		return new PoliceFoundItemPage("00", "NORMAL SERVICE", items.length, List.of(items));
+	}
+
+	private FoundItem existingFoundItem(String atcId, Integer fdSn) {
+		FoundItem item = FoundItem.fromPolice(atcId, fdSn, "existing title", null,
+				"existing item", "existing category", null, null,
+				LocalDate.of(2026, 5, 11).atStartOfDay(), "existing area", "existing found place",
+				"existing keep place", null, null, null, "KEEPING");
+		ReflectionTestUtils.setField(item, "foundId", 200L);
+		return item;
 	}
 
 	private PoliceFoundItemResponse item(String atcId, String fdSn) {

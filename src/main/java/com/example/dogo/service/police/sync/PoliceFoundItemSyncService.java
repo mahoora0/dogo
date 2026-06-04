@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -67,11 +68,13 @@ public class PoliceFoundItemSyncService {
 		this.incrementalLookbackDays = Math.max(incrementalLookbackDays, 1);
 	}
 
+	@Transactional
 	public PoliceFoundItemSyncResult syncBackfillLastMonth() {
 		LocalDate endDate = LocalDate.now();
 		return syncBackfill(endDate.minusDays(backfillLookbackDays), endDate);
 	}
 
+	@Transactional
 	public PoliceFoundItemSyncResult syncIncrementalLastMonth() {
 		LocalDate endDate = LocalDate.now();
 		return syncIncremental(endDate.minusDays(incrementalLookbackDays), endDate);
@@ -190,7 +193,13 @@ public class PoliceFoundItemSyncService {
 
 		String atcId = response.atcId().trim();
 		Integer fdSn = mapper.parseOptionalFdSn(response.fdSn());
-		if (fdSn == null || foundItemRepository.existsByAtcIdAndFdSn(atcId, fdSn)) {
+		if (fdSn == null) {
+			return false;
+		}
+
+		Optional<FoundItem> existingItem = foundItemRepository.findByAtcIdAndFdSn(atcId, fdSn);
+		if (existingItem.isPresent()) {
+			updateExisting(existingItem.get(), response, includeDetail, regionName);
 			return false;
 		}
 
@@ -215,6 +224,37 @@ public class PoliceFoundItemSyncService {
 			log.warn("경찰청 습득물 응답을 저장하지 못했습니다. atcId={}, fdSn={}, reason={}", atcId, fdSn, exception.getMessage());
 			return false;
 		}
+	}
+
+	private void updateExisting(
+			FoundItem existingItem,
+			PoliceFoundItemResponse response,
+			boolean includeDetail,
+			String regionName
+	) {
+		Optional<PoliceFoundItemDetailResponse> detail = includeDetail
+				? fetchDetail(existingItem.getAtcId(), existingItem.getFdSn())
+				: Optional.empty();
+		String foundArea = detail
+				.flatMap(detailResponse -> stationAddressResolver.resolveFoundArea(detailResponse, regionName))
+				.orElse(regionName);
+		FoundItem mappedItem = mapper.toFoundItem(response, detail.orElse(null), foundArea);
+		existingItem.updatePoliceDetail(
+				mappedItem.getTitle(),
+				mappedItem.getContent(),
+				mappedItem.getItemName(),
+				mappedItem.getCategoryMain(),
+				mappedItem.getCategorySub(),
+				mappedItem.getColorName(),
+				mappedItem.getFoundAt(),
+				mappedItem.getFoundArea(),
+				mappedItem.getFoundPlace(),
+				mappedItem.getKeepPlace(),
+				mappedItem.getContact(),
+				mappedItem.getCustodyStatus(),
+				mappedItem.getReceiveType(),
+				mappedItem.getStatus()
+		);
 	}
 
 	private Optional<PoliceFoundItemDetailResponse> fetchDetail(String atcId, Integer fdSn) {
