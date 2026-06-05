@@ -119,15 +119,19 @@ public class AdminController {
 
     // --- 분실물 관리 ---
     @GetMapping("/lost-items")
-    public String listLostItems(@RequestParam(value = "sourceType", required = false) String sourceType, Model model) {
-        List<LostItem> items;
+    public String listLostItems(@RequestParam(value = "sourceType", required = false) String sourceType,
+                                @RequestParam(value = "page", defaultValue = "0") int page,
+                                Model model) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
+        org.springframework.data.domain.Page<LostItem> itemPage;
         if (sourceType != null && ("USER".equals(sourceType) || "POLICE".equals(sourceType))) {
-            items = lostItemRepository.findBySourceTypeAndDeletedFalseOrderByRegDateDesc(sourceType);
+            itemPage = lostItemRepository.findBySourceTypeAndDeletedFalseOrderByRegDateDesc(sourceType, pageable);
         } else {
-            items = lostItemRepository.findByDeletedFalseOrderByRegDateDesc();
+            itemPage = lostItemRepository.findByDeletedFalseOrderByRegDateDesc(pageable);
             sourceType = "ALL";
         }
-        model.addAttribute("items", items);
+        model.addAttribute("items", itemPage);
+        model.addAttribute("page", itemPage);
         model.addAttribute("sourceType", sourceType);
         return "admin/lost-items";
     }
@@ -158,15 +162,19 @@ public class AdminController {
 
     // --- 습득물 관리 ---
     @GetMapping("/found-items")
-    public String listFoundItems(@RequestParam(value = "sourceType", required = false) String sourceType, Model model) {
-        List<FoundItem> items;
+    public String listFoundItems(@RequestParam(value = "sourceType", required = false) String sourceType,
+                                 @RequestParam(value = "page", defaultValue = "0") int page,
+                                 Model model) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
+        org.springframework.data.domain.Page<FoundItem> itemPage;
         if (sourceType != null && ("USER".equals(sourceType) || "POLICE".equals(sourceType))) {
-            items = foundItemRepository.findBySourceTypeAndDeletedFalseOrderByRegDateDesc(sourceType);
+            itemPage = foundItemRepository.findBySourceTypeAndDeletedFalseOrderByRegDateDesc(sourceType, pageable);
         } else {
-            items = foundItemRepository.findByDeletedFalseOrderByRegDateDesc();
+            itemPage = foundItemRepository.findByDeletedFalseOrderByRegDateDesc(pageable);
             sourceType = "ALL";
         }
-        model.addAttribute("items", items);
+        model.addAttribute("items", itemPage);
+        model.addAttribute("page", itemPage);
         model.addAttribute("sourceType", sourceType);
         return "admin/found-items";
     }
@@ -203,9 +211,11 @@ public class AdminController {
 
     // --- 실종동물 관리 ---
     @GetMapping("/animals")
-    public String listAnimals(Model model) {
-        List<AnimalReport> reports = animalReportRepository.findByDeletedFalseOrderByRegdateDesc();
-        model.addAttribute("reports", reports);
+    public String listAnimals(@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
+        org.springframework.data.domain.Page<AnimalReport> reportPage = animalReportRepository.findByDeletedFalseOrderByRegdateDesc(pageable);
+        model.addAttribute("reports", reportPage);
+        model.addAttribute("page", reportPage);
         return "admin/animals";
     }
 
@@ -231,9 +241,11 @@ public class AdminController {
 
     // --- 실종자 관리 ---
     @GetMapping("/missing-persons")
-    public String listMissingPersons(Model model) {
-        List<MissingPersonReport> reports = missingPersonRepository.findByDeletedFalseOrderByRegdateDesc();
-        model.addAttribute("reports", reports);
+    public String listMissingPersons(@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
+        org.springframework.data.domain.Page<MissingPersonReport> reportPage = missingPersonRepository.findByDeletedFalseOrderByRegdateDesc(pageable);
+        model.addAttribute("reports", reportPage);
+        model.addAttribute("page", reportPage);
         return "admin/missing-persons";
     }
 
@@ -259,9 +271,11 @@ public class AdminController {
 
     // --- 회원 관리 ---
     @GetMapping("/users")
-    public String listUsers(Model model) {
-        List<User> users = userRepository.findAllByOrderByUserNoDesc();
-        model.addAttribute("users", users);
+    public String listUsers(@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
+        org.springframework.data.domain.Page<User> userPage = userRepository.findAllByOrderByUserNoDesc(pageable);
+        model.addAttribute("users", userPage);
+        model.addAttribute("page", userPage);
         return "admin/users";
     }
 

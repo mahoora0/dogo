@@ -110,7 +110,7 @@
                     <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div class="flex items-center gap-3">
                             <h2 class="text-lg font-bold">등록된 분실물 목록</h2>
-                            <span class="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full" th:text="'총 ' + ${#lists.size(items)} + '건'">총 0건</span>
+                            <span class="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full" th:text="'총 ' + ${items.totalElements} + '건'">총 0건</span>
                         </div>
                         <div class="flex gap-2">
                             <a th:href="@{/admin/lost-items(sourceType='ALL')}" 
@@ -137,7 +137,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                <tr th:each="item : ${items}" class="hover:bg-slate-50 transition-colors">
+                                <tr th:each="item : ${items.content}" class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 font-bold text-slate-400" th:text="${item.lostId}">#</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span th:class="${item.sourceType == 'USER' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-emerald-600 bg-emerald-50 border-emerald-100'} + ' px-3 py-1.5 rounded-full text-xs font-bold border whitespace-nowrap inline-block'" 
@@ -148,7 +148,7 @@
                                         <a th:href="@{/lost-items/{id}(id=${item.lostId})}" target="_blank" class="hover:text-blue-600 hover:underline" th:text="${item.title}">제목</a>
                                     </td>
                                     <td class="px-6 py-4 text-slate-600 text-sm" th:text="${item.lostArea + ' ' + item.lostPlace}">위치</td>
-                                    <td class="px-6 py-4 text-slate-500 text-sm" th:text="${#temporals.format(item.lostAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+                                    <td class="px-6 py-4 text-slate-500 text-sm whitespace-nowrap" th:text="${#temporals.format(item.lostAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
                                     
                                     <!-- 상태 수정 폼 -->
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -172,11 +172,63 @@
                                         </form>
                                     </td>
                                 </tr>
-                                <tr th:if="${#lists.isEmpty(items)}">
+                                <tr th:if="${items.isEmpty()}">
                                     <td colspan="8" class="text-center py-10 text-slate-400">등록된 분실물 건이 없습니다.</td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div th:if="${page.totalPages > 1}" class="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50">
+                        <div class="text-sm text-slate-500 text-center sm:text-left">
+                            총 <span class="font-semibold text-slate-700" th:text="${page.totalElements}">100</span>건 중 
+                            <span class="font-semibold text-slate-700" th:text="${page.number * page.size + 1}">1</span> - 
+                            <span class="font-semibold text-slate-700" th:text="${(page.number + 1) * page.size > page.totalElements ? page.totalElements : (page.number + 1) * page.size}">10</span> 표시
+                        </div>
+                        <nav th:with="startPage=${T(java.lang.Math).max(0, T(java.lang.Math).min(page.number - 4, page.totalPages - 10))}, endPage=${T(java.lang.Math).min(page.totalPages - 1, startPage + 9)}"
+                             class="flex justify-center flex-1 text-sm sm:-ml-[120px]">
+                            <div class="inline-flex items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm divide-x divide-slate-200">
+                                <!-- 맨 처음 -->
+                                <a th:classappend="${page.first} ? ' pointer-events-none opacity-40'"
+                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, page=0)}"
+                                   aria-label="첫 페이지"
+                                   class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                                </a>
+
+                                <!-- 이전 -->
+                                <a th:classappend="${page.first} ? ' pointer-events-none opacity-40'"
+                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, page=${page.number - 1})}"
+                                   aria-label="이전 페이지"
+                                   class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                                </a>
+
+                                <!-- 번호 -->
+                                <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, page=${i})}"
+                                   th:text="${i + 1}"
+                                   th:classappend="${i == page.number} ? ' bg-slate-900 text-white font-semibold' : ' text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+                                   class="flex h-9 w-9 items-center justify-center transition-colors">1</a>
+
+                                <!-- 다음 -->
+                                <a th:classappend="${page.last} ? ' pointer-events-none opacity-40'"
+                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, page=${page.number + 1})}"
+                                   aria-label="다음 페이지"
+                                   class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                </a>
+
+                                <!-- 맨 끝 -->
+                                <a th:classappend="${page.last} ? ' pointer-events-none opacity-40'"
+                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, page=${page.totalPages - 1})}"
+                                   aria-label="마지막 페이지"
+                                   class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                                </a>
+                            </div>
+                        </nav>
                     </div>
                 </div>
             </div>

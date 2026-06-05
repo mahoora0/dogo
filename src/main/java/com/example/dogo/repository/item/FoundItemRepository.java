@@ -1,6 +1,7 @@
 package com.example.dogo.repository.item;
 
 import com.example.dogo.entity.item.FoundItem;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -53,5 +54,9 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long>, Jpa
 
 	List<FoundItem> findByDeletedFalseOrderByRegDateDesc();
 
+	Page<FoundItem> findByDeletedFalseOrderByRegDateDesc(Pageable pageable);
+
 	List<FoundItem> findBySourceTypeAndDeletedFalseOrderByRegDateDesc(String sourceType);
+
+	Page<FoundItem> findBySourceTypeAndDeletedFalseOrderByRegDateDesc(String sourceType, Pageable pageable);
 }
