@@ -147,9 +147,9 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                <tr th:each="user : ${users.content}" class="hover:bg-slate-50 transition-colors">
+                                <tr th:each="user, status : ${users.content}" class="hover:bg-slate-50 transition-colors">
                                     <!-- No -->
-                                    <td class="px-6 py-4 font-bold text-slate-400" th:text="${user.userNo}">#</td>
+                                    <td class="px-6 py-4 font-bold text-slate-400" th:text="${users.totalElements - (users.number * users.size) - status.index}">#</td>
                                     
                                     <!-- Profile Avatar -->
                                     <td class="px-6 py-4 whitespace-nowrap">

@@ -158,8 +158,8 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                <tr th:each="item : ${items.content}" class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-6 py-4 font-bold text-slate-400" th:text="${item.lostId}">#</td>
+                                <tr th:each="item, status : ${items.content}" class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-bold text-slate-400" th:text="${items.totalElements - (items.number * items.size) - status.index}">#</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span th:class="${item.sourceType == 'USER' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-emerald-600 bg-emerald-50 border-emerald-100'} + ' px-3 py-1.5 rounded-full text-xs font-bold border whitespace-nowrap inline-block'" 
                                               th:text="${item.sourceType == 'USER' ? '유저등록' : '경찰연동'}">유저등록</span>
