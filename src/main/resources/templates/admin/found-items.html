@@ -169,7 +169,7 @@
                                         <a th:href="@{/found-items/{id}(id=${item.foundId})}" target="_blank" class="hover:text-blue-600 hover:underline" th:text="${item.title}">제목</a>
                                     </td>
                                     <td class="px-6 py-4 text-slate-600 text-sm" th:text="${item.foundArea + ' ' + (item.foundPlace != null ? item.foundPlace : '')}">위치</td>
-                                    <td class="px-6 py-4 text-slate-500 text-sm" th:text="${#temporals.format(item.foundAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+                                    <td class="px-6 py-4 text-slate-500 text-sm whitespace-nowrap" th:text="${#temporals.format(item.foundAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
                                     
                                     <!-- 상태 수정 폼 -->
                                     <td class="px-6 py-4 whitespace-nowrap">
