@@ -48,6 +48,10 @@ textarea {
     gap: 8px;
 }
 
+.logo {
+    margin-left: 80px;
+}
+
 .navbar .logo img {
     display: block;
     height: 40px;
