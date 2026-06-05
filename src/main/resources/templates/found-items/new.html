@@ -123,12 +123,14 @@
           </div>
         </label>
 
-        <label class="block">
+        <div class="block">
           <span class="text-sm font-semibold text-slate-700">보관 장소</span>
-          <input name="keepPlace" th:value="${request != null ? request.keepPlace : ''}"
+          <p class="mt-0.5 text-xs text-slate-400">입력하면 동일한 이름의 장소가 여러 개일 때 선택할 수 있습니다.</p>
+          <input id="keepPlace" name="keepPlace" th:value="${request != null ? request.keepPlace : ''}"
                  placeholder="예: 강남경찰서"
+                 autocomplete="off"
                  class="mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
-        </label>
+        </div>
 
         <label class="block md:col-span-2">
           <span class="text-sm font-semibold text-slate-700">상세 설명</span>
@@ -291,15 +293,19 @@
         foundItemForm.submit();
       });
       keepNoticeCancel.addEventListener('click', closeKeepNotice);
-      keepNoticeModal.addEventListener('click', function(event) {
-        if (event.target === keepNoticeModal) {
-          closeKeepNotice();
-        }
+      // 엔터키 submit 방지
+      document.querySelectorAll('form').forEach(function(f) {
+        f.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && e.target.nodeName === 'INPUT') {
+            e.preventDefault();
+          }
+        });
       });
     })();
 
     </script>
     <script th:src="@{/js/image-upload.js}"></script>
+    <script th:src="@{/js/keep-place-picker.js}"></script>
   </th:block>
 </th:block>
 </html>

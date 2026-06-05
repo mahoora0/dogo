@@ -241,6 +241,15 @@
           }
         });
       }
+
+      // 엔터키 submit 방지
+      document.querySelectorAll('form').forEach(function(f) {
+        f.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && e.target.nodeName === 'INPUT') {
+            e.preventDefault();
+          }
+        });
+      });
     })();
 
     </script>
