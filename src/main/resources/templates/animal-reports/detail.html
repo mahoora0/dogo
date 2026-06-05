@@ -49,10 +49,12 @@
           <h3 class="mb-2 text-sm font-bold text-slate-700">특징</h3>
           <p th:text="${report.distinctiveMarks ?: '등록된 특징이 없습니다.'}"
              class="whitespace-pre-line text-sm leading-relaxed text-slate-700">특징</p>
-          <div class="my-5 border-t border-slate-200"></div>
-          <h3 class="mb-2 text-sm font-bold text-slate-700">상세한 내용</h3>
-          <p th:text="${report.content ?: '등록된 상세 내용이 없습니다.'}"
-             class="whitespace-pre-line text-sm leading-relaxed text-slate-700">상세한 내용</p>
+          <th:block th:if="${report.displayContent}">
+            <div class="my-5 border-t border-slate-200"></div>
+            <h3 class="mb-2 text-sm font-bold text-slate-700">상세한 내용</h3>
+            <p th:text="${report.displayContent}"
+               class="whitespace-pre-line text-sm leading-relaxed text-slate-700">상세한 내용</p>
+          </th:block>
         </div>
       </div>
 
@@ -103,7 +105,7 @@
             <span th:text="${#temporals.format(report.eventDate, 'yyyy년 MM월 dd일')}">2026년 05월 16일</span>
             <span th:if="${report.eventTime != null}" th:text="${#temporals.format(report.eventTime, 'HH:mm')}">12:00</span>
             <span class="mx-1 text-slate-300">•</span>
-            <span th:text="${report.regionName}">서울특별시</span>
+            <span th:text="${report.locationSummary ?: report.regionName}">서울특별시</span>
           </div>
           <div th:if="${statusSuccessMessage}"
                th:text="${statusSuccessMessage}"
@@ -121,10 +123,12 @@
           <h3 class="mb-2 text-sm font-bold text-slate-700">특징</h3>
           <p th:text="${report.distinctiveMarks ?: '등록된 특징이 없습니다.'}"
              class="whitespace-pre-line text-sm leading-relaxed text-slate-700">특징</p>
-          <div class="my-5 border-t border-slate-200"></div>
-          <h3 class="mb-2 text-sm font-bold text-slate-700">상세한 내용</h3>
-          <p th:text="${report.content ?: '등록된 상세 내용이 없습니다.'}"
-             class="whitespace-pre-line text-sm leading-relaxed text-slate-700">상세한 내용</p>
+          <th:block th:if="${report.displayContent}">
+            <div class="my-5 border-t border-slate-200"></div>
+            <h3 class="mb-2 text-sm font-bold text-slate-700">상세한 내용</h3>
+            <p th:text="${report.displayContent}"
+               class="whitespace-pre-line text-sm leading-relaxed text-slate-700">상세한 내용</p>
+          </th:block>
         </div>
 
         <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -170,11 +174,17 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1016 0 8 8 0 00-16 0z"/></svg>
               </div>
               <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">나이/몸무게</span>
-                <span class="font-bold text-slate-800">
-                  <span th:text="${report.ageDisplay != null ? report.ageDisplay : (report.weightDisplay == null ? '-' : '')}">3살</span>
-                  <span th:if="${report.weightDisplay != null}" th:text="${(report.ageDisplay != null ? ' · ' : '') + report.weightDisplay}"> · 4kg</span>
-                </span>
+                <span class="text-xs font-semibold text-slate-400">나이</span>
+                <span th:text="${report.ageDisplay ?: '-'}" class="font-bold text-slate-800">3살</span>
+              </div>
+            </li>
+            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m7-13H5m14 8H5"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">몸무게</span>
+                <span th:text="${report.weightDisplay ?: '-'}" class="font-bold text-slate-800">4kg</span>
               </div>
             </li>
             <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
@@ -191,8 +201,36 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               </div>
               <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">장소</span>
+                <span th:text="${report.reportType == 'MISSING' ? '실종 장소' : '구조 장소'}"
+                      class="text-xs font-semibold text-slate-400">구조 장소</span>
                 <span th:text="${report.detailPlace}" class="font-bold text-slate-800">장소</span>
+              </div>
+            </li>
+            <li th:if="${report.authorityName}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">관할기관</span>
+                <span th:text="${report.authorityName}" class="font-bold text-slate-800">관할기관</span>
+              </div>
+            </li>
+            <li th:if="${report.shelterName}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 20h16V8l-8-4-8 4v12z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 20v-6h6v6"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">보호소</span>
+                <span th:text="${report.shelterName}" class="font-bold text-slate-800">보호소</span>
+              </div>
+            </li>
+            <li th:if="${report.shelterAddress}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">보호소 주소</span>
+                <span th:text="${report.shelterAddress}" class="font-bold text-slate-800">보호소 주소</span>
               </div>
             </li>
             <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
@@ -202,6 +240,24 @@
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-slate-400">연락처</span>
                 <span th:text="${report.displayContact}" class="font-bold text-slate-800">비공개</span>
+              </div>
+            </li>
+            <li th:if="${report.noticeNo}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10M7 11h10M7 15h6M5 3h14a2 2 0 012 2v16l-4-2-4 2-4-2-4 2V5a2 2 0 012-2z"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">공고번호</span>
+                <span th:text="${report.noticeNo}" class="font-bold text-slate-800">공고번호</span>
+              </div>
+            </li>
+            <li th:if="${report.noticePeriod}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M5 11h14M7 21h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">공고기간</span>
+                <span th:text="${report.noticePeriod}" class="font-bold text-slate-800">공고기간</span>
               </div>
             </li>
           </ul>
