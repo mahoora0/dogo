@@ -40,15 +40,10 @@ class AnimalPublicApiMapperTest {
 		assertThat(report.getBreedName()).isNull();
 		assertThat(report.getContent()).contains(
 				"상태: 종료(반환)",
-				"보호소: 장성군동물보호센터",
-				"보호소 주소: 전라남도 장성군 삼계면 능성로 382-310",
-				"관할기관: 전라남도 장성군",
-				"공고번호: 전남-장성-2026-00014",
-				"공고기간: 2026-05-18 ~ 2026-05-28",
 				"나이: 2022(년생)",
 				"체중: 10(Kg)"
 		);
-		assertThat(report.getContent()).doesNotContain("state:", "feature:", "age:", "weight:");
+		assertThat(report.getContent()).doesNotContain("state:", "feature:", "age:", "weight:", "보호소:", "공고번호:");
 	}
 
 	@Test
@@ -78,11 +73,8 @@ class AnimalPublicApiMapperTest {
 		), "ANIMAL_PROTECTION_API", "SIGHTING");
 
 		assertThat(report.getWeightKg()).isEqualByComparingTo("0.36");
-		assertThat(report.getContent()).contains(
-				"보호소: 인제군동물보호센터",
-				"공고번호: 강원-인제-2026-00173",
-				"공고기간: 2026-06-04"
-		);
+		assertThat(report.getContent()).contains("상태: 보호중", "체중: 0,36(Kg)");
+		assertThat(report.getContent()).doesNotContain("보호소:", "공고번호:", "공고기간:");
 	}
 
 	@Test

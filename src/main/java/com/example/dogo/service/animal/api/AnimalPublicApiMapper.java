@@ -61,11 +61,6 @@ public class AnimalPublicApiMapper {
 	private String content(AnimalPublicApiRecord record) {
 		StringBuilder builder = new StringBuilder();
 		append(builder, "상태", record.processState());
-		append(builder, "보호소", record.careName());
-		append(builder, "보호소 주소", record.regionName());
-		append(builder, "관할기관", record.orgName());
-		append(builder, "공고번호", record.noticeNo());
-		append(builder, "공고기간", noticePeriod(record));
 		append(builder, "특징", record.feature());
 		append(builder, "나이", record.ageText());
 		append(builder, "체중", record.weightText());
@@ -150,32 +145,6 @@ public class AnimalPublicApiMapper {
 			return null;
 		}
 		return new BigDecimal(matcher.group(1).replace(',', '.'));
-	}
-
-	private String noticePeriod(AnimalPublicApiRecord record) {
-		String start = displayDate(record.noticeStartDate());
-		String end = displayDate(record.noticeEndDate());
-		if (start == null && end == null) {
-			return null;
-		}
-		if (start == null) {
-			return end;
-		}
-		if (end == null || start.equals(end)) {
-			return start;
-		}
-		return start + " ~ " + end;
-	}
-
-	private String displayDate(String value) {
-		if (!StringUtils.hasText(value)) {
-			return null;
-		}
-		String normalized = value.trim().replace("-", "");
-		if (normalized.length() != 8) {
-			return value.trim();
-		}
-		return normalized.substring(0, 4) + "-" + normalized.substring(4, 6) + "-" + normalized.substring(6, 8);
 	}
 
 	private String firstText(String... values) {

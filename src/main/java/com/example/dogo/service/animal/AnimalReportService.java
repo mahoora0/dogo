@@ -27,8 +27,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -192,6 +197,7 @@ public class AnimalReportService {
 		if (imageUrls.isEmpty()) {
 			imageUrls = List.of(PLACEHOLDER_IMAGE);
 		}
+		PublicAnimalDetails publicDetails = publicAnimalDetails(report);
 
 		return new AnimalReportDetailView(
 				report.getReportId(),
@@ -204,6 +210,7 @@ public class AnimalReportService {
 				report.getEventTime(),
 				report.getRegionName(),
 				report.getDetailPlace(),
+				locationSummary(report, publicDetails),
 				report.getContactPhone(),
 				report.isContactPublic(),
 				displayContact(report),
@@ -220,11 +227,17 @@ public class AnimalReportService {
 				report.getAgeUnit(),
 				ageUnitLabel(report.getAgeUnit()),
 				report.getWeightKg(),
-				ageDisplay(report.getAgeValue(), report.getAgeUnit()),
+				displayAge(report, publicDetails),
 				weightDisplay(report.getWeightKg()),
 				report.getFurColor(),
 				report.getDistinctiveMarks(),
 				report.getContent(),
+				displayContent(report.getContent(), publicDetails.hasAny()),
+				publicDetails.shelterName(),
+				publicDetails.shelterAddress(),
+				publicDetails.authorityName(),
+				publicDetails.noticeNo(),
+				publicDetails.noticePeriod(),
 				report.getViewCount(),
 				imageUrls,
 				report.getUser() != null ? report.getUser().getUserNo() : null
@@ -594,6 +607,120 @@ public class AnimalReportService {
 		return report.getContactPhone();
 	}
 
+	private String locationSummary(AnimalReport report, PublicAnimalDetails publicDetails) {
+		if (publicDetails.hasAny()) {
+			return joinPresent(publicDetails.authorityName(), report.getDetailPlace());
+		}
+		return joinPresent(report.getRegionName(), report.getDetailPlace());
+	}
+
+	private String displayAge(AnimalReport report, PublicAnimalDetails publicDetails) {
+		String publicAgeText = blankToNull(publicDetails.ageText());
+		if (publicAgeText != null) {
+			return publicAgeText;
+		}
+		return ageDisplay(report.getAgeValue(), report.getAgeUnit());
+	}
+
+	private String displayContent(String content, boolean publicApiReport) {
+		String value = blankToNull(content);
+		if (value == null) {
+			return null;
+		}
+		List<String> visibleLines = value.lines()
+				.filter(line -> !isHiddenContentLine(line, publicApiReport))
+				.toList();
+		String result = String.join("\n", visibleLines).trim();
+		return StringUtils.hasText(result) ? result : null;
+	}
+
+	private boolean isHiddenContentLine(String line, boolean publicApiReport) {
+		String trimmed = line == null ? "" : line.trim();
+		if (trimmed.startsWith("보호소:")
+				|| trimmed.startsWith("보호소 주소:")
+				|| trimmed.startsWith("관할기관:")
+				|| trimmed.startsWith("공고번호:")
+				|| trimmed.startsWith("공고기간:")) {
+			return true;
+		}
+		return publicApiReport && (
+				trimmed.startsWith("상태:")
+						|| trimmed.startsWith("특징:")
+						|| trimmed.startsWith("나이:")
+						|| trimmed.startsWith("체중:")
+		);
+	}
+
+	private PublicAnimalDetails publicAnimalDetails(AnimalReport report) {
+		if (report == null || !StringUtils.hasText(report.getRawPayload())) {
+			return PublicAnimalDetails.empty();
+		}
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			Document document = factory.newDocumentBuilder().parse(new InputSource(new StringReader(report.getRawPayload())));
+			document.getDocumentElement().normalize();
+			return new PublicAnimalDetails(
+					text(document, "careNm"),
+					text(document, "careAddr"),
+					text(document, "orgNm"),
+					text(document, "noticeNo"),
+					noticePeriod(text(document, "noticeSdt"), text(document, "noticeEdt")),
+					text(document, "age")
+			);
+		} catch (Exception ignored) {
+			return PublicAnimalDetails.empty();
+		}
+	}
+
+	private String text(Document document, String tagName) {
+		var nodes = document.getElementsByTagName(tagName);
+		if (nodes.getLength() == 0) {
+			return null;
+		}
+		return blankToNull(nodes.item(0).getTextContent());
+	}
+
+	private String noticePeriod(String startDate, String endDate) {
+		String start = displayDate(startDate);
+		String end = displayDate(endDate);
+		if (start == null && end == null) {
+			return null;
+		}
+		if (start == null) {
+			return end;
+		}
+		if (end == null || start.equals(end)) {
+			return start;
+		}
+		return start + " ~ " + end;
+	}
+
+	private String displayDate(String value) {
+		String normalized = blankToNull(value);
+		if (normalized == null) {
+			return null;
+		}
+		normalized = normalized.replace("-", "");
+		if (normalized.length() != 8) {
+			return value.trim();
+		}
+		return normalized.substring(0, 4) + "-" + normalized.substring(4, 6) + "-" + normalized.substring(6, 8);
+	}
+
+	private String joinPresent(String first, String second) {
+		String normalizedFirst = blankToNull(first);
+		String normalizedSecond = blankToNull(second);
+		if (normalizedFirst == null) {
+			return normalizedSecond;
+		}
+		if (normalizedSecond == null) {
+			return normalizedFirst;
+		}
+		return normalizedFirst + " · " + normalizedSecond;
+	}
+
 	private String defaultInSet(String value, Set<String> allowed, String fallback) {
 		if (!StringUtils.hasText(value)) {
 			return fallback;
@@ -793,5 +920,26 @@ public class AnimalReportService {
 					imageUrl
 			);
 		}).toList();
+	}
+
+	private record PublicAnimalDetails(
+			String shelterName,
+			String shelterAddress,
+			String authorityName,
+			String noticeNo,
+			String noticePeriod,
+			String ageText
+	) {
+		static PublicAnimalDetails empty() {
+			return new PublicAnimalDetails(null, null, null, null, null, null);
+		}
+
+		boolean hasAny() {
+			return StringUtils.hasText(shelterName)
+					|| StringUtils.hasText(shelterAddress)
+					|| StringUtils.hasText(authorityName)
+					|| StringUtils.hasText(noticeNo)
+					|| StringUtils.hasText(noticePeriod);
+		}
 	}
 }
