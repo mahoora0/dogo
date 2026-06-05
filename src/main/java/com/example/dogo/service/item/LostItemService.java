@@ -301,6 +301,15 @@ public class LostItemService {
 	}
 
 	@Transactional
+	public void updateStatus(Long id, String status, User loginUser) {
+		LostItem item = lostItemRepository.findById(id)
+				.filter(i -> !i.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("분실물 게시글을 찾을 수 없습니다."));
+		checkOwnership(item, loginUser);
+		item.setStatus(normalizeStatus(status));
+	}
+
+	@Transactional
 	public void delete(Long id, User loginUser) {
 		LostItem item = lostItemRepository.findById(id)
 				.filter(i -> !i.isDeleted())
@@ -476,6 +485,14 @@ public class LostItemService {
 			return null;
 		}
 		return value.trim();
+	}
+
+	private String normalizeStatus(String status) {
+		String normalizedStatus = blankToNull(status);
+		if ("WAITING".equals(normalizedStatus) || "FOUND".equals(normalizedStatus)) {
+			return normalizedStatus;
+		}
+		throw new IllegalArgumentException("변경할 수 없는 상태입니다.");
 	}
 
 	private String normalizedArea(String province, String district, String fallback) {

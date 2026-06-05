@@ -329,6 +329,15 @@ public class AnimalReportService {
 	}
 
 	@Transactional
+	public void updateStatus(Long id, String status, User loginUser) {
+		AnimalReport report = animalReportRepository.findById(id)
+				.filter(r -> !r.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("동물 신고 게시글을 찾을 수 없습니다."));
+		checkOwnership(report, loginUser);
+		report.setStatus(normalizeStatus(status));
+	}
+
+	@Transactional
 	public void delete(Long id, User loginUser) {
 		AnimalReport report = animalReportRepository.findById(id)
 				.filter(r -> !r.isDeleted())
@@ -605,6 +614,14 @@ public class AnimalReportService {
 			return value;
 		}
 		return fallback;
+	}
+
+	private String normalizeStatus(String status) {
+		String normalizedStatus = blankToNull(status);
+		if ("OPEN".equals(normalizedStatus) || "RESOLVED".equals(normalizedStatus) || "CLOSED".equals(normalizedStatus)) {
+			return normalizedStatus;
+		}
+		throw new IllegalArgumentException("변경할 수 없는 상태입니다.");
 	}
 
 	private String reportTypeLabel(String reportType) {

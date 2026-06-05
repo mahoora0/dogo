@@ -66,7 +66,18 @@
                 <span th:text="${report.reportTypeLabel}"
                       th:classappend="${report.reportType == 'MISSING' ? ' bg-rose-100 text-rose-800 ring-rose-200' : (report.reportType == 'SIGHTING' ? ' bg-indigo-100 text-indigo-800 ring-indigo-200' : (report.reportType == 'PROTECTING' ? ' bg-emerald-100 text-emerald-800 ring-emerald-200' : (report.reportType == 'RETURNED' ? ' bg-sky-100 text-sky-800 ring-sky-200' : ' bg-amber-100 text-amber-800 ring-amber-200')))}"
                       class="rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset shadow-sm">실종</span>
-                <span th:text="${report.statusLabel}" class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 shadow-sm">진행중</span>
+                <span th:unless="${isOwner}" th:text="${report.statusLabel}" class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 shadow-sm">진행중</span>
+                <form th:if="${isOwner}" th:action="@{/animal-reports/{id}/status(id=${report.id()})}" method="post"
+                      class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm"
+                      onsubmit="return confirm('게시글 상태를 변경하시겠습니까?');">
+                  <span class="pl-1 text-xs font-bold text-slate-500">상태</span>
+                  <select name="status" onchange="this.form.submit()"
+                          th:class="${report.status == 'RESOLVED' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : (report.status == 'CLOSED' ? 'bg-slate-100 text-slate-700 ring-slate-200' : 'bg-slate-50 text-slate-700 ring-slate-200')} + ' rounded-full border-0 px-2.5 py-1 text-xs font-bold ring-1 ring-inset focus:outline-none focus:ring-2 focus:ring-slate-400'">
+                    <option value="OPEN" th:selected="${report.status == 'OPEN'}">진행중</option>
+                    <option value="RESOLVED" th:selected="${report.status == 'RESOLVED'}">해결</option>
+                    <option value="CLOSED" th:selected="${report.status == 'CLOSED'}">종료</option>
+                  </select>
+                </form>
                 <span th:if="${report.sightingCareStatusLabel}" th:text="${report.sightingCareStatusLabel}"
                       class="rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-800 ring-1 ring-inset ring-emerald-200 shadow-sm">보호 중</span>
               </div>
@@ -96,6 +107,16 @@
             <span th:if="${report.eventTime != null}" th:text="${#temporals.format(report.eventTime, 'HH:mm')}">12:00</span>
             <span class="mx-1 text-slate-300">•</span>
             <span th:text="${report.regionName}">서울특별시</span>
+          </div>
+          <div th:if="${statusSuccessMessage}"
+               th:text="${statusSuccessMessage}"
+               class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            게시글 상태가 변경되었습니다.
+          </div>
+          <div th:if="${statusErrorMessage}"
+               th:text="${statusErrorMessage}"
+               class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            상태 변경 중 오류가 발생했습니다.
           </div>
         </div>
 
