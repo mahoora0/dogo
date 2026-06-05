@@ -159,10 +159,10 @@
                                     <td class="px-6 py-4 text-slate-500 text-sm whitespace-nowrap" th:text="${report.eventDate}">날짜</td>
                                     
                                     <!-- 상태 수정 폼 -->
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <form th:action="@{/admin/animals/{id}/status(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, page=${reports.number})}" method="post">
                                             <select name="status" onchange="this.form.submit()" 
-                                                    class="text-xs font-bold rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    th:class="${report.status == 'OPEN' ? 'bg-slate-100 text-slate-700 border-slate-200' : (report.status == 'MATCHING' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : (report.status == 'RESOLVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-600 border-gray-200'))} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
                                                 <option value="OPEN" th:selected="${report.status == 'OPEN'}">진행중</option>
                                                 <option value="MATCHING" th:selected="${report.status == 'MATCHING'}">매칭중</option>
                                                 <option value="RESOLVED" th:selected="${report.status == 'RESOLVED'}">해결됨</option>

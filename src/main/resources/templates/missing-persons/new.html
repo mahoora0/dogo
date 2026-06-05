@@ -136,6 +136,17 @@
       </div>
     </form>
     <script th:src="@{/js/image-upload.js}"></script>
+    <script>
+      (function() {
+        document.querySelectorAll('form').forEach(function(f) {
+          f.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.nodeName === 'INPUT') {
+              e.preventDefault();
+            }
+          });
+        });
+      })();
+    </script>
   </th:block>
 </th:block>
 </html>

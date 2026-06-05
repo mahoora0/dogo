@@ -175,7 +175,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <form th:action="@{/admin/found-items/{id}/status(id=${item.foundId}, sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, page=${items.number})}" method="post">
                                             <select name="status" onchange="this.form.submit()" 
-                                                    class="text-xs font-bold rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    th:class="${item.status == 'RETURNED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : (item.status == 'TRANSFERRED' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-100 text-slate-700 border-slate-200')} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
                                                 <option value="KEEPING" th:selected="${item.status == 'KEEPING'}">보관</option>
                                                 <option value="RETURNED" th:selected="${item.status == 'RETURNED'}">반환</option>
                                                 <option value="TRANSFERRED" th:selected="${item.status == 'TRANSFERRED'}">연계</option>

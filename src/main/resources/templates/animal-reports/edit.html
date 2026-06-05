@@ -324,6 +324,17 @@
         else { res = number.substr(0, 3) + "-" + number.substr(3, 4) + "-" + number.substr(7); }
         input.value = res.substr(0, 13);
       }
+
+      // 엔터키 submit 방지
+      (function() {
+        document.querySelectorAll('form').forEach(function(f) {
+          f.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.nodeName === 'INPUT') {
+              e.preventDefault();
+            }
+          });
+        });
+      })();
     </script>
     <script th:src="@{/js/image-upload.js}"></script>
   </th:block>

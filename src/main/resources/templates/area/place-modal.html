@@ -1,15 +1,25 @@
 <div th:fragment="placeModal">
   <div id="placeModal" class="fixed inset-0 z-50 hidden bg-black/50">
-    <div class="mx-auto mt-20 w-[700px] rounded-xl bg-white p-6 shadow-xl relative">
+    <div class="mx-auto mt-20 w-[700px] max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl relative">
 
       <button onclick="closePlaceModal()"
-              class="absolute right-4 top-4 text-2xl">
+              class="absolute right-4 top-4 text-2xl text-slate-400 hover:text-slate-700 transition-colors">
         ×
       </button>
 
-      <h3 id="modalTitle" class="mb-4 text-lg font-bold"></h3>
+      <h3 id="modalTitle" class="mb-4 text-lg font-bold pr-8"></h3>
 
-      <div id="modalMap" style="width:100%; height:450px;"></div>
+      <!-- 장소 선택 목록 (여러 결과가 있을 때 표시) -->
+      <div id="placeSelectPanel" class="hidden mb-4">
+        <p class="text-sm text-slate-500 mb-2">
+          <span class="font-semibold text-slate-700">동일한 이름의 장소</span>가 여러 개 검색되었습니다. 정확한 장소를 선택해 주세요.
+        </p>
+        <div id="placeSelectList" class="space-y-2 max-h-52 overflow-y-auto rounded-lg border border-slate-200 divide-y divide-slate-100">
+          <!-- JS로 동적 추가 -->
+        </div>
+      </div>
+
+      <div id="modalMap" style="width:100%; height:400px;"></div>
     </div>
   </div>
 </div>

@@ -175,10 +175,9 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <form th:action="@{/admin/lost-items/{id}/status(id=${item.lostId}, sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, page=${page.number})}" method="post">
                                             <select name="status" onchange="this.form.submit()" 
-                                                    class="text-xs font-bold rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                <option value="WAITING" th:selected="${item.status == 'WAITING'}">접수/대기</option>
-                                                <option value="RESOLVED" th:selected="${item.status == 'RESOLVED'}">해결됨</option>
-                                                <option value="CLOSED" th:selected="${item.status == 'CLOSED'}">종료됨</option>
+                                                    th:class="${item.status == 'FOUND' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-700 border-slate-200'} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
+                                                <option value="WAITING" th:selected="${item.status == 'WAITING'}">접수</option>
+                                                <option value="FOUND" th:selected="${item.status == 'FOUND'}">회수</option>
                                             </select>
                                         </form>
                                     </td>
