@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -290,6 +291,23 @@ public class AnimalReportController {
 			model.addAttribute("currentUri", "/animal-reports");
 			return "animal-reports/edit";
 		}
+	}
+
+	@PostMapping("/animal-reports/{id}/status")
+	public String updateStatus(@PathVariable Long id,
+							   @RequestParam String status,
+							   @AuthenticationPrincipal CustomUserDetails userDetails,
+							   RedirectAttributes redirectAttributes) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			animalReportService.updateStatus(id, status, userDetails.getUser());
+			redirectAttributes.addFlashAttribute("statusSuccessMessage", "게시글 상태가 변경되었습니다.");
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("statusErrorMessage", e.getMessage());
+		}
+		return "redirect:/animal-reports/" + id;
 	}
 
 	@PostMapping("/animal-reports/{id}/delete")

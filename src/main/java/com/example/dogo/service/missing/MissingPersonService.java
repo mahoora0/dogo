@@ -184,6 +184,24 @@ public class MissingPersonService {
 		return toDetailView(report);
 	}
 
+	@Transactional
+	public void updateStatus(Long id, String status, User loginUser) {
+		MissingPersonReport report = missingPersonRepository.findById(id)
+				.filter(candidate -> !candidate.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("실종자 정보를 찾을 수 없습니다."));
+		checkOwnership(report, loginUser);
+		report.setStatus(normalizeStatus(status));
+	}
+
+	private void checkOwnership(MissingPersonReport report, User loginUser) {
+		if (!"USER".equals(report.getSourceType())) {
+			throw new IllegalArgumentException("수정 권한이 없습니다.");
+		}
+		if (loginUser == null || report.getUser() == null || !report.getUser().getUserNo().equals(loginUser.getUserNo())) {
+			throw new IllegalArgumentException("수정 권한이 없습니다.");
+		}
+	}
+
 	private Specification<MissingPersonReport> searchSpec(String keyword, String status, String sourceType) {
 		return searchSpec(keyword, status, sourceType, null, null, null);
 	}
@@ -455,5 +473,13 @@ public class MissingPersonService {
 			return null;
 		}
 		return value.trim();
+	}
+
+	private String normalizeStatus(String status) {
+		String normalizedStatus = blankToNull(status);
+		if ("OPEN".equals(normalizedStatus) || "CLOSED".equals(normalizedStatus)) {
+			return normalizedStatus;
+		}
+		throw new IllegalArgumentException("변경할 수 없는 상태입니다.");
 	}
 }

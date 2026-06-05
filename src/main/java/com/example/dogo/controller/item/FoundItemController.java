@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.dogo.security.CustomUserDetails;
 
@@ -192,6 +193,23 @@ public class FoundItemController {
 			model.addAttribute("errorMessage", e.getMessage());
 			return "found-items/edit";
 		}
+	}
+
+	@PostMapping("/found-items/{id}/status")
+	public String updateStatus(@PathVariable Long id,
+							   @RequestParam String status,
+							   @AuthenticationPrincipal CustomUserDetails userDetails,
+							   RedirectAttributes redirectAttributes) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			foundItemService.updateStatus(id, status, userDetails.getUser());
+			redirectAttributes.addFlashAttribute("statusSuccessMessage", "게시글 상태가 변경되었습니다.");
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("statusErrorMessage", e.getMessage());
+		}
+		return "redirect:/found-items/" + id;
 	}
 
 	@PostMapping("/found-items/{id}/delete")
