@@ -5,6 +5,8 @@ public record AnimalPublicApiRecord(
 		String eventDate,
 		String eventPlace,
 		String regionName,
+		String careName,
+		String orgName,
 		String careTel,
 		String kindName,
 		String breedName,
@@ -15,6 +17,9 @@ public record AnimalPublicApiRecord(
 		String weightText,
 		String feature,
 		String processState,
+		String noticeNo,
+		String noticeStartDate,
+		String noticeEndDate,
 		String imageUrl,
 		String rawPayload
 ) {
