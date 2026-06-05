@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>계정 찾기 - 두고내림</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script th:src="@{/js/ui-dialog.js}"></script>
   <link rel="stylesheet" th:href="@{/css/user-style.css}">
   <style>
     /* 활성화 탭 표시 슬라이드 애니메이션 */
@@ -431,7 +433,13 @@
         const data = await response.json();
 
         if (response.ok) {
-          alert('비밀번호 재설정이 완료되었습니다. 새로운 비밀번호로 로그인해주세요.');
+          await Swal.fire({
+            icon: 'success',
+            title: '비밀번호 재설정 완료',
+            text: '새로운 비밀번호로 로그인해주세요.',
+            confirmButtonText: '로그인하기',
+            confirmButtonColor: '#0f172a'
+          });
           window.location.href = '/login';
         } else {
           showAlert(data.message || '비밀번호 설정 중 오류가 발생했습니다.');
