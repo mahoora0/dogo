@@ -120,19 +120,59 @@ public class AdminController {
     // --- 분실물 관리 ---
     @GetMapping("/lost-items")
     public String listLostItems(@RequestParam(value = "sourceType", required = false) String sourceType,
+                                @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                                @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
                                 @RequestParam(value = "page", defaultValue = "0") int page,
                                 Model model) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
         org.springframework.data.domain.Page<LostItem> itemPage;
-        if (sourceType != null && ("USER".equals(sourceType) || "POLICE".equals(sourceType))) {
-            itemPage = lostItemRepository.findBySourceTypeAndDeletedFalseOrderByRegDateDesc(sourceType, pageable);
-        } else {
-            itemPage = lostItemRepository.findByDeletedFalseOrderByRegDateDesc(pageable);
+
+        final String finalSourceType = sourceType;
+        org.springframework.data.jpa.domain.Specification<LostItem> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("deleted"), false));
+
+            if (finalSourceType != null && ("USER".equals(finalSourceType) || "POLICE".equals(finalSourceType))) {
+                predicates.add(cb.equal(root.get("sourceType"), finalSourceType));
+            }
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String searchKeyword = "%" + keyword.trim() + "%";
+                if ("title".equals(searchType)) {
+                    predicates.add(cb.like(root.get("title"), searchKeyword));
+                } else if ("itemName".equals(searchType)) {
+                    predicates.add(cb.like(root.get("itemName"), searchKeyword));
+                } else if ("place".equals(searchType)) {
+                    predicates.add(cb.or(
+                        cb.like(root.get("lostArea"), searchKeyword),
+                        cb.like(root.get("lostPlace"), searchKeyword)
+                    ));
+                } else {
+                    // 전체 (기본값)
+                    predicates.add(cb.or(
+                        cb.like(root.get("title"), searchKeyword),
+                        cb.like(root.get("itemName"), searchKeyword),
+                        cb.like(root.get("lostArea"), searchKeyword),
+                        cb.like(root.get("lostPlace"), searchKeyword)
+                    ));
+                }
+            }
+
+            query.orderBy(cb.desc(root.get("regDate")));
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        itemPage = lostItemRepository.findAll(spec, pageable);
+
+        if (sourceType == null) {
             sourceType = "ALL";
         }
+
         model.addAttribute("items", itemPage);
         model.addAttribute("page", itemPage);
         model.addAttribute("sourceType", sourceType);
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("keyword", keyword);
         return "admin/lost-items";
     }
 
@@ -140,42 +180,87 @@ public class AdminController {
     @Transactional
     public String updateLostItemStatus(@PathVariable("id") Long id, 
                                        @RequestParam("status") String status,
-                                       @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType) {
+                                       @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType,
+                                       @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                                       @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                       @RequestParam(value = "page", defaultValue = "0") int page) {
         validateStatus(status, LOST_ITEM_STATUSES);
         LostItem item = lostItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item Id:" + id));
         item.setStatus(status);
         lostItemRepository.save(item);
-        return "redirect:/admin/lost-items?sourceType=" + sourceType;
+        return "redirect:/admin/lost-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
     }
 
     @PostMapping("/lost-items/{id}/delete")
     @Transactional
     public String deleteLostItem(@PathVariable("id") Long id,
-                                 @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType) {
+                                 @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType,
+                                 @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                                 @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                 @RequestParam(value = "page", defaultValue = "0") int page) {
         LostItem item = lostItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item Id:" + id));
         item.setDeleted(true);
         lostItemRepository.save(item);
-        return "redirect:/admin/lost-items?sourceType=" + sourceType;
+        return "redirect:/admin/lost-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
     }
 
     // --- 습득물 관리 ---
     @GetMapping("/found-items")
     public String listFoundItems(@RequestParam(value = "sourceType", required = false) String sourceType,
+                                 @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                                 @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
                                  @RequestParam(value = "page", defaultValue = "0") int page,
                                  Model model) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
         org.springframework.data.domain.Page<FoundItem> itemPage;
-        if (sourceType != null && ("USER".equals(sourceType) || "POLICE".equals(sourceType))) {
-            itemPage = foundItemRepository.findBySourceTypeAndDeletedFalseOrderByRegDateDesc(sourceType, pageable);
-        } else {
-            itemPage = foundItemRepository.findByDeletedFalseOrderByRegDateDesc(pageable);
+
+        final String finalSourceType = sourceType;
+        org.springframework.data.jpa.domain.Specification<FoundItem> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("deleted"), false));
+
+            if (finalSourceType != null && ("USER".equals(finalSourceType) || "POLICE".equals(finalSourceType))) {
+                predicates.add(cb.equal(root.get("sourceType"), finalSourceType));
+            }
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String searchKeyword = "%" + keyword.trim() + "%";
+                if ("title".equals(searchType)) {
+                    predicates.add(cb.like(root.get("title"), searchKeyword));
+                } else if ("itemName".equals(searchType)) {
+                    predicates.add(cb.like(root.get("itemName"), searchKeyword));
+                } else if ("place".equals(searchType)) {
+                    predicates.add(cb.or(
+                        cb.like(root.get("foundArea"), searchKeyword),
+                        cb.like(root.get("foundPlace"), searchKeyword)
+                    ));
+                } else {
+                    predicates.add(cb.or(
+                        cb.like(root.get("title"), searchKeyword),
+                        cb.like(root.get("itemName"), searchKeyword),
+                        cb.like(root.get("foundArea"), searchKeyword),
+                        cb.like(root.get("foundPlace"), searchKeyword)
+                    ));
+                }
+            }
+
+            query.orderBy(cb.desc(root.get("regDate")));
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        itemPage = foundItemRepository.findAll(spec, pageable);
+
+        if (sourceType == null) {
             sourceType = "ALL";
         }
+
         model.addAttribute("items", itemPage);
         model.addAttribute("page", itemPage);
         model.addAttribute("sourceType", sourceType);
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("keyword", keyword);
         return "admin/found-items";
     }
 
@@ -183,13 +268,16 @@ public class AdminController {
     @Transactional
     public String updateFoundItemStatus(@PathVariable("id") Long id, 
                                         @RequestParam("status") String status,
-                                        @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType) {
+                                        @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType,
+                                        @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                                        @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                        @RequestParam(value = "page", defaultValue = "0") int page) {
         validateStatus(status, FOUND_ITEM_STATUSES);
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item Id:" + id));
         item.setStatus(status);
         foundItemRepository.save(item);
-        return "redirect:/admin/found-items?sourceType=" + sourceType;
+        return "redirect:/admin/found-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
     }
 
     private void validateStatus(String status, Set<String> allowedStatuses) {
@@ -201,81 +289,198 @@ public class AdminController {
     @PostMapping("/found-items/{id}/delete")
     @Transactional
     public String deleteFoundItem(@PathVariable("id") Long id,
-                                  @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType) {
+                                  @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType,
+                                  @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                                  @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                  @RequestParam(value = "page", defaultValue = "0") int page) {
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item Id:" + id));
         item.setDeleted(true);
         foundItemRepository.save(item);
-        return "redirect:/admin/found-items?sourceType=" + sourceType;
+        return "redirect:/admin/found-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
     }
 
     // --- 실종동물 관리 ---
     @GetMapping("/animals")
-    public String listAnimals(@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
+    public String listAnimals(@RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                              @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                              @RequestParam(value = "page", defaultValue = "0") int page, 
+                              Model model) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
-        org.springframework.data.domain.Page<AnimalReport> reportPage = animalReportRepository.findByDeletedFalseOrderByRegdateDesc(pageable);
+        org.springframework.data.domain.Page<AnimalReport> reportPage;
+
+        org.springframework.data.jpa.domain.Specification<AnimalReport> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("deleted"), false));
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String searchKeyword = "%" + keyword.trim() + "%";
+                if ("title".equals(searchType)) {
+                    predicates.add(cb.like(root.get("title"), searchKeyword));
+                } else if ("animalType".equals(searchType)) {
+                    predicates.add(cb.like(root.get("animalType"), searchKeyword));
+                } else if ("place".equals(searchType)) {
+                    predicates.add(cb.or(
+                        cb.like(root.get("regionName"), searchKeyword),
+                        cb.like(root.get("detailPlace"), searchKeyword)
+                    ));
+                } else {
+                    predicates.add(cb.or(
+                        cb.like(root.get("title"), searchKeyword),
+                        cb.like(root.get("animalType"), searchKeyword),
+                        cb.like(root.get("regionName"), searchKeyword),
+                        cb.like(root.get("detailPlace"), searchKeyword)
+                    ));
+                }
+            }
+
+            query.orderBy(cb.desc(root.get("regdate")));
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        reportPage = animalReportRepository.findAll(spec, pageable);
         model.addAttribute("reports", reportPage);
         model.addAttribute("page", reportPage);
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("keyword", keyword);
         return "admin/animals";
     }
 
     @PostMapping("/animals/{id}/status")
     @Transactional
-    public String updateAnimalStatus(@PathVariable("id") Long id, @RequestParam("status") String status) {
+    public String updateAnimalStatus(@PathVariable("id") Long id, 
+                                     @RequestParam("status") String status,
+                                     @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                                     @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                     @RequestParam(value = "page", defaultValue = "0") int page) {
         AnimalReport report = animalReportRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid report Id:" + id));
         report.setStatus(status);
         animalReportRepository.save(report);
-        return "redirect:/admin/animals";
+        return "redirect:/admin/animals?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
     }
 
     @PostMapping("/animals/{id}/delete")
     @Transactional
-    public String deleteAnimal(@PathVariable("id") Long id) {
+    public String deleteAnimal(@PathVariable("id") Long id,
+                               @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                               @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                               @RequestParam(value = "page", defaultValue = "0") int page) {
         AnimalReport report = animalReportRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid report Id:" + id));
         report.setDeleted(true);
         animalReportRepository.save(report);
-        return "redirect:/admin/animals";
+        return "redirect:/admin/animals?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
     }
 
     // --- 실종자 관리 ---
     @GetMapping("/missing-persons")
-    public String listMissingPersons(@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
+    public String listMissingPersons(@RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                                     @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                     @RequestParam(value = "page", defaultValue = "0") int page, 
+                                     Model model) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
-        org.springframework.data.domain.Page<MissingPersonReport> reportPage = missingPersonRepository.findByDeletedFalseOrderByRegdateDesc(pageable);
+        org.springframework.data.domain.Page<MissingPersonReport> reportPage;
+
+        org.springframework.data.jpa.domain.Specification<MissingPersonReport> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("deleted"), false));
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String searchKeyword = "%" + keyword.trim() + "%";
+                if ("clothing".equals(searchType)) {
+                    predicates.add(cb.like(root.get("clothing"), searchKeyword));
+                } else if ("place".equals(searchType)) {
+                    predicates.add(cb.like(root.get("occurredPlace"), searchKeyword));
+                } else {
+                    predicates.add(cb.or(
+                        cb.like(root.get("clothing"), searchKeyword),
+                        cb.like(root.get("occurredPlace"), searchKeyword),
+                        cb.like(root.get("nationality"), searchKeyword)
+                    ));
+                }
+            }
+
+            query.orderBy(cb.desc(root.get("regdate")));
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        reportPage = missingPersonRepository.findAll(spec, pageable);
         model.addAttribute("reports", reportPage);
         model.addAttribute("page", reportPage);
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("keyword", keyword);
         return "admin/missing-persons";
     }
 
     @PostMapping("/missing-persons/{id}/status")
     @Transactional
-    public String updateMissingPersonStatus(@PathVariable("id") Long id, @RequestParam("status") String status) {
+    public String updateMissingPersonStatus(@PathVariable("id") Long id, 
+                                            @RequestParam("status") String status,
+                                            @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                                            @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                            @RequestParam(value = "page", defaultValue = "0") int page) {
         MissingPersonReport report = missingPersonRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid report Id:" + id));
         report.setStatus(status);
         missingPersonRepository.save(report);
-        return "redirect:/admin/missing-persons";
+        return "redirect:/admin/missing-persons?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
     }
 
     @PostMapping("/missing-persons/{id}/delete")
     @Transactional
-    public String deleteMissingPerson(@PathVariable("id") Long id) {
+    public String deleteMissingPerson(@PathVariable("id") Long id,
+                                      @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                                      @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                      @RequestParam(value = "page", defaultValue = "0") int page) {
         MissingPersonReport report = missingPersonRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid report Id:" + id));
         report.setDeleted(true);
         missingPersonRepository.save(report);
-        return "redirect:/admin/missing-persons";
+        return "redirect:/admin/missing-persons?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
     }
 
     // --- 회원 관리 ---
     @GetMapping("/users")
-    public String listUsers(@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
+    public String listUsers(@RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
+                            @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                            @RequestParam(value = "page", defaultValue = "0") int page, 
+                            Model model) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
-        org.springframework.data.domain.Page<User> userPage = userRepository.findAllByOrderByUserNoDesc(pageable);
+        org.springframework.data.domain.Page<User> userPage;
+
+        org.springframework.data.jpa.domain.Specification<User> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String searchKeyword = "%" + keyword.trim() + "%";
+                if ("loginId".equals(searchType)) {
+                    predicates.add(cb.like(root.get("loginId"), searchKeyword));
+                } else if ("nickname".equals(searchType)) {
+                    predicates.add(cb.like(root.get("nickname"), searchKeyword));
+                } else if ("email".equals(searchType)) {
+                    predicates.add(cb.like(root.get("email"), searchKeyword));
+                } else if ("phone".equals(searchType)) {
+                    predicates.add(cb.like(root.get("phone"), searchKeyword));
+                } else {
+                    predicates.add(cb.or(
+                        cb.like(root.get("loginId"), searchKeyword),
+                        cb.like(root.get("nickname"), searchKeyword),
+                        cb.like(root.get("email"), searchKeyword),
+                        cb.like(root.get("phone"), searchKeyword)
+                    ));
+                }
+            }
+
+            query.orderBy(cb.desc(root.get("userNo")));
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        userPage = userRepository.findAll(spec, pageable);
         model.addAttribute("users", userPage);
         model.addAttribute("page", userPage);
+        model.addAttribute("searchType", searchType);
+        model.addAttribute("keyword", keyword);
         return "admin/users";
     }
 
