@@ -72,8 +72,7 @@
                       th:classappend="${lostItem.status == 'FOUND' ? ' bg-emerald-100 text-emerald-800 ring-emerald-200' : ' bg-slate-100 text-slate-700 ring-slate-200'}"
                       class="rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset shadow-sm">접수</span>
                 <form th:if="${isOwner}" th:action="@{/lost-items/{id}/status(id=${lostItem.id})}" method="post"
-                      class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm"
-                      onsubmit="return confirm('게시글 상태를 변경하시겠습니까?');">
+                      class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
                   <span class="pl-1 text-xs font-bold text-slate-500">상태</span>
                   <select name="status" onchange="this.form.submit()"
                           th:class="${lostItem.status == 'FOUND' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-700 ring-slate-200'} + ' rounded-full border-0 px-2.5 py-1 text-xs font-bold ring-1 ring-inset focus:outline-none focus:ring-2 focus:ring-slate-400'">
@@ -268,7 +267,7 @@
               수정
             </a>
             <form th:if="${isOwner}" th:action="@{/lost-items/{id}/delete(id=${lostItem.id})}" method="post" class="flex flex-1"
-                  onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                  data-confirm="정말 삭제하시겠습니까?">
               <button type="submit"
                       class="w-full flex items-center justify-center rounded-full border-2 border-red-200 bg-white px-4 py-3 sm:px-6 font-bold text-red-500 transition-all hover:bg-red-50 hover:text-red-700 active:scale-95 whitespace-nowrap">
                 삭제
