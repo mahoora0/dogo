@@ -120,7 +120,6 @@
                                 <option value="loginId" th:selected="${searchType == 'loginId'}">로그인 ID</option>
                                 <option value="nickname" th:selected="${searchType == 'nickname'}">닉네임</option>
                                 <option value="email" th:selected="${searchType == 'email'}">이메일</option>
-                                <option value="phone" th:selected="${searchType == 'phone'}">전화번호</option>
                             </select>
                             <div class="relative">
                                 <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어 입력..." 
@@ -142,7 +141,6 @@
                                     <th class="px-6 py-4">로그인 ID</th>
                                     <th class="px-6 py-4">닉네임</th>
                                     <th class="px-6 py-4">이메일</th>
-                                    <th class="px-6 py-4">전화번호</th>
                                     <th class="px-6 py-4">가입일</th>
                                     <th class="px-6 py-4">권한 변경</th>
                                     <th class="px-6 py-4">상태 관리</th>
@@ -177,9 +175,6 @@
                                     
                                     <!-- Email -->
                                     <td class="px-6 py-4 text-slate-600 text-sm whitespace-nowrap" th:text="${user.email}">이메일</td>
-                                    
-                                    <!-- Phone -->
-                                    <td class="px-6 py-4 text-slate-600 text-sm whitespace-nowrap" th:text="${user.phone != null ? user.phone : '-'}">전화번호</td>
                                     
                                     <!-- RegDate -->
                                     <td class="px-6 py-4 text-slate-500 text-sm whitespace-nowrap" th:text="${#temporals.format(user.regDate, 'yyyy-MM-dd HH:mm')}">날짜</td>
