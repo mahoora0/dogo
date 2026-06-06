@@ -3,9 +3,12 @@ package com.example.dogo.service;
 import com.example.dogo.dto.ChatMessageDto;
 import com.example.dogo.dto.ChatRoomDto;
 import com.example.dogo.entity.ChatRoom;
+import com.example.dogo.entity.animal.AnimalReport;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.*;
+import com.example.dogo.repository.animal.AnimalReportImageRepository;
+import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.chat.ChatUnavailableException;
@@ -38,6 +41,10 @@ class ChatServiceTest {
     private UserRepository userRepository;
     @Mock
     private FoundItemRepository foundItemRepository;
+    @Mock
+    private AnimalReportRepository animalReportRepository;
+    @Mock
+    private AnimalReportImageRepository animalReportImageRepository;
 
     @InjectMocks
     private ChatService chatService;
@@ -134,6 +141,30 @@ class ChatServiceTest {
 
         assertEquals(99L, roomId);
         verify(chatRoomRepository, times(1)).save(any(ChatRoom.class));
+    }
+
+    @Test
+    @DisplayName("사용자 동물 신고 게시글로 1:1 채팅방을 생성한다")
+    void createOrGetRoomCreatesAnimalReportRoom() {
+        AnimalReport report = mock(AnimalReport.class);
+        User inquirer = mock(User.class);
+        User owner = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(inquirer.getUserNo()).thenReturn(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(inquirer));
+        when(animalReportRepository.findById(10L)).thenReturn(Optional.of(report));
+        when(report.isDeleted()).thenReturn(false);
+        when(report.getUser()).thenReturn(owner);
+        when(owner.getUserNo()).thenReturn(2L);
+        when(chatRoomRepository.findByAnimalReportAndInquirer(10L, inquirer)).thenReturn(Optional.empty());
+        when(chatRoomRepository.save(any(ChatRoom.class))).thenReturn(room);
+        when(room.getRoomId()).thenReturn(100L);
+
+        Long roomId = chatService.createOrGetRoom(10L, "ANIMAL_REPORT", inquirer);
+
+        assertEquals(100L, roomId);
+        verify(chatRoomRepository).save(any(ChatRoom.class));
     }
 
     @Test

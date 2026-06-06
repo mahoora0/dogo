@@ -29,6 +29,9 @@ public class AnimalReportCreateRequest {
 	private String contactPhone;
 	private boolean contactPublic = true;
 	private String sightingCareStatus;
+	private String careLocationName;
+	private String careLocationAddress;
+	private String careContactPhone;
 	private String animalType;
 	private String breedName;
 	private String gender = "UNKNOWN";

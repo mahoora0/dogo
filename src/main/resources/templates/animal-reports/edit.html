@@ -93,11 +93,36 @@
         <label id="careStatusField" class="block">
           <span class="text-sm font-semibold text-slate-700">목격 상태</span>
           <select name="sightingCareStatus"
+                  id="careStatusSelect"
                   class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
             <option th:each="option : ${careStatusOptions}" th:value="${option.value}" th:text="${option.label}"
                     th:selected="${editData.sightingCareStatus() == option.value}">확인 필요</option>
           </select>
         </label>
+
+        <fieldset id="careLocationField" class="hidden rounded-3xl border border-slate-200 bg-slate-50 p-4 md:col-span-2">
+          <legend class="px-1 text-sm font-semibold text-slate-700">인계 장소</legend>
+          <div class="mt-3 grid gap-4 md:grid-cols-2">
+            <label class="block">
+              <span class="text-sm font-semibold text-slate-700">인계처명</span>
+              <input name="careLocationName" th:value="${editData.careLocationName()}"
+                     placeholder="예: OO동물병원, OO보호소"
+                     class="mt-1.5 w-full rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100">
+            </label>
+            <label class="block">
+              <span class="text-sm font-semibold text-slate-700">인계처 연락처</span>
+              <input type="tel" name="careContactPhone" th:value="${editData.careContactPhone()}"
+                     placeholder="010-0000-0000" maxlength="13" oninput="formatPhoneNumber(this)"
+                     class="mt-1.5 w-full rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100">
+            </label>
+            <label class="block md:col-span-2">
+              <span class="text-sm font-semibold text-slate-700">인계처 주소 <span class="text-red-400">*</span></span>
+              <input name="careLocationAddress" th:value="${editData.careLocationAddress()}"
+                     placeholder="동물을 인계한 기관 주소"
+                     class="mt-1.5 w-full rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100">
+            </label>
+          </div>
+        </fieldset>
       </fieldset>
 
       <div class="my-8 border-t border-slate-100"></div>
@@ -224,7 +249,10 @@
     <script>
       (function() {
         var careStatusField = document.getElementById('careStatusField');
-        var careStatusSelect = careStatusField ? careStatusField.querySelector('select') : null;
+        var careStatusSelect = document.getElementById('careStatusSelect');
+        var careLocationField = document.getElementById('careLocationField');
+        var careLocationInputs = careLocationField ? careLocationField.querySelectorAll('input') : [];
+        var careLocationAddress = careLocationField ? careLocationField.querySelector('input[name="careLocationAddress"]') : null;
         var eventDateTimeLabel = document.getElementById('eventDateTimeLabel');
         var detailPlaceLabel = document.getElementById('detailPlaceLabel');
         var detailPlaceInput = document.getElementById('detailPlaceInput');
@@ -232,18 +260,31 @@
         var radios = document.querySelectorAll('.report-type-radio');
         var copyByType = {
           MISSING: { eventDateTimeLabel: '실종 일시', detailPlaceLabel: '실종 장소', detailPlacePlaceholder: '예: 한강공원 3주차장 근처', contentPlaceholder: '마지막으로 본 상황, 이동 방향, 성격, 특징 등을 적어주세요.' },
-          SIGHTING: { eventDateTimeLabel: '목격 일시', detailPlaceLabel: '목격 장소', detailPlacePlaceholder: '예: 한강공원 3주차장 근처', contentPlaceholder: '목격 상황, 이동 방향, 구조 여부, 보호 상태 등을 적어주세요.' }
+          SIGHTING: { eventDateTimeLabel: '목격 일시', detailPlaceLabel: '목격/보호 장소', detailPlacePlaceholder: '예: 한강공원 3주차장 근처', contentPlaceholder: '목격 상황, 이동 방향, 보호 또는 인계 경위 등을 적어주세요.' }
         };
+
+        function syncCareLocationFields(enabled) {
+          if (!careLocationField) return;
+          careLocationField.classList.toggle('hidden', !enabled);
+          careLocationField.setAttribute('aria-hidden', enabled ? 'false' : 'true');
+          careLocationInputs.forEach(function(input) {
+            input.disabled = !enabled;
+          });
+          if (careLocationAddress) {
+            careLocationAddress.required = enabled;
+          }
+        }
 
         function syncReportTypeFields() {
           var selected = document.querySelector('.report-type-radio:checked');
           var selectedType = selected ? selected.value : 'MISSING';
           var copy = copyByType[selectedType] || copyByType.MISSING;
+          var isSighting = selectedType === 'SIGHTING';
           if (careStatusField) {
-            var isSighting = selectedType === 'SIGHTING';
             careStatusField.style.display = isSighting ? 'block' : 'none';
             if (careStatusSelect) careStatusSelect.disabled = !isSighting;
           }
+          syncCareLocationFields(isSighting && careStatusSelect && careStatusSelect.value === 'TRANSFERRED');
           if (eventDateTimeLabel) eventDateTimeLabel.textContent = copy.eventDateTimeLabel;
           if (detailPlaceLabel) detailPlaceLabel.textContent = copy.detailPlaceLabel;
           if (detailPlaceInput) detailPlaceInput.placeholder = copy.detailPlacePlaceholder;
@@ -252,6 +293,7 @@
 
         if (radios.length > 0) {
           radios.forEach(function(radio) { radio.addEventListener('change', syncReportTypeFields); });
+          if (careStatusSelect) careStatusSelect.addEventListener('change', syncReportTypeFields);
           syncReportTypeFields();
         }
 

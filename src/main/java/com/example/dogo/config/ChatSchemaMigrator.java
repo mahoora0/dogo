@@ -14,7 +14,8 @@ import java.sql.SQLException;
 @Component
 public class ChatSchemaMigrator implements ApplicationRunner {
 
-    private static final String TABLE_NAME = "CHAT_MESSAGE";
+    private static final String MESSAGE_TABLE_NAME = "CHAT_MESSAGE";
+    private static final String ROOM_TABLE_NAME = "CHAT_ROOM";
 
     private final JdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
@@ -30,49 +31,50 @@ public class ChatSchemaMigrator implements ApplicationRunner {
     }
 
     public void migrate() throws SQLException {
-        if (!tableExists()) {
-            return;
+        if (tableExists(MESSAGE_TABLE_NAME)) {
+            addColumnIfMissing(MESSAGE_TABLE_NAME, "IS_READ", "IS_READ BOOLEAN NOT NULL DEFAULT FALSE");
+            addColumnIfMissing(MESSAGE_TABLE_NAME, "FILE_URL", "FILE_URL VARCHAR(500) NULL");
+            addColumnIfMissing(MESSAGE_TABLE_NAME, "FILE_NAME", "FILE_NAME VARCHAR(255) NULL");
+            addColumnIfMissing(MESSAGE_TABLE_NAME, "FILE_SIZE", "FILE_SIZE BIGINT NULL");
+            addColumnIfMissing(MESSAGE_TABLE_NAME, "FILE_GROUP_ID", "FILE_GROUP_ID VARCHAR(80) NULL");
         }
-
-        addColumnIfMissing("IS_READ", "IS_READ BOOLEAN NOT NULL DEFAULT FALSE");
-        addColumnIfMissing("FILE_URL", "FILE_URL VARCHAR(500) NULL");
-        addColumnIfMissing("FILE_NAME", "FILE_NAME VARCHAR(255) NULL");
-        addColumnIfMissing("FILE_SIZE", "FILE_SIZE BIGINT NULL");
-        addColumnIfMissing("FILE_GROUP_ID", "FILE_GROUP_ID VARCHAR(80) NULL");
-    }
-
-    private void addColumnIfMissing(String columnName, String columnDefinition) throws SQLException {
-        if (!columnExists(columnName)) {
-            jdbcTemplate.execute("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + columnDefinition);
+        if (tableExists(ROOM_TABLE_NAME)) {
+            addColumnIfMissing(ROOM_TABLE_NAME, "ANIMAL_REPORT_ID", "ANIMAL_REPORT_ID BIGINT NULL");
         }
     }
 
-    private boolean tableExists() throws SQLException {
+    private void addColumnIfMissing(String tableName, String columnName, String columnDefinition) throws SQLException {
+        if (!columnExists(tableName, columnName)) {
+            jdbcTemplate.execute("ALTER TABLE " + tableName + " ADD COLUMN " + columnDefinition);
+        }
+    }
+
+    private boolean tableExists(String tableName) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             DatabaseMetaData metadata = connection.getMetaData();
-            try (ResultSet tables = metadata.getTables(connection.getCatalog(), null, TABLE_NAME, new String[]{"TABLE"})) {
+            try (ResultSet tables = metadata.getTables(connection.getCatalog(), null, tableName, new String[]{"TABLE"})) {
                 if (tables.next()) {
                     return true;
                 }
             }
-            try (ResultSet tables = metadata.getTables(connection.getCatalog(), null, TABLE_NAME.toLowerCase(), new String[]{"TABLE"})) {
+            try (ResultSet tables = metadata.getTables(connection.getCatalog(), null, tableName.toLowerCase(), new String[]{"TABLE"})) {
                 return tables.next();
             }
         }
     }
 
-    private boolean columnExists(String columnName) throws SQLException {
+    private boolean columnExists(String tableName, String columnName) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             DatabaseMetaData metadata = connection.getMetaData();
-            if (hasColumn(metadata, connection, columnName)) {
+            if (hasColumn(metadata, connection, tableName, columnName)) {
                 return true;
             }
-            return hasColumn(metadata, connection, columnName.toLowerCase());
+            return hasColumn(metadata, connection, tableName, columnName.toLowerCase());
         }
     }
 
-    private boolean hasColumn(DatabaseMetaData metadata, Connection connection, String columnName) throws SQLException {
-        try (ResultSet columns = metadata.getColumns(connection.getCatalog(), null, TABLE_NAME, columnName)) {
+    private boolean hasColumn(DatabaseMetaData metadata, Connection connection, String tableName, String columnName) throws SQLException {
+        try (ResultSet columns = metadata.getColumns(connection.getCatalog(), null, tableName, columnName)) {
             return columns.next();
         }
     }

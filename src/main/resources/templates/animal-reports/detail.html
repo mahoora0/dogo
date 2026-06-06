@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:with="noSidebar=true">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
-    <section class="grid items-start gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-      <div class="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24">
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="grid items-start gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+      <!-- Left Column: Gallery & Description -->
+      <div class="flex min-w-0 flex-col gap-4">
         <!-- 이미지 갤러리 (Swiper) -->
         <div class="dogo-gallery flex min-w-0 flex-col gap-4" data-fancybox-group="animal-gallery">
-          <div class="relative min-w-0 overflow-hidden rounded-3xl bg-black/5 shadow-inner">
+          <div class="relative min-w-0 overflow-hidden rounded-3xl bg-slate-50 border border-slate-100 shadow-inner">
             <div class="absolute left-4 top-4 z-20 rounded-full bg-slate-950/70 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
               <span class="gallery-current">1</span> / <span th:text="${#lists.size(report.imageUrls)}">1</span>
             </div>
-
-            <div class="gallery-blur absolute inset-0 scale-110 bg-cover bg-center bg-no-repeat opacity-50 blur-xl"
-                 th:style="'background-image: url(' + ${report.imageUrls[0]} + ');'"></div>
 
             <div class="swiper gallery-main relative z-10 w-full min-w-0">
               <div class="swiper-wrapper">
                 <a th:each="img : ${report.imageUrls}" th:href="${img}" data-fancybox="animal-gallery"
                    class="swiper-slide group block">
                   <img th:src="${img}" alt="대표 이미지"
-                       class="h-80 w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] lg:h-[500px]">
+                       class="aspect-square h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] sm:aspect-[4/3] lg:aspect-auto lg:h-[500px]">
                 </a>
               </div>
             </div>
@@ -45,47 +45,59 @@
           </div>
         </div>
 
-        <div class="hidden rounded-2xl border border-slate-200 bg-slate-50 p-6 lg:block">
-          <h3 class="mb-2 text-sm font-bold text-slate-700">특징</h3>
-          <p th:text="${report.distinctiveMarks ?: '등록된 특징이 없습니다.'}"
-             class="whitespace-pre-line text-sm leading-relaxed text-slate-700">특징</p>
+        <!-- 상세 설명 및 특징 (Desktop) -->
+        <div class="hidden rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100 lg:block">
+          <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="inline-block w-1.5 h-4 rounded-full bg-amber-500"></span>특징
+          </h2>
+          <div class="rounded-xl bg-white p-4 font-semibold leading-7 text-slate-800 border border-slate-100 shadow-sm text-sm whitespace-pre-line mb-6"
+               th:text="${report.distinctiveMarks ?: '등록된 특징이 없습니다.'}">특징</div>
+
           <th:block th:if="${report.displayContent}">
-            <div class="my-5 border-t border-slate-200"></div>
-            <h3 class="mb-2 text-sm font-bold text-slate-700">상세한 내용</h3>
-            <p th:text="${report.displayContent}"
-               class="whitespace-pre-line text-sm leading-relaxed text-slate-700">상세한 내용</p>
+            <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="inline-block w-1.5 h-4 rounded-full bg-amber-500"></span>상세한 내용
+            </h2>
+            <div class="rounded-xl bg-white p-4 font-semibold leading-7 text-slate-800 border border-slate-100 shadow-sm text-sm whitespace-pre-line"
+                 th:text="${report.displayContent}">상세한 내용</div>
           </th:block>
         </div>
       </div>
 
+      <!-- Right Column: Info Panel -->
       <div class="flex flex-col gap-6">
         <div>
+          <!-- Badges & Status -->
+          <div class="mb-4 flex flex-wrap items-center gap-2">
+            <!-- Report Type Badge (Sighting/Missing) -->
+            <span th:text="${report.reportTypeLabel}"
+                  th:classappend="${report.reportType == 'MISSING' ? ' bg-rose-50 text-rose-700 ring-rose-200 border-rose-200' : (report.reportType == 'SIGHTING' ? ' bg-indigo-50 text-indigo-700 ring-indigo-200 border-indigo-200' : (report.reportType == 'PROTECTING' ? ' bg-emerald-50 text-emerald-700 ring-emerald-200 border-emerald-200' : (report.reportType == 'RETURNED' ? ' bg-sky-50 text-sky-700 ring-sky-200 border-sky-200' : ' bg-amber-50 text-amber-700 ring-amber-200 border-amber-200')))}"
+                  class="rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset shadow-sm border">실종</span>
+            
+            <!-- Sighting Care Status (if applicable) -->
+            <span th:if="${report.sightingCareStatusLabel}" th:text="${report.sightingCareStatusLabel}"
+                  class="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200 border border-emerald-200 shadow-sm">보호 중</span>
+
+            <!-- Status Badge / Owner status selector -->
+            <span th:unless="${isOwner}" th:text="${report.statusLabel}" class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 shadow-sm border border-slate-200">진행중</span>
+            <form th:if="${isOwner}" th:action="@{/animal-reports/{id}/status(id=${report.id()})}" method="post"
+                  class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
+              <span class="pl-1 text-xs font-bold text-slate-500">상태</span>
+              <select name="status" onchange="this.form.submit()"
+                      th:class="${report.status == 'RESOLVED' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : (report.status == 'CLOSED' ? 'bg-slate-100 text-slate-700 ring-slate-200' : 'bg-slate-50 text-slate-700 ring-slate-200')} + ' rounded-full border-0 px-2.5 py-1 text-xs font-bold ring-1 ring-inset focus:outline-none focus:ring-2 focus:ring-slate-400'">
+                <option value="OPEN" th:selected="${report.status == 'OPEN'}">진행중</option>
+                <option value="RESOLVED" th:selected="${report.status == 'RESOLVED'}">해결</option>
+                <option value="CLOSED" th:selected="${report.status == 'CLOSED'}">종료</option>
+              </select>
+            </form>
+          </div>
+
+          <!-- Title & Actions -->
           <div class="flex items-start justify-between gap-4">
-            <div class="flex-1 min-w-0">
-              <div class="mb-4 flex flex-wrap items-center gap-2">
-                <span th:text="${report.reportTypeLabel}"
-                      th:classappend="${report.reportType == 'MISSING' ? ' bg-rose-100 text-rose-800 ring-rose-200' : (report.reportType == 'SIGHTING' ? ' bg-indigo-100 text-indigo-800 ring-indigo-200' : (report.reportType == 'PROTECTING' ? ' bg-emerald-100 text-emerald-800 ring-emerald-200' : (report.reportType == 'RETURNED' ? ' bg-sky-100 text-sky-800 ring-sky-200' : ' bg-amber-100 text-amber-800 ring-amber-200')))}"
-                      class="rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset shadow-sm">실종</span>
-                <span th:unless="${isOwner}" th:text="${report.statusLabel}" class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 shadow-sm">진행중</span>
-                <form th:if="${isOwner}" th:action="@{/animal-reports/{id}/status(id=${report.id()})}" method="post"
-                      class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
-                  <span class="pl-1 text-xs font-bold text-slate-500">상태</span>
-                  <select name="status" onchange="this.form.submit()"
-                          th:class="${report.status == 'RESOLVED' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : (report.status == 'CLOSED' ? 'bg-slate-100 text-slate-700 ring-slate-200' : 'bg-slate-50 text-slate-700 ring-slate-200')} + ' rounded-full border-0 px-2.5 py-1 text-xs font-bold ring-1 ring-inset focus:outline-none focus:ring-2 focus:ring-slate-400'">
-                    <option value="OPEN" th:selected="${report.status == 'OPEN'}">진행중</option>
-                    <option value="RESOLVED" th:selected="${report.status == 'RESOLVED'}">해결</option>
-                    <option value="CLOSED" th:selected="${report.status == 'CLOSED'}">종료</option>
-                  </select>
-                </form>
-                <span th:if="${report.sightingCareStatusLabel}" th:text="${report.sightingCareStatusLabel}"
-                      class="rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-800 ring-1 ring-inset ring-emerald-200 shadow-sm">보호 중</span>
-              </div>
-              <h1 th:text="${report.title}" class="text-3xl font-extrabold leading-tight text-slate-900">제목</h1>
-            </div>
+            <h1 th:text="${report.title}" class="text-3xl font-black leading-tight tracking-tight text-slate-900">제목</h1>
 
             <!-- More actions (Kebab Menu) -->
             <div class="relative shrink-0" th:if="${!isOwner && report.userNo != null}">
-              <button type="button" id="moreMenuBtn" class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 transition focus:outline-none" aria-label="더보기">
+              <button type="button" id="moreMenuBtn" class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-slate-50 text-slate-500 shadow-sm hover:bg-slate-100 hover:text-slate-700 transition focus:outline-none" aria-label="더보기">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
               </button>
               <div id="moreDropdown" class="absolute right-0 mt-2 w-36 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black/5 divide-y divide-slate-100 focus:outline-none hidden z-30">
@@ -100,13 +112,9 @@
             </div>
           </div>
 
-          <div class="mt-4 flex flex-wrap items-center gap-2 text-sm font-medium text-slate-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span th:text="${#temporals.format(report.eventDate, 'yyyy년 MM월 dd일')}">2026년 05월 16일</span>
-            <span th:if="${report.eventTime != null}" th:text="${#temporals.format(report.eventTime, 'HH:mm')}">12:00</span>
-            <span class="mx-1 text-slate-300">•</span>
-            <span th:text="${report.locationSummary ?: report.regionName}">서울특별시</span>
-          </div>
+
+
+          <!-- Feedback Messages -->
           <div th:if="${statusSuccessMessage}"
                th:text="${statusSuccessMessage}"
                class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
@@ -119,150 +127,128 @@
           </div>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 lg:hidden">
-          <h3 class="mb-2 text-sm font-bold text-slate-700">특징</h3>
-          <p th:text="${report.distinctiveMarks ?: '등록된 특징이 없습니다.'}"
-             class="whitespace-pre-line text-sm leading-relaxed text-slate-700">특징</p>
+        <!-- 상세 설명 및 특징 (Mobile) -->
+        <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100 lg:hidden">
+          <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="inline-block w-1.5 h-4 rounded-full bg-amber-500"></span>특징
+          </h2>
+          <div class="rounded-xl bg-white p-4 font-semibold leading-7 text-slate-800 border border-slate-100 shadow-sm text-sm whitespace-pre-line mb-6"
+               th:text="${report.distinctiveMarks ?: '등록된 특징이 없습니다.'}">특징</div>
+
           <th:block th:if="${report.displayContent}">
-            <div class="my-5 border-t border-slate-200"></div>
-            <h3 class="mb-2 text-sm font-bold text-slate-700">상세한 내용</h3>
-            <p th:text="${report.displayContent}"
-               class="whitespace-pre-line text-sm leading-relaxed text-slate-700">상세한 내용</p>
+            <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="inline-block w-1.5 h-4 rounded-full bg-amber-500"></span>상세한 내용
+            </h2>
+            <div class="rounded-xl bg-white p-4 font-semibold leading-7 text-slate-800 border border-slate-100 shadow-sm text-sm whitespace-pre-line"
+                 th:text="${report.displayContent}">상세한 내용</div>
           </th:block>
         </div>
 
-        <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <ul class="divide-y divide-slate-100">
-            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">동물 종류</span>
-                <span th:text="${report.animalTypeLabel}" class="font-bold text-slate-800">개</span>
-              </div>
-            </li>
-            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">품종</span>
-                <span th:text="${report.breedName ?: '-'}" class="font-bold text-slate-800">-</span>
-              </div>
-            </li>
-            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14c3.866 0 7 1.79 7 4v1H5v-1c0-2.21 3.134-4 7-4z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 12a4 4 0 100-8 4 4 0 000 8z"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">성별</span>
-                <span th:text="${report.genderLabel}" class="font-bold text-slate-800">모름</span>
-              </div>
-            </li>
-            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4z"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">중성화</span>
-                <span th:text="${report.neuteredStatusLabel}" class="font-bold text-slate-800">모름</span>
-              </div>
-            </li>
-            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1016 0 8 8 0 00-16 0z"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">나이</span>
-                <span th:text="${report.ageDisplay ?: '-'}" class="font-bold text-slate-800">3살</span>
-              </div>
-            </li>
-            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m7-13H5m14 8H5"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">몸무게</span>
-                <span th:text="${report.weightDisplay ?: '-'}" class="font-bold text-slate-800">4kg</span>
-              </div>
-            </li>
-            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">털색</span>
-                <span th:text="${report.furColor ?: '-'}" class="font-bold text-slate-800">-</span>
-              </div>
-            </li>
-            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span th:text="${report.reportType == 'MISSING' ? '실종 장소' : '구조 장소'}"
-                      class="text-xs font-semibold text-slate-400">구조 장소</span>
-                <span th:text="${report.detailPlace}" class="font-bold text-slate-800">장소</span>
-              </div>
-            </li>
-            <li th:if="${report.authorityName}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">관할기관</span>
-                <span th:text="${report.authorityName}" class="font-bold text-slate-800">관할기관</span>
-              </div>
-            </li>
-            <li th:if="${report.shelterName}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 20h16V8l-8-4-8 4v12z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 20v-6h6v6"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">보호소</span>
-                <span th:text="${report.shelterName}" class="font-bold text-slate-800">보호소</span>
-              </div>
-            </li>
-            <li th:if="${report.shelterAddress}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">보호소 주소</span>
-                <span th:text="${report.shelterAddress}" class="font-bold text-slate-800">보호소 주소</span>
-              </div>
-            </li>
-            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">연락처</span>
-                <span th:text="${report.displayContact}" class="font-bold text-slate-800">비공개</span>
-              </div>
-            </li>
-            <li th:if="${report.noticeNo}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10M7 11h10M7 15h6M5 3h14a2 2 0 012 2v16l-4-2-4 2-4-2-4 2V5a2 2 0 012-2z"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">공고번호</span>
-                <span th:text="${report.noticeNo}" class="font-bold text-slate-800">공고번호</span>
-              </div>
-            </li>
-            <li th:if="${report.noticePeriod}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M5 11h14M7 21h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">공고기간</span>
-                <span th:text="${report.noticePeriod}" class="font-bold text-slate-800">공고기간</span>
-              </div>
-            </li>
-          </ul>
+        <!-- 동물 프로필 Grid -->
+        <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100">
+          <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="inline-block w-1.5 h-4 rounded-full bg-amber-500"></span>동물 프로필
+          </h2>
+          <dl class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">동물 종류</dt>
+              <dd th:text="${report.animalTypeLabel}" class="font-bold text-sm text-slate-900">개</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">품종</dt>
+              <dd th:text="${report.breedName ?: '-'}" class="font-bold text-sm text-slate-900">-</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">성별</dt>
+              <dd th:text="${report.genderLabel}" class="font-bold text-sm text-slate-900">모름</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">중성화</dt>
+              <dd th:text="${report.neuteredStatusLabel}" class="font-bold text-sm text-slate-900">모름</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">나이</dt>
+              <dd th:text="${report.ageDisplay ?: '-'}" class="font-bold text-sm text-slate-900">3살</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">몸무게</dt>
+              <dd th:text="${report.weightDisplay ?: '-'}" class="font-bold text-sm text-slate-900">4kg</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3 col-span-2">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">털색</dt>
+              <dd th:text="${report.furColor ?: '-'}" class="font-bold text-sm text-slate-900">-</dd>
+            </div>
+          </dl>
         </div>
 
+        <!-- 실종/구조 위치 및 연락처 정보 -->
+        <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100">
+          <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="inline-block w-1.5 h-4 rounded-full bg-amber-500"></span>
+            <span th:text="${report.reportType == 'MISSING' ? '실종 및 연락처 정보' : '구조 및 보호소 정보'}">구조 및 보호 정보</span>
+          </h2>
+          <dl class="grid gap-x-8 gap-y-4 text-sm">
+            <!-- 일시 -->
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap"
+                  th:text="${report.reportType == 'MISSING' ? '실종 일시' : '목격 일시'}">목격 일시</dt>
+              <dd class="font-bold text-sm text-slate-900">
+                <span th:text="${#temporals.format(report.eventDate, 'yyyy년 MM월 dd일')}">2026년 05월 16일</span>
+                <span th:if="${report.eventTime != null}" th:text="${' ' + #temporals.format(report.eventTime, 'HH:mm')}"> 12:00</span>
+              </dd>
+            </div>
+
+            <!-- 장소 -->
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap"
+                  th:text="${report.reportType == 'MISSING' ? '실종 장소' : '구조 장소'}">구조 장소</dt>
+              <dd class="font-bold text-sm text-slate-900 break-words leading-snug">
+                <span th:text="${report.regionName}">서울특별시</span>
+                <span th:if="${report.detailPlace != null && report.detailPlace != ''}" th:text="${' · ' + report.detailPlace}"> · ㅇㅇ</span>
+              </dd>
+            </div>
+
+            <!-- 연락처 -->
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">연락처</dt>
+              <dd th:text="${report.displayContact}" class="font-bold text-sm text-slate-900">비공개</dd>
+            </div>
+
+            <!-- 인계처 (있을 경우에만) -->
+            <th:block th:if="${report.careLocationName != null && report.careLocationName != ''}">
+              <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">인계처</dt>
+                <dd th:text="${report.careLocationName}" class="font-bold text-sm text-slate-900">인계처</dd>
+              </div>
+              <div th:if="${report.careLocationAddress != null && report.careLocationAddress != ''}" class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">인계처 주소</dt>
+                <dd th:text="${report.careLocationAddress}" class="font-bold text-sm text-slate-900 break-words">인계처 주소</dd>
+              </div>
+              <div th:if="${report.careContactPhone != null && report.careContactPhone != ''}" class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">인계처 연락처</dt>
+                <dd th:text="${report.careContactPhone}" class="font-bold text-sm text-slate-900">인계처 연락처</dd>
+              </div>
+            </th:block>
+
+            <!-- 관할기관 / 보호소 정보 (있을 경우에만) -->
+            <th:block th:if="${(report.authorityName != null && report.authorityName != '') || (report.shelterName != null && report.shelterName != '')}">
+              <div th:if="${report.authorityName != null && report.authorityName != ''}" class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">관할 기관</dt>
+                <dd th:text="${report.authorityName}" class="font-bold text-sm text-slate-900">관할기관</dd>
+              </div>
+              <div th:if="${report.shelterName != null && report.shelterName != ''}" class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">보호소</dt>
+                <dd th:text="${report.shelterName}" class="font-bold text-sm text-slate-900">보호소</dd>
+              </div>
+              <div th:if="${report.shelterAddress != null && report.shelterAddress != ''}" class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">보호소 주소</dt>
+                <dd th:text="${report.shelterAddress}" class="font-bold text-sm text-slate-900 break-words">보호소 주소</dd>
+              </div>
+            </th:block>
+          </dl>
+        </div>
+
+        <!-- Action / CTA Buttons -->
         <div class="mt-4 flex flex-col gap-3">
           <div th:if="${reportSuccessMessage}"
                th:text="${reportSuccessMessage}"
@@ -275,6 +261,7 @@
             신고 처리 중 오류가 발생했습니다.
           </div>
 
+          <!-- Report Modal (hidden by default) -->
           <div th:if="${!isOwner && report.userNo != null}" data-report-modal
                class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
             <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl sm:p-8">
@@ -313,7 +300,17 @@
               </form>
             </div>
           </div>
+
+          <!-- Edit / Delete / List Buttons -->
           <div class="flex gap-3">
+            <form th:if="${!isOwner && report.userNo != null}" th:action="@{/chat/room}" method="post" class="flex flex-1">
+              <input type="hidden" name="itemId" th:value="${report.id()}">
+              <input type="hidden" name="itemType" value="ANIMAL_REPORT">
+              <button type="submit"
+                      class="w-full flex items-center justify-center rounded-full bg-slate-900 px-4 py-3 sm:px-6 font-bold text-white transition-all hover:bg-slate-700 active:scale-95 whitespace-nowrap">
+                1:1 채팅하기
+              </button>
+            </form>
             <a th:if="${isOwner}" th:href="@{/animal-reports/{id}/edit(id=${report.id()})}"
                class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
               수정
@@ -325,16 +322,19 @@
                 삭제
               </button>
             </form>
-            <a th:href="@{/animal-reports}" class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
+            <a th:href="${listUrl}" class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
               목록
             </a>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
+    <!-- AI Match Candidate List -->
     <section class="mt-12" th:if="${report.reportType == 'MISSING' || report.reportType == 'SIGHTING'}">
-      <h2 class="mb-1 text-xl font-extrabold text-slate-900">
+      <h2 class="mb-1 text-xl font-extrabold text-slate-900 flex items-center gap-2">
+        <span class="inline-block w-1.5 h-5 rounded-full bg-amber-500"></span>
         <span th:text="${report.reportType == 'MISSING' ? '목격 매칭 후보' : '실종 매칭 후보'}">매칭 후보</span>
       </h2>
       <p class="mb-6 text-sm text-slate-500">사진 유사도를 기반으로 찾은 후보 게시글입니다. 직접 확인 후 연락해보세요.</p>
@@ -384,7 +384,7 @@
           </a>
         </div>
 
-        <!-- 결과 없음 (SSE 대기 중 아닐 때) -->
+        <!-- 결과 없음 -->
         <div th:if="${!matchingInProgress && (matchCandidates == null || matchCandidates.isEmpty())}" class="rounded-3xl border border-dashed border-slate-300 bg-slate-50/50 px-6 py-16 text-center backdrop-blur-sm">
           <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -395,15 +395,14 @@
       </div>
     </section>
 
-    <!-- Removed Custom Modal HTML -->
-
+    <!-- Stylesheets & Scripts -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
     <script th:src="@{/js/gallery.js}"></script>
     <script th:inline="javascript">
-      /* SSE: 게시글 등록 직후 매칭 결과를 실시간으로 수신 */
+      /* SSE: 실시간 매칭 수신 */
       (function() {
         var inProgress = /*[[${matchingInProgress}]]*/ false;
         if (!inProgress) return;
@@ -459,5 +458,6 @@
       })();
     </script>
   </th:block>
+</th:block>
 </th:block>
 </html>

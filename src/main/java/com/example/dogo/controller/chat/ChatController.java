@@ -55,6 +55,8 @@ public class ChatController {
     private String itemDetailPath(String itemType, Long itemId) {
         if ("FOUND".equals(itemType)) {
             return "/found-items/" + itemId;
+        } else if ("ANIMAL_REPORT".equals(itemType)) {
+            return "/animal-reports/" + itemId;
         }
         return "/lost-items/" + itemId;
     }

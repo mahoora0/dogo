@@ -253,8 +253,50 @@ public class LoginController {
               ));
           })
           .orElse(ResponseEntity.notFound().build());
+    } else if ("ANIMAL_REPORT".equals(itemType)) {
+      return animalReportRepository.findById(itemId)
+          .filter(item -> !item.isDeleted())
+          .map(item -> {
+              List<AnimalReportImage> imgs = animalReportImageRepository.findByAnimalReportOrderBySortOrderAscImageIdAsc(item);
+              String imgUrl = !imgs.isEmpty() ? imgs.get(0).getImageUrl() : "/images/noImageSize.png";
+              String formattedDate = item.getEventDate() != null ? item.getEventDate().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")) : "날짜 정보 없음";
+
+              return ResponseEntity.ok(java.util.Map.of(
+                  "title", item.getTitle() != null ? item.getTitle() : "제목 없음",
+                  "itemName", item.getBreedName() != null ? item.getBreedName() : "품종 정보 없음",
+                  "category", getAnimalTypeKorean(item.getAnimalType()),
+                  "color", item.getFurColor() != null ? item.getFurColor() : "털색 정보 없음",
+                  "place", item.getDetailPlace() != null ? item.getDetailPlace() : "장소 정보 없음",
+                  "date", formattedDate,
+                  "status", getAnimalStatusKorean(item.getStatus()),
+                  "content", item.getContent() != null ? item.getContent() : "상세내용 없음",
+                  "imageUrl", imgUrl
+              ));
+          })
+          .orElse(ResponseEntity.notFound().build());
     }
     return ResponseEntity.badRequest().build();
+  }
+
+  private String getAnimalTypeKorean(String animalType) {
+    if (animalType == null) return "동물 정보 없음";
+    return switch (animalType.toUpperCase()) {
+      case "DOG" -> "개";
+      case "CAT" -> "고양이";
+      case "OTHER" -> "기타";
+      default -> animalType;
+    };
+  }
+
+  private String getAnimalStatusKorean(String status) {
+    if (status == null) return "알수없음";
+    return switch (status.toUpperCase()) {
+      case "OPEN" -> "진행중";
+      case "MATCHING" -> "매칭중";
+      case "RESOLVED" -> "해결";
+      case "CLOSED" -> "종료";
+      default -> status;
+    };
   }
 
   private String getStatusKorean(String status) {
