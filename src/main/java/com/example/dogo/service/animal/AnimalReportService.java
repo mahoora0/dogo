@@ -53,7 +53,7 @@ public class AnimalReportService {
 
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
-	private static final Set<String> REPORT_TYPES = Set.of("MISSING", "SIGHTING", "PROTECTING", "RETURNED", "TRANSFERRED");
+	private static final Set<String> USER_REPORT_TYPES = Set.of("MISSING", "SIGHTING");
 	private static final Set<String> ANIMAL_TYPES = Set.of("DOG", "CAT", "OTHER");
 	private static final Set<String> GENDERS = Set.of("MALE", "FEMALE", "UNKNOWN");
 	private static final Set<String> NEUTERED_STATUSES = Set.of("NEUTERED", "NOT_NEUTERED", "UNKNOWN");
@@ -177,6 +177,11 @@ public class AnimalReportService {
 				blankToNull(request.getDistinctiveMarks()),
 				blankToNull(request.getContent())
 		);
+		report.updateCareLocation(
+				careLocationName(request),
+				careLocationAddress(request),
+				careContactPhone(request)
+		);
 
 		AnimalReport savedReport = animalReportRepository.save(report);
 		saveImages(savedReport, request.getUploadImages());
@@ -216,6 +221,9 @@ public class AnimalReportService {
 				displayContact(report),
 				report.getSightingCareStatus(),
 				careStatusLabel(report.getSightingCareStatus()),
+				report.getCareLocationName(),
+				report.getCareLocationAddress(),
+				report.getCareContactPhone(),
 				report.getAnimalType(),
 				animalTypeLabel(report.getAnimalType()),
 				report.getBreedName(),
@@ -266,6 +274,9 @@ public class AnimalReportService {
 				report.getContactPhone(),
 				report.isContactPublic(),
 				report.getSightingCareStatus(),
+				report.getCareLocationName(),
+				report.getCareLocationAddress(),
+				report.getCareContactPhone(),
 				report.getAnimalType(),
 				report.getBreedName(),
 				report.getGender(),
@@ -315,6 +326,11 @@ public class AnimalReportService {
 				blankToNull(request.getFurColor()),
 				blankToNull(request.getDistinctiveMarks()),
 				blankToNull(request.getContent())
+		);
+		report.updateCareLocation(
+				careLocationName(request),
+				careLocationAddress(request),
+				careContactPhone(request)
 		);
 
 		List<MultipartFile> newImages = request.getUploadImages();
@@ -406,7 +422,7 @@ public class AnimalReportService {
 		if (request == null) {
 			throw new IllegalArgumentException("동물 신고 정보를 입력해주세요.");
 		}
-		if (!REPORT_TYPES.contains(defaultText(request.getReportType(), "").trim())) {
+		if (!USER_REPORT_TYPES.contains(defaultText(request.getReportType(), "").trim())) {
 			throw new IllegalArgumentException("신고 구분을 선택해주세요.");
 		}
 		if (request.getEventDate() == null) {
@@ -429,6 +445,11 @@ public class AnimalReportService {
 		}
 		if (request.getWeightKg() != null && request.getWeightKg().compareTo(BigDecimal.ZERO) < 0) {
 			throw new IllegalArgumentException("몸무게는 0 이상으로 입력해주세요.");
+		}
+		String reportType = request.getReportType().trim();
+		String careStatus = normalizedCareStatus(reportType, request.getSightingCareStatus());
+		if (requiresCareLocation(careStatus) && !StringUtils.hasText(request.getCareLocationAddress())) {
+			throw new IllegalArgumentException("동물을 인계한 장소의 주소를 입력해주세요.");
 		}
 	}
 
@@ -577,10 +598,32 @@ public class AnimalReportService {
 	}
 
 	private String normalizedCareStatus(String reportType, String careStatus) {
-		if (!"SIGHTING".equals(reportType)) {
+		if (!"SIGHTING".equals(defaultText(reportType, "").trim())) {
 			return null;
 		}
 		return defaultInSet(careStatus, CARE_STATUSES, "UNKNOWN");
+	}
+
+	private boolean requiresCareLocation(String careStatus) {
+		return "TRANSFERRED".equals(careStatus);
+	}
+
+	private String careLocationName(AnimalReportCreateRequest request) {
+		return requiresCareLocation(normalizedCareStatus(request.getReportType(), request.getSightingCareStatus()))
+				? blankToNull(request.getCareLocationName())
+				: null;
+	}
+
+	private String careLocationAddress(AnimalReportCreateRequest request) {
+		return requiresCareLocation(normalizedCareStatus(request.getReportType(), request.getSightingCareStatus()))
+				? blankToNull(request.getCareLocationAddress())
+				: null;
+	}
+
+	private String careContactPhone(AnimalReportCreateRequest request) {
+		return requiresCareLocation(normalizedCareStatus(request.getReportType(), request.getSightingCareStatus()))
+				? blankToNull(request.getCareContactPhone())
+				: null;
 	}
 
 	private String normalizedAgeUnit(String ageUnit) {
