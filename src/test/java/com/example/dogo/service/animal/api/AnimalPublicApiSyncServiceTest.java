@@ -37,6 +37,8 @@ class AnimalPublicApiSyncServiceTest {
 				"20260515",
 				"Gangnam station",
 				"Seoul Gangnam-gu",
+				null,
+				null,
 				"02-111-2222",
 				"Dog",
 				"Poodle",
@@ -46,6 +48,9 @@ class AnimalPublicApiSyncServiceTest {
 				null,
 				null,
 				"Blue collar",
+				null,
+				null,
+				null,
 				null,
 				"https://example.test/loss.jpg",
 				"<item><lossNo>LOSS-1</lossNo></item>"
@@ -73,6 +78,8 @@ class AnimalPublicApiSyncServiceTest {
 				"20260516",
 				"Mapo shelter road",
 				"Seoul Mapo-gu",
+				"Mapo Shelter",
+				"Seoul Mapo-gu",
 				"02-333-4444",
 				"[Dog] Maltese",
 				null,
@@ -83,6 +90,9 @@ class AnimalPublicApiSyncServiceTest {
 				null,
 				"Friendly",
 				"Protecting",
+				"NOTICE-1",
+				"20260516",
+				"20260526",
 				null,
 				"<item><desertionNo>PROTECT-1</desertionNo></item>"
 		);

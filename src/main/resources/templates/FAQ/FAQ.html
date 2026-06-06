@@ -56,7 +56,7 @@
                             </div>
                         </div>
                         <div th:if="${isAdmin}" class="mt-4 flex justify-end">
-                            <form th:action="@{/admin/faq/{id}/delete(id=${faq.id})}" method="post" onsubmit="return confirm('이 FAQ를 정말 삭제하시겠습니까?');">
+                            <form th:action="@{/admin/faq/{id}/delete(id=${faq.id})}" method="post" data-confirm="이 FAQ를 정말 삭제하시겠습니까?">
                                 <button type="submit" class="text-sm text-red-500 hover:text-red-700 font-medium px-3 py-1 border border-red-200 hover:bg-red-50 rounded transition-colors">삭제</button>
                             </form>
                         </div>

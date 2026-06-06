@@ -47,6 +47,33 @@ class AnimalPublicApiXmlParserTest {
 	}
 
 	@Test
+	void parsesProtectionResponseWithV2ImageFields() {
+		String xml = """
+				<response>
+				  <header><resultCode>00</resultCode><resultMsg>NORMAL SERVICE.</resultMsg></header>
+				  <body>
+				    <items>
+				      <item>
+				        <desertionNo>PROTECT-2</desertionNo>
+				        <happenDt>20260601</happenDt>
+				        <happenPlace>Mapo shelter road</happenPlace>
+				        <kindFullNm>[Dog] Maltese</kindFullNm>
+				        <popfile1>https://example.test/protect-main.jpg</popfile1>
+				        <popfile2>https://example.test/protect-sub.jpg</popfile2>
+				      </item>
+				    </items>
+				    <totalCount>1</totalCount>
+				  </body>
+				</response>
+				""";
+
+		AnimalPublicApiPage page = parser.parse(xml);
+
+		assertThat(page.records()).hasSize(1);
+		assertThat(page.records().get(0).imageUrl()).isEqualTo("https://example.test/protect-main.jpg");
+	}
+
+	@Test
 	void parsesLossResponse() {
 		String xml = """
 				<response>

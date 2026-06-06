@@ -3,58 +3,58 @@
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
     <section class="grid items-start gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-      <div class="flex flex-col gap-4 lg:sticky lg:top-24">
-        <div class="relative overflow-hidden rounded-3xl bg-black/5 shadow-inner">
-          <div class="absolute left-4 top-4 z-20 rounded-full bg-slate-950/70 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
-            <span id="animalImageCurrent">1</span> / <span th:text="${#lists.size(report.imageUrls)}">1</span>
+      <div class="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24">
+        <!-- 이미지 갤러리 (Swiper) -->
+        <div class="dogo-gallery flex min-w-0 flex-col gap-4" data-fancybox-group="animal-gallery">
+          <div class="relative min-w-0 overflow-hidden rounded-3xl bg-black/5 shadow-inner">
+            <div class="absolute left-4 top-4 z-20 rounded-full bg-slate-950/70 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
+              <span class="gallery-current">1</span> / <span th:text="${#lists.size(report.imageUrls)}">1</span>
+            </div>
+
+            <div class="gallery-blur absolute inset-0 scale-110 bg-cover bg-center bg-no-repeat opacity-50 blur-xl"
+                 th:style="'background-image: url(' + ${report.imageUrls[0]} + ');'"></div>
+
+            <div class="swiper gallery-main relative z-10 w-full min-w-0">
+              <div class="swiper-wrapper">
+                <a th:each="img : ${report.imageUrls}" th:href="${img}" data-fancybox="animal-gallery"
+                   class="swiper-slide group block">
+                  <img th:src="${img}" alt="대표 이미지"
+                       class="h-80 w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] lg:h-[500px]">
+                </a>
+              </div>
+            </div>
+
+            <button type="button" th:if="${#lists.size(report.imageUrls) > 1}"
+                    class="gallery-prev absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-slate-950/55 text-white shadow-sm transition hover:bg-slate-950/75"
+                    aria-label="이전 이미지">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button type="button" th:if="${#lists.size(report.imageUrls) > 1}"
+                    class="gallery-next absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-slate-950/55 text-white shadow-sm transition hover:bg-slate-950/75"
+                    aria-label="다음 이미지">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </button>
           </div>
 
-          <div id="animalMainImageBlur"
-               class="absolute inset-0 scale-110 bg-cover bg-center bg-no-repeat opacity-50 blur-xl"
-               th:style="'background-image: url(' + ${report.imageUrls[0]} + ');'"></div>
-
-          <div class="group relative z-10 block w-full overflow-hidden rounded-xl" aria-label="이미지 크게 보기">
-            <div id="animalMainImageTrack" class="flex w-full transition-transform duration-500 ease-in-out">
-              <a th:each="img, stat : ${report.imageUrls}" 
-                 th:href="${img}" 
-                 data-fancybox="animal-gallery"
-                 class="animal-main-link block w-full shrink-0">
-                <img th:src="${img}" alt="대표 이미지"
-                     class="relative z-10 h-80 w-full object-contain backdrop-blur-sm transition-transform duration-300 ease-out group-hover:scale-[1.02] lg:h-[500px]">
-              </a>
+          <div th:if="${#lists.size(report.imageUrls) > 1}" class="swiper gallery-thumbs w-full min-w-0">
+            <div class="swiper-wrapper">
+              <div th:each="img : ${report.imageUrls}" class="swiper-slide">
+                <img th:src="${img}" alt="썸네일">
+              </div>
             </div>
           </div>
-
-          <button type="button" id="animalPrevImage"
-                  class="absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-slate-950/55 text-white shadow-sm transition hover:bg-slate-950/75"
-                  aria-label="이전 이미지">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-          </button>
-          <button type="button" id="animalNextImage"
-                  class="absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-slate-950/55 text-white shadow-sm transition hover:bg-slate-950/75"
-                  aria-label="다음 이미지">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-
-        <div th:if="${#lists.size(report.imageUrls) > 1}" class="grid grid-cols-5 gap-3">
-          <button type="button" th:each="imageUrl, stat : ${report.imageUrls}"
-                  class="animal-gallery-thumb group relative aspect-square overflow-hidden rounded-xl border-2 border-transparent transition-all hover:border-slate-400 focus:outline-none focus:border-slate-500"
-                  th:classappend="${stat.index == 0 ? ' is-active border-slate-900' : ''}"
-                  th:attr="data-image-url=${imageUrl}, data-image-index=${stat.index}"
-                  th:aria-label="${stat.index + 1} + '번 이미지 보기'">
-            <img th:src="${imageUrl}" alt="썸네일" class="h-full w-full object-cover transition-transform group-hover:scale-110 group-focus:scale-110">
-          </button>
         </div>
 
         <div class="hidden rounded-2xl border border-slate-200 bg-slate-50 p-6 lg:block">
           <h3 class="mb-2 text-sm font-bold text-slate-700">특징</h3>
           <p th:text="${report.distinctiveMarks ?: '등록된 특징이 없습니다.'}"
              class="whitespace-pre-line text-sm leading-relaxed text-slate-700">특징</p>
-          <div class="my-5 border-t border-slate-200"></div>
-          <h3 class="mb-2 text-sm font-bold text-slate-700">상세한 내용</h3>
-          <p th:text="${report.content ?: '등록된 상세 내용이 없습니다.'}"
-             class="whitespace-pre-line text-sm leading-relaxed text-slate-700">상세한 내용</p>
+          <th:block th:if="${report.displayContent}">
+            <div class="my-5 border-t border-slate-200"></div>
+            <h3 class="mb-2 text-sm font-bold text-slate-700">상세한 내용</h3>
+            <p th:text="${report.displayContent}"
+               class="whitespace-pre-line text-sm leading-relaxed text-slate-700">상세한 내용</p>
+          </th:block>
         </div>
       </div>
 
@@ -68,8 +68,7 @@
                       class="rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset shadow-sm">실종</span>
                 <span th:unless="${isOwner}" th:text="${report.statusLabel}" class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 shadow-sm">진행중</span>
                 <form th:if="${isOwner}" th:action="@{/animal-reports/{id}/status(id=${report.id()})}" method="post"
-                      class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm"
-                      onsubmit="return confirm('게시글 상태를 변경하시겠습니까?');">
+                      class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
                   <span class="pl-1 text-xs font-bold text-slate-500">상태</span>
                   <select name="status" onchange="this.form.submit()"
                           th:class="${report.status == 'RESOLVED' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : (report.status == 'CLOSED' ? 'bg-slate-100 text-slate-700 ring-slate-200' : 'bg-slate-50 text-slate-700 ring-slate-200')} + ' rounded-full border-0 px-2.5 py-1 text-xs font-bold ring-1 ring-inset focus:outline-none focus:ring-2 focus:ring-slate-400'">
@@ -106,7 +105,7 @@
             <span th:text="${#temporals.format(report.eventDate, 'yyyy년 MM월 dd일')}">2026년 05월 16일</span>
             <span th:if="${report.eventTime != null}" th:text="${#temporals.format(report.eventTime, 'HH:mm')}">12:00</span>
             <span class="mx-1 text-slate-300">•</span>
-            <span th:text="${report.regionName}">서울특별시</span>
+            <span th:text="${report.locationSummary ?: report.regionName}">서울특별시</span>
           </div>
           <div th:if="${statusSuccessMessage}"
                th:text="${statusSuccessMessage}"
@@ -124,10 +123,12 @@
           <h3 class="mb-2 text-sm font-bold text-slate-700">특징</h3>
           <p th:text="${report.distinctiveMarks ?: '등록된 특징이 없습니다.'}"
              class="whitespace-pre-line text-sm leading-relaxed text-slate-700">특징</p>
-          <div class="my-5 border-t border-slate-200"></div>
-          <h3 class="mb-2 text-sm font-bold text-slate-700">상세한 내용</h3>
-          <p th:text="${report.content ?: '등록된 상세 내용이 없습니다.'}"
-             class="whitespace-pre-line text-sm leading-relaxed text-slate-700">상세한 내용</p>
+          <th:block th:if="${report.displayContent}">
+            <div class="my-5 border-t border-slate-200"></div>
+            <h3 class="mb-2 text-sm font-bold text-slate-700">상세한 내용</h3>
+            <p th:text="${report.displayContent}"
+               class="whitespace-pre-line text-sm leading-relaxed text-slate-700">상세한 내용</p>
+          </th:block>
         </div>
 
         <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -173,11 +174,17 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1016 0 8 8 0 00-16 0z"/></svg>
               </div>
               <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">나이/몸무게</span>
-                <span class="font-bold text-slate-800">
-                  <span th:text="${report.ageDisplay != null ? report.ageDisplay : (report.weightDisplay == null ? '-' : '')}">3살</span>
-                  <span th:if="${report.weightDisplay != null}" th:text="${(report.ageDisplay != null ? ' · ' : '') + report.weightDisplay}"> · 4kg</span>
-                </span>
+                <span class="text-xs font-semibold text-slate-400">나이</span>
+                <span th:text="${report.ageDisplay ?: '-'}" class="font-bold text-slate-800">3살</span>
+              </div>
+            </li>
+            <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m7-13H5m14 8H5"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">몸무게</span>
+                <span th:text="${report.weightDisplay ?: '-'}" class="font-bold text-slate-800">4kg</span>
               </div>
             </li>
             <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
@@ -194,8 +201,36 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               </div>
               <div class="flex flex-col">
-                <span class="text-xs font-semibold text-slate-400">장소</span>
+                <span th:text="${report.reportType == 'MISSING' ? '실종 장소' : '구조 장소'}"
+                      class="text-xs font-semibold text-slate-400">구조 장소</span>
                 <span th:text="${report.detailPlace}" class="font-bold text-slate-800">장소</span>
+              </div>
+            </li>
+            <li th:if="${report.authorityName}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">관할기관</span>
+                <span th:text="${report.authorityName}" class="font-bold text-slate-800">관할기관</span>
+              </div>
+            </li>
+            <li th:if="${report.shelterName}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 20h16V8l-8-4-8 4v12z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 20v-6h6v6"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">보호소</span>
+                <span th:text="${report.shelterName}" class="font-bold text-slate-800">보호소</span>
+              </div>
+            </li>
+            <li th:if="${report.shelterAddress}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">보호소 주소</span>
+                <span th:text="${report.shelterAddress}" class="font-bold text-slate-800">보호소 주소</span>
               </div>
             </li>
             <li class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
@@ -205,6 +240,24 @@
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-slate-400">연락처</span>
                 <span th:text="${report.displayContact}" class="font-bold text-slate-800">비공개</span>
+              </div>
+            </li>
+            <li th:if="${report.noticeNo}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10M7 11h10M7 15h6M5 3h14a2 2 0 012 2v16l-4-2-4 2-4-2-4 2V5a2 2 0 012-2z"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">공고번호</span>
+                <span th:text="${report.noticeNo}" class="font-bold text-slate-800">공고번호</span>
+              </div>
+            </li>
+            <li th:if="${report.noticePeriod}" class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M5 11h14M7 21h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-400">공고기간</span>
+                <span th:text="${report.noticePeriod}" class="font-bold text-slate-800">공고기간</span>
               </div>
             </li>
           </ul>
@@ -266,7 +319,7 @@
               수정
             </a>
             <form th:if="${isOwner}" th:action="@{/animal-reports/{id}/delete(id=${report.id()})}" method="post" class="flex flex-1"
-                  onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                  data-confirm="정말 삭제하시겠습니까?">
               <button type="submit"
                       class="w-full flex items-center justify-center rounded-full border-2 border-red-200 bg-white px-4 py-3 sm:px-6 font-bold text-red-500 transition-all hover:bg-red-50 hover:text-red-700 active:scale-95 whitespace-nowrap">
                 삭제
@@ -344,90 +397,11 @@
 
     <!-- Removed Custom Modal HTML -->
 
-    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
-    <script th:if="${report.imageUrls != null && !report.imageUrls.isEmpty()}">
-      (function() {
-        var mainTrack = document.getElementById('animalMainImageTrack');
-        var mainLinks = document.querySelectorAll('.animal-main-link');
-        var mainImageBlur = document.getElementById('animalMainImageBlur');
-        var currentLabel = document.getElementById('animalImageCurrent');
-        var prevButton = document.getElementById('animalPrevImage');
-        var nextButton = document.getElementById('animalNextImage');
-        var thumbs = Array.prototype.slice.call(document.querySelectorAll('.animal-gallery-thumb'));
-        var imageUrls = thumbs.length > 0 ? thumbs.map(function(button) { return button.dataset.imageUrl; }) : (mainLinks.length > 0 ? [mainLinks[0].href] : []);
-        var currentIndex = 0;
-
-        function setButtonVisibility() {
-          var hidden = imageUrls.length <= 1;
-          if (prevButton) prevButton.style.display = hidden ? 'none' : 'flex';
-          if (nextButton) nextButton.style.display = hidden ? 'none' : 'flex';
-        }
-
-        function syncThumbs() {
-          thumbs.forEach(function(button) {
-            var isActive = Number(button.dataset.imageIndex) === currentIndex;
-            button.classList.toggle('is-active', isActive);
-            button.classList.toggle('border-slate-900', isActive);
-            button.classList.toggle('border-transparent', !isActive);
-          });
-        }
-
-        function renderImage(index) {
-          currentIndex = (index + imageUrls.length) % imageUrls.length;
-          var imageUrl = imageUrls[currentIndex];
-          
-          if (mainTrack) {
-            mainTrack.style.transform = 'translateX(-' + (currentIndex * 100) + '%)';
-          }
-          
-          if (mainImageBlur) {
-            mainImageBlur.style.backgroundImage = "url('" + imageUrl.replace(/'/g, "\\'") + "')";
-          }
-          if (currentLabel) {
-            currentLabel.textContent = currentIndex + 1;
-          }
-          syncThumbs();
-        }
-
-        function move(delta) {
-          renderImage(currentIndex + delta);
-        }
-
-        thumbs.forEach(function(button) {
-          button.addEventListener('click', function() {
-            renderImage(Number(button.dataset.imageIndex));
-          });
-        });
-
-        if (prevButton) prevButton.addEventListener('click', function() { move(-1); });
-        if (nextButton) nextButton.addEventListener('click', function() { move(1); });
-
-        // Initialize Fancybox
-        Fancybox.bind('[data-fancybox="animal-gallery"]', {
-          Images: {
-            zoom: true,
-          },
-          Toolbar: {
-            display: {
-              left: ["infobar"],
-              middle: [],
-              right: ["zoom", "close"],
-            },
-          },
-          on: {
-            "Carousel.change": function(fancybox, carousel) {
-              if (carousel && carousel.page !== undefined) {
-                renderImage(carousel.page);
-              }
-            }
-          }
-        });
-
-        setButtonVisibility();
-        renderImage(0);
-      })();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+    <script th:src="@{/js/gallery.js}"></script>
     <script th:inline="javascript">
       /* SSE: 게시글 등록 직후 매칭 결과를 실시간으로 수신 */
       (function() {
