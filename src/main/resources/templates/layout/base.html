@@ -140,8 +140,8 @@
       </div>
     </header>
 
-    <div class="main-layout">
-      <aside class="sidebar">
+    <div class="main-layout" th:classappend="${noSidebar} ? 'main-layout--full-width' : ''">
+      <aside class="sidebar" th:if="${noSidebar == null || !noSidebar}">
         <nav>
           <div class="category">
             <h3>분실물</h3>

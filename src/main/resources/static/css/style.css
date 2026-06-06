@@ -137,6 +137,10 @@ textarea {
     padding: 0 24px;
 }
 
+.main-layout--full-width {
+    max-width: 1280px;
+}
+
 .sidebar {
     background: #fff;
     border: 1px solid #e6edf5;
