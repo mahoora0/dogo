@@ -19,7 +19,7 @@
                 <a th:each="img : ${report.imageUrls}" th:href="${img}" data-fancybox="animal-gallery"
                    class="swiper-slide group block">
                   <img th:src="${img}" alt="대표 이미지"
-                       class="h-80 w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] lg:h-[500px]">
+                       class="aspect-square h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] sm:aspect-[4/3] lg:aspect-auto lg:h-[500px]">
                 </a>
               </div>
             </div>
