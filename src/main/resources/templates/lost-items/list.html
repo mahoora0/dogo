@@ -130,7 +130,7 @@
 
     <!-- Grid List -->
     <section class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-      <a th:each="item : ${lostItems}" th:href="@{/lost-items/{id}(id=${item.id})}"
+      <a th:each="item : ${lostItems}" th:href="@{/lost-items/{id}(id=${item.id}, keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page}, size=${size})}"
          class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md">
         <div class="relative h-44 w-full overflow-hidden bg-slate-50">
           <img th:if="${item.imageUrl}" th:src="${item.imageUrl}" alt=""

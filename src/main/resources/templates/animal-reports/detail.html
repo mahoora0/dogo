@@ -9,13 +9,10 @@
       <div class="flex min-w-0 flex-col gap-4">
         <!-- 이미지 갤러리 (Swiper) -->
         <div class="dogo-gallery flex min-w-0 flex-col gap-4" data-fancybox-group="animal-gallery">
-          <div class="relative min-w-0 overflow-hidden rounded-3xl bg-black/5 shadow-inner">
+          <div class="relative min-w-0 overflow-hidden rounded-3xl bg-slate-50 border border-slate-100 shadow-inner">
             <div class="absolute left-4 top-4 z-20 rounded-full bg-slate-950/70 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
               <span class="gallery-current">1</span> / <span th:text="${#lists.size(report.imageUrls)}">1</span>
             </div>
-
-            <div class="gallery-blur absolute inset-0 scale-110 bg-cover bg-center bg-no-repeat opacity-50 blur-xl"
-                 th:style="'background-image: url(' + ${report.imageUrls[0]} + ');'"></div>
 
             <div class="swiper gallery-main relative z-10 w-full min-w-0">
               <div class="swiper-wrapper">
@@ -325,7 +322,7 @@
                 삭제
               </button>
             </form>
-            <a th:href="@{/animal-reports}" class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
+            <a th:href="${listUrl}" class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
               목록
             </a>
           </div>
