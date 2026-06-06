@@ -306,6 +306,14 @@
 
           <!-- Edit / Delete / List Buttons -->
           <div class="flex gap-3">
+            <form th:if="${!isOwner && report.userNo != null}" th:action="@{/chat/room}" method="post" class="flex flex-1">
+              <input type="hidden" name="itemId" th:value="${report.id()}">
+              <input type="hidden" name="itemType" value="ANIMAL_REPORT">
+              <button type="submit"
+                      class="w-full flex items-center justify-center rounded-full bg-slate-900 px-4 py-3 sm:px-6 font-bold text-white transition-all hover:bg-slate-700 active:scale-95 whitespace-nowrap">
+                1:1 채팅하기
+              </button>
+            </form>
             <a th:if="${isOwner}" th:href="@{/animal-reports/{id}/edit(id=${report.id()})}"
                class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
               수정

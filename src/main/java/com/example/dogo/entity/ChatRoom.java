@@ -2,6 +2,7 @@ package com.example.dogo.entity;
 
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.entity.item.LostItem;
+import com.example.dogo.entity.animal.AnimalReport;
 import com.example.dogo.entity.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -29,6 +30,10 @@ public class ChatRoom {
     private LostItem lostItem;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ANIMAL_REPORT_ID")
+    private AnimalReport animalReport;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "INQUIRER_NO")
     private User inquirer; // 채팅 신청자
 
@@ -48,6 +53,13 @@ public class ChatRoom {
 
     public ChatRoom(LostItem lostItem, User inquirer, User owner) {
         this.lostItem = lostItem;
+        this.inquirer = inquirer;
+        this.owner = owner;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public ChatRoom(AnimalReport animalReport, User inquirer, User owner) {
+        this.animalReport = animalReport;
         this.inquirer = inquirer;
         this.owner = owner;
         this.createdAt = LocalDateTime.now();
