@@ -38,6 +38,110 @@ textarea {
     max-width: 1180px;
     min-height: 64px;
     padding: 10px 24px;
+    gap: 16px;
+}
+
+.top-nav {
+    display: flex;
+    gap: 16px;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.nav-item {
+    position: relative;
+    padding: 8px 0;
+}
+
+.nav-category {
+    align-items: center;
+    display: inline-flex;
+    gap: 6px;
+    font-size: 14.5px;
+    font-weight: 750;
+    color: #475569;
+    padding: 7px 12px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+/* Hover & Active Category states - rounded pill style */
+.nav-item:hover .nav-category,
+.nav-item.active .nav-category,
+.nav-item.mobile-active .nav-category {
+    background-color: #eff6ff; /* light blueish background */
+    color: #1d4ed8; /* blue text */
+}
+
+/* Dropdown Menu - Card Style */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    min-width: 180px;
+    padding: 16px;
+    z-index: 120;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s;
+    pointer-events: none;
+}
+
+.nav-item:hover .dropdown-menu,
+.nav-item.mobile-active .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+
+.dropdown-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #1e293b;
+    padding: 2px 8px 6px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 4px;
+    text-align: left;
+}
+
+.dropdown-menu a {
+    align-items: center;
+    border-radius: 8px;
+    color: #475569;
+    display: flex;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 12px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.dropdown-menu a svg {
+    flex-shrink: 0;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f8fafc;
+    color: #1e293b;
+}
+
+.dropdown-menu a.active-sub {
+    background-color: #eff6ff;
+    color: #1d4ed8;
 }
 
 .logo-link {
@@ -46,6 +150,10 @@ textarea {
     font-size: 20px;
     font-weight: 800;
     gap: 8px;
+}
+
+.logo {
+    margin-left: 0;
 }
 
 .navbar .logo img {
@@ -901,6 +1009,44 @@ textarea {
         margin-bottom: 16px;
         position: static;
         width: 100%;
+    }
+
+    .nav-container {
+        padding: 0 16px;
+        overflow-x: auto;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .top-nav {
+        gap: 16px;
+        padding: 4px 0;
+    }
+
+    .nav-item {
+        padding: 6px 0;
+    }
+
+    .nav-category {
+        padding: 6px 12px;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .dropdown-menu {
+        left: 50%;
+        transform: translateX(-50%) translateY(5px);
+        min-width: 160px;
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .nav-item.mobile-active .dropdown-menu {
+        transform: translateX(-50%) translateY(0);
     }
 }
 

@@ -50,7 +50,7 @@ public class PoliceFoundItemMapper {
 				null,
 				null,
 				null,
-				"KEEPING"
+				"TRANSFERRED"
 		);
 	}
 
@@ -196,7 +196,7 @@ public class PoliceFoundItemMapper {
 		if (normalized != null && (normalized.contains("수령") || normalized.contains("반환") || normalized.contains("종결"))) {
 			return "RETURNED";
 		}
-		return "KEEPING";
+		return "TRANSFERRED";
 	}
 
 	private String defaultText(String value, String fallback) {
