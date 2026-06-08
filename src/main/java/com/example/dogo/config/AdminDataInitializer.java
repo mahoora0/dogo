@@ -46,6 +46,9 @@ public class AdminDataInitializer implements CommandLineRunner {
             log.debug("USERS 테이블에 REPORT_COUNT_ADJUSTMENT 컬럼이 이미 존재하거나 추가 과정이 건너뛰어졌습니다.");
         }
 
+        // 더미 유저 생성 호출 (Early return에 막히지 않도록 이곳에서 호출)
+        seedDummyUsers();
+
         if (!StringUtils.hasText(adminPassword)) {
             log.warn("admin.password가 비어 있어 관리자 계정 자동 생성을 건너뜁니다.");
             return;
@@ -67,7 +70,7 @@ public class AdminDataInitializer implements CommandLineRunner {
                 "최고관리자",
                 "010-0000-0000",
                 null
-        );
+            );
         
         // 권한을 ADMIN으로 설정
         admin.setRole("ADMIN");
@@ -76,5 +79,28 @@ public class AdminDataInitializer implements CommandLineRunner {
         
         log.info("관리자 계정 생성이 완료되었습니다.");
         log.info("ID: {}, PW: (설정된 비밀번호)", adminId);
+    }
+
+    private void seedDummyUsers() {
+        for (char c = 'a'; c <= 'z'; c++) {
+            String id = String.valueOf(c).repeat(4);
+            if (userRepository.findByLoginId(id).isPresent()) {
+                continue;
+            }
+            String password = String.valueOf(c).repeat(7) + "!";
+            String email = id + "@test.com";
+            String nickname = id;
+            
+            User user = new User(
+                id,
+                passwordEncoder.encode(password),
+                email,
+                nickname,
+                "010-0000-0000",
+                null
+            );
+            userRepository.save(user);
+        }
+        log.info("26명의 더미 유저 생성이 완료되었습니다. (aaaa ~ zzzz)");
     }
 }
