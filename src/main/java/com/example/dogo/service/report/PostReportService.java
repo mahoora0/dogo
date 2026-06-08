@@ -2,6 +2,7 @@ package com.example.dogo.service.report;
 
 import com.example.dogo.dto.ReportCreateRequest;
 import com.example.dogo.dto.AdminReportRow;
+import com.example.dogo.entity.ChatMessage;
 import com.example.dogo.entity.PostReport;
 import com.example.dogo.entity.ReportReasonType;
 import com.example.dogo.entity.ReportStatus;
@@ -11,6 +12,7 @@ import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.entity.missing.MissingPersonReport;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.repository.ChatMessageRepository;
 import com.example.dogo.repository.PostReportRepository;
 import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
@@ -33,19 +35,22 @@ public class PostReportService {
 	private final FoundItemRepository foundItemRepository;
 	private final AnimalReportRepository animalReportRepository;
 	private final MissingPersonRepository missingPersonRepository;
+	private final ChatMessageRepository chatMessageRepository;
 
 	public PostReportService(
 			PostReportRepository postReportRepository,
 			LostItemRepository lostItemRepository,
 			FoundItemRepository foundItemRepository,
 			AnimalReportRepository animalReportRepository,
-			MissingPersonRepository missingPersonRepository
+			MissingPersonRepository missingPersonRepository,
+			ChatMessageRepository chatMessageRepository
 	) {
 		this.postReportRepository = postReportRepository;
 		this.lostItemRepository = lostItemRepository;
 		this.foundItemRepository = foundItemRepository;
 		this.animalReportRepository = animalReportRepository;
 		this.missingPersonRepository = missingPersonRepository;
+		this.chatMessageRepository = chatMessageRepository;
 	}
 
 	@Transactional
@@ -56,12 +61,14 @@ public class PostReportService {
 		validateCreateRequest(request);
 
 		ReportTargetSnapshot target = resolveTarget(request.getTargetType(), request.getTargetId());
+		boolean isChat = request.getTargetType() == ReportTargetType.CHAT_MESSAGE;
+		String targetNoun = isChat ? "메시지" : "게시글";
 		Long reporterNo = reporter.getUserNo();
 		if (reporterNo != null && reporterNo.equals(target.ownerNo())) {
-			throw new IllegalArgumentException("본인이 작성한 게시글은 신고할 수 없습니다.");
+			throw new IllegalArgumentException(isChat ? "본인이 보낸 메시지는 신고할 수 없습니다." : "본인이 작성한 게시글은 신고할 수 없습니다.");
 		}
 		if (postReportRepository.existsByReporterUserNoAndTargetTypeAndTargetId(reporterNo, request.getTargetType(), request.getTargetId())) {
-			throw new IllegalArgumentException("이미 신고한 게시글입니다.");
+			throw new IllegalArgumentException("이미 신고한 " + targetNoun + "입니다.");
 		}
 
 		PostReport report = new PostReport(
@@ -103,6 +110,7 @@ public class PostReportService {
 			case FOUND_ITEM -> "/found-items/" + targetId;
 			case ANIMAL_REPORT -> "/animal-reports/" + targetId;
 			case MISSING_PERSON -> "/missing-persons/" + targetId;
+			case CHAT_MESSAGE -> "/chat";
 		};
 	}
 
@@ -159,7 +167,21 @@ public class PostReportService {
 			case FOUND_ITEM -> resolveFoundItem(targetId);
 			case ANIMAL_REPORT -> resolveAnimalReport(targetId);
 			case MISSING_PERSON -> resolveMissingPerson(targetId);
+			case CHAT_MESSAGE -> resolveChatMessage(targetId);
 		};
+	}
+
+	private ReportTargetSnapshot resolveChatMessage(Long targetId) {
+		ChatMessage message = chatMessageRepository.findById(targetId)
+				.orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다."));
+		Long ownerNo = ownerNo(message.getSender());
+		String senderName = firstText(message.getSender().getNickname(), "알 수 없음");
+		String preview = senderName + ": " + firstText(message.getContent(), "(파일)");
+		if (preview.length() > 300) {
+			preview = preview.substring(0, 300);
+		}
+		String url = "/admin/reports/chat/" + message.getChatRoom().getRoomId();
+		return new ReportTargetSnapshot(ownerNo, preview, url);
 	}
 
 	private ReportTargetSnapshot resolveLostItem(Long targetId) {

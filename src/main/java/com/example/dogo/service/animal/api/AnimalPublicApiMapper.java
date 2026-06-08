@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 public class AnimalPublicApiMapper {
 
 	private static final DateTimeFormatter BASIC_DATE = DateTimeFormatter.BASIC_ISO_DATE;
-	private static final Pattern WEIGHT_PATTERN = Pattern.compile("(\\d+(?:\\.\\d+)?)");
+	private static final Pattern WEIGHT_PATTERN = Pattern.compile("(\\d+(?:[\\.,]\\d+)?)");
 
 	public AnimalReport toReport(AnimalPublicApiRecord record, String apiProvider, String reportType) {
 		return AnimalReport.fromPublicApi(
@@ -144,7 +144,7 @@ public class AnimalPublicApiMapper {
 		if (!matcher.find()) {
 			return null;
 		}
-		return new BigDecimal(matcher.group(1));
+		return new BigDecimal(matcher.group(1).replace(',', '.'));
 	}
 
 	private String firstText(String... values) {

@@ -25,6 +25,16 @@ class ChatSchemaMigratorTest {
                   CREATED_AT DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )
                 """);
+        jdbcTemplate.execute("""
+                CREATE TABLE CHAT_ROOM (
+                  ROOM_ID BIGINT AUTO_INCREMENT PRIMARY KEY,
+                  FOUND_ID BIGINT NULL,
+                  LOST_ID BIGINT NULL,
+                  INQUIRER_NO BIGINT NOT NULL,
+                  OWNER_NO BIGINT NOT NULL,
+                  CREATED_AT DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+                """);
 
         new ChatSchemaMigrator(jdbcTemplate, dataSource).migrate();
 
@@ -33,6 +43,11 @@ class ChatSchemaMigratorTest {
                 String.class
         );
         assertThat(columns).contains("IS_READ", "FILE_GROUP_ID");
+        List<String> roomColumns = jdbcTemplate.queryForList(
+                "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'CHAT_ROOM'",
+                String.class
+        );
+        assertThat(roomColumns).contains("ANIMAL_REPORT_ID");
     }
 
     private DataSource dataSource() {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
     <div class="max-w-5xl mx-auto">
@@ -95,8 +95,8 @@
               <!-- 상태 배지 (우측 상단) -->
               <div class="absolute right-3 top-3 z-10">
                 <span th:text="${activity.statusLabel}"
-                      th:classappend="${activity.status == 'RETURNED' || activity.status == 'FOUND'} ? 'bg-emerald-600 text-white' : (activity.status == 'MATCHING' ? 'bg-amber-500 text-white' : (activity.status == 'ANSWERED' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-white'))"
-                      class="block rounded-full px-3 py-1.5 text-xs font-extrabold shadow-sm">보관중</span>
+                      th:classappend="${activity.status == 'RETURNED' || activity.status == 'FOUND'} ? 'bg-emerald-600 text-white' : (activity.status == 'TRANSFERRED' ? 'bg-blue-600 text-white' : (activity.status == 'MATCHING' ? 'bg-amber-500 text-white' : (activity.status == 'ANSWERED' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-white')))"
+                      class="block rounded-full px-3 py-1.5 text-xs font-extrabold shadow-sm">보관</span>
               </div>
             </div>
             
@@ -135,7 +135,7 @@
       
       <!-- 탈퇴하기 버튼 -->
       <div class="mt-12 flex justify-center">
-        <form th:action="@{/user/withdraw}" method="post" onsubmit="return confirm('정말로 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.');">
+        <form th:action="@{/user/withdraw}" method="post" data-confirm="정말로 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.">
           <button type="submit" class="text-gray-400 hover:text-red-500 text-xs underline transition-colors">
             탈퇴하기
           </button>

@@ -52,12 +52,26 @@
                     실종자 관리
                 </a>
                 <a href="/admin/inquiries" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
-                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    <svg viewBox="0 0 24 24" style="width: 25px; height: 25px; flex-shrink: 0;" fill="currentColor">
+                        <path d="M4 4h16v12H7l-3 4V4Zm2 2v8h10v-2H8v-2h8V8H8V6H6Z"/>
+                    </svg>
                     1:1 문의
                 </a>
                 <a href="/admin/reports" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                     <i data-lucide="shield-alert" class="w-5 h-5"></i>
                     신고 관리
+                </a>
+                <a href="/admin/notice" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <svg viewBox="0 0 24 24" style="width: 25px; height: 25px; flex-shrink: 0;" fill="currentColor">
+                        <path d="M4 10v4h3l5 4V6l-5 4H4Zm11.5 2a3.5 3.5 0 0 0-1.5-2.9v5.8a3.5 3.5 0 0 0 1.5-2.9ZM16 4.8v2.4a6 6 0 0 1 0 9.6v2.4a8 8 0 0 0 0-14.4Z"/>
+                    </svg>
+                    공지사항 관리
+                </a>
+                <a href="/admin/faq" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <svg viewBox="0 0 24 24" style="width: 25px; height: 25px; flex-shrink: 0;" fill="currentColor">
+                        <path d="M11 18h2v-2h-2v2Zm1-16a8 8 0 1 0 0 16h1v4l4-4.7A8 8 0 0 0 12 2Zm0 2a6 6 0 0 1 3.6 10.8l-.2.2-1.6 1.9V16H12a6 6 0 0 1 0-12Zm0 2.5A3 3 0 0 0 9 9.4h2A1 1 0 1 1 12 10.5c-1.2 0-2 1-2 2.1V14h2v-1.4c0-.1.1-.1.2-.1A3 3 0 0 0 12 6.5Z"/>
+                    </svg>
+                    FAQ 관리
                 </a>
             </nav>
             <div class="p-4 border-t border-slate-100">
@@ -126,7 +140,7 @@
                         </a>
 
                         <!-- Card 2: 🚨 게시판 신고 처리 -->
-                        <a href="/admin/inquiries" class="p-5 bg-slate-50 hover:bg-rose-50/50 border border-slate-100 hover:border-rose-100 rounded-2xl transition-all duration-300 group text-left flex flex-col justify-between min-h-[140px] relative overflow-hidden">
+                        <a href="/admin/reports" class="p-5 bg-slate-50 hover:bg-rose-50/50 border border-slate-100 hover:border-rose-100 rounded-2xl transition-all duration-300 group text-left flex flex-col justify-between min-h-[140px] relative overflow-hidden">
                             <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-rose-100/10 rounded-full blur-xl group-hover:bg-rose-100/20 transition-all"></div>
                             <div class="flex items-center justify-between z-10">
                                 <div class="p-2.5 bg-rose-100 text-rose-600 rounded-xl group-hover:bg-rose-600 group-hover:text-white transition-all duration-300">
@@ -180,28 +194,7 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- 컨트롤 1: 긴급 상황 경보 제어 -->
-                        <div class="p-5 bg-rose-50/50 border border-rose-100/80 rounded-2xl flex flex-col justify-between relative overflow-hidden">
-                            <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-rose-100/30 rounded-full blur-xl"></div>
-                            <div class="flex items-center justify-between z-10">
-                                <span class="text-xs font-bold text-rose-700 bg-rose-100/50 px-2.5 py-1 rounded-full flex items-center gap-1">
-                                    <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
-                                    대피 긴급 제어
-                                </span>
-                                <span id="emergencyBadge" 
-                                      th:class="${emergencyActive} ? 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-rose-600 text-white border-rose-500 uppercase animate-pulse' : 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-500 border-slate-200 uppercase'"
-                                      th:text="${emergencyActive} ? '상황 발령' : '정상 가동'">정상 가동</span>
-                            </div>
-                            <h4 class="font-bold text-sm text-slate-800 mt-4 z-10">🚨 긴급 재난 알림 팝업</h4>
-                            <p class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed z-10">전체 사용자 화면에 긴급 팝업창을 즉시 노출시키거나 해제합니다.</p>
-                            <button type="button" id="emergencyToggleBtn" 
-                                    th:class="${emergencyActive} ? 'inline-flex items-center justify-center gap-2 w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-rose-300 ring-2 ring-rose-500 ring-offset-2 z-10' : 'inline-flex items-center justify-center gap-2 w-full py-2.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm z-10'"
-                                    th:innerHTML="${emergencyActive} ? '<i data-lucide=\'power\' class=\'w-4 h-4\'></i> 긴급 알림 해제' : '<i data-lucide=\'power\' class=\'w-4 h-4\'></i> 긴급 상황 발령'">
-                                긴급 상황 발령
-                            </button>
-                        </div>
-
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- 컨트롤 2: 시간/위치 가중치 분석 스위치 & 실시간 정확도 결합 -->
                         <div class="p-5 bg-blue-50/40 border border-blue-100/80 rounded-2xl flex flex-col justify-between relative overflow-hidden">
                             <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-blue-100/30 rounded-full blur-xl"></div>
@@ -271,7 +264,7 @@
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Card 1: Users -->
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                    <a href="/admin/users" class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                         <div class="flex items-center justify-between mb-4">
                             <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
                                 <i data-lucide="users" class="w-6 h-6"></i>
@@ -280,9 +273,9 @@
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">총 회원 수</h3>
                         <p class="text-3xl font-extrabold text-slate-800 mt-1" th:text="${totalUsers} + '명'">0명</p>
-                    </div>
+                    </a>
                     <!-- Card 2: Lost Items -->
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                    <a href="/admin/lost-items" class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                         <div class="flex items-center justify-between mb-4">
                             <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
                                 <i data-lucide="search" class="w-6 h-6"></i>
@@ -291,20 +284,20 @@
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">분실물 등록 건수</h3>
                         <p class="text-3xl font-extrabold text-slate-800 mt-1" th:text="${lostItems} + '건'">0건</p>
-                    </div>
+                    </a>
                     <!-- Card 3: Found Items -->
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                    <a href="/admin/found-items" class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                         <div class="flex items-center justify-between mb-4">
                             <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
                                 <i data-lucide="package" class="w-6 h-6"></i>
                             </div>
-                            <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">보관중</span>
+                            <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">보관</span>
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">습득물 보관 건수</h3>
                         <p class="text-3xl font-extrabold text-slate-800 mt-1" th:text="${foundItems} + '건'">0건</p>
-                    </div>
+                    </a>
                     <!-- Card 4: Matchings -->
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                    <a href="/admin/animals" class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                         <div class="flex items-center justify-between mb-4">
                             <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
                                 <i data-lucide="check-circle" class="w-6 h-6"></i>
@@ -313,7 +306,7 @@
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">실종 사건 수 (동물/사람)</h3>
                         <p class="text-3xl font-extrabold text-slate-800 mt-1" th:text="${matchSuccess} + '건'">0건</p>
-                    </div>
+                    </a>
                 </div>
 
                 <!-- Middle Content Grid -->
@@ -434,36 +427,6 @@
             }, 3000);
         }
 
-        // 🚨 긴급 실종 팝업 토글 로직
-        const emergencyToggleBtn = document.getElementById('emergencyToggleBtn');
-        const emergencyBadge = document.getElementById('emergencyBadge');
-        if (emergencyToggleBtn && emergencyBadge) {
-            emergencyToggleBtn.addEventListener('click', function() {
-                fetch('/admin/api/emergency/toggle', { method: 'POST' })
-                    .then(res => res.json())
-                    .then(data => {
-                        const active = data.active;
-                        if (active) {
-                            emergencyBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 uppercase animate-pulse';
-                            emergencyBadge.innerText = '긴급 상황';
-                            emergencyToggleBtn.className = 'mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-rose-300 ring-2 ring-rose-500 ring-offset-2';
-                            emergencyToggleBtn.innerHTML = '<i data-lucide="power" class="w-4 h-4"></i> 긴급 팝업 끄기';
-                            showToast('🚨 긴급 실종 동물 팝업이 활성화되어 메인 및 전체 앱에 긴급 공고가 게시됩니다.');
-                        } else {
-                            emergencyBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-500 border-slate-200 uppercase';
-                            emergencyBadge.innerText = '비활성';
-                            emergencyToggleBtn.className = 'mt-2 inline-flex items-center justify-center gap-2 w-full py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm';
-                            emergencyToggleBtn.innerHTML = '<i data-lucide="power" class="w-4 h-4"></i> 긴급 팝업 켜기';
-                            showToast('🔒 긴급 실종 팝업이 비활성화되어 일반 레이아웃으로 복귀합니다.');
-                        }
-                        lucide.createIcons();
-                    })
-                    .catch(err => {
-                        console.error('긴급 상태 변경 실패:', err);
-                        showToast('❌ 상태를 변경하는 도중 오류가 발생했습니다.');
-                    });
-            });
-        }
 
         // 🧩 AI 매칭 엔진 실시간 시뮬레이션
         const matchAccBar = document.getElementById('matchAccBar');

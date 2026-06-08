@@ -253,17 +253,60 @@ public class LoginController {
               ));
           })
           .orElse(ResponseEntity.notFound().build());
+    } else if ("ANIMAL_REPORT".equals(itemType)) {
+      return animalReportRepository.findById(itemId)
+          .filter(item -> !item.isDeleted())
+          .map(item -> {
+              List<AnimalReportImage> imgs = animalReportImageRepository.findByAnimalReportOrderBySortOrderAscImageIdAsc(item);
+              String imgUrl = !imgs.isEmpty() ? imgs.get(0).getImageUrl() : "/images/noImageSize.png";
+              String formattedDate = item.getEventDate() != null ? item.getEventDate().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")) : "날짜 정보 없음";
+
+              return ResponseEntity.ok(java.util.Map.of(
+                  "title", item.getTitle() != null ? item.getTitle() : "제목 없음",
+                  "itemName", item.getBreedName() != null ? item.getBreedName() : "품종 정보 없음",
+                  "category", getAnimalTypeKorean(item.getAnimalType()),
+                  "color", item.getFurColor() != null ? item.getFurColor() : "털색 정보 없음",
+                  "place", item.getDetailPlace() != null ? item.getDetailPlace() : "장소 정보 없음",
+                  "date", formattedDate,
+                  "status", getAnimalStatusKorean(item.getStatus()),
+                  "content", item.getContent() != null ? item.getContent() : "상세내용 없음",
+                  "imageUrl", imgUrl
+              ));
+          })
+          .orElse(ResponseEntity.notFound().build());
     }
     return ResponseEntity.badRequest().build();
+  }
+
+  private String getAnimalTypeKorean(String animalType) {
+    if (animalType == null) return "동물 정보 없음";
+    return switch (animalType.toUpperCase()) {
+      case "DOG" -> "개";
+      case "CAT" -> "고양이";
+      case "OTHER" -> "기타";
+      default -> animalType;
+    };
+  }
+
+  private String getAnimalStatusKorean(String status) {
+    if (status == null) return "알수없음";
+    return switch (status.toUpperCase()) {
+      case "OPEN" -> "진행중";
+      case "MATCHING" -> "매칭중";
+      case "RESOLVED" -> "해결";
+      case "CLOSED" -> "종료";
+      default -> status;
+    };
   }
 
   private String getStatusKorean(String status) {
     if (status == null) return "알수없음";
     switch (status.toUpperCase()) {
-      case "KEEPING": return "보관중";
-      case "MATCHING": return "매칭중";
+      case "KEEPING": return "보관";
+      case "RETURNED": return "반환";
+      case "TRANSFERRED": return "연계";
       case "COMPLETED": return "완료";
-      case "WAITING": return "대기중";
+      case "WAITING": return "접수";
       default: return status;
     }
   }
@@ -346,7 +389,14 @@ public class LoginController {
     for (AnimalReport report : animalReports) {
       String imageUrl = animalThumbnails.getOrDefault(report.getReportId(), "/images/noImageSize.png");
 
-      String typeLabel = "MISSING".equals(report.getReportType()) ? "실종동물 신고" : "제보 및 목격";
+      String typeLabel = switch (report.getReportType()) {
+        case "MISSING" -> "실종";
+        case "SIGHTING" -> "목격";
+        case "PROTECTING" -> "보호";
+        case "RETURNED" -> "귀가";
+        case "TRANSFERRED" -> "연계";
+        default -> "신고";
+      };
       String statusLabel = "OPEN".equals(report.getStatus()) ? "접수" : ("MATCHING".equals(report.getStatus()) ? "매칭중" : "해결완료");
 
       userActivities.add(new RecentItemView(
@@ -365,7 +415,7 @@ public class LoginController {
 
     for (MissingPersonReport report : personReports) {
       String imageUrl = missingPersonThumbnailImageUrl(report, missingPersonThumbnails);
-      String statusLabel = "OPEN".equals(report.getStatus()) ? "접수" : "해결완료";
+      String statusLabel = "OPEN".equals(report.getStatus()) ? "실종" : "귀가";
 
       userActivities.add(new RecentItemView(
           report.getReportId(),
@@ -388,20 +438,19 @@ public class LoginController {
   }
 
   private String lostStatusLabel(String status) {
-    if (status == null) return "대기중";
+    if (status == null) return "접수";
     return switch (status) {
-      case "MATCHING" -> "매칭중";
-      case "FOUND" -> "회수완료";
-      default -> "대기중";
+      case "FOUND" -> "회수";
+      default -> "접수";
     };
   }
 
   private String foundStatusLabel(String status) {
-    if (status == null) return "보관중";
+    if (status == null) return "보관";
     return switch (status) {
-      case "MATCHING" -> "매칭중";
-      case "RETURNED" -> "수령완료";
-      default -> "보관중";
+      case "RETURNED" -> "반환";
+      case "TRANSFERRED" -> "연계";
+      default -> "보관";
     };
   }
 

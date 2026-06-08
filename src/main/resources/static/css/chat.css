@@ -260,6 +260,27 @@
     text-align: right;
 }
 
+.chat-report-btn {
+    margin-left: 0.5rem;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 0.6875rem;
+    color: #94A3B8;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+}
+
+.message:hover .chat-report-btn {
+    opacity: 1;
+}
+
+.chat-report-btn:hover {
+    color: #EF4444;
+    text-decoration: underline;
+}
+
 .chat-image-group-bubble {
     background: transparent !important;
     box-shadow: none;

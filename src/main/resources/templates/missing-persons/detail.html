@@ -45,9 +45,18 @@
           <div class="flex flex-col gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div class="mb-4 flex flex-wrap gap-2">
-                <span th:text="${report.statusLabel}"
-                      th:classappend="${report.status == 'FOUND' ? ' bg-emerald-600' : (report.status == 'CLOSED' ? ' bg-slate-700' : ' bg-rose-500')}"
-                      class="inline-flex rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm">접수</span>
+                <span th:unless="${isOwner}" th:text="${report.statusLabel}"
+                      th:classappend="${report.status == 'CLOSED' ? ' bg-slate-700' : ' bg-rose-500'}"
+                      class="inline-flex rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm">실종</span>
+                <form th:if="${isOwner}" th:action="@{/missing-persons/{id}/status(id=${report.id})}" method="post"
+                      class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
+                  <span class="pl-1 text-xs font-bold text-slate-500">상태</span>
+                  <select name="status" onchange="this.form.submit()"
+                          th:class="${report.status == 'CLOSED' ? 'bg-slate-100 text-slate-700 ring-slate-200' : 'bg-rose-50 text-rose-700 ring-rose-200'} + ' rounded-full border-0 px-2.5 py-1 text-xs font-bold ring-1 ring-inset focus:outline-none focus:ring-2 focus:ring-slate-400'">
+                    <option value="OPEN" th:selected="${report.status == 'OPEN'}">실종</option>
+                    <option value="CLOSED" th:selected="${report.status == 'CLOSED'}">귀가</option>
+                  </select>
+                </form>
                 <span th:text="${report.sourceLabel}"
                       class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">사용자 제보</span>
               </div>
@@ -74,6 +83,16 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div th:if="${statusSuccessMessage}"
+               th:text="${statusSuccessMessage}"
+               class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            게시글 상태가 변경되었습니다.
+          </div>
+          <div th:if="${statusErrorMessage}"
+               th:text="${statusErrorMessage}"
+               class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            상태 변경 중 오류가 발생했습니다.
           </div>
           <div th:with="showPhysicalInfo=${(report.heightCm != null && report.heightCm > 0) || 
                                            (report.weightKg != null && report.weightKg.compareTo(T(java.math.BigDecimal).ZERO) > 0) || 

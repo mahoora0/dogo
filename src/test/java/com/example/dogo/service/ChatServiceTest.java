@@ -3,9 +3,12 @@ package com.example.dogo.service;
 import com.example.dogo.dto.ChatMessageDto;
 import com.example.dogo.dto.ChatRoomDto;
 import com.example.dogo.entity.ChatRoom;
+import com.example.dogo.entity.animal.AnimalReport;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.*;
+import com.example.dogo.repository.animal.AnimalReportImageRepository;
+import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.user.UserRepository;
 import com.example.dogo.service.chat.ChatUnavailableException;
@@ -38,6 +41,10 @@ class ChatServiceTest {
     private UserRepository userRepository;
     @Mock
     private FoundItemRepository foundItemRepository;
+    @Mock
+    private AnimalReportRepository animalReportRepository;
+    @Mock
+    private AnimalReportImageRepository animalReportImageRepository;
 
     @InjectMocks
     private ChatService chatService;
@@ -134,6 +141,30 @@ class ChatServiceTest {
 
         assertEquals(99L, roomId);
         verify(chatRoomRepository, times(1)).save(any(ChatRoom.class));
+    }
+
+    @Test
+    @DisplayName("사용자 동물 신고 게시글로 1:1 채팅방을 생성한다")
+    void createOrGetRoomCreatesAnimalReportRoom() {
+        AnimalReport report = mock(AnimalReport.class);
+        User inquirer = mock(User.class);
+        User owner = mock(User.class);
+        ChatRoom room = mock(ChatRoom.class);
+
+        when(inquirer.getUserNo()).thenReturn(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(inquirer));
+        when(animalReportRepository.findById(10L)).thenReturn(Optional.of(report));
+        when(report.isDeleted()).thenReturn(false);
+        when(report.getUser()).thenReturn(owner);
+        when(owner.getUserNo()).thenReturn(2L);
+        when(chatRoomRepository.findByAnimalReportAndInquirer(10L, inquirer)).thenReturn(Optional.empty());
+        when(chatRoomRepository.save(any(ChatRoom.class))).thenReturn(room);
+        when(room.getRoomId()).thenReturn(100L);
+
+        Long roomId = chatService.createOrGetRoom(10L, "ANIMAL_REPORT", inquirer);
+
+        assertEquals(100L, roomId);
+        verify(chatRoomRepository).save(any(ChatRoom.class));
     }
 
     @Test
@@ -375,5 +406,47 @@ class ChatServiceTest {
 
         assertThrows(ChatUnavailableException.class,
                 () -> chatService.authorizeSubscription("/sub/users/2/messages", "user@example.com"));
+    }
+
+    @Test
+    @DisplayName("관리자는 참여자가 아니어도 채팅방 대화를 열람할 수 있다")
+    void getAdminChatViewReturnsMessagesAndParticipantsWithoutAuthorization() {
+        Long roomId = 7L;
+        ChatRoom room = mock(ChatRoom.class);
+        User owner = mock(User.class);
+        User inquirer = mock(User.class);
+        com.example.dogo.entity.ChatMessage message = mock(com.example.dogo.entity.ChatMessage.class);
+
+        when(chatRoomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(room.getRoomId()).thenReturn(roomId);
+        when(room.getOwner()).thenReturn(owner);
+        when(room.getInquirer()).thenReturn(inquirer);
+        when(owner.getUserNo()).thenReturn(2L);
+        when(owner.getNickname()).thenReturn("작성자");
+        when(inquirer.getUserNo()).thenReturn(1L);
+        when(inquirer.getNickname()).thenReturn("신청자");
+        when(chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(room)).thenReturn(List.of(message));
+        when(message.getFileGroupId()).thenReturn(null);
+        when(message.getMessageType()).thenReturn(com.example.dogo.entity.ChatMessage.MessageType.TALK);
+        when(message.getContent()).thenReturn("외부 송금 요청");
+        when(message.getSender()).thenReturn(owner);
+
+        com.example.dogo.dto.AdminChatView view = chatService.getAdminChatView(roomId);
+
+        assertEquals(roomId, view.roomId());
+        assertEquals("작성자", view.ownerNickname());
+        assertEquals("신청자", view.inquirerNickname());
+        assertEquals(1, view.messages().size());
+        assertEquals("외부 송금 요청", view.messages().get(0).getContent());
+        // 관리자 열람은 읽음 처리를 하지 않는다
+        verify(chatMessageRepository, never()).markRoomMessagesAsRead(any(), any());
+    }
+
+    @Test
+    @DisplayName("관리자가 없는 채팅방을 열람하면 예외가 발생한다")
+    void getAdminChatViewThrowsWhenRoomMissing() {
+        when(chatRoomRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(ChatUnavailableException.class, () -> chatService.getAdminChatView(999L));
     }
 }

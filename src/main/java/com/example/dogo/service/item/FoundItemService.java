@@ -279,6 +279,15 @@ public class FoundItemService {
 	}
 
 	@Transactional
+	public void updateStatus(Long id, String status, User loginUser) {
+		FoundItem item = foundItemRepository.findById(id)
+				.filter(i -> !i.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("습득물 게시글을 찾을 수 없습니다."));
+		checkOwnership(item, loginUser);
+		item.setStatus(normalizeStatus(status));
+	}
+
+	@Transactional
 	public void delete(Long id, User loginUser) {
 		FoundItem item = foundItemRepository.findById(id)
 				.filter(i -> !i.isDeleted())
@@ -443,6 +452,14 @@ public class FoundItemService {
 		return value.trim();
 	}
 
+	private String normalizeStatus(String status) {
+		String normalizedStatus = blankToNull(status);
+		if ("KEEPING".equals(normalizedStatus) || "RETURNED".equals(normalizedStatus) || "TRANSFERRED".equals(normalizedStatus)) {
+			return normalizedStatus;
+		}
+		throw new IllegalArgumentException("변경할 수 없는 상태입니다.");
+	}
+
 	private String normalizedArea(String province, String district, String fallback) {
 		if (StringUtils.hasText(province) && StringUtils.hasText(district)) {
 			return province.trim() + " " + district.trim();
@@ -455,9 +472,9 @@ public class FoundItemService {
 
 	private String statusLabel(String status) {
 		return switch (status) {
-			case "MATCHING" -> "매칭중";
-			case "RETURNED" -> "수령완료";
-			default -> "보관중";
+			case "RETURNED" -> "반환";
+			case "TRANSFERRED" -> "연계";
+			default -> "보관";
 		};
 	}
 }

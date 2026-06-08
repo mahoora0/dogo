@@ -1,6 +1,8 @@
 package com.example.dogo.repository.animal;
 
 import com.example.dogo.entity.animal.AnimalReport;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -42,6 +44,7 @@ public interface AnimalReportRepository extends JpaRepository<AnimalReport, Long
 			@Param("to") LocalDate to
 	);
 	List<AnimalReport> findByDeletedFalseOrderByRegdateDesc();
+	Page<AnimalReport> findByDeletedFalseOrderByRegdateDesc(Pageable pageable);
 	List<AnimalReport> findByUserAndDeletedFalseOrderByRegdateDesc(com.example.dogo.entity.user.User user);
 	boolean existsBySourceType(String sourceType);
 	boolean existsByApiProviderAndExternalId(String apiProvider, String externalId);

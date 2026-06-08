@@ -6,6 +6,8 @@
     <title>Dogo Admin - 실종동물 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:src="@{/js/ui-dialog.js}"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin-style.css}">
 </head>
@@ -52,15 +54,25 @@
                     실종자 관리
                 </a>
                 <a href="/admin/inquiries" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
-                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    <svg viewBox="0 0 24 24" style="width: 25px; height: 25px; flex-shrink: 0;" fill="currentColor">
+                        <path d="M4 4h16v12H7l-3 4V4Zm2 2v8h10v-2H8v-2h8V8H8V6H6Z"/>
+                    </svg>
                     1:1 문의
                 </a>
+                <a href="/admin/reports" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                    신고 관리
+                </a>
                 <a href="/admin/notice" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
-                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    <svg viewBox="0 0 24 24" style="width: 25px; height: 25px; flex-shrink: 0;" fill="currentColor">
+                        <path d="M4 10v4h3l5 4V6l-5 4H4Zm11.5 2a3.5 3.5 0 0 0-1.5-2.9v5.8a3.5 3.5 0 0 0 1.5-2.9ZM16 4.8v2.4a6 6 0 0 1 0 9.6v2.4a8 8 0 0 0 0-14.4Z"/>
+                    </svg>
                     공지사항 관리
                 </a>
                 <a href="/admin/faq" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
-                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    <svg viewBox="0 0 24 24" style="width: 25px; height: 25px; flex-shrink: 0;" fill="currentColor">
+                        <path d="M11 18h2v-2h-2v2Zm1-16a8 8 0 1 0 0 16h1v4l4-4.7A8 8 0 0 0 12 2Zm0 2a6 6 0 0 1 3.6 10.8l-.2.2-1.6 1.9V16H12a6 6 0 0 1 0-12Zm0 2.5A3 3 0 0 0 9 9.4h2A1 1 0 1 1 12 10.5c-1.2 0-2 1-2 2.1V14h2v-1.4c0-.1.1-.1.2-.1A3 3 0 0 0 12 6.5Z"/>
+                    </svg>
                     FAQ 관리
                 </a>
             </nav>
@@ -95,11 +107,29 @@
             </header>
 
             <div class="p-8">
-                <!-- Page Table Card -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                        <h2 class="text-lg font-bold">신고/제보 목록</h2>
-                        <span class="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full" th:text="'총 ' + ${#lists.size(reports)} + '건'">총 0건</span>
+                <!                    <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-lg font-bold">신고/제보 목록</h2>
+                            <span class="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full" th:text="'총 ' + ${reports.totalElements} + '건'">총 0건</span>
+                        </div>
+
+                        <!-- Search Form -->
+                        <form th:action="@{/admin/animals}" method="get" class="flex flex-wrap items-center gap-2">
+                            <select name="searchType" class="text-xs font-bold rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="" th:selected="${searchType == null || searchType == ''}">전체</option>
+                                <option value="title" th:selected="${searchType == 'title'}">제목</option>
+                                <option value="animalType" th:selected="${searchType == 'animalType'}">동물종류</option>
+                                <option value="place" th:selected="${searchType == 'place'}">발생위치</option>
+                            </select>
+                            <div class="relative">
+                                <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어 입력..." 
+                                       class="text-xs font-medium rounded-xl border border-slate-200 pl-3 pr-8 py-2 w-48 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                                <button type="submit" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                    <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                            <a th:if="${keyword != null and !#strings.isEmpty(keyword)}" th:href="@{/admin/animals}" class="text-xs font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 px-3 py-2 rounded-xl">초기화</a>
+                        </form>
                     </div>
                     
                     <div class="overflow-x-auto">
@@ -117,24 +147,24 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                <tr th:each="report : ${reports}" class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-6 py-4 font-bold text-slate-400" th:text="${report.reportId}">#</td>
+                                <tr th:each="report, status : ${reports.content}" class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-bold text-slate-400" th:text="${reports.totalElements - (reports.number * reports.size) - status.index}">#</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span th:class="${report.reportType == 'MISSING' ? 'text-rose-600 bg-rose-50 border-rose-100' : 'text-blue-600 bg-blue-50 border-blue-100'} + ' px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap inline-block'" 
-                                              th:text="${report.reportType == 'MISSING' ? '실종' : '목격'}">실종</span>
+                                        <span th:class="${report.reportType == 'MISSING' ? 'text-rose-600 bg-rose-50 border-rose-100' : (report.reportType == 'SIGHTING' ? 'text-blue-600 bg-blue-50 border-blue-100' : (report.reportType == 'PROTECTING' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : (report.reportType == 'RETURNED' ? 'text-sky-600 bg-sky-50 border-sky-100' : 'text-amber-600 bg-amber-50 border-amber-100')))} + ' px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap inline-block'" 
+                                              th:text="${report.reportType == 'MISSING' ? '실종' : (report.reportType == 'SIGHTING' ? '목격' : (report.reportType == 'PROTECTING' ? '보호' : (report.reportType == 'RETURNED' ? '귀가' : '연계')))}">실종</span>
                                     </td>
                                     <td class="px-6 py-4 text-slate-700 text-sm font-medium" th:text="${report.animalType + (report.breedName != null ? ' (' + report.breedName + ')' : '')}">DOG</td>
                                     <td class="px-6 py-4 font-semibold text-slate-900 text-sm">
                                         <a th:href="@{/animal-reports/{id}(id=${report.reportId})}" target="_blank" class="hover:text-blue-600 hover:underline" th:text="${report.title}">제목</a>
                                     </td>
                                     <td class="px-6 py-4 text-slate-600 text-sm" th:text="${report.regionName + ' ' + report.detailPlace}">위치</td>
-                                    <td class="px-6 py-4 text-slate-500 text-sm" th:text="${report.eventDate}">날짜</td>
+                                    <td class="px-6 py-4 text-slate-500 text-sm whitespace-nowrap" th:text="${report.eventDate}">날짜</td>
                                     
                                     <!-- 상태 수정 폼 -->
-                                    <td class="px-6 py-4">
-                                        <form th:action="@{/admin/animals/{id}/status(id=${report.reportId})}" method="post">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <form th:action="@{/admin/animals/{id}/status(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, page=${reports.number})}" method="post">
                                             <select name="status" onchange="this.form.submit()" 
-                                                    class="text-xs font-bold rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    th:class="${report.status == 'OPEN' ? 'bg-slate-100 text-slate-700 border-slate-200' : (report.status == 'MATCHING' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : (report.status == 'RESOLVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-600 border-gray-200'))} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
                                                 <option value="OPEN" th:selected="${report.status == 'OPEN'}">진행중</option>
                                                 <option value="MATCHING" th:selected="${report.status == 'MATCHING'}">매칭중</option>
                                                 <option value="RESOLVED" th:selected="${report.status == 'RESOLVED'}">해결됨</option>
@@ -145,19 +175,70 @@
                                     
                                     <!-- 삭제 버튼 -->
                                     <td class="px-6 py-4 text-center">
-                                        <form th:action="@{/admin/animals/{id}/delete(id=${report.reportId})}" method="post" 
-                                              onsubmit="return confirm('정말로 이 실종동물 신고글을 삭제하시겠습니까? (Soft Delete)');">
+                                        <form th:action="@{/admin/animals/{id}/delete(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, page=${reports.number})}" method="post"
+                                              data-confirm="정말로 이 실종동물 신고글을 삭제하시겠습니까? (Soft Delete)">
                                             <button type="submit" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-colors inline-flex items-center justify-center">
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                                             </button>
                                         </form>
                                     </td>
                                 </tr>
-                                <tr th:if="${#lists.isEmpty(reports)}">
+                                <tr th:if="${reports.isEmpty()}">
                                     <td colspan="8" class="text-center py-10 text-slate-400">등록된 실종동물 신고글이 없습니다.</td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div th:if="${reports.totalPages > 1}" class="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50">
+                        <div class="text-sm text-slate-500 text-center sm:text-left">
+                            총 <span class="font-semibold text-slate-700" th:text="${reports.totalElements}">100</span>건 중 
+                            <span class="font-semibold text-slate-700" th:text="${reports.number * reports.size + 1}">1</span> - 
+                            <span class="font-semibold text-slate-700" th:text="${(reports.number + 1) * reports.size > reports.totalElements ? reports.totalElements : (reports.number + 1) * reports.size}">10</span> 표시
+                        </div>
+                        <nav th:with="startPage=${T(java.lang.Math).max(0, T(java.lang.Math).min(reports.number - 4, reports.totalPages - 10))}, endPage=${T(java.lang.Math).min(reports.totalPages - 1, startPage + 9)}"
+                             class="flex justify-center flex-1 text-sm sm:-ml-[120px]">
+                            <div class="inline-flex items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm divide-x divide-slate-200">
+                                <!-- 맨 처음 -->
+                                <a th:classappend="${reports.first} ? ' pointer-events-none opacity-40'"
+                                   th:href="@{/admin/animals(searchType=${searchType}, keyword=${keyword}, page=0)}"
+                                   aria-label="첫 페이지"
+                                   class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                                </a>
+
+                                <!-- 이전 -->
+                                <a th:classappend="${reports.first} ? ' pointer-events-none opacity-40'"
+                                   th:href="@{/admin/animals(searchType=${searchType}, keyword=${keyword}, page=${reports.number - 1})}"
+                                   aria-label="이전 페이지"
+                                   class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                                </a>
+
+                                <!-- 번호 -->
+                                <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                                   th:href="@{/admin/animals(searchType=${searchType}, keyword=${keyword}, page=${i})}"
+                                   th:text="${i + 1}"
+                                   th:classappend="${i == reports.number} ? ' bg-slate-900 text-white font-semibold' : ' text-slate-650 hover:bg-slate-100 hover:text-slate-900'"
+                                   class="flex h-9 w-9 items-center justify-center transition-colors">1</a>
+
+                                <!-- 다음 -->
+                                <a th:classappend="${reports.last} ? ' pointer-events-none opacity-40'"
+                                   th:href="@{/admin/animals(searchType=${searchType}, keyword=${keyword}, page=${reports.number + 1})}"
+                                   aria-label="다음 페이지"
+                                   class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                </a>
+
+                                <!-- 맨 끝 -->
+                                <a th:classappend="${reports.last} ? ' pointer-events-none opacity-40'"
+                                   th:href="@{/admin/animals(searchType=${searchType}, keyword=${keyword}, page=${reports.totalPages - 1})}"
+                                   aria-label="마지막 페이지"
+                                   class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                            </div>
+                        </nav>
                     </div>
                 </div>
             </div>

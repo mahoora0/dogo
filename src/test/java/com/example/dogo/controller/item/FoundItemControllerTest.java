@@ -74,7 +74,7 @@ class FoundItemControllerTest {
 				"강남경찰서",
 				LocalDateTime.of(2026, 5, 8, 12, 0),
 				"KEEPING",
-				"보관중",
+				"보관",
 				"검정",
 				"/uploads/found-items/wallet.jpg"
 		);
@@ -146,7 +146,7 @@ class FoundItemControllerTest {
 				"강남경찰서",
 				LocalDateTime.of(2026, 5, 8, 12, 0),
 				"KEEPING",
-				"보관중",
+				"보관",
 				"카드가 들어 있습니다",
 				"서울역(한국철도공사) / 02-3149-2531",
 				"검정",

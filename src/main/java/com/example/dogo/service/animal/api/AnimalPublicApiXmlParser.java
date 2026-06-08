@@ -48,7 +48,7 @@ public class AnimalPublicApiXmlParser {
 
 			Element item = (Element) node;
 			String externalId = firstText(item, "desertionNo", "lossNo", "noticeNo", "id");
-			String imageUrl = firstText(item, "popfile", "filename", "imageUrl", "photoUrl");
+			String imageUrl = firstText(item, "popfile", "popfile1", "popfile2", "filename", "imageUrl", "photoUrl");
 
 			if (!StringUtils.hasText(externalId)) {
 				if (StringUtils.hasText(imageUrl)) {
@@ -79,6 +79,8 @@ public class AnimalPublicApiXmlParser {
 					firstText(item, "happenDt", "lossDate", "happenDate", "noticeDate"),
 					firstText(item, "happenPlace", "lossPlace", "place", "addr"),
 					firstText(item, "careAddr", "orgNm", "orgName", "regionName"),
+					firstText(item, "careNm", "careName", "shelterName"),
+					firstText(item, "orgNm", "orgName"),
 					firstText(item, "careTel", "tel", "officetel"),
 					firstText(item, "kindFullNm", "kindCd", "kindName", "upKindNm", "kindNm"),
 					firstText(item, "breedNm", "breedName", "kindNm"),
@@ -89,6 +91,9 @@ public class AnimalPublicApiXmlParser {
 					firstText(item, "weight", "weightText"),
 					firstText(item, "specialMark", "feature", "distinctiveMarks"),
 					firstText(item, "processState", "state", "status"),
+					firstText(item, "noticeNo"),
+					firstText(item, "noticeSdt", "noticeStartDate"),
+					firstText(item, "noticeEdt", "noticeEndDate"),
 					imageUrl,
 					toXml(item)
 			);

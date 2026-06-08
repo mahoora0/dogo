@@ -94,15 +94,11 @@
               </label>
               <label class="shrink-0 cursor-pointer">
                 <input type="radio" name="status" value="WAITING" class="peer hidden" th:checked="${status == 'WAITING'}">
-                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">대기중</span>
-              </label>
-              <label class="shrink-0 cursor-pointer">
-                <input type="radio" name="status" value="MATCHING" class="peer hidden" th:checked="${status == 'MATCHING'}">
-                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">매칭중</span>
+                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">접수</span>
               </label>
               <label class="shrink-0 cursor-pointer">
                 <input type="radio" name="status" value="FOUND" class="peer hidden" th:checked="${status == 'FOUND'}">
-                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">회수완료</span>
+                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">회수</span>
               </label>
             </div>
           </div>
@@ -134,7 +130,7 @@
 
     <!-- Grid List -->
     <section class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-      <a th:each="item : ${lostItems}" th:href="@{/lost-items/{id}(id=${item.id})}"
+      <a th:each="item : ${lostItems}" th:href="@{/lost-items/{id}(id=${item.id}, keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page}, size=${size})}"
          class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md">
         <div class="relative h-44 w-full overflow-hidden bg-slate-50">
           <img th:if="${item.imageUrl}" th:src="${item.imageUrl}" alt=""
@@ -145,8 +141,8 @@
           </div>
           <div class="absolute right-3 top-3 z-10">
             <span th:text="${item.statusLabel}"
-                  th:classappend="${item.status == 'FOUND' ? ' bg-emerald-600 text-white' : (item.status == 'MATCHING' ? ' bg-amber-500 text-white' : ' bg-slate-800 text-white')}"
-                  class="block rounded-full px-3 py-1 text-xs font-bold shadow-sm">대기중</span>
+                  th:classappend="${item.status == 'FOUND' ? ' bg-emerald-600 text-white' : ' bg-slate-800 text-white'}"
+                  class="block rounded-full px-3 py-1 text-xs font-bold shadow-sm">접수</span>
           </div>
         </div>
         

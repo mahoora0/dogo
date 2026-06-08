@@ -1,6 +1,7 @@
 package com.example.dogo.controller.item;
 
 import com.example.dogo.dto.item.FoundItemCreateRequest;
+import com.example.dogo.controller.common.ListBackUrlBuilder;
 import com.example.dogo.service.item.FoundItemService;
 import com.example.dogo.service.item.RegistrationOptionService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.dogo.security.CustomUserDetails;
 
@@ -144,6 +146,15 @@ public class FoundItemController {
 	public String detail(@PathVariable Long id,
 						 @RequestParam(defaultValue = "false") boolean created,
 						 @RequestParam(defaultValue = "false") boolean rematching,
+						 @RequestParam(required = false) String keyword,
+						 @RequestParam(required = false) String keywordScope,
+						 @RequestParam(required = false) String category,
+						 @RequestParam(required = false) String area,
+						 @RequestParam(required = false) String status,
+						 @RequestParam(required = false) String sortBy,
+						 @RequestParam(required = false) String sortDir,
+						 @RequestParam(required = false) Integer page,
+						 @RequestParam(required = false) Integer size,
 						 @AuthenticationPrincipal CustomUserDetails userDetails,
 						 Model model) {
 		var foundItem = foundItemService.getDetail(id);
@@ -154,6 +165,17 @@ public class FoundItemController {
 		model.addAttribute("matchCandidates", matchCandidates);
 		model.addAttribute("matchingInProgress", matchingInProgress);
 		model.addAttribute("isOwner", currentUserNo != null && currentUserNo.equals(foundItem.userNo()));
+		model.addAttribute("listUrl", ListBackUrlBuilder.fromPath("/found-items")
+				.queryParam("keyword", keyword)
+				.queryParam("keywordScope", keywordScope)
+				.queryParam("category", category)
+				.queryParam("area", area)
+				.queryParam("status", status)
+				.queryParam("sortBy", sortBy)
+				.queryParam("sortDir", sortDir)
+				.queryParam("page", page)
+				.queryParam("size", size)
+				.build());
 		return "found-items/detail";
 	}
 
@@ -192,6 +214,23 @@ public class FoundItemController {
 			model.addAttribute("errorMessage", e.getMessage());
 			return "found-items/edit";
 		}
+	}
+
+	@PostMapping("/found-items/{id}/status")
+	public String updateStatus(@PathVariable Long id,
+							   @RequestParam String status,
+							   @AuthenticationPrincipal CustomUserDetails userDetails,
+							   RedirectAttributes redirectAttributes) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			foundItemService.updateStatus(id, status, userDetails.getUser());
+			redirectAttributes.addFlashAttribute("statusSuccessMessage", "게시글 상태가 변경되었습니다.");
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("statusErrorMessage", e.getMessage());
+		}
+		return "redirect:/found-items/" + id;
 	}
 
 	@PostMapping("/found-items/{id}/delete")

@@ -16,7 +16,7 @@ import com.example.dogo.entity.user.User;
 public interface LostItemRepository extends JpaRepository<LostItem, Long>, JpaSpecificationExecutor<LostItem> {
 
 
-	// 특정 사용자의 등록한 분실물 중, 삭제되지 않고 활성 상태(예: WAITING, MATCHING)에 있는 목록을 조회합니다.
+	// 특정 사용자의 등록한 분실물 중, 삭제되지 않고 활성 상태인 목록을 조회합니다.
 	List<LostItem> findByUserAndDeletedFalseAndStatusIn(User user, List<String> statuses);
 
 	// 특정 사용자가 등록한 분실물(삭제되지 않은 것)이 최소 1개 이상 존재하는지 여부를 확인합니다.
@@ -32,7 +32,7 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long>, JpaSp
 			SELECT item
 			FROM LostItem item
 			WHERE item.deleted = false
-				AND item.status IN ('WAITING', 'MATCHING')
+				AND item.status = 'WAITING'
 				AND item.lostAt BETWEEN :lostFrom AND :lostTo
 				AND (:category IS NULL OR :category = ''
 					OR item.categoryMain IS NULL
@@ -65,7 +65,11 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long>, JpaSp
 
 	List<LostItem> findByDeletedFalseOrderByRegDateDesc();
 
+	Page<LostItem> findByDeletedFalseOrderByRegDateDesc(Pageable pageable);
+
 	List<LostItem> findBySourceTypeAndDeletedFalseOrderByRegDateDesc(String sourceType);
+
+	Page<LostItem> findBySourceTypeAndDeletedFalseOrderByRegDateDesc(String sourceType, Pageable pageable);
 
 	long countByDeletedFalseAndCategoryMainIn(List<String> categories);
 

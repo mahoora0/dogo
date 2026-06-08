@@ -4,12 +4,16 @@ import com.example.dogo.dto.ChatFileDto;
 import com.example.dogo.dto.ChatMessageDto;
 import com.example.dogo.dto.ChatRoomDto;
 import com.example.dogo.entity.*;
+import com.example.dogo.entity.animal.AnimalReport;
+import com.example.dogo.entity.animal.AnimalReportImage;
 import com.example.dogo.entity.item.FoundItem;
 import com.example.dogo.entity.item.FoundItemImage;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.entity.item.LostItemImage;
 import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.*;
+import com.example.dogo.repository.animal.AnimalReportImageRepository;
+import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.item.FoundItemImageRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.item.LostItemImageRepository;
@@ -45,9 +49,11 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final FoundItemRepository foundItemRepository;
     private final LostItemRepository lostItemRepository;
+    private final AnimalReportRepository animalReportRepository;
     private final UserRepository userRepository;
     private final FoundItemImageRepository foundItemImageRepository;
     private final LostItemImageRepository lostItemImageRepository;
+    private final AnimalReportImageRepository animalReportImageRepository;
     private final Path chatUploadPath;
 
     public ChatService(
@@ -55,17 +61,21 @@ public class ChatService {
             ChatMessageRepository chatMessageRepository,
             FoundItemRepository foundItemRepository,
             LostItemRepository lostItemRepository,
+            AnimalReportRepository animalReportRepository,
             UserRepository userRepository,
             FoundItemImageRepository foundItemImageRepository,
             LostItemImageRepository lostItemImageRepository,
+            AnimalReportImageRepository animalReportImageRepository,
             @Value("${file.upload-dir}") String uploadDir) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.foundItemRepository = foundItemRepository;
         this.lostItemRepository = lostItemRepository;
+        this.animalReportRepository = animalReportRepository;
         this.userRepository = userRepository;
         this.foundItemImageRepository = foundItemImageRepository;
         this.lostItemImageRepository = lostItemImageRepository;
+        this.animalReportImageRepository = animalReportImageRepository;
         this.chatUploadPath = uploadDir != null ? Path.of(uploadDir, "chats").toAbsolutePath().normalize() : Path.of(System.getProperty("java.io.tmpdir"), "chats").toAbsolutePath().normalize();
     }
 
@@ -95,6 +105,17 @@ public class ChatService {
                     .map(ChatRoom::getRoomId)
                     .orElseGet(() -> {
                         ChatRoom room = new ChatRoom(item, managedInquirer, item.getUser());
+                        return chatRoomRepository.save(room).getRoomId();
+                    });
+        } else if ("ANIMAL_REPORT".equals(itemType)) {
+            AnimalReport report = animalReportRepository.findById(itemId)
+                    .filter(candidate -> !candidate.isDeleted())
+                    .orElseThrow(() -> new ChatUnavailableException(CHAT_UNAVAILABLE_MESSAGE));
+            validateChatAvailable(report.getUser(), managedInquirer);
+            return chatRoomRepository.findByAnimalReportAndInquirer(itemId, managedInquirer)
+                    .map(ChatRoom::getRoomId)
+                    .orElseGet(() -> {
+                        ChatRoom room = new ChatRoom(report, managedInquirer, report.getUser());
                         return chatRoomRepository.save(room).getRoomId();
                     });
         }
@@ -166,6 +187,16 @@ public class ChatService {
                         }
                         List<LostItemImage> images = lostItemImageRepository.findByLostItemOrderBySortOrderAscImageIdAsc(room.getLostItem());
                         if (!images.isEmpty()) thumbnail = images.get(0).getImageUrl();
+                    } else if (room.getAnimalReport() != null) {
+                        title = room.getAnimalReport().getTitle();
+                        itemId = room.getAnimalReport().getReportId();
+                        type = "ANIMAL_REPORT";
+                        place = room.getAnimalReport().getDetailPlace();
+                        if (room.getAnimalReport().getEventDate() != null) {
+                            dateStr = room.getAnimalReport().getEventDate().format(CHAT_DATE_FORMATTER);
+                        }
+                        List<AnimalReportImage> images = animalReportImageRepository.findByAnimalReportOrderBySortOrderAscImageIdAsc(room.getAnimalReport());
+                        if (!images.isEmpty()) thumbnail = images.get(0).getImageUrl();
                     }
 
                     return ChatRoomDto.builder()
@@ -200,6 +231,29 @@ public class ChatService {
     @Transactional(readOnly = true)
     public List<ChatMessageDto> getChatMessages(Long roomId, User reader) {
         ChatRoom room = getAuthorizedRoom(roomId, reader);
+        return toMessageDtos(room);
+    }
+
+    @Transactional(readOnly = true)
+    public com.example.dogo.dto.AdminChatView getAdminChatView(Long roomId) {
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ChatUnavailableException("채팅방을 찾을 수 없습니다."));
+        User owner = room.getOwner();
+        User inquirer = room.getInquirer();
+        return new com.example.dogo.dto.AdminChatView(
+                roomId,
+                owner != null ? owner.getUserNo() : null,
+                owner != null ? owner.getNickname() : null,
+                owner != null ? owner.getLoginId() : null,
+                inquirer != null ? inquirer.getUserNo() : null,
+                inquirer != null ? inquirer.getNickname() : null,
+                inquirer != null ? inquirer.getLoginId() : null,
+                toMessageDtos(room)
+        );
+    }
+
+    private List<ChatMessageDto> toMessageDtos(ChatRoom room) {
+        Long roomId = room.getRoomId();
         List<ChatMessage> messages = chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(room);
         List<ChatMessageDto> result = new ArrayList<>();
         Set<String> renderedGroups = new LinkedHashSet<>();
@@ -249,8 +303,9 @@ public class ChatService {
                 dto.getFileSize()
         );
         chatMessageRepository.save(message);
-        
+
         return ChatMessageDto.builder()
+                .messageId(message.getMessageId())
                 .roomId(dto.getRoomId())
                 .senderNo(sender.getUserNo())
                 .senderNickname(sender.getNickname())
@@ -327,6 +382,7 @@ public class ChatService {
             chatMessageRepository.save(message);
 
             return ChatMessageDto.builder()
+                    .messageId(message.getMessageId())
                     .roomId(roomId)
                     .senderNo(sender.getUserNo())
                     .senderNickname(sender.getNickname())
@@ -408,6 +464,7 @@ public class ChatService {
 
     private ChatMessageDto toMessageDto(Long roomId, ChatMessage message) {
         return ChatMessageDto.builder()
+                .messageId(message.getMessageId())
                 .roomId(roomId)
                 .senderNo(message.getSender().getUserNo())
                 .senderNickname(message.getSender().getNickname())
@@ -435,6 +492,7 @@ public class ChatService {
                 .sum();
 
         return ChatMessageDto.builder()
+                .messageId(first.getMessageId())
                 .roomId(roomId)
                 .senderNo(first.getSender().getUserNo())
                 .senderNickname(first.getSender().getNickname())

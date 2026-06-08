@@ -16,6 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.util.StringUtils;
 
 import java.util.UUID;
@@ -55,7 +56,8 @@ public class SecurityConfig {
 
                 // 비로그인 사용자도 공지사항 목록 및 상세조회가 가능하도록 /notice/** 경로 허용 추가
                 .requestMatchers(HttpMethod.GET, "/inquiry").permitAll() // 목록 페이지는 누구나 접근 가능
-                .requestMatchers("/inquiry/**").authenticated() // 상세조회, 등록 등은 로그인 필요
+                .requestMatchers(new RegexRequestMatcher("^/inquiry/\\d+$", "GET")).permitAll()
+                .requestMatchers("/inquiry/**").authenticated() // 등록 등은 로그인 필요
                 .requestMatchers("/", "/login", "/join", "/find-account", "/api/user/**", "/api/mail/**", "/api/sms/**", "/api/place/**", "/missing-alerts", "/api/missing-alerts/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/animal-reports/**", "/missing-persons/**", "/lost-report", "/lost-report/**", "/areas/**", "/api/areas/**", "/api/police/**", "/api/korail/**", "/api/subway/**", "/api/lost-items/*/rematch", "/api/found-items/*/rematch", "/api/lost-items/*/stream", "/api/found-items/*/stream", "/api/animal-reports/*/stream", "/faq", "/faq/**", "/notice/**", "/guide", "/error", "/uploads/**").permitAll()
                 .requestMatchers("/admin/api/emergency/status").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")

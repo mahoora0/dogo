@@ -1,6 +1,7 @@
 package com.example.dogo.controller.animal;
 
 import com.example.dogo.dto.animal.AnimalReportCreateRequest;
+import com.example.dogo.controller.common.ListBackUrlBuilder;
 import com.example.dogo.security.CustomUserDetails;
 import com.example.dogo.service.animal.AnimalReportService;
 import com.example.dogo.service.item.RegistrationOptionService;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -36,7 +38,10 @@ public class AnimalReportController {
 
 	@ModelAttribute("reportTypeOptions")
 	public List<Option> reportTypeOptions() {
-		return List.of(new Option("MISSING", "실종"), new Option("SIGHTING", "목격"));
+		return List.of(
+				new Option("MISSING", "실종"),
+				new Option("SIGHTING", "목격/보호")
+		);
 	}
 
 	@ModelAttribute("animalTypeOptions")
@@ -233,6 +238,18 @@ public class AnimalReportController {
 	public String detail(@PathVariable Long id,
 						 @RequestParam(defaultValue = "false") boolean created,
 						 @RequestParam(defaultValue = "false") boolean rematching,
+						 @RequestParam(required = false) String reportType,
+						 @RequestParam(required = false) String animalType,
+						 @RequestParam(required = false) String region,
+						 @RequestParam(required = false) String keyword,
+						 @RequestParam(required = false) String keywordScope,
+						 @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+						 @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
+						 @RequestParam(required = false) String detailPlace,
+						 @RequestParam(required = false) String sortBy,
+						 @RequestParam(required = false) String sortDir,
+						 @RequestParam(required = false) Integer page,
+						 @RequestParam(required = false) Integer size,
 						 @AuthenticationPrincipal CustomUserDetails userDetails,
 						 Model model) {
 		var report = animalReportService.getDetail(id);
@@ -244,6 +261,20 @@ public class AnimalReportController {
 		model.addAttribute("matchingInProgress", matchingInProgress);
 		model.addAttribute("currentUri", "/animal-reports");
 		model.addAttribute("isOwner", currentUserNo != null && currentUserNo.equals(report.userNo()));
+		model.addAttribute("listUrl", ListBackUrlBuilder.fromPath("/animal-reports")
+				.queryParam("reportType", reportType)
+				.queryParam("animalType", animalType)
+				.queryParam("region", region)
+				.queryParam("keyword", keyword)
+				.queryParam("keywordScope", keywordScope)
+				.queryParam("startDate", startDate)
+				.queryParam("endDate", endDate)
+				.queryParam("detailPlace", detailPlace)
+				.queryParam("sortBy", sortBy)
+				.queryParam("sortDir", sortDir)
+				.queryParam("page", page)
+				.queryParam("size", size)
+				.build());
 		return "animal-reports/detail";
 	}
 
@@ -284,6 +315,23 @@ public class AnimalReportController {
 			model.addAttribute("currentUri", "/animal-reports");
 			return "animal-reports/edit";
 		}
+	}
+
+	@PostMapping("/animal-reports/{id}/status")
+	public String updateStatus(@PathVariable Long id,
+							   @RequestParam String status,
+							   @AuthenticationPrincipal CustomUserDetails userDetails,
+							   RedirectAttributes redirectAttributes) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
+		try {
+			animalReportService.updateStatus(id, status, userDetails.getUser());
+			redirectAttributes.addFlashAttribute("statusSuccessMessage", "게시글 상태가 변경되었습니다.");
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("statusErrorMessage", e.getMessage());
+		}
+		return "redirect:/animal-reports/" + id;
 	}
 
 	@PostMapping("/animal-reports/{id}/delete")

@@ -55,7 +55,23 @@ public class MissingPersonService {
 
 	@Transactional(readOnly = true)
 	public Page<MissingPersonView> search(String keyword, String status, String sourceType, Pageable pageable) {
-		Page<MissingPersonReport> page = missingPersonRepository.findAll(searchSpec(keyword, status, sourceType), pageable);
+		return search(keyword, status, sourceType, null, null, null, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<MissingPersonView> search(
+			String keyword,
+			String status,
+			String sourceType,
+			String region,
+			java.time.LocalDate startDate,
+			String detailPlace,
+			Pageable pageable
+	) {
+		Page<MissingPersonReport> page = missingPersonRepository.findAll(
+				searchSpec(keyword, status, sourceType, region, startDate, detailPlace),
+				pageable
+		);
 		Map<Long, List<String>> imageUrls = resolveImageUrls(page.getContent());
 		return page.map(report -> toListView(report, imageUrls));
 	}
@@ -168,7 +184,36 @@ public class MissingPersonService {
 		return toDetailView(report);
 	}
 
+	@Transactional
+	public void updateStatus(Long id, String status, User loginUser) {
+		MissingPersonReport report = missingPersonRepository.findById(id)
+				.filter(candidate -> !candidate.isDeleted())
+				.orElseThrow(() -> new IllegalArgumentException("실종자 정보를 찾을 수 없습니다."));
+		checkOwnership(report, loginUser);
+		report.setStatus(normalizeStatus(status));
+	}
+
+	private void checkOwnership(MissingPersonReport report, User loginUser) {
+		if (!"USER".equals(report.getSourceType())) {
+			throw new IllegalArgumentException("수정 권한이 없습니다.");
+		}
+		if (loginUser == null || report.getUser() == null || !report.getUser().getUserNo().equals(loginUser.getUserNo())) {
+			throw new IllegalArgumentException("수정 권한이 없습니다.");
+		}
+	}
+
 	private Specification<MissingPersonReport> searchSpec(String keyword, String status, String sourceType) {
+		return searchSpec(keyword, status, sourceType, null, null, null);
+	}
+
+	private Specification<MissingPersonReport> searchSpec(
+			String keyword,
+			String status,
+			String sourceType,
+			String region,
+			java.time.LocalDate startDate,
+			String detailPlace
+	) {
 		return (root, query, criteriaBuilder) -> {
 			List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
 			predicates.add(criteriaBuilder.isFalse(root.get("deleted")));
@@ -183,10 +228,30 @@ public class MissingPersonService {
 				predicates.add(criteriaBuilder.equal(root.get("sourceType"), normalizedSourceType));
 			}
 
+			String normalizedRegion = blankToNull(region);
+			if (normalizedRegion != null) {
+				predicates.add(criteriaBuilder.like(
+						criteriaBuilder.lower(root.get("occurredPlace")),
+						"%" + normalizedRegion.toLowerCase(Locale.ROOT) + "%"
+				));
+			}
+
+			if (startDate != null) {
+				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("occurredAt"), startDate.atStartOfDay()));
+			}
+
+			String normalizedDetailPlace = blankToNull(detailPlace);
+			if (normalizedDetailPlace != null) {
+				predicates.add(criteriaBuilder.like(
+						criteriaBuilder.lower(root.get("occurredPlace")),
+						"%" + normalizedDetailPlace.toLowerCase(Locale.ROOT) + "%"
+				));
+			}
+
 			String normalizedKeyword = blankToNull(keyword);
 			if (normalizedKeyword != null) {
 				String pattern = "%" + normalizedKeyword.toLowerCase(Locale.ROOT) + "%";
-				predicates.add(criteriaBuilder.like(root.get("searchContent"), pattern));
+				predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("searchContent")), pattern));
 			}
 
 			return criteriaBuilder.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
@@ -398,9 +463,8 @@ public class MissingPersonService {
 
 	private String statusLabel(String status) {
 		return switch (status) {
-			case "FOUND" -> "발견";
-			case "CLOSED" -> "종료";
-			default -> "접수";
+			case "CLOSED" -> "귀가";
+			default -> "실종";
 		};
 	}
 
@@ -409,5 +473,13 @@ public class MissingPersonService {
 			return null;
 		}
 		return value.trim();
+	}
+
+	private String normalizeStatus(String status) {
+		String normalizedStatus = blankToNull(status);
+		if ("OPEN".equals(normalizedStatus) || "CLOSED".equals(normalizedStatus)) {
+			return normalizedStatus;
+		}
+		throw new IllegalArgumentException("변경할 수 없는 상태입니다.");
 	}
 }

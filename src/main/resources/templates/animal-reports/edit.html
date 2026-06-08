@@ -4,6 +4,7 @@
   <th:block th:fragment="content">
     <div class="mb-6">
       <a th:href="@{/animal-reports/{id}(id=${editData.id()})}" class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         상세보기로 돌아가기
       </a>
     </div>
@@ -24,14 +25,14 @@
 
         <div class="md:col-span-2">
           <span class="text-sm font-semibold text-slate-700">구분 <span class="text-red-400">*</span></span>
-          <div class="mt-2 grid gap-3 sm:grid-cols-2">
+          <div class="mt-2 flex flex-wrap gap-2">
             <label th:each="option : ${reportTypeOptions}"
-                   class="flex cursor-pointer items-center gap-3 rounded-full border border-slate-200 bg-slate-50 p-1 text-sm font-semibold text-slate-700 transition has-[:checked]:border-slate-900 has-[:checked]:bg-slate-900">
+                   class="flex cursor-pointer items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-100 has-[:checked]:border-slate-900 has-[:checked]:bg-slate-900">
               <input type="radio" name="reportType" th:value="${option.value}"
                      th:checked="${editData.reportType() == option.value}"
                      class="peer sr-only report-type-radio">
               <span th:text="${option.label}"
-                    class="flex w-full items-center justify-center rounded-full px-3 py-2 text-slate-700 transition peer-checked:bg-slate-900 peer-checked:text-white">실종</span>
+                    class="text-slate-600 transition peer-checked:text-white">실종</span>
             </label>
           </div>
         </div>
@@ -92,11 +93,36 @@
         <label id="careStatusField" class="block">
           <span class="text-sm font-semibold text-slate-700">목격 상태</span>
           <select name="sightingCareStatus"
+                  id="careStatusSelect"
                   class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
             <option th:each="option : ${careStatusOptions}" th:value="${option.value}" th:text="${option.label}"
                     th:selected="${editData.sightingCareStatus() == option.value}">확인 필요</option>
           </select>
         </label>
+
+        <fieldset id="careLocationField" class="hidden rounded-3xl border border-slate-200 bg-slate-50 p-4 md:col-span-2">
+          <legend class="px-1 text-sm font-semibold text-slate-700">인계 장소</legend>
+          <div class="mt-3 grid gap-4 md:grid-cols-2">
+            <label class="block">
+              <span class="text-sm font-semibold text-slate-700">인계처명</span>
+              <input name="careLocationName" th:value="${editData.careLocationName()}"
+                     placeholder="예: OO동물병원, OO보호소"
+                     class="mt-1.5 w-full rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100">
+            </label>
+            <label class="block">
+              <span class="text-sm font-semibold text-slate-700">인계처 연락처</span>
+              <input type="tel" name="careContactPhone" th:value="${editData.careContactPhone()}"
+                     placeholder="010-0000-0000" maxlength="13" oninput="formatPhoneNumber(this)"
+                     class="mt-1.5 w-full rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100">
+            </label>
+            <label class="block md:col-span-2">
+              <span class="text-sm font-semibold text-slate-700">인계처 주소 <span class="text-red-400">*</span></span>
+              <input name="careLocationAddress" th:value="${editData.careLocationAddress()}"
+                     placeholder="동물을 인계한 기관 주소"
+                     class="mt-1.5 w-full rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100">
+            </label>
+          </div>
+        </fieldset>
       </fieldset>
 
       <div class="my-8 border-t border-slate-100"></div>
@@ -141,14 +167,15 @@
         <div class="grid gap-3 sm:grid-cols-2">
           <label class="block">
             <span class="text-sm font-semibold text-slate-700">나이</span>
-            <select name="ageValue" id="ageValueSelect"
+            <select name="ageUnit"
                     class="mt-1.5 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100">
-              <option value="">모름</option>
-              <option value="0" th:selected="${editData.ageValue() != null && editData.ageValue() == 0}">1년 미만</option>
-              <option th:each="i : ${#numbers.sequence(1, 20)}" th:value="${i}" th:text="${i + '살'}"
-                      th:selected="${editData.ageValue() != null && editData.ageValue() == i}"></option>
+              <option value="UNKNOWN" th:selected="${editData.ageUnit() == null || editData.ageUnit() == 'UNKNOWN'}">모름</option>
+              <option value="RANGE_0_1" th:selected="${editData.ageUnit() == 'RANGE_0_1'}">0~1세</option>
+              <option value="RANGE_2_5" th:selected="${editData.ageUnit() == 'RANGE_2_5'}">2~5세</option>
+              <option value="RANGE_6_10" th:selected="${editData.ageUnit() == 'RANGE_6_10'}">6~10세</option>
+              <option value="RANGE_10_OVER" th:selected="${editData.ageUnit() == 'RANGE_10_OVER'}">10세 이상</option>
+              <option value="ESTIMATED" th:selected="${editData.ageUnit() == 'ESTIMATED'}">미상</option>
             </select>
-            <input type="hidden" name="ageUnit" id="ageUnitHidden" th:value="${editData.ageUnit() != null ? editData.ageUnit() : 'UNKNOWN'}">
           </label>
 
           <label class="block">
@@ -222,7 +249,10 @@
     <script>
       (function() {
         var careStatusField = document.getElementById('careStatusField');
-        var careStatusSelect = careStatusField ? careStatusField.querySelector('select') : null;
+        var careStatusSelect = document.getElementById('careStatusSelect');
+        var careLocationField = document.getElementById('careLocationField');
+        var careLocationInputs = careLocationField ? careLocationField.querySelectorAll('input') : [];
+        var careLocationAddress = careLocationField ? careLocationField.querySelector('input[name="careLocationAddress"]') : null;
         var eventDateTimeLabel = document.getElementById('eventDateTimeLabel');
         var detailPlaceLabel = document.getElementById('detailPlaceLabel');
         var detailPlaceInput = document.getElementById('detailPlaceInput');
@@ -230,18 +260,31 @@
         var radios = document.querySelectorAll('.report-type-radio');
         var copyByType = {
           MISSING: { eventDateTimeLabel: '실종 일시', detailPlaceLabel: '실종 장소', detailPlacePlaceholder: '예: 한강공원 3주차장 근처', contentPlaceholder: '마지막으로 본 상황, 이동 방향, 성격, 특징 등을 적어주세요.' },
-          SIGHTING: { eventDateTimeLabel: '목격 일시', detailPlaceLabel: '목격 장소', detailPlacePlaceholder: '예: 한강공원 3주차장 근처', contentPlaceholder: '목격 상황, 이동 방향, 구조 여부, 보호 상태 등을 적어주세요.' }
+          SIGHTING: { eventDateTimeLabel: '목격 일시', detailPlaceLabel: '목격/보호 장소', detailPlacePlaceholder: '예: 한강공원 3주차장 근처', contentPlaceholder: '목격 상황, 이동 방향, 보호 또는 인계 경위 등을 적어주세요.' }
         };
+
+        function syncCareLocationFields(enabled) {
+          if (!careLocationField) return;
+          careLocationField.classList.toggle('hidden', !enabled);
+          careLocationField.setAttribute('aria-hidden', enabled ? 'false' : 'true');
+          careLocationInputs.forEach(function(input) {
+            input.disabled = !enabled;
+          });
+          if (careLocationAddress) {
+            careLocationAddress.required = enabled;
+          }
+        }
 
         function syncReportTypeFields() {
           var selected = document.querySelector('.report-type-radio:checked');
           var selectedType = selected ? selected.value : 'MISSING';
           var copy = copyByType[selectedType] || copyByType.MISSING;
+          var isSighting = selectedType === 'SIGHTING';
           if (careStatusField) {
-            var isSighting = selectedType === 'SIGHTING';
             careStatusField.style.display = isSighting ? 'block' : 'none';
             if (careStatusSelect) careStatusSelect.disabled = !isSighting;
           }
+          syncCareLocationFields(isSighting && careStatusSelect && careStatusSelect.value === 'TRANSFERRED');
           if (eventDateTimeLabel) eventDateTimeLabel.textContent = copy.eventDateTimeLabel;
           if (detailPlaceLabel) detailPlaceLabel.textContent = copy.detailPlaceLabel;
           if (detailPlaceInput) detailPlaceInput.placeholder = copy.detailPlacePlaceholder;
@@ -250,6 +293,7 @@
 
         if (radios.length > 0) {
           radios.forEach(function(radio) { radio.addEventListener('change', syncReportTypeFields); });
+          if (careStatusSelect) careStatusSelect.addEventListener('change', syncReportTypeFields);
           syncReportTypeFields();
         }
 
@@ -287,14 +331,31 @@
       })();
 
       (function() {
-        var ageSelect = document.getElementById('ageValueSelect');
-        var ageUnitHidden = document.getElementById('ageUnitHidden');
-        if (!ageSelect || !ageUnitHidden) return;
-        function syncAgeUnit() {
-          ageUnitHidden.value = ageSelect.value === "" ? "UNKNOWN" : "YEAR";
+        var ageInput = document.getElementById('ageValueInput');
+        var ageUnitSelect = document.getElementById('ageUnitSelect');
+        if (!ageInput || !ageUnitSelect) return;
+
+        function syncAge() {
+          if (ageInput.value !== '') {
+            if (ageUnitSelect.value === 'UNKNOWN') {
+              ageUnitSelect.value = 'YEAR';
+            }
+          } else {
+            ageUnitSelect.value = 'UNKNOWN';
+          }
         }
-        ageSelect.addEventListener('change', syncAgeUnit);
-        syncAgeUnit();
+
+        ageInput.addEventListener('input', syncAge);
+
+        ageUnitSelect.addEventListener('change', function() {
+          if (ageUnitSelect.value === 'UNKNOWN') {
+            ageInput.value = '';
+          } else {
+            if (ageInput.value === '') {
+              ageInput.value = '1';
+            }
+          }
+        });
       })();
 
       function formatPhoneNumber(input) {
@@ -305,6 +366,17 @@
         else { res = number.substr(0, 3) + "-" + number.substr(3, 4) + "-" + number.substr(7); }
         input.value = res.substr(0, 13);
       }
+
+      // 엔터키 submit 방지
+      (function() {
+        document.querySelectorAll('form').forEach(function(f) {
+          f.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.nodeName === 'INPUT') {
+              e.preventDefault();
+            }
+          });
+        });
+      })();
     </script>
     <script th:src="@{/js/image-upload.js}"></script>
   </th:block>

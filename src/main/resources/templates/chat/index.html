@@ -253,6 +253,38 @@
             </div>
         </div>
 
+        <!-- Chat Message Report Modal -->
+        <div id="chat-report-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 opacity-0 transition-opacity duration-300 p-4">
+            <div class="w-full max-w-md scale-95 rounded-2xl bg-white shadow-xl transition-transform duration-300">
+                <div class="flex items-center justify-between border-b border-slate-100 p-5">
+                    <h3 class="text-base font-bold text-slate-800">채팅 메시지 신고</h3>
+                    <button type="button" onclick="closeChatReportModal()" class="text-slate-400 hover:text-slate-600">&times;</button>
+                </div>
+                <form th:action="@{/reports}" method="post" class="p-5">
+                    <input type="hidden" name="targetType" value="CHAT_MESSAGE">
+                    <input type="hidden" name="targetId" id="chat-report-target-id">
+                    <input type="hidden" name="returnUrl" id="chat-report-return-url" value="/chat">
+                    <label for="chat-report-reason" class="mb-1.5 block text-xs font-bold text-slate-500">신고 사유</label>
+                    <select id="chat-report-reason" name="reasonType" required class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                        <option value="">신고 사유 선택</option>
+                        <option value="SPAM">광고/도배</option>
+                        <option value="FRAUD">사기 의심</option>
+                        <option value="INAPPROPRIATE">부적절한 내용</option>
+                        <option value="PRIVACY">개인정보 노출</option>
+                        <option value="WRONG_INFO">허위/잘못된 정보</option>
+                        <option value="ETC">기타</option>
+                    </select>
+                    <label for="chat-report-detail" class="mb-1.5 mt-3 block text-xs font-bold text-slate-500">상세 사유 <span class="font-normal text-slate-400">(선택)</span></label>
+                    <textarea id="chat-report-detail" name="reasonDetail" rows="2" maxlength="1000" placeholder="상세 사유를 입력해 주세요"
+                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"></textarea>
+                    <div class="mt-4 flex justify-end gap-2">
+                        <button type="button" onclick="closeChatReportModal()" class="rounded-xl bg-slate-200 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-300 transition">닫기</button>
+                        <button type="submit" class="rounded-xl bg-red-500 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-red-600">신고</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <script th:inline="javascript">
             const currentUser = [[${currentUser}]];
             const initialRoomId = [[${param.roomId}]];
@@ -452,11 +484,15 @@
                     }
                 }
 
+                const reportBtn = (!isMe && msg.messageId)
+                    ? `<button type="button" class="chat-report-btn" onclick="openChatReportModal(${msg.messageId})" title="이 메시지 신고">신고</button>`
+                    : '';
+
                 msgDiv.innerHTML = `
                     ${avatarHtml}
                     <div class="message-content">
                         ${bubbleContent}
-                        <div class="message-time">${timeStr}</div>
+                        <div class="message-time">${timeStr}${reportBtn}</div>
                     </div>
                 `;
                 container.appendChild(msgDiv);
@@ -792,6 +828,8 @@
                             linkEl.href = `/found-items/${itemId}`;
                         } else if (itemType === 'LOST') {
                             linkEl.href = `/lost-items/${itemId}`;
+                        } else if (itemType === 'ANIMAL_REPORT') {
+                            linkEl.href = `/animal-reports/${itemId}`;
                         }
 
                         const modal = document.getElementById('item-detail-modal');
@@ -821,9 +859,36 @@
                 const returnUrlInput = document.getElementById('item-report-return-url');
                 if (!targetTypeInput || !targetIdInput || !returnUrlInput) return;
 
-                targetTypeInput.value = itemType === 'FOUND' ? 'FOUND_ITEM' : 'LOST_ITEM';
+                targetTypeInput.value = itemType === 'FOUND' ? 'FOUND_ITEM' : (itemType === 'ANIMAL_REPORT' ? 'ANIMAL_REPORT' : 'LOST_ITEM');
                 targetIdInput.value = itemId || '';
                 returnUrlInput.value = roomId ? `/chat?roomId=${encodeURIComponent(roomId)}` : '/chat';
+            }
+
+            function openChatReportModal(messageId) {
+                const targetIdInput = document.getElementById('chat-report-target-id');
+                const returnUrlInput = document.getElementById('chat-report-return-url');
+                if (!targetIdInput) return;
+
+                targetIdInput.value = messageId;
+                if (returnUrlInput) {
+                    returnUrlInput.value = currentRoomId ? `/chat?roomId=${encodeURIComponent(currentRoomId)}` : '/chat';
+                }
+
+                const modal = document.getElementById('chat-report-modal');
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modal.firstElementChild.classList.remove('scale-95');
+                }, 50);
+            }
+
+            function closeChatReportModal() {
+                const modal = document.getElementById('chat-report-modal');
+                modal.classList.add('opacity-0');
+                modal.firstElementChild.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
             }
 
             function setupImageDrop() {
