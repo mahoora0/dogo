@@ -71,7 +71,7 @@ public class FoundItemService {
 
 	@Transactional(readOnly = true)
 	public Page<FoundItemView> search(String keyword, String category, String area, String status, Pageable pageable) {
-		return search(keyword, "ALL", category, area, status, pageable);
+		return search(keyword, "ALL", category, area, status, null, null, pageable);
 	}
 
 	@Transactional(readOnly = true)
@@ -83,8 +83,22 @@ public class FoundItemService {
 			String status,
 			Pageable pageable
 	) {
+		return search(keyword, keywordScope, category, area, status, null, null, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<FoundItemView> search(
+			String keyword,
+			String keywordScope,
+			String category,
+			String area,
+			String status,
+			java.time.LocalDate startDate,
+			String detailPlace,
+			Pageable pageable
+	) {
 		Page<FoundItem> page = foundItemRepository.findAll(
-				foundItemSearchSpec(keyword, keywordScope, category, area, status), pageable);
+				foundItemSearchSpec(keyword, keywordScope, category, area, status, startDate, detailPlace), pageable);
 		Map<Long, String> thumbnails = resolveThumbnails(page.getContent());
 		return page.map(item -> toListView(item, thumbnails));
 	}
@@ -121,7 +135,9 @@ public class FoundItemService {
 			String keywordScope,
 			String category,
 			String area,
-			String status
+			String status,
+			java.time.LocalDate startDate,
+			String detailPlace
 	) {
 		return (root, query, criteriaBuilder) -> {
 			List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
@@ -143,6 +159,18 @@ public class FoundItemService {
 			String normalizedStatus = blankToNull(status);
 			if (normalizedStatus != null) {
 				predicates.add(criteriaBuilder.equal(root.get("status"), normalizedStatus));
+			}
+
+			if (startDate != null) {
+				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("foundAt"), startDate.atStartOfDay()));
+			}
+
+			String normalizedDetailPlace = blankToNull(detailPlace);
+			if (normalizedDetailPlace != null) {
+				predicates.add(criteriaBuilder.like(
+						criteriaBuilder.lower(root.get("foundPlace")),
+						"%" + normalizedDetailPlace.toLowerCase(Locale.ROOT) + "%"
+				));
 			}
 
 			String normalizedKeyword = blankToNull(keyword);

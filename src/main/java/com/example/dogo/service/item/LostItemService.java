@@ -77,7 +77,7 @@ public class LostItemService {
 	@Transactional(readOnly = true)
 	public List<LostItemView> search(String keyword, String category, String area, String status) {
 		List<LostItem> items = lostItemRepository.findAll(
-				lostItemSearchSpec(keyword, "ALL", category, area, status),
+				lostItemSearchSpec(keyword, "ALL", category, area, status, null, null),
 				Sort.by(Sort.Direction.DESC, "lostAt").and(Sort.by(Sort.Direction.DESC, "lostId"))
 		);
 		Map<Long, String> thumbnails = resolveThumbnails(items);
@@ -88,7 +88,7 @@ public class LostItemService {
 
 	@Transactional(readOnly = true)
 	public Page<LostItemView> search(String keyword, String category, String area, String status, Pageable pageable) {
-		return search(keyword, "ALL", category, area, status, pageable);
+		return search(keyword, "ALL", category, area, status, null, null, pageable);
 	}
 
 	@Transactional(readOnly = true)
@@ -100,8 +100,22 @@ public class LostItemService {
 			String status,
 			Pageable pageable
 	) {
+		return search(keyword, keywordScope, category, area, status, null, null, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<LostItemView> search(
+			String keyword,
+			String keywordScope,
+			String category,
+			String area,
+			String status,
+			java.time.LocalDate startDate,
+			String detailPlace,
+			Pageable pageable
+	) {
 		Page<LostItem> page = lostItemRepository.findAll(
-				lostItemSearchSpec(keyword, keywordScope, category, area, status), pageable);
+				lostItemSearchSpec(keyword, keywordScope, category, area, status, startDate, detailPlace), pageable);
 		Map<Long, String> thumbnails = resolveThumbnails(page.getContent());
 		return page.map(item -> toListView(item, thumbnails));
 	}
@@ -138,7 +152,9 @@ public class LostItemService {
 			String keywordScope,
 			String category,
 			String area,
-			String status
+			String status,
+			java.time.LocalDate startDate,
+			String detailPlace
 	) {
 		return (root, query, criteriaBuilder) -> {
 			List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
@@ -160,6 +176,18 @@ public class LostItemService {
 			String normalizedStatus = blankToNull(status);
 			if (normalizedStatus != null) {
 				predicates.add(criteriaBuilder.equal(root.get("status"), normalizedStatus));
+			}
+
+			if (startDate != null) {
+				predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("lostAt"), startDate.atStartOfDay()));
+			}
+
+			String normalizedDetailPlace = blankToNull(detailPlace);
+			if (normalizedDetailPlace != null) {
+				predicates.add(criteriaBuilder.like(
+						criteriaBuilder.lower(root.get("lostPlace")),
+						"%" + normalizedDetailPlace.toLowerCase(Locale.ROOT) + "%"
+				));
 			}
 
 			String normalizedKeyword = blankToNull(keyword);
