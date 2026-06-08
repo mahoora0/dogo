@@ -26,6 +26,159 @@
             <span id="logoText" style="display: none;">DOGO</span>
           </a>
         </div>
+
+        <nav class="top-nav">
+          <!-- 1. 분실물 -->
+          <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/lost-items' || currentUri == '/lost-items/new') ? 'active' : ''}">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+              </svg>
+              <span>분실물</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">분실물</div>
+              <a th:href="@{/lost-items}" th:classappend="${currentUri == '/lost-items' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+                </svg>
+                <span>분실물 검색</span>
+              </a>
+              <a th:href="@{/lost-items/new}" th:classappend="${currentUri == '/lost-items/new' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>분실물 등록</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 2. 습득물 -->
+          <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/found-items' || currentUri == '/found-items/new' || currentUri == '/areas/list') ? 'active' : ''}">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-green-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25-3v16.5m0-16.5L12 3m0 0l-3.75 3m7.5 0L12 3m-9 4.5h18" />
+              </svg>
+              <span>습득물</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">습득물</div>
+              <a th:href="@{/found-items}" th:classappend="${currentUri == '/found-items' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+                </svg>
+                <span>습득물 검색</span>
+              </a>
+              <a th:href="@{/found-items/new}" th:classappend="${currentUri == '/found-items/new' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>습득물 등록</span>
+              </a>
+              <a th:href="@{/areas/list}" th:classappend="${currentUri == '/areas/list' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                </svg>
+                <span>유실물센터</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 3. 실종자 -->
+          <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/missing-alerts' || currentUri == '/missing-persons' || currentUri == '/missing-persons/new') ? 'active' : ''}">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-red-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              <span>실종자</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">실종자</div>
+              <a th:href="@{/missing-alerts}" th:classappend="${currentUri == '/missing-alerts' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
+                </svg>
+                <span>실종 경보</span>
+              </a>
+              <a th:href="@{/missing-persons}" th:classappend="${currentUri == '/missing-persons' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+                </svg>
+                <span>실종자 검색</span>
+              </a>
+              <a th:href="@{/missing-persons/new}" th:classappend="${currentUri == '/missing-persons/new' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>실종자 제보</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 4. 실종동물 -->
+          <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/animal-reports' || currentUri == '/animal-reports/new') ? 'active' : ''}">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-orange-500">
+                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+              </svg>
+              <span>실종동물</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">실종동물</div>
+              <a th:href="@{/animal-reports}" th:classappend="${currentUri == '/animal-reports' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-orange-500">
+                  <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+                </svg>
+                <span>실종동물 검색</span>
+              </a>
+              <a th:href="@{/animal-reports/new}" th:classappend="${currentUri == '/animal-reports/new' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-orange-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>실종동물 제보</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 5. 고객지원 -->
+          <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/faq' || currentUri == '/inquiry' || currentUri == '/notice' || currentUri == '/guide') ? 'active' : ''}">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-slate-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 5.25h.008v.008H12v-.008z" />
+              </svg>
+              <span>고객지원</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">고객지원</div>
+              <a th:href="@{/faq}" th:classappend="${currentUri == '/faq' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 5.25h.008v.008H12v-.008z" />
+                </svg>
+                <span>자주묻는질문</span>
+              </a>
+              <a th:href="@{/inquiry}" th:classappend="${currentUri == '/inquiry' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+                <span>문의하기</span>
+              </a>
+              <a th:href="@{/notice}" th:classappend="${currentUri == '/notice' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                </svg>
+                <span>공지사항</span>
+              </a>
+              <a th:href="@{/guide}" th:classappend="${currentUri == '/guide' ? 'active-sub' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-16.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-16.25v14.25" />
+                </svg>
+                <span>이용가이드</span>
+              </a>
+            </div>
+          </div>
+        </nav>
+
         <div class="nav-links">
           <th:block sec:authorize="isAnonymous()">
             <a th:href="@{/login}" class="nav-link">로그인</a>
@@ -140,80 +293,7 @@
       </div>
     </header>
 
-    <div class="main-layout" th:classappend="${noSidebar} ? 'main-layout--full-width' : ''">
-      <aside class="sidebar" th:if="${noSidebar == null || !noSidebar}">
-        <nav>
-          <div class="category">
-            <h3>분실물</h3>
-            <ul>
-              <li th:classappend="${currentUri == '/lost-items' ? 'active' : ''}">
-                <a th:href="@{/lost-items}"><span class="sidebar-icon sidebar-icon--lost-search"></span>분실물 검색</a>
-              </li>
-              <li th:classappend="${currentUri == '/lost-items/new' ? 'active' : ''}">
-                <a th:href="@{/lost-items/new}"><span class="sidebar-icon sidebar-icon--lost-new"></span>분실물 등록</a>
-              </li>
-            </ul>
-          </div>
-          <div class="category">
-            <h3>습득물</h3>
-            <ul>
-              <li th:classappend="${currentUri == '/found-items' ? 'active' : ''}">
-                <a th:href="@{/found-items}"><span class="sidebar-icon sidebar-icon--found-search"></span>습득물 검색</a>
-              </li>
-              <li th:classappend="${currentUri == '/found-items/new' ? 'active' : ''}">
-                <a th:href="@{/found-items/new}"><span class="sidebar-icon sidebar-icon--found-new"></span>습득물 등록</a>
-              </li>
-              <li th:classappend="${currentUri == '/areas/list' ? 'active' : ''}">
-                <a th:href="@{/areas/list}"><span class="sidebar-icon sidebar-icon--lost-center"></span>유실물센터</a>
-              </li>
-            </ul>
-          </div>
-          <div class="category">
-            <h3>실종자</h3>
-            <ul>
-              <li th:classappend="${currentUri == '/missing-alerts' ? 'active' : ''}">
-                <a th:href="@{/missing-alerts}"><span class="sidebar-icon sidebar-icon--missing-alert"></span>실종 경보</a>
-              </li>
-              <li th:classappend="${currentUri == '/missing-persons' ? 'active' : ''}">
-                <a th:href="@{/missing-persons}"><span class="sidebar-icon sidebar-icon--person-search"></span>실종자 검색</a>
-              </li>
-              <li th:classappend="${currentUri == '/missing-persons/new' ? 'active' : ''}">
-                <a th:href="@{/missing-persons/new}"><span class="sidebar-icon sidebar-icon--person-new"></span>실종자 제보</a>
-              </li>
-            </ul>
-          </div>
-          <div class="category">
-            <h3>실종동물</h3>
-            <ul>
-              <li th:classappend="${currentUri == '/animal-reports' ? 'active' : ''}">
-                <a th:href="@{/animal-reports}"><span class="sidebar-icon sidebar-icon--animal-search"></span>실종동물 검색</a>
-              </li>
-              <li th:classappend="${currentUri == '/animal-reports/new' ? 'active' : ''}">
-                <a th:href="@{/animal-reports/new}"><span class="sidebar-icon sidebar-icon--animal-new"></span>실종동물 제보</a>
-              </li>
-            </ul>
-          </div>
-          <hr class="sidebar-divider">
-          <div class="category">
-            <h3>고객지원</h3>
-            <ul>
-              <li th:classappend="${currentUri == '/faq' ? 'active' : ''}">
-                <a th:href="@{/faq}"><span class="sidebar-icon sidebar-icon--faq"></span>자주묻는질문</a>
-              </li>
-              <li th:classappend="${currentUri == '/inquiry' ? 'active' : ''}">
-                <a th:href="@{/inquiry}"><span class="sidebar-icon sidebar-icon--inquiry"></span>문의하기</a>
-              </li>
-              <li th:classappend="${currentUri == '/notice' ? 'active' : ''}">
-                <a th:href="@{/notice}"><span class="sidebar-icon sidebar-icon--notice"></span>공지사항</a>
-              </li>
-              <li th:classappend="${currentUri == '/guide' ? 'active' : ''}">
-                <a th:href="@{/guide}"><span class="sidebar-icon sidebar-icon--guide"></span>이용가이드</a>
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </aside>
-
+    <div class="main-layout main-layout--full-width">
       <main class="content">
         <th:block th:replace="${content}"></th:block>
       </main>
@@ -416,6 +496,47 @@
         });
       </script>
     </th:block>
+
+    <!-- Mobile Dropdown Navigation Toggle Helper Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+          const category = item.querySelector('.nav-category');
+          if (category) {
+            category.addEventListener('click', function(e) {
+              if (window.innerWidth <= 820) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isActive = item.classList.contains('mobile-active');
+                
+                navItems.forEach(otherItem => {
+                  otherItem.classList.remove('mobile-active');
+                });
+                
+                if (!isActive) {
+                  item.classList.add('mobile-active');
+                }
+              }
+            });
+          }
+          
+          const dropdown = item.querySelector('.dropdown-menu');
+          if (dropdown) {
+            dropdown.addEventListener('click', function(e) {
+              e.stopPropagation();
+            });
+          }
+        });
+        
+        document.addEventListener('click', function() {
+          navItems.forEach(item => {
+            item.classList.remove('mobile-active');
+          });
+        });
+      });
+    </script>
   </body>
 </th:block>
 </html>
