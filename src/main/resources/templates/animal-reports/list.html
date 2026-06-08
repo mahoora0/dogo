@@ -52,12 +52,12 @@
                 <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-emerald-600 peer-checked:bg-emerald-600 peer-checked:text-white hover:bg-slate-50">보호</span>
               </label>
               <label class="shrink-0 cursor-pointer">
-                <input type="radio" name="reportType" value="RETURNED" class="peer sr-only" th:checked="${reportType == 'RETURNED'}" onchange="this.closest('form').submit()">
-                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-sky-600 peer-checked:bg-sky-600 peer-checked:text-white hover:bg-slate-50">귀가</span>
-              </label>
-              <label class="shrink-0 cursor-pointer">
                 <input type="radio" name="reportType" value="TRANSFERRED" class="peer sr-only" th:checked="${reportType == 'TRANSFERRED'}" onchange="this.closest('form').submit()">
                 <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-amber-600 peer-checked:bg-amber-600 peer-checked:text-white hover:bg-slate-50">연계</span>
+              </label>
+              <label class="shrink-0 cursor-pointer">
+                <input type="radio" name="reportType" value="RETURNED" class="peer sr-only" th:checked="${reportType == 'RETURNED'}" onchange="this.closest('form').submit()">
+                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-sky-600 peer-checked:bg-sky-600 peer-checked:text-white hover:bg-slate-50">귀가</span>
               </label>
             </div>
           </div>

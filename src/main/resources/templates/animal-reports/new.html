@@ -229,29 +229,29 @@
             detailPlaceLabel: '목격 장소',
             detailPlacePlaceholder: '예: 한강공원 3주차장 근처',
             contentPlaceholder: '목격 상황, 이동 방향, 보호 또는 인계 경위 등을 적어주세요.'
-          },
-          PROTECTING: {
-            eventDateTimeLabel: '보호 일시',
-            detailPlaceLabel: '보호 장소',
-            detailPlacePlaceholder: '예: 한강공원 3주차장 근처',
-            contentPlaceholder: '목격 및 보호 상황, 이동 방향, 보호 경위 등을 적어주세요.'
           }
         };
 
         function syncReportTypeFields() {
           var selected = document.querySelector('.report-type-radio:checked');
           var selectedType = selected ? selected.value : 'MISSING';
-          var copy = copyByType[selectedType] || copyByType.MISSING;
+          var copy = (selectedType === 'MISSING') ? copyByType.MISSING : copyByType.SIGHTING;
           
           var protectingRadio = document.querySelector('.report-type-radio[value="PROTECTING"]');
           if (protectingRadio) {
             var protectingLabel = protectingRadio.closest('label');
             if (selectedType === 'MISSING') {
-              if (protectingLabel) protectingLabel.classList.add('hidden');
               protectingRadio.disabled = true;
+              if (protectingLabel) {
+                protectingLabel.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                protectingLabel.classList.remove('cursor-pointer');
+              }
             } else {
-              if (protectingLabel) protectingLabel.classList.remove('hidden');
               protectingRadio.disabled = false;
+              if (protectingLabel) {
+                protectingLabel.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                protectingLabel.classList.add('cursor-pointer');
+              }
             }
           }
 
