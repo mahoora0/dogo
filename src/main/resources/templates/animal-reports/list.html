@@ -199,11 +199,15 @@
         <div class="relative h-44 w-full overflow-hidden bg-slate-50">
           <img th:src="${report.imageUrl}" alt="" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110">
           <div class="absolute left-3 top-3 flex gap-1.5">
-            <span th:text="${report.reportTypeLabel}"
-                  th:classappend="${report.reportType == 'MISSING' ? ' bg-rose-500' : (report.reportType == 'SIGHTING' ? ' bg-indigo-500' : (report.reportType == 'PROTECTING' ? ' bg-emerald-500' : (report.reportType == 'RETURNED' ? ' bg-sky-500' : ' bg-amber-500')))}"
-                  class="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm">실종</span>
-            <span th:if="${report.sightingCareStatus == 'PROTECTING'}"
-                  class="rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-sm">보호 중</span>
+            <th:block th:if="${report.reportType == 'PROTECTING'}">
+              <span class="rounded-full bg-indigo-500 px-3 py-1 text-xs font-bold text-white shadow-sm">목격</span>
+              <span class="rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-sm">보호</span>
+            </th:block>
+            <th:block th:if="${report.reportType != 'PROTECTING'}">
+              <span th:text="${report.reportTypeLabel}"
+                    th:classappend="${report.reportType == 'MISSING' ? ' bg-rose-500' : (report.reportType == 'SIGHTING' ? ' bg-indigo-500' : (report.reportType == 'RETURNED' ? ' bg-sky-500' : ' bg-amber-500'))}"
+                    class="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm">실종</span>
+            </th:block>
           </div>
           <div class="absolute right-3 top-3">
             <span th:text="${report.statusLabel}" class="rounded-full bg-slate-800 px-3 py-1 text-xs font-bold text-white shadow-sm">진행중</span>

@@ -40,7 +40,8 @@ public class AnimalReportController {
 	public List<Option> reportTypeOptions() {
 		return List.of(
 				new Option("MISSING", "실종"),
-				new Option("SIGHTING", "목격/보호")
+				new Option("SIGHTING", "목격"),
+				new Option("PROTECTING", "보호")
 		);
 	}
 

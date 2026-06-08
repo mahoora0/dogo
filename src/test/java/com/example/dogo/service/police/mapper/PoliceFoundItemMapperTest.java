@@ -32,7 +32,7 @@ class PoliceFoundItemMapperTest {
 		assertThat(foundItem.getKeepPlace()).isEqualTo("서울역(한국철도공사)");
 		assertThat(foundItem.getCategoryMain()).isEqualTo("쇼핑백");
 		assertThat(foundItem.getCategorySub()).isEqualTo("쇼핑백");
-		assertThat(foundItem.getStatus()).isEqualTo("KEEPING");
+		assertThat(foundItem.getStatus()).isEqualTo("TRANSFERRED");
 	}
 
 	@Test
@@ -49,7 +49,7 @@ class PoliceFoundItemMapperTest {
 		assertThat(foundItem.getContact()).isEqualTo("서울역(한국철도공사) / 02-3149-2531");
 		assertThat(foundItem.getCustodyStatus()).isEqualTo("보관중");
 		assertThat(foundItem.getReceiveType()).isEqualTo("기관보관");
-		assertThat(foundItem.getStatus()).isEqualTo("KEEPING");
+		assertThat(foundItem.getStatus()).isEqualTo("TRANSFERRED");
 	}
 
 	@Test
