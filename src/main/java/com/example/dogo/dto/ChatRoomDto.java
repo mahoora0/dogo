@@ -16,7 +16,7 @@ public class ChatRoomDto {
     private String otherParticipantProfileImage;
     private Long otherParticipantNo;
     private Integer unreadCount;
-    private String itemType; // FOUND, LOST
+    private String itemType; // FOUND, LOST, ANIMAL_REPORT
     private Long itemId;
     private String itemPlace;
     private String itemDate;

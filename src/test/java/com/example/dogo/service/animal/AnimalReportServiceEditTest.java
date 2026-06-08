@@ -87,7 +87,80 @@ class AnimalReportServiceEditTest {
 		assertThat(result.id()).isEqualTo(1L);
 		assertThat(result.reportType()).isEqualTo("MISSING");
 		assertThat(result.animalType()).isEqualTo("DOG");
+		assertThat(result.careLocationAddress()).isNull();
 		assertThat(result.existingImageUrls()).isEmpty();
+	}
+
+	@Test
+	void createAllowsOnlyMissingAndSightingReportTypesForUserInput() {
+		AnimalReportCreateRequest req = validRequest();
+		req.setReportType("RETURNED");
+
+		assertThatThrownBy(() -> animalReportService.create(req, userWithNo(10L)))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("신고 구분을 선택해주세요.");
+	}
+
+	@Test
+	void createRequiresCareLocationAddressWhenTransferred() {
+		AnimalReportCreateRequest req = validRequest();
+		req.setReportType("SIGHTING");
+		req.setSightingCareStatus("TRANSFERRED");
+
+		assertThatThrownBy(() -> animalReportService.create(req, userWithNo(10L)))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("동물을 인계한 장소의 주소를 입력해주세요.");
+	}
+
+	@Test
+	void createIgnoresCareLocationWhenSightingIsProtected() {
+		when(areaRepository.findByAreaName(any())).thenReturn(Optional.empty());
+		when(animalReportRepository.save(any(AnimalReport.class))).thenAnswer(invocation -> {
+			AnimalReport report = invocation.getArgument(0);
+			ReflectionTestUtils.setField(report, "reportId", 100L);
+			return report;
+		});
+		AnimalReportCreateRequest req = validRequest();
+		req.setReportType("SIGHTING");
+		req.setSightingCareStatus("PROTECTING");
+		req.setCareLocationName("임시 보호처");
+		req.setCareLocationAddress("서울특별시 강남구 보호로 1");
+		req.setCareContactPhone("010-2222-3333");
+
+		Long reportId = animalReportService.create(req, userWithNo(10L));
+
+		assertThat(reportId).isEqualTo(100L);
+		ArgumentCaptor<AnimalReport> captor = ArgumentCaptor.forClass(AnimalReport.class);
+		verify(animalReportRepository).save(captor.capture());
+		assertThat(captor.getValue().getSightingCareStatus()).isEqualTo("PROTECTING");
+		assertThat(captor.getValue().getCareLocationName()).isNull();
+		assertThat(captor.getValue().getCareLocationAddress()).isNull();
+		assertThat(captor.getValue().getCareContactPhone()).isNull();
+	}
+
+	@Test
+	void createSavesCareLocationWhenSightingIsTransferred() {
+		when(areaRepository.findByAreaName(any())).thenReturn(Optional.empty());
+		when(animalReportRepository.save(any(AnimalReport.class))).thenAnswer(invocation -> {
+			AnimalReport report = invocation.getArgument(0);
+			ReflectionTestUtils.setField(report, "reportId", 100L);
+			return report;
+		});
+		AnimalReportCreateRequest req = validRequest();
+		req.setReportType("SIGHTING");
+		req.setSightingCareStatus("TRANSFERRED");
+		req.setCareLocationName("연계 동물병원");
+		req.setCareLocationAddress("서울특별시 강남구 병원로 2");
+		req.setCareContactPhone("02-111-2222");
+
+		Long reportId = animalReportService.create(req, userWithNo(10L));
+
+		assertThat(reportId).isEqualTo(100L);
+		ArgumentCaptor<AnimalReport> captor = ArgumentCaptor.forClass(AnimalReport.class);
+		verify(animalReportRepository).save(captor.capture());
+		assertThat(captor.getValue().getCareLocationName()).isEqualTo("연계 동물병원");
+		assertThat(captor.getValue().getCareLocationAddress()).isEqualTo("서울특별시 강남구 병원로 2");
+		assertThat(captor.getValue().getCareContactPhone()).isEqualTo("02-111-2222");
 	}
 
 	@Test
@@ -119,6 +192,11 @@ class AnimalReportServiceEditTest {
 		AnimalReportCreateRequest req = validRequest();
 		req.setAnimalType("CAT");
 		req.setDetailPlace("수정된 장소");
+		req.setReportType("SIGHTING");
+		req.setSightingCareStatus("TRANSFERRED");
+		req.setCareLocationName("연계 동물병원");
+		req.setCareLocationAddress("서울특별시 강남구 병원로 2");
+		req.setCareContactPhone("02-111-2222");
 
 		animalReportService.update(3L, req, loginUser);
 
@@ -127,6 +205,10 @@ class AnimalReportServiceEditTest {
 		verify(animalReportMatchRepository).deleteBySightingReport_ReportId(3L);
 		verify(animalReportMatchRepository).flush();
 		assertThat(report.getDetailPlace()).isEqualTo("수정된 장소");
+		assertThat(report.getSightingCareStatus()).isEqualTo("TRANSFERRED");
+		assertThat(report.getCareLocationName()).isEqualTo("연계 동물병원");
+		assertThat(report.getCareLocationAddress()).isEqualTo("서울특별시 강남구 병원로 2");
+		assertThat(report.getCareContactPhone()).isEqualTo("02-111-2222");
 	}
 
 	@Test

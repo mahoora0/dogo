@@ -228,15 +228,7 @@ public class AnimalImageEmbeddingService {
 		if (storedName == null) return null;
 
 		if (storedName.startsWith("http://") || storedName.startsWith("https://")) {
-			try {
-				java.net.URI uri = java.net.URI.create(storedName);
-				try (java.io.InputStream in = uri.toURL().openStream()) {
-					return in.readAllBytes();
-				}
-			} catch (Exception e) {
-				log.warn("[pet-embedding] 외부 이미지 URL 읽기 실패: {} - {}", storedName, e.getMessage());
-				return null;
-			}
+			return readExternalImageBytes(storedName);
 		}
 
 		Path imagePath = uploadDir.resolve(ANIMAL_UPLOAD_SUBDIR).resolve(storedName).normalize();
@@ -250,6 +242,51 @@ public class AnimalImageEmbeddingService {
 			log.warn("[pet-embedding] 이미지 파일 읽기 실패: {} - {}", storedName, e.getMessage());
 			return null;
 		}
+	}
+
+	private byte[] readExternalImageBytes(String imageUrl) {
+		try {
+			java.net.URI uri = externalImageUri(imageUrl);
+			java.net.URLConnection connection = uri.toURL().openConnection();
+			connection.setConnectTimeout(5000);
+			connection.setReadTimeout(10000);
+			if (connection instanceof java.net.HttpURLConnection httpConnection) {
+				httpConnection.setRequestMethod("GET");
+				int status = httpConnection.getResponseCode();
+				if (status >= 400) {
+					log.warn("[pet-embedding] 외부 이미지 URL 읽기 실패: {} - HTTP {}", imageUrl, status);
+					httpConnection.disconnect();
+					return null;
+				}
+				try (java.io.InputStream in = httpConnection.getInputStream()) {
+					return in.readAllBytes();
+				} finally {
+					httpConnection.disconnect();
+				}
+			}
+			try (java.io.InputStream in = connection.getInputStream()) {
+				return in.readAllBytes();
+			}
+		} catch (Exception exception) {
+			log.warn("[pet-embedding] 외부 이미지 URL 읽기 실패: {} - {}: {}",
+					imageUrl, exception.getClass().getSimpleName(), exception.getMessage());
+			return null;
+		}
+	}
+
+	static java.net.URI externalImageUri(String imageUrl) {
+		try {
+			return java.net.URI.create(imageUrl);
+		} catch (IllegalArgumentException exception) {
+			return java.net.URI.create(encodeIllegalUrlCharacters(imageUrl));
+		}
+	}
+
+	private static String encodeIllegalUrlCharacters(String value) {
+		return value
+				.replace(" ", "%20")
+				.replace("[", "%5B")
+				.replace("]", "%5D");
 	}
 
 	private String normalizeModelName(String modelName) {

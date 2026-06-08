@@ -58,7 +58,7 @@
                         수정
                     </a>
                     <!-- 삭제 버튼 (Form submit 방식) -->
-                    <form th:action="@{/admin/notice/{id}/delete(id=${notice.id})}" method="post" onsubmit="return confirm('이 공지사항을 삭제하시겠습니까?');">
+                    <form th:action="@{/admin/notice/{id}/delete(id=${notice.id})}" method="post" data-confirm="이 공지사항을 삭제하시겠습니까?">
                         <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-semibold text-sm transition-colors border border-red-200">
                             삭제
                         </button>

@@ -91,6 +91,15 @@ public class AnimalReport {
 	@Column(name = "SIGHTING_CARE_STATUS")
 	private String sightingCareStatus;
 
+	@Column(name = "CARE_LOCATION_NAME")
+	private String careLocationName;
+
+	@Column(name = "CARE_LOCATION_ADDRESS")
+	private String careLocationAddress;
+
+	@Column(name = "CARE_CONTACT_PHONE")
+	private String careContactPhone;
+
 	@Column(name = "ANIMAL_TYPE", nullable = false)
 	private String animalType;
 
@@ -277,6 +286,13 @@ public class AnimalReport {
 		this.furColor = furColor;
 		this.distinctiveMarks = distinctiveMarks;
 		this.content = content;
+		this.moddate = LocalDateTime.now();
+	}
+
+	public void updateCareLocation(String careLocationName, String careLocationAddress, String careContactPhone) {
+		this.careLocationName = careLocationName;
+		this.careLocationAddress = careLocationAddress;
+		this.careContactPhone = careContactPhone;
 		this.moddate = LocalDateTime.now();
 	}
 

@@ -6,6 +6,8 @@
     <title>Dogo Admin - 실종자 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:src="@{/js/ui-dialog.js}"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin-style.css}">
 </head>
@@ -176,8 +178,8 @@
                                     
                                     <!-- 삭제 버튼 -->
                                     <td class="px-6 py-4 text-center font-semibold text-slate-900 text-sm whitespace-nowrap">
-                                        <form th:action="@{/admin/missing-persons/{id}/delete(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, page=${reports.number})}" method="post" 
-                                              onsubmit="return confirm('정말로 이 실종자 신고글을 삭제하시겠습니까? (Soft Delete)');">
+                                        <form th:action="@{/admin/missing-persons/{id}/delete(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, page=${reports.number})}" method="post"
+                                              data-confirm="정말로 이 실종자 신고글을 삭제하시겠습니까? (Soft Delete)">
                                             <button type="submit" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-colors inline-flex items-center justify-center">
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                                             </button>

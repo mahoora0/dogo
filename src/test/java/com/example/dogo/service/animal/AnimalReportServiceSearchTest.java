@@ -1,6 +1,7 @@
 package com.example.dogo.service.animal;
 
 import com.example.dogo.dto.animal.AnimalReportView;
+import com.example.dogo.dto.animal.AnimalReportDetailView;
 import com.example.dogo.entity.animal.AnimalReport;
 import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.animal.AnimalReportRepository;
@@ -111,6 +112,57 @@ class AnimalReportServiceSearchTest {
 		assertThat(publicReport.getApiProvider()).isEqualTo("ANIMAL_LOSS_API");
 		assertThat(publicReport.getExternalId()).isEqualTo("loss-1");
 		assertThat(publicReport.getSyncedAt()).isNotNull();
+	}
+
+	@Test
+	void detailSeparatesPublicProtectionInfoFromDescription() {
+		AnimalReport publicReport = AnimalReport.fromPublicApi(
+				"ANIMAL_PROTECTION_API",
+				"protect-1",
+				"SIGHTING",
+				"한국 고양이 구조 신고",
+				LocalDate.of(2026, 6, 5),
+				null,
+				null,
+				"부산광역시 연제구 온천천남로 4 (연산동)",
+				"중앙대로1188",
+				"051-503-0688",
+				true,
+				"PROTECTING",
+				"CAT",
+				"한국 고양이",
+				"FEMALE",
+				"NOT_NEUTERED",
+				null,
+				null,
+				new java.math.BigDecimal("0.5"),
+				"기타(흰색검은색)",
+				"양호(온순)",
+				"상태: 보호중\n보호소: 청조동물병원\n보호소 주소: 부산광역시 연제구 온천천남로 4 (연산동)\n공고번호: 부산-연제-2026-00069\n특징: 양호(온순)",
+				"""
+						<item>
+						  <careNm>청조동물병원</careNm>
+						  <careAddr>부산광역시 연제구 온천천남로 4 (연산동)</careAddr>
+						  <orgNm>부산광역시 연제구</orgNm>
+						  <noticeNo>부산-연제-2026-00069</noticeNo>
+						  <noticeSdt>20260605</noticeSdt>
+						  <noticeEdt>20260615</noticeEdt>
+						  <age>2026(년생)</age>
+						</item>
+						"""
+		);
+		AnimalReport saved = animalReportRepository.save(publicReport);
+
+		AnimalReportDetailView detail = animalReportService.getDetail(saved.getReportId());
+
+		assertThat(detail.locationSummary()).isEqualTo("부산광역시 연제구 · 중앙대로1188");
+		assertThat(detail.displayContent()).isNull();
+		assertThat(detail.ageDisplay()).isEqualTo("2026(년생)");
+		assertThat(detail.shelterName()).isEqualTo("청조동물병원");
+		assertThat(detail.shelterAddress()).isEqualTo("부산광역시 연제구 온천천남로 4 (연산동)");
+		assertThat(detail.authorityName()).isEqualTo("부산광역시 연제구");
+		assertThat(detail.noticeNo()).isEqualTo("부산-연제-2026-00069");
+		assertThat(detail.noticePeriod()).isEqualTo("2026-06-05 ~ 2026-06-15");
 	}
 
 	private AnimalReport report(

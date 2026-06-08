@@ -30,15 +30,17 @@ public class UserHardDeleteService {
                           OR OWNER_NO = ?
                           OR LOST_ID IN (SELECT LOST_ID FROM LOST_ITEM WHERE USER_NO = ?)
                           OR FOUND_ID IN (SELECT FOUND_ID FROM FOUND_ITEM WHERE USER_NO = ?)
+                          OR ANIMAL_REPORT_ID IN (SELECT REPORT_ID FROM ANIMAL_REPORT WHERE USER_NO = ?)
                    )
-                """, userNo, userNo, userNo, userNo, userNo);
+                """, userNo, userNo, userNo, userNo, userNo, userNo);
         jdbcTemplate.update("""
                 DELETE FROM CHAT_ROOM
                 WHERE INQUIRER_NO = ?
                    OR OWNER_NO = ?
                    OR LOST_ID IN (SELECT LOST_ID FROM LOST_ITEM WHERE USER_NO = ?)
                    OR FOUND_ID IN (SELECT FOUND_ID FROM FOUND_ITEM WHERE USER_NO = ?)
-                """, userNo, userNo, userNo, userNo);
+                   OR ANIMAL_REPORT_ID IN (SELECT REPORT_ID FROM ANIMAL_REPORT WHERE USER_NO = ?)
+                """, userNo, userNo, userNo, userNo, userNo);
 
         jdbcTemplate.update("DELETE FROM INQUIRY_FILE WHERE INQUIRY_ID IN (SELECT INQUIRY_ID FROM INQUIRY WHERE USER_NO = ?)", userNo);
         jdbcTemplate.update("DELETE FROM INQUIRY WHERE USER_NO = ?", userNo);
