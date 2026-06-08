@@ -98,6 +98,16 @@ textarea {
     pointer-events: none;
 }
 
+.dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: transparent;
+}
+
 .nav-item:hover .dropdown-menu,
 .nav-item.mobile-active .dropdown-menu {
     opacity: 1;
@@ -153,7 +163,7 @@ textarea {
 }
 
 .logo {
-    margin-left: 0;
+    margin-left: 10px;
 }
 
 .navbar .logo img {

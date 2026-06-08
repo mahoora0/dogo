@@ -18,7 +18,7 @@ public interface AnimalReportRepository extends JpaRepository<AnimalReport, Long
 
 	@Query("""
 		SELECT r FROM AnimalReport r
-		WHERE r.reportType = 'SIGHTING'
+		WHERE r.reportType IN ('SIGHTING', 'PROTECTING', 'TRANSFERRED')
 		AND r.animalType = :animalType
 		AND r.deleted = false
 		AND r.status IN ('OPEN', 'MATCHING')

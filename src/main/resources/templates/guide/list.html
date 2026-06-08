@@ -4,19 +4,13 @@
 
   <div class="guide-container max-w-5xl mx-auto px-4 py-6">
 
-    <!-- 상단 헤더 영역 -->
-    <div class="text-center mb-10">
-            <span
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 mb-4 border border-indigo-100">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                     xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                DOGO 서비스 이용 가이드
-            </span>
-      <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">쉽고 빠른 분실물 매칭 서비스 이용 방법</h2>
-      <p class="mt-2 text-slate-500 text-base max-w-xl mx-auto">도고 분실물 센터를 최적으로 이용하기 위한 단계별 안내 및 가이드를 확인해보세요.</p>
+    <!-- 페이지 상단 타이틀 영역 -->
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm font-semibold text-indigo-600 tracking-wide">고객지원</p>
+        <h2 class="mt-1 text-3xl font-extrabold text-slate-900">이용가이드</h2>
+        <p class="mt-2 text-slate-500 text-lg">도고 분실물 센터를 최적으로 이용하기 위한 단계별 안내 및 가이드를 확인해보세요.</p>
+      </div>
     </div>
 
     <!-- 카테고리 탭 네비게이션 (선택 시 ?category=파라미터 전달하여 새로고침) -->
@@ -35,7 +29,7 @@
         <a th:href="@{/guide(category='발견')}"
            th:classappend="${currentCategory == '발견' ? 'bg-[#1059A3] text-white border-[#1059A3]' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-500 hover:text-slate-900'}"
            class="inline-flex items-center justify-center rounded-full border px-5 py-2 text-sm font-bold transition-colors">
-          실종자·동물을 봤어요
+          실종자·실종동물을 봤어요
         </a>
         <a th:href="@{/guide(category='실종포스터')}"
            th:classappend="${currentCategory == '실종포스터' ? 'bg-[#1059A3] text-white border-[#1059A3]' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-500 hover:text-slate-900'}"
@@ -271,7 +265,7 @@
 
 
 
-  <!-- 실종자·동물을 봤어요 -->
+  <!-- 실종자·실종동물을 봤어요 -->
   <div th:if="${currentCategory == '발견'}" class="w-full py-10">
     <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 md:gap-4 max-w-5xl mx-auto px-4">
 

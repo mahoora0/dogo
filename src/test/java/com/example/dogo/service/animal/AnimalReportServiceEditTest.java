@@ -92,13 +92,33 @@ class AnimalReportServiceEditTest {
 	}
 
 	@Test
-	void createAllowsOnlyMissingAndSightingReportTypesForUserInput() {
+	void createAllowsOnlyUserReportTypes() {
 		AnimalReportCreateRequest req = validRequest();
 		req.setReportType("RETURNED");
 
 		assertThatThrownBy(() -> animalReportService.create(req, userWithNo(10L)))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessage("신고 구분을 선택해주세요.");
+	}
+
+	@Test
+	void createSavesProtectingReportTypeDirectly() {
+		when(areaRepository.findByAreaName(any())).thenReturn(Optional.empty());
+		when(animalReportRepository.save(any(AnimalReport.class))).thenAnswer(invocation -> {
+			AnimalReport report = invocation.getArgument(0);
+			ReflectionTestUtils.setField(report, "reportId", 101L);
+			return report;
+		});
+		AnimalReportCreateRequest req = validRequest();
+		req.setReportType("PROTECTING");
+
+		Long reportId = animalReportService.create(req, userWithNo(10L));
+
+		assertThat(reportId).isEqualTo(101L);
+		ArgumentCaptor<AnimalReport> captor = ArgumentCaptor.forClass(AnimalReport.class);
+		verify(animalReportRepository).save(captor.capture());
+		assertThat(captor.getValue().getReportType()).isEqualTo("PROTECTING");
+		assertThat(captor.getValue().getSightingCareStatus()).isNull();
 	}
 
 	@Test

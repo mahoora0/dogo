@@ -691,7 +691,7 @@ def parse_hour(hour: Optional[str]) -> dt_time:
 def resolve_status(custody_status: Optional[str]) -> str:
     if custody_status and any(keyword in custody_status for keyword in ("수령", "반환", "종결")):
         return "RETURNED"
-    return "KEEPING"
+    return "TRANSFERRED"
 
 
 def contact(org_name: Optional[str], tel: Optional[str]) -> Optional[str]:

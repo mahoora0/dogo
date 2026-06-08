@@ -53,7 +53,7 @@ public class AnimalReportService {
 
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
-	private static final Set<String> USER_REPORT_TYPES = Set.of("MISSING", "SIGHTING");
+	private static final Set<String> USER_REPORT_TYPES = Set.of("MISSING", "SIGHTING", "PROTECTING");
 	private static final Set<String> ANIMAL_TYPES = Set.of("DOG", "CAT", "OTHER");
 	private static final Set<String> GENDERS = Set.of("MALE", "FEMALE", "UNKNOWN");
 	private static final Set<String> NEUTERED_STATUSES = Set.of("NEUTERED", "NOT_NEUTERED", "UNKNOWN");
@@ -149,7 +149,16 @@ public class AnimalReportService {
 
 		User user = (loginUser != null) ? loginUser : getOrCreateDevUser();
 		Area regionArea = findRegionArea(request.getRegionName()).orElse(null);
-		String reportType = request.getReportType().trim();
+		String formReportType = request.getReportType().trim();
+		String reportType = formReportType;
+		if ("SIGHTING".equals(formReportType)) {
+			String careStatus = normalizedCareStatus(formReportType, request.getSightingCareStatus());
+			if ("PROTECTING".equals(careStatus)) {
+				reportType = "PROTECTING";
+			} else if ("TRANSFERRED".equals(careStatus)) {
+				reportType = "TRANSFERRED";
+			}
+		}
 		String animalType = request.getAnimalType().trim();
 		String breedName = blankToNull(request.getBreedName());
 		String title = defaultTitle(reportType, request.getTitle(), animalType, breedName);
@@ -165,7 +174,7 @@ public class AnimalReportService {
 				request.getDetailPlace().trim(),
 				blankToNull(request.getContactPhone()),
 				request.isContactPublic(),
-				normalizedCareStatus(reportType, request.getSightingCareStatus()),
+				normalizedCareStatus(formReportType, request.getSightingCareStatus()),
 				animalType,
 				breedName,
 				defaultInSet(request.getGender(), GENDERS, "UNKNOWN"),
@@ -204,6 +213,7 @@ public class AnimalReportService {
 		}
 		PublicAnimalDetails publicDetails = publicAnimalDetails(report);
 
+		String careStatus = getDetailCareStatus(report.getReportType(), report.getSightingCareStatus());
 		return new AnimalReportDetailView(
 				report.getReportId(),
 				report.getReportType(),
@@ -219,8 +229,8 @@ public class AnimalReportService {
 				report.getContactPhone(),
 				report.isContactPublic(),
 				displayContact(report),
-				report.getSightingCareStatus(),
-				careStatusLabel(report.getSightingCareStatus()),
+				careStatus,
+				careStatusLabel(careStatus),
 				report.getCareLocationName(),
 				report.getCareLocationAddress(),
 				report.getCareContactPhone(),
@@ -265,7 +275,7 @@ public class AnimalReportService {
 
 		return new AnimalReportEditData(
 				report.getReportId(),
-				report.getReportType(),
+				getFormReportType(report.getReportType()),
 				report.getTitle(),
 				report.getEventDate(),
 				report.getEventTime(),
@@ -273,7 +283,7 @@ public class AnimalReportService {
 				report.getDetailPlace(),
 				report.getContactPhone(),
 				report.isContactPublic(),
-				report.getSightingCareStatus(),
+				getFormCareStatus(report.getReportType(), report.getSightingCareStatus()),
 				report.getCareLocationName(),
 				report.getCareLocationAddress(),
 				report.getCareContactPhone(),
@@ -299,7 +309,16 @@ public class AnimalReportService {
 				.orElseThrow(() -> new IllegalArgumentException("동물 신고 게시글을 찾을 수 없습니다."));
 		checkOwnership(report, loginUser);
 
-		String reportType = request.getReportType().trim();
+		String formReportType = request.getReportType().trim();
+		String reportType = formReportType;
+		if ("SIGHTING".equals(formReportType)) {
+			String careStatus = normalizedCareStatus(formReportType, request.getSightingCareStatus());
+			if ("PROTECTING".equals(careStatus)) {
+				reportType = "PROTECTING";
+			} else if ("TRANSFERRED".equals(careStatus)) {
+				reportType = "TRANSFERRED";
+			}
+		}
 		String animalType = request.getAnimalType().trim();
 		String breedName = blankToNull(request.getBreedName());
 		String title = defaultTitle(reportType, request.getTitle(), animalType, breedName);
@@ -315,7 +334,7 @@ public class AnimalReportService {
 				request.getDetailPlace().trim(),
 				blankToNull(request.getContactPhone()),
 				request.isContactPublic(),
-				normalizedCareStatus(reportType, request.getSightingCareStatus()),
+				normalizedCareStatus(formReportType, request.getSightingCareStatus()),
 				animalType,
 				breedName,
 				defaultInSet(request.getGender(), GENDERS, "UNKNOWN"),
@@ -396,6 +415,7 @@ public class AnimalReportService {
 
 	private AnimalReportView toListView(AnimalReport report, Map<Long, String> thumbnails) {
 		String imageUrl = thumbnails.getOrDefault(report.getReportId(), PLACEHOLDER_IMAGE);
+		String careStatus = getDetailCareStatus(report.getReportType(), report.getSightingCareStatus());
 
 		return new AnimalReportView(
 				report.getReportId(),
@@ -412,8 +432,8 @@ public class AnimalReportService {
 				animalTypeLabel(report.getAnimalType()),
 				report.getBreedName(),
 				report.getFurColor(),
-				report.getSightingCareStatus(),
-				careStatusLabel(report.getSightingCareStatus()),
+				careStatus,
+				careStatusLabel(careStatus),
 				imageUrl
 		);
 	}
@@ -520,7 +540,11 @@ public class AnimalReportService {
 
 			String normalizedReportType = blankToNull(reportType);
 			if (normalizedReportType != null) {
-				predicates.add(criteriaBuilder.equal(root.get("reportType"), normalizedReportType));
+				if ("SIGHTING".equals(normalizedReportType)) {
+					predicates.add(root.get("reportType").in("SIGHTING", "PROTECTING"));
+				} else {
+					predicates.add(criteriaBuilder.equal(root.get("reportType"), normalizedReportType));
+				}
 			}
 
 			String normalizedAnimalType = blankToNull(animalType);
@@ -871,10 +895,26 @@ public class AnimalReportService {
 		if (weightKg == null) {
 			return null;
 		}
-		if (weightKg.compareTo(new BigDecimal("0.5")) == 0) {
-			return "1kg 미만";
+		double val = weightKg.doubleValue();
+		if (val >= 0 && val <= 1.0) {
+			return "0~1kg";
+		} else if (val > 1.0 && val <= 3.0) {
+			return "1~3kg";
+		} else if (val > 3.0 && val <= 5.0) {
+			return "3~5kg";
+		} else if (val > 5.0 && val <= 10.0) {
+			return "5~10kg";
+		} else if (val > 10.0 && val <= 15.0) {
+			return "10~15kg";
+		} else if (val > 15.0 && val <= 20.0) {
+			return "15~20kg";
+		} else if (val > 20.0 && val <= 25.0) {
+			return "20~25kg";
+		} else if (val > 25.0 && val <= 30.0) {
+			return "25~30kg";
+		} else {
+			return "30kg 이상";
 		}
-		return weightKg.stripTrailingZeros().toPlainString() + "kg";
 	}
 
 	private String careStatusLabel(String careStatus) {
@@ -984,5 +1024,32 @@ public class AnimalReportService {
 					|| StringUtils.hasText(noticeNo)
 					|| StringUtils.hasText(noticePeriod);
 		}
+	}
+
+	private String getFormReportType(String dbReportType) {
+		if ("TRANSFERRED".equals(dbReportType)) {
+			return "SIGHTING";
+		}
+		return dbReportType;
+	}
+
+	private String getFormCareStatus(String dbReportType, String dbCareStatus) {
+		if ("PROTECTING".equals(dbReportType)) {
+			return "PROTECTING";
+		}
+		if ("TRANSFERRED".equals(dbReportType)) {
+			return "TRANSFERRED";
+		}
+		return dbCareStatus;
+	}
+
+	private String getDetailCareStatus(String dbReportType, String dbCareStatus) {
+		if ("PROTECTING".equals(dbReportType)) {
+			return "PROTECTING";
+		}
+		if ("TRANSFERRED".equals(dbReportType)) {
+			return "TRANSFERRED";
+		}
+		return dbCareStatus;
 	}
 }

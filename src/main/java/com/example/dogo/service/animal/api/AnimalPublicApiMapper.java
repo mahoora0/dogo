@@ -20,11 +20,21 @@ public class AnimalPublicApiMapper {
 	private static final Pattern WEIGHT_PATTERN = Pattern.compile("(\\d+(?:[\\.,]\\d+)?)");
 
 	public AnimalReport toReport(AnimalPublicApiRecord record, String apiProvider, String reportType) {
+		String finalReportType = reportType;
+		if ("ANIMAL_PROTECTION_API".equals(apiProvider)) {
+			String state = record.processState();
+			if (state != null && state.contains("반환")) {
+				finalReportType = "RETURNED";
+			} else {
+				finalReportType = "TRANSFERRED";
+			}
+		}
+
 		return AnimalReport.fromPublicApi(
 				apiProvider,
 				record.externalId(),
-				reportType,
-				title(record, reportType),
+				finalReportType,
+				title(record, finalReportType),
 				eventDate(record.eventDate()),
 				null,
 				null,
@@ -32,7 +42,7 @@ public class AnimalPublicApiMapper {
 				defaultText(record.eventPlace(), "UNKNOWN"),
 				record.careTel(),
 				true,
-				"SIGHTING".equals(reportType) ? "PROTECTING" : null,
+				"SIGHTING".equals(finalReportType) ? "PROTECTING" : null,
 				animalType(record),
 				breedName(record),
 				gender(record.sexCode()),

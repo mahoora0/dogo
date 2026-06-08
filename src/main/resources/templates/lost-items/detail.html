@@ -69,13 +69,13 @@
               <div class="mb-4 flex flex-wrap items-center gap-2">
                 <span th:unless="${isOwner}" th:text="${lostItem.statusLabel}"
                       th:classappend="${lostItem.status == 'FOUND' ? ' bg-emerald-100 text-emerald-800 ring-emerald-200' : ' bg-slate-100 text-slate-700 ring-slate-200'}"
-                      class="rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset shadow-sm">접수</span>
+                      class="rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset shadow-sm">분실</span>
                 <form th:if="${isOwner}" th:action="@{/lost-items/{id}/status(id=${lostItem.id})}" method="post"
                       class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
                   <span class="pl-1 text-xs font-bold text-slate-500">상태</span>
                   <select name="status" onchange="this.form.submit()"
                           th:class="${lostItem.status == 'FOUND' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-slate-50 text-slate-700 ring-slate-200'} + ' rounded-full border-0 px-2.5 py-1 text-xs font-bold ring-1 ring-inset focus:outline-none focus:ring-2 focus:ring-slate-400'">
-                    <option value="WAITING" th:selected="${lostItem.status == 'WAITING'}">접수</option>
+                    <option value="WAITING" th:selected="${lostItem.status == 'WAITING'}">분실</option>
                     <option value="FOUND" th:selected="${lostItem.status == 'FOUND'}">회수</option>
                   </select>
                 </form>

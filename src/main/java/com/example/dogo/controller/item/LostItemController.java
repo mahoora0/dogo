@@ -80,6 +80,8 @@ public class LostItemController {
 			@RequestParam(required = false) String category,
 			@RequestParam(required = false) String area,
 			@RequestParam(required = false) String status,
+			@RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+			@RequestParam(required = false) String detailPlace,
 			@RequestParam(defaultValue = "regDate") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
@@ -98,10 +100,19 @@ public class LostItemController {
 				.filter(value -> value.equals(keywordScope))
 				.findFirst()
 				.orElse("ALL");
-		Page<?> lostItemPage = lostItemService.search(keyword, safeKeywordScope, category, area, status, pageRequest);
+		Page<?> lostItemPage;
+		if (startDate == null && (detailPlace == null || detailPlace.trim().isEmpty())) {
+			lostItemPage = lostItemService.search(keyword, safeKeywordScope, category, area, status, pageRequest);
+		} else {
+			lostItemPage = lostItemService.search(keyword, safeKeywordScope, category, area, status, startDate, detailPlace, pageRequest);
+		}
 		if (safePage > 0 && safePage >= lostItemPage.getTotalPages() && lostItemPage.getTotalPages() > 0) {
 			safePage = lostItemPage.getTotalPages() - 1;
-			lostItemPage = lostItemService.search(keyword, safeKeywordScope, category, area, status, PageRequest.of(safePage, safeSize, sort));
+			if (startDate == null && (detailPlace == null || detailPlace.trim().isEmpty())) {
+				lostItemPage = lostItemService.search(keyword, safeKeywordScope, category, area, status, PageRequest.of(safePage, safeSize, sort));
+			} else {
+				lostItemPage = lostItemService.search(keyword, safeKeywordScope, category, area, status, startDate, detailPlace, PageRequest.of(safePage, safeSize, sort));
+			}
 		}
 
 		model.addAttribute("lostItemPage", lostItemPage);
@@ -112,6 +123,8 @@ public class LostItemController {
 		model.addAttribute("category", category);
 		model.addAttribute("area", area);
 		model.addAttribute("status", status);
+		model.addAttribute("startDate", startDate);
+		model.addAttribute("detailPlace", detailPlace);
 		model.addAttribute("sortBy", safeField);
 		model.addAttribute("sortDir", sortDir);
 		model.addAttribute("page", safePage);
@@ -151,6 +164,8 @@ public class LostItemController {
 						 @RequestParam(required = false) String category,
 						 @RequestParam(required = false) String area,
 						 @RequestParam(required = false) String status,
+						 @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+						 @RequestParam(required = false) String detailPlace,
 						 @RequestParam(required = false) String sortBy,
 						 @RequestParam(required = false) String sortDir,
 						 @RequestParam(required = false) Integer page,
@@ -171,6 +186,8 @@ public class LostItemController {
 				.queryParam("category", category)
 				.queryParam("area", area)
 				.queryParam("status", status)
+				.queryParam("startDate", startDate)
+				.queryParam("detailPlace", detailPlace)
 				.queryParam("sortBy", sortBy)
 				.queryParam("sortDir", sortDir)
 				.queryParam("page", page)

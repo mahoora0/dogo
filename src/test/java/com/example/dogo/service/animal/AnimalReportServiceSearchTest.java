@@ -196,4 +196,28 @@ class AnimalReportServiceSearchTest {
 				"상세 내용"
 		);
 	}
+
+	@Test
+	void searchSightingMatchesSightingAndProtecting() {
+		User user = userRepository.save(new User("sighting-search-test@dogo.local", "목격검색테스트", "010-0000-0000"));
+		
+		AnimalReport sighting = new AnimalReport(user, "SIGHTING", "목격 게시글", LocalDate.of(2026, 5, 16), null, null, "서울특별시", "강남역", null, true, null, "DOG", "말티즈", "UNKNOWN", "UNKNOWN", null, null, null, "흰색", null, null);
+		AnimalReport protecting = new AnimalReport(user, "PROTECTING", "보호 게시글", LocalDate.of(2026, 5, 16), null, null, "서울특별시", "강남역", null, true, null, "DOG", "말티즈", "UNKNOWN", "UNKNOWN", null, null, null, "흰색", null, null);
+		AnimalReport transferred = new AnimalReport(user, "TRANSFERRED", "연계 게시글", LocalDate.of(2026, 5, 16), null, null, "서울특별시", "강남역", null, true, null, "DOG", "말티즈", "UNKNOWN", "UNKNOWN", null, null, null, "흰색", null, null);
+
+		animalReportRepository.save(sighting);
+		animalReportRepository.save(protecting);
+		animalReportRepository.save(transferred);
+
+		Page<AnimalReportView> sightingResult = animalReportService.search("SIGHTING", null, null, null, "ALL", PageRequest.of(0, 10));
+		Page<AnimalReportView> protectingResult = animalReportService.search("PROTECTING", null, null, null, "ALL", PageRequest.of(0, 10));
+
+		// SIGHTING filter should match SIGHTING and PROTECTING reports, but not TRANSFERRED
+		assertThat(sightingResult.getContent()).extracting(AnimalReportView::reportType)
+				.containsExactlyInAnyOrder("SIGHTING", "PROTECTING");
+
+		// PROTECTING filter should strictly match PROTECTING reports
+		assertThat(protectingResult.getContent()).extracting(AnimalReportView::reportType)
+				.containsExactly("PROTECTING");
+	}
 }

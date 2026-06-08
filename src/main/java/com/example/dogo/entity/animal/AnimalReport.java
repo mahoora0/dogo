@@ -305,6 +305,11 @@ public class AnimalReport {
 		this.moddate = LocalDateTime.now();
 	}
 
+	public void setReportType(String reportType) {
+		this.reportType = reportType;
+		this.moddate = LocalDateTime.now();
+	}
+
 	public void setStatus(String status) {
 		this.status = status;
 		this.moddate = LocalDateTime.now();

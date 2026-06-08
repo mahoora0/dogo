@@ -45,13 +45,13 @@
                     <i data-lucide="package" class="w-5 h-5"></i>
                     습득물 관리
                 </a>
-                <a href="/admin/animals" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
-                    <i data-lucide="dog" class="w-5 h-5"></i>
-                    실종동물 관리
-                </a>
                 <a href="/admin/missing-persons" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                     <i data-lucide="user-round-search" class="w-5 h-5"></i>
                     실종자 관리
+                </a>
+                <a href="/admin/animals" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    <i data-lucide="dog" class="w-5 h-5"></i>
+                    실종동물 관리
                 </a>
                 <a href="/admin/inquiries" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                     <svg viewBox="0 0 24 24" style="width: 25px; height: 25px; flex-shrink: 0;" fill="currentColor">
@@ -178,7 +178,7 @@
                                         <form th:action="@{/admin/lost-items/{id}/status(id=${item.lostId}, sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, page=${page.number})}" method="post">
                                             <select name="status" onchange="this.form.submit()" 
                                                     th:class="${item.status == 'FOUND' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-700 border-slate-200'} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
-                                                <option value="WAITING" th:selected="${item.status == 'WAITING'}">접수</option>
+                                                <option value="WAITING" th:selected="${item.status == 'WAITING'}">분실</option>
                                                 <option value="FOUND" th:selected="${item.status == 'FOUND'}">회수</option>
                                             </select>
                                         </form>

@@ -19,99 +19,108 @@
 
     <!-- Interactive Search Form -->
     <form th:action="@{/found-items}" method="get" id="searchForm"
-          class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
       
-      <!-- Top Row: Main Search & Toggle -->
-      <div class="grid gap-3 lg:grid-cols-12">
-        <div class="flex min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 transition focus-within:border-slate-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-slate-100 lg:col-span-8">
-          <div class="relative shrink-0 border-r border-slate-200">
-            <select id="keywordScopeSelect" name="keywordScope"
-                    class="h-full w-32 appearance-none bg-transparent py-3.5 pl-4 pr-8 text-sm font-bold text-slate-700 outline-none sm:w-36">
-              <option th:each="option : ${keywordScopeOptions}"
-                      th:value="${option.value}" th:text="${option.label}"
-                      th:selected="${keywordScope == option.value}">전체</option>
-            </select>
-            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-          </div>
-          <div class="relative min-w-0 flex-1 group">
-            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
-            <input id="keywordInput" name="keyword" th:value="${keyword}" placeholder="물품명, 장소, 제목으로 검색하세요"
-                   class="w-full bg-transparent py-3.5 pl-11 pr-4 text-sm font-medium text-slate-800 outline-none">
+      <!-- 첫째 줄: 물품 상태 및 카테고리 -->
+      <div class="grid gap-4 sm:grid-cols-2">
+        <!-- Status Chips -->
+        <div class="space-y-2">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-400">물품 상태</label>
+          <div class="flex flex-nowrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <label class="shrink-0 cursor-pointer">
+              <input type="radio" name="status" value="" class="peer hidden" th:checked="${status == null || status == ''}">
+              <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">전체</span>
+            </label>
+            <label class="shrink-0 cursor-pointer">
+              <input type="radio" name="status" value="KEEPING" class="peer hidden" th:checked="${status == 'KEEPING'}">
+              <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">보관</span>
+            </label>
+            <label class="shrink-0 cursor-pointer">
+              <input type="radio" name="status" value="RETURNED" class="peer hidden" th:checked="${status == 'RETURNED'}">
+              <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">반환</span>
+            </label>
+            <label class="shrink-0 cursor-pointer">
+              <input type="radio" name="status" value="TRANSFERRED" class="peer hidden" th:checked="${status == 'TRANSFERRED'}">
+              <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">연계</span>
+            </label>
           </div>
         </div>
-        
-        <div class="grid grid-cols-2 gap-2 lg:col-span-4">
-          <button type="submit"
-                  class="flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 active:scale-[0.98]">
-            검색하기
-          </button>
-          <button type="button" onclick="toggleFilters()"
-                  class="flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 lg:hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-            필터
-          </button>
-          <a th:href="@{/found-items}" 
-             class="hidden items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 lg:flex">
-            초기화
-          </a>
+
+        <!-- Category -->
+        <div class="space-y-2">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-400">카테고리</label>
+          <div class="relative">
+            <select name="category" onchange="this.closest('form').submit()" class="w-full appearance-none rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white">
+              <option value="">모든 카테고리</option>
+              <option th:each="categoryOption : ${searchCategories}" th:value="${categoryOption}" th:text="${categoryOption}" th:selected="${category == categoryOption}">지갑</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
         </div>
       </div>
 
-      <!-- Expandable Filters -->
-      <div id="extraFilters" class="mt-4 hidden space-y-4 border-t border-slate-100 pt-4 lg:block">
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <!-- Category -->
-          <div class="space-y-2">
-            <label class="text-xs font-bold uppercase tracking-wider text-slate-400">카테고리</label>
-            <div class="relative">
-              <select name="category" class="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white">
-                <option value="">모든 카테고리</option>
-                <option th:each="categoryOption : ${searchCategories}" th:value="${categoryOption}" th:text="${categoryOption}" th:selected="${category == categoryOption}">지갑</option>
-              </select>
-              <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-            </div>
-          </div>
-
-          <!-- Area -->
-          <div class="space-y-2">
-            <label class="text-xs font-bold uppercase tracking-wider text-slate-400">지역</label>
-            <div class="relative">
-              <select name="area" class="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white">
-                <option value="">전체 지역</option>
-                <option th:each="regionOption : ${regionOptions}" th:value="${regionOption}" th:text="${regionOption}" th:selected="${area == regionOption}">서울특별시</option>
-              </select>
-              <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-            </div>
-          </div>
-
-          <!-- Status Chips -->
-          <div class="space-y-2">
-            <label class="text-xs font-bold uppercase tracking-wider text-slate-400">물품 상태</label>
-            <div class="flex flex-nowrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              <label class="shrink-0 cursor-pointer">
-                <input type="radio" name="status" value="" class="peer hidden" th:checked="${status == null || status == ''}">
-                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">전체</span>
-              </label>
-              <label class="shrink-0 cursor-pointer">
-                <input type="radio" name="status" value="KEEPING" class="peer hidden" th:checked="${status == 'KEEPING'}">
-                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">보관</span>
-              </label>
-              <label class="shrink-0 cursor-pointer">
-                <input type="radio" name="status" value="RETURNED" class="peer hidden" th:checked="${status == 'RETURNED'}">
-                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">반환</span>
-              </label>
-              <label class="shrink-0 cursor-pointer">
-                <input type="radio" name="status" value="TRANSFERRED" class="peer hidden" th:checked="${status == 'TRANSFERRED'}">
-                <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">연계</span>
-              </label>
-            </div>
+      <!-- 둘째 줄: 발생일, 지역, 상세장소 -->
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 border-t border-slate-100 pt-4">
+        <!-- 발생일 -->
+        <div class="space-y-2">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-400">발생일</label>
+          <div class="relative">
+            <input type="date" name="startDate" th:value="${startDate}" class="w-full rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white">
           </div>
         </div>
-        
-        <!-- Mobile Reset Button -->
-        <a th:href="@{/found-items}" class="block w-full rounded-full border border-slate-200 bg-white py-3 text-center text-sm font-bold text-slate-700 lg:hidden">
-          검색 조건 초기화
-        </a>
+
+        <!-- 지역 -->
+        <div class="space-y-2">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-400">지역</label>
+          <div class="relative">
+            <select name="area" onchange="this.closest('form').submit()" class="w-full appearance-none rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white">
+              <option value="">전체 지역</option>
+              <option th:each="regionOption : ${regionOptions}" th:value="${regionOption}" th:text="${regionOption}" th:selected="${area == regionOption}">서울특별시</option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </div>
+
+        <!-- 상세 장소 -->
+        <div class="space-y-2">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-400">상세 장소</label>
+          <div class="relative">
+            <input type="text" name="detailPlace" th:value="${detailPlace}" placeholder="상세 주소, 주요 건물명 등" class="w-full rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white">
+          </div>
+        </div>
+      </div>
+
+      <!-- 셋째 줄: 검색어 입력 및 버튼 -->
+      <div class="border-t border-slate-100 pt-4">
+        <div class="grid gap-3 lg:grid-cols-12">
+          <div class="flex min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 transition focus-within:border-slate-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-slate-100 lg:col-span-8">
+            <div class="relative shrink-0 border-r border-slate-200">
+              <select id="keywordScopeSelect" name="keywordScope"
+                      class="h-full w-32 appearance-none bg-transparent py-3.5 pl-4 pr-8 text-sm font-bold text-slate-700 outline-none sm:w-36">
+                <option th:each="option : ${keywordScopeOptions}"
+                        th:value="${option.value}" th:text="${option.label}"
+                        th:selected="${keywordScope == option.value}">전체</option>
+              </select>
+              <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+            <div class="relative min-w-0 flex-1 group">
+              <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+              <input id="keywordInput" name="keyword" th:value="${keyword}" placeholder="물품명, 장소, 제목으로 검색하세요"
+                     class="w-full bg-transparent py-3.5 pl-11 pr-4 text-sm font-medium text-slate-800 outline-none">
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-2 lg:col-span-4">
+            <button type="submit"
+                    class="flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 active:scale-[0.98]">
+              검색하기
+            </button>
+            <a th:href="@{/found-items}" 
+               class="flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50">
+              초기화
+            </a>
+          </div>
+        </div>
       </div>
     </form>
 
@@ -134,7 +143,7 @@
 
     <!-- Grid List -->
     <section class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-      <a th:each="item : ${foundItems}" th:href="@{/found-items/{id}(id=${item.id}, keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page}, size=${size})}"
+      <a th:each="item : ${foundItems}" th:href="@{/found-items/{id}(id=${item.id}, keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, startDate=${startDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page}, size=${size})}"
          class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md">
         <div class="relative h-44 w-full overflow-hidden bg-slate-50">
           <img th:if="${item.imageUrl}" th:src="${item.imageUrl}" alt=""
@@ -188,7 +197,7 @@
 
         <!-- 맨 처음 -->
         <a th:classappend="${foundItemPage.first} ? ' pointer-events-none opacity-40'"
-           th:href="@{/found-items(keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir}, page=0, size=${size})}"
+           th:href="@{/found-items(keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, startDate=${startDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=0, size=${size})}"
            aria-label="첫 페이지"
            class="flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
@@ -196,7 +205,7 @@
 
         <!-- 이전 -->
         <a th:classappend="${foundItemPage.first} ? ' pointer-events-none opacity-40'"
-           th:href="@{/found-items(keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page - 1}, size=${size})}"
+           th:href="@{/found-items(keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, startDate=${startDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page - 1}, size=${size})}"
            aria-label="이전 페이지"
            class="flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -204,14 +213,14 @@
 
         <!-- 번호 윈도우 (현재 페이지 주변 최대 10칸) -->
         <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
-           th:href="@{/found-items(keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir}, page=${i}, size=${size})}"
+           th:href="@{/found-items(keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, startDate=${startDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${i}, size=${size})}"
            th:text="${i + 1}"
            th:classappend="${i == page} ? ' bg-slate-900 text-white font-semibold' : ' text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
            class="flex h-10 w-10 items-center justify-center transition-colors">1</a>
 
         <!-- 다음 -->
         <a th:classappend="${foundItemPage.last} ? ' pointer-events-none opacity-40'"
-           th:href="@{/found-items(keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page + 1}, size=${size})}"
+           th:href="@{/found-items(keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, startDate=${startDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page + 1}, size=${size})}"
            aria-label="다음 페이지"
            class="flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -219,7 +228,7 @@
 
         <!-- 맨 끝 -->
         <a th:classappend="${foundItemPage.last} ? ' pointer-events-none opacity-40'"
-           th:href="@{/found-items(keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir}, page=${foundItemPage.totalPages - 1}, size=${size})}"
+           th:href="@{/found-items(keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, startDate=${startDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${foundItemPage.totalPages - 1}, size=${size})}"
            aria-label="마지막 페이지"
            class="flex h-10 w-10 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
@@ -228,10 +237,6 @@
     </nav>
 
     <script>
-	      function toggleFilters() {
-	        const extraFilters = document.getElementById('extraFilters');
-	        extraFilters.classList.toggle('hidden');
-	      }
 	      function applySort(value) {
 	        const [sortBy, sortDir] = value.split(',');
 	        const url = new URL(window.location.href);

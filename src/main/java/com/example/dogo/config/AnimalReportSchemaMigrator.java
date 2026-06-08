@@ -45,6 +45,7 @@ public class AnimalReportSchemaMigrator implements ApplicationRunner {
 		addColumnIfMissing("CARE_CONTACT_PHONE", "CARE_CONTACT_PHONE VARCHAR(100)");
 		addIndexIfMissing("UK_ANIMAL_PUBLIC_API", "CREATE UNIQUE INDEX UK_ANIMAL_PUBLIC_API ON " + TABLE_NAME + " (API_PROVIDER, EXTERNAL_ID)");
 		addIndexIfMissing("IDX_ANIMAL_REPORT_SOURCE", "CREATE INDEX IDX_ANIMAL_REPORT_SOURCE ON " + TABLE_NAME + " (SOURCE_TYPE, EVENT_DATE)");
+		migrateExistingProtectionRecords();
 	}
 
 	private void makeUserNoNullable() {
@@ -112,6 +113,27 @@ public class AnimalReportSchemaMigrator implements ApplicationRunner {
 	private boolean hasColumn(DatabaseMetaData metadata, Connection connection, String columnName) throws SQLException {
 		try (ResultSet columns = metadata.getColumns(connection.getCatalog(), null, TABLE_NAME, columnName)) {
 			return columns.next();
+		}
+	}
+
+	private void migrateExistingProtectionRecords() {
+		try {
+			String query = "SELECT REPORT_ID, RAW_PAYLOAD FROM ANIMAL_REPORT WHERE SOURCE_TYPE = 'ANIMAL_PROTECTION_API'";
+			jdbcTemplate.query(query, (rs) -> {
+				long reportId = rs.getLong("REPORT_ID");
+				String rawPayload = rs.getString("RAW_PAYLOAD");
+				String targetReportType = "TRANSFERRED";
+				if (rawPayload != null) {
+					if (rawPayload.contains("반환")) {
+						targetReportType = "RETURNED";
+					} else {
+						targetReportType = "TRANSFERRED";
+					}
+				}
+				jdbcTemplate.update("UPDATE ANIMAL_REPORT SET REPORT_TYPE = ?, SIGHTING_CARE_STATUS = NULL WHERE REPORT_ID = ?", targetReportType, reportId);
+			});
+		} catch (Exception e) {
+			// Ignore database errors during startup migration
 		}
 	}
 }

@@ -102,10 +102,45 @@ class AnimalPublicApiSyncServiceTest {
 
 		assertThat(result.savedCount()).isEqualTo(1);
 		AnimalReport saved = animalReportRepository.findByApiProviderAndExternalId("ANIMAL_PROTECTION_API", "PROTECT-1").orElseThrow();
-		assertThat(saved.getReportType()).isEqualTo("SIGHTING");
-		assertThat(saved.getSightingCareStatus()).isEqualTo("PROTECTING");
+		assertThat(saved.getReportType()).isEqualTo("TRANSFERRED");
+		assertThat(saved.getSightingCareStatus()).isNull();
 		assertThat(saved.getBreedName()).isEqualTo("Maltese");
 		assertThat(saved.getAnimalType()).isEqualTo("DOG");
+	}
+
+	@Test
+	void syncProtectionRecordsSavesReturnedReportForReturnedState() {
+		AnimalPublicApiRecord record = new AnimalPublicApiRecord(
+				"PROTECT-2",
+				"20260516",
+				"Mapo shelter road",
+				"Seoul Mapo-gu",
+				"Mapo Shelter",
+				"Seoul Mapo-gu",
+				"02-333-4444",
+				"[Dog] Maltese",
+				null,
+				"Cream",
+				"M",
+				"Y",
+				null,
+				null,
+				"Friendly",
+				"종료(반환)",
+				"NOTICE-2",
+				"20260516",
+				"20260526",
+				null,
+				"<item><desertionNo>PROTECT-2</desertionNo></item>"
+		);
+		AnimalPublicApiSyncService service = service(new FakeClient(record), "ANIMAL_PROTECTION_API", "SIGHTING");
+
+		AnimalPublicApiSyncResult result = service.sync(LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 22));
+
+		assertThat(result.savedCount()).isEqualTo(1);
+		AnimalReport saved = animalReportRepository.findByApiProviderAndExternalId("ANIMAL_PROTECTION_API", "PROTECT-2").orElseThrow();
+		assertThat(saved.getReportType()).isEqualTo("RETURNED");
+		assertThat(saved.getSightingCareStatus()).isNull();
 	}
 
 	private AnimalPublicApiSyncService service(AnimalPublicApiClient client, String sourceType, String reportType) {

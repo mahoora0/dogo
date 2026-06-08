@@ -252,7 +252,7 @@ class LoginControllerTest {
                 .andExpect(jsonPath("$.color", is("흰색")))
                 .andExpect(jsonPath("$.place", is("강남역")))
                 .andExpect(jsonPath("$.date", is("2026.05.20 11:30")))
-                .andExpect(jsonPath("$.status", is("접수")))
+                .andExpect(jsonPath("$.status", is("분실")))
                 .andExpect(jsonPath("$.content", is("아이폰 분실")))
                 .andExpect(jsonPath("$.imageUrl", is("/images/noImageSize.png")));
     }
