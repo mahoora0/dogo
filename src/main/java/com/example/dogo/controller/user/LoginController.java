@@ -319,6 +319,11 @@ public class LoginController {
     }
     com.example.dogo.entity.user.User user = userDetails.getUser();
 
+    String provider = userSocialAccountRepository.findByUser(user)
+        .map(com.example.dogo.entity.user.UserSocialAccount::getProvider)
+        .orElse(null);
+    model.addAttribute("provider", provider);
+
     List<com.example.dogo.entity.item.LostItem> lostItems = lostItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
     List<com.example.dogo.entity.item.FoundItem> foundItems = foundItemRepository.findByUserAndDeletedFalseOrderByRegDateDesc(user);
     List<com.example.dogo.entity.Support.Inquiry> inquiries = inquiryRepository.findByUserOrderByRegdateDescInquiryIdDesc(user);

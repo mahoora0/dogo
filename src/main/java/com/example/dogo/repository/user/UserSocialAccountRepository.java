@@ -12,4 +12,6 @@ public interface UserSocialAccountRepository extends JpaRepository<UserSocialAcc
     Optional<UserSocialAccount> findByProviderAndProviderUserId(String provider, String providerUserId);
 
     void deleteByUser(com.example.dogo.entity.user.User user);
+
+    Optional<UserSocialAccount> findByUser(com.example.dogo.entity.user.User user);
 }
