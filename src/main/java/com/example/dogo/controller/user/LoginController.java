@@ -306,7 +306,7 @@ public class LoginController {
       case "RETURNED": return "반환";
       case "TRANSFERRED": return "연계";
       case "COMPLETED": return "완료";
-      case "WAITING": return "접수";
+      case "WAITING": return "분실";
       default: return status;
     }
   }
@@ -438,10 +438,10 @@ public class LoginController {
   }
 
   private String lostStatusLabel(String status) {
-    if (status == null) return "접수";
+    if (status == null) return "분실";
     return switch (status) {
       case "FOUND" -> "회수";
-      default -> "접수";
+      default -> "분실";
     };
   }
 

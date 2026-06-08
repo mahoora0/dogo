@@ -45,13 +45,13 @@
                     <i data-lucide="package" class="w-5 h-5"></i>
                     습득물 관리
                 </a>
-                <a href="/admin/animals" class="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-medium">
-                    <i data-lucide="dog" class="w-5 h-5"></i>
-                    실종동물 관리
-                </a>
                 <a href="/admin/missing-persons" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                     <i data-lucide="user-round-search" class="w-5 h-5"></i>
                     실종자 관리
+                </a>
+                <a href="/admin/animals" class="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-medium">
+                    <i data-lucide="dog" class="w-5 h-5"></i>
+                    실종동물 관리
                 </a>
                 <a href="/admin/inquiries" class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                     <svg viewBox="0 0 24 24" style="width: 25px; height: 25px; flex-shrink: 0;" fill="currentColor">
@@ -150,8 +150,8 @@
                                 <tr th:each="report, status : ${reports.content}" class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 font-bold text-slate-400" th:text="${reports.totalElements - (reports.number * reports.size) - status.index}">#</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span th:class="${report.reportType == 'MISSING' ? 'text-rose-600 bg-rose-50 border-rose-100' : (report.reportType == 'SIGHTING' ? 'text-blue-600 bg-blue-50 border-blue-100' : (report.reportType == 'PROTECTING' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : (report.reportType == 'RETURNED' ? 'text-sky-600 bg-sky-50 border-sky-100' : 'text-amber-600 bg-amber-50 border-amber-100')))} + ' px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap inline-block'" 
-                                              th:text="${report.reportType == 'MISSING' ? '실종' : (report.reportType == 'SIGHTING' ? '목격' : (report.reportType == 'PROTECTING' ? '보호' : (report.reportType == 'RETURNED' ? '귀가' : '연계')))}">실종</span>
+                                        <span th:class="${report.sourceType == 'USER' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-emerald-600 bg-emerald-50 border-emerald-100'} + ' px-3 py-1.5 rounded-full text-xs font-bold border whitespace-nowrap inline-block'" 
+                                              th:text="${report.sourceType == 'USER' ? '유저등록' : 'API연동'}">유저등록</span>
                                     </td>
                                     <td class="px-6 py-4 text-slate-700 text-sm font-medium" th:text="${report.animalType + (report.breedName != null ? ' (' + report.breedName + ')' : '')}">DOG</td>
                                     <td class="px-6 py-4 font-semibold text-slate-900 text-sm">
@@ -163,12 +163,13 @@
                                     <!-- 상태 수정 폼 -->
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <form th:action="@{/admin/animals/{id}/status(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, page=${reports.number})}" method="post">
-                                            <select name="status" onchange="this.form.submit()" 
-                                                    th:class="${report.status == 'OPEN' ? 'bg-slate-100 text-slate-700 border-slate-200' : (report.status == 'MATCHING' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : (report.status == 'RESOLVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-600 border-gray-200'))} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
-                                                <option value="OPEN" th:selected="${report.status == 'OPEN'}">진행중</option>
-                                                <option value="MATCHING" th:selected="${report.status == 'MATCHING'}">매칭중</option>
-                                                <option value="RESOLVED" th:selected="${report.status == 'RESOLVED'}">해결</option>
-                                                <option value="CLOSED" th:selected="${report.status == 'CLOSED'}">종료</option>
+                                            <select name="reportType" onchange="this.form.submit()" 
+                                                    th:class="${report.reportType == 'MISSING' ? 'bg-rose-50 text-rose-700 border-rose-200' : (report.reportType == 'SIGHTING' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : (report.reportType == 'PROTECTING' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : (report.reportType == 'TRANSFERRED' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-sky-50 text-sky-700 border-sky-200')))} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
+                                                <option value="MISSING" th:selected="${report.reportType == 'MISSING'}">실종</option>
+                                                <option value="SIGHTING" th:selected="${report.reportType == 'SIGHTING'}">목격</option>
+                                                <option value="PROTECTING" th:selected="${report.reportType == 'PROTECTING'}">보호</option>
+                                                <option value="TRANSFERRED" th:selected="${report.reportType == 'TRANSFERRED'}">연계</option>
+                                                <option value="RETURNED" th:selected="${report.reportType == 'RETURNED'}">귀가</option>
                                             </select>
                                         </form>
                                     </td>

@@ -349,13 +349,13 @@ public class AdminController {
     @PostMapping("/animals/{id}/status")
     @Transactional
     public String updateAnimalStatus(@PathVariable("id") Long id, 
-                                     @RequestParam("status") String status,
+                                     @RequestParam("reportType") String reportType,
                                      @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                      @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
                                      @RequestParam(value = "page", defaultValue = "0") int page) {
         AnimalReport report = animalReportRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid report Id:" + id));
-        report.setStatus(status);
+        report.setReportType(reportType);
         animalReportRepository.save(report);
         return "redirect:/admin/animals?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
     }

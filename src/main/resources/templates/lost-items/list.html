@@ -33,7 +33,7 @@
             </label>
             <label class="shrink-0 cursor-pointer">
               <input type="radio" name="status" value="WAITING" class="peer hidden" th:checked="${status == 'WAITING'}">
-              <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">접수</span>
+              <span class="inline-block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-600 transition peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white hover:bg-slate-50">분실</span>
             </label>
             <label class="shrink-0 cursor-pointer">
               <input type="radio" name="status" value="FOUND" class="peer hidden" th:checked="${status == 'FOUND'}">
@@ -151,7 +151,7 @@
           <div class="absolute right-3 top-3 z-10">
             <span th:text="${item.statusLabel}"
                   th:classappend="${item.status == 'FOUND' ? ' bg-emerald-600 text-white' : ' bg-slate-800 text-white'}"
-                  class="block rounded-full px-3 py-1 text-xs font-bold shadow-sm">접수</span>
+                  class="block rounded-full px-3 py-1 text-xs font-bold shadow-sm">분실</span>
           </div>
         </div>
         
