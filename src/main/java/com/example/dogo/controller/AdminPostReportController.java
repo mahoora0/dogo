@@ -4,6 +4,8 @@ import com.example.dogo.entity.ReportReasonType;
 import com.example.dogo.entity.ReportStatus;
 import com.example.dogo.entity.ReportTargetType;
 import com.example.dogo.security.CustomUserDetails;
+import com.example.dogo.service.ChatService;
+import com.example.dogo.service.chat.ChatUnavailableException;
 import com.example.dogo.service.report.PostReportService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,9 +26,11 @@ public class AdminPostReportController {
 	private static final int PAGE_SIZE = 20;
 
 	private final PostReportService postReportService;
+	private final ChatService chatService;
 
-	public AdminPostReportController(PostReportService postReportService) {
+	public AdminPostReportController(PostReportService postReportService, ChatService chatService) {
 		this.postReportService = postReportService;
+		this.chatService = chatService;
 	}
 
 	@GetMapping
@@ -51,6 +55,17 @@ public class AdminPostReportController {
 		model.addAttribute("reasonTypes", ReportReasonType.values());
 		model.addAttribute("page", safePage);
 		return "admin/reports";
+	}
+
+	@GetMapping("/chat/{roomId}")
+	public String chatView(@PathVariable Long roomId, Model model, RedirectAttributes redirectAttributes) {
+		try {
+			model.addAttribute("chat", chatService.getAdminChatView(roomId));
+			return "admin/chat-view";
+		} catch (ChatUnavailableException exception) {
+			redirectAttributes.addFlashAttribute("adminReportError", "채팅방을 찾을 수 없습니다. 삭제되었을 수 있습니다.");
+			return "redirect:/admin/reports";
+		}
 	}
 
 	@PostMapping("/{id}/status")

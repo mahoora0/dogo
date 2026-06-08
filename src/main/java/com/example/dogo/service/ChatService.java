@@ -231,6 +231,29 @@ public class ChatService {
     @Transactional(readOnly = true)
     public List<ChatMessageDto> getChatMessages(Long roomId, User reader) {
         ChatRoom room = getAuthorizedRoom(roomId, reader);
+        return toMessageDtos(room);
+    }
+
+    @Transactional(readOnly = true)
+    public com.example.dogo.dto.AdminChatView getAdminChatView(Long roomId) {
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ChatUnavailableException("채팅방을 찾을 수 없습니다."));
+        User owner = room.getOwner();
+        User inquirer = room.getInquirer();
+        return new com.example.dogo.dto.AdminChatView(
+                roomId,
+                owner != null ? owner.getUserNo() : null,
+                owner != null ? owner.getNickname() : null,
+                owner != null ? owner.getLoginId() : null,
+                inquirer != null ? inquirer.getUserNo() : null,
+                inquirer != null ? inquirer.getNickname() : null,
+                inquirer != null ? inquirer.getLoginId() : null,
+                toMessageDtos(room)
+        );
+    }
+
+    private List<ChatMessageDto> toMessageDtos(ChatRoom room) {
+        Long roomId = room.getRoomId();
         List<ChatMessage> messages = chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(room);
         List<ChatMessageDto> result = new ArrayList<>();
         Set<String> renderedGroups = new LinkedHashSet<>();
@@ -280,8 +303,9 @@ public class ChatService {
                 dto.getFileSize()
         );
         chatMessageRepository.save(message);
-        
+
         return ChatMessageDto.builder()
+                .messageId(message.getMessageId())
                 .roomId(dto.getRoomId())
                 .senderNo(sender.getUserNo())
                 .senderNickname(sender.getNickname())
@@ -358,6 +382,7 @@ public class ChatService {
             chatMessageRepository.save(message);
 
             return ChatMessageDto.builder()
+                    .messageId(message.getMessageId())
                     .roomId(roomId)
                     .senderNo(sender.getUserNo())
                     .senderNickname(sender.getNickname())
@@ -439,6 +464,7 @@ public class ChatService {
 
     private ChatMessageDto toMessageDto(Long roomId, ChatMessage message) {
         return ChatMessageDto.builder()
+                .messageId(message.getMessageId())
                 .roomId(roomId)
                 .senderNo(message.getSender().getUserNo())
                 .senderNickname(message.getSender().getNickname())
@@ -466,6 +492,7 @@ public class ChatService {
                 .sum();
 
         return ChatMessageDto.builder()
+                .messageId(first.getMessageId())
                 .roomId(roomId)
                 .senderNo(first.getSender().getUserNo())
                 .senderNickname(first.getSender().getNickname())

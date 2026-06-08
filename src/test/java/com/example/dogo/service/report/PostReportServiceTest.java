@@ -1,12 +1,15 @@
 package com.example.dogo.service.report;
 
 import com.example.dogo.dto.ReportCreateRequest;
+import com.example.dogo.entity.ChatMessage;
+import com.example.dogo.entity.ChatRoom;
 import com.example.dogo.entity.PostReport;
 import com.example.dogo.entity.ReportReasonType;
 import com.example.dogo.entity.ReportStatus;
 import com.example.dogo.entity.ReportTargetType;
 import com.example.dogo.entity.item.LostItem;
 import com.example.dogo.entity.user.User;
+import com.example.dogo.repository.ChatMessageRepository;
 import com.example.dogo.repository.PostReportRepository;
 import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
@@ -51,6 +54,9 @@ class PostReportServiceTest {
 	@Mock
 	private MissingPersonRepository missingPersonRepository;
 
+	@Mock
+	private ChatMessageRepository chatMessageRepository;
+
 	private PostReportService postReportService;
 
 	@BeforeEach
@@ -60,7 +66,8 @@ class PostReportServiceTest {
 				lostItemRepository,
 				foundItemRepository,
 				animalReportRepository,
-				missingPersonRepository
+				missingPersonRepository,
+				chatMessageRepository
 		);
 	}
 
@@ -145,6 +152,61 @@ class PostReportServiceTest {
 	}
 
 	@Test
+	void createSavesChatMessageReport() {
+		User reporter = user(10L);
+		User sender = user(20L);
+		ReflectionTestUtils.setField(sender, "nickname", "Sender");
+		ChatMessage message = chatMessage(sender, 5L, 77L, "외부 송금 요청합니다");
+		when(chatMessageRepository.findById(5L)).thenReturn(Optional.of(message));
+		when(postReportRepository.existsByReporterUserNoAndTargetTypeAndTargetId(10L, ReportTargetType.CHAT_MESSAGE, 5L)).thenReturn(false);
+
+		String redirectUrl = postReportService.create(request(ReportTargetType.CHAT_MESSAGE, 5L), reporter);
+
+		ArgumentCaptor<PostReport> captor = ArgumentCaptor.forClass(PostReport.class);
+		verify(postReportRepository).save(captor.capture());
+		PostReport saved = captor.getValue();
+		assertThat(redirectUrl).isEqualTo("/admin/reports/chat/77");
+		assertThat(saved.getTargetType()).isEqualTo(ReportTargetType.CHAT_MESSAGE);
+		assertThat(saved.getTargetOwnerNo()).isEqualTo(20L);
+		assertThat(saved.getTargetUrl()).isEqualTo("/admin/reports/chat/77");
+		assertThat(saved.getTargetTitle()).isEqualTo("Sender: 외부 송금 요청합니다");
+	}
+
+	@Test
+	void createTruncatesLongChatMessagePreview() {
+		User reporter = user(10L);
+		User sender = user(20L);
+		ReflectionTestUtils.setField(sender, "nickname", "Sender");
+		ChatMessage message = chatMessage(sender, 5L, 77L, "가".repeat(1000));
+		when(chatMessageRepository.findById(5L)).thenReturn(Optional.of(message));
+
+		postReportService.create(request(ReportTargetType.CHAT_MESSAGE, 5L), reporter);
+
+		ArgumentCaptor<PostReport> captor = ArgumentCaptor.forClass(PostReport.class);
+		verify(postReportRepository).save(captor.capture());
+		assertThat(captor.getValue().getTargetTitle().length()).isEqualTo(300);
+	}
+
+	@Test
+	void createRejectsOwnChatMessage() {
+		User owner = user(10L);
+		ChatMessage message = chatMessage(owner, 5L, 77L, "내 메시지");
+		when(chatMessageRepository.findById(5L)).thenReturn(Optional.of(message));
+
+		assertThatThrownBy(() -> postReportService.create(request(ReportTargetType.CHAT_MESSAGE, 5L), owner))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	void createRejectsMissingChatMessage() {
+		User reporter = user(10L);
+		when(chatMessageRepository.findById(5L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> postReportService.create(request(ReportTargetType.CHAT_MESSAGE, 5L), reporter))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
 	void searchMapsReporterFieldsToDto() {
 		User reporter = user(10L);
 		ReflectionTestUtils.setField(reporter, "loginId", "reporter");
@@ -221,6 +283,14 @@ class PostReportServiceTest {
 		);
 		ReflectionTestUtils.setField(item, "lostId", id);
 		return item;
+	}
+
+	private ChatMessage chatMessage(User sender, Long messageId, Long roomId, String content) {
+		ChatRoom room = new ChatRoom(lostItem(sender, 999L), sender, sender);
+		ReflectionTestUtils.setField(room, "roomId", roomId);
+		ChatMessage message = new ChatMessage(room, sender, content, ChatMessage.MessageType.TALK);
+		ReflectionTestUtils.setField(message, "messageId", messageId);
+		return message;
 	}
 
 	private User user(Long userNo) {
