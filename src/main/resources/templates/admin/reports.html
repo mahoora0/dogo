@@ -154,7 +154,10 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="font-bold text-slate-900" th:text="${report.targetType().label}">분실물</div>
-                                        <a th:href="${report.targetUrl()}" target="_blank" th:text="${report.targetTitle()}" class="mt-1 block max-w-xs truncate text-sm font-semibold text-blue-600 hover:underline">대상 제목</a>
+                                        <a th:href="${report.targetUrl()}"
+                                           th:target="${report.targetType().name() == 'CHAT_MESSAGE'} ? '_self' : '_blank'"
+                                           th:text="${report.targetTitle()}"
+                                           class="mt-1 block max-w-xs truncate text-sm font-semibold text-blue-600 hover:underline">대상 제목</a>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="font-bold text-slate-800" th:text="${report.reasonType().label}">기타</div>
