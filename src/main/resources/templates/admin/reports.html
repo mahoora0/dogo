@@ -139,6 +139,7 @@
                                     <th class="px-6 py-4">상태</th>
                                     <th class="px-6 py-4">대상</th>
                                     <th class="px-6 py-4">사유</th>
+                                    <th class="px-6 py-4">피신고자 (신고 수)</th>
                                     <th class="px-6 py-4">신고자</th>
                                     <th class="px-6 py-4">접수일</th>
                                     <th class="px-6 py-4">처리</th>
@@ -146,7 +147,7 @@
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 <tr th:if="${#lists.isEmpty(reports)}">
-                                    <td colspan="6" class="px-6 py-12 text-center text-slate-500">접수된 신고가 없습니다.</td>
+                                    <td colspan="7" class="px-6 py-12 text-center text-slate-500">접수된 신고가 없습니다.</td>
                                 </tr>
                                 <tr th:each="report : ${reports}" class="align-top hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -162,6 +163,15 @@
                                     <td class="px-6 py-4">
                                         <div class="font-bold text-slate-800" th:text="${report.reasonType().label}">기타</div>
                                         <p th:if="${report.reasonDetail()}" th:text="${report.reasonDetail()}" class="mt-1 max-w-sm whitespace-pre-line text-xs leading-5 text-slate-500">상세</p>
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-600">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="font-bold text-slate-800" th:text="${report.targetOwnerNickname() ?: '알 수 없음'}">피신고자 닉네임</span>
+                                            <span th:text="${report.targetOwnerReportCount()} + '회'"
+                                                  th:class="${report.targetOwnerReportCount() >= 5 ? 'bg-rose-100 text-rose-700 border-rose-200' : (report.targetOwnerReportCount() >= 3 ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-700 border-slate-200')} + ' text-[10px] font-extrabold px-1.5 py-0.5 rounded-md border'">0회</span>
+                                        </div>
+                                        <div class="text-xs" th:text="${'ID: ' + (report.targetOwnerLoginId() ?: '-')}">ID</div>
+                                        <div class="text-xs" th:text="${'회원번호: ' + (report.targetOwnerNo() ?: '-')}">회원번호</div>
                                     </td>
                                     <td class="px-6 py-4 text-slate-600">
                                         <div class="font-bold text-slate-800" th:text="${report.reporterNickname() ?: '닉네임 없음'}">닉네임</div>

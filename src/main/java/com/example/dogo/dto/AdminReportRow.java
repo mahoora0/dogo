@@ -18,6 +18,10 @@ public record AdminReportRow(
 		String reporterNickname,
 		String reporterLoginId,
 		LocalDateTime createdAt,
-		String adminMemo
+		String adminMemo,
+		Long targetOwnerNo,
+		String targetOwnerNickname,
+		String targetOwnerLoginId,
+		long targetOwnerReportCount
 ) {
 }

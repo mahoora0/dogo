@@ -18,6 +18,7 @@ import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
+import com.example.dogo.repository.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -36,6 +37,7 @@ public class PostReportService {
 	private final AnimalReportRepository animalReportRepository;
 	private final MissingPersonRepository missingPersonRepository;
 	private final ChatMessageRepository chatMessageRepository;
+	private final UserRepository userRepository;
 
 	public PostReportService(
 			PostReportRepository postReportRepository,
@@ -43,7 +45,8 @@ public class PostReportService {
 			FoundItemRepository foundItemRepository,
 			AnimalReportRepository animalReportRepository,
 			MissingPersonRepository missingPersonRepository,
-			ChatMessageRepository chatMessageRepository
+			ChatMessageRepository chatMessageRepository,
+			UserRepository userRepository
 	) {
 		this.postReportRepository = postReportRepository;
 		this.lostItemRepository = lostItemRepository;
@@ -51,6 +54,7 @@ public class PostReportService {
 		this.animalReportRepository = animalReportRepository;
 		this.missingPersonRepository = missingPersonRepository;
 		this.chatMessageRepository = chatMessageRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Transactional
@@ -132,6 +136,19 @@ public class PostReportService {
 
 	private AdminReportRow toAdminReportRow(PostReport report) {
 		User reporter = report.getReporter();
+		Long targetOwnerNo = report.getTargetOwnerNo();
+		String targetOwnerNickname = "알 수 없음";
+		String targetOwnerLoginId = "-";
+		if (targetOwnerNo != null) {
+			var ownerOpt = userRepository.findById(targetOwnerNo);
+			if (ownerOpt.isPresent()) {
+				var owner = ownerOpt.get();
+				targetOwnerNickname = owner.getNickname();
+				targetOwnerLoginId = owner.getLoginId();
+			}
+		}
+		long targetOwnerReportCount = postReportRepository.countByTargetOwnerNoAndStatusNot(targetOwnerNo, ReportStatus.REJECTED);
+
 		return new AdminReportRow(
 				report.getReportId(),
 				report.getStatus(),
@@ -144,7 +161,11 @@ public class PostReportService {
 				reporter != null ? reporter.getNickname() : null,
 				reporter != null ? reporter.getLoginId() : null,
 				report.getCreatedAt(),
-				report.getAdminMemo()
+				report.getAdminMemo(),
+				targetOwnerNo,
+				targetOwnerNickname,
+				targetOwnerLoginId,
+				targetOwnerReportCount
 		);
 	}
 
