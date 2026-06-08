@@ -15,6 +15,7 @@ import com.example.dogo.repository.animal.AnimalReportRepository;
 import com.example.dogo.repository.item.FoundItemRepository;
 import com.example.dogo.repository.item.LostItemRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
+import com.example.dogo.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,6 +58,9 @@ class PostReportServiceTest {
 	@Mock
 	private ChatMessageRepository chatMessageRepository;
 
+	@Mock
+	private UserRepository userRepository;
+
 	private PostReportService postReportService;
 
 	@BeforeEach
@@ -67,7 +71,8 @@ class PostReportServiceTest {
 				foundItemRepository,
 				animalReportRepository,
 				missingPersonRepository,
-				chatMessageRepository
+				chatMessageRepository,
+				userRepository
 		);
 	}
 

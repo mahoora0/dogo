@@ -165,12 +165,28 @@
                                         <p th:if="${report.reasonDetail()}" th:text="${report.reasonDetail()}" class="mt-1 max-w-sm whitespace-pre-line text-xs leading-5 text-slate-500">상세</p>
                                     </td>
                                     <td class="px-6 py-4 text-slate-600">
-                                        <div class="flex items-center gap-1.5">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
                                             <span class="font-bold text-slate-800" th:text="${report.targetOwnerNickname() ?: '알 수 없음'}">피신고자 닉네임</span>
-                                            <span th:text="${report.targetOwnerReportCount()} + '회'"
-                                                  th:class="${report.targetOwnerReportCount() >= 5 ? 'bg-rose-100 text-rose-700 border-rose-200' : (report.targetOwnerReportCount() >= 3 ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-700 border-slate-200')} + ' text-[10px] font-extrabold px-1.5 py-0.5 rounded-md border'">0회</span>
+                                            <div class="inline-flex items-center gap-1">
+                                                <form th:action="@{/admin/reports/users/{id}/adjust-reports(id=${report.targetOwnerNo()})}" method="post" class="inline-block">
+                                                    <input type="hidden" name="filterStatus" th:value="${status}">
+                                                    <input type="hidden" name="targetType" th:value="${targetType}">
+                                                    <input type="hidden" name="reasonType" th:value="${reasonType}">
+                                                    <input type="hidden" name="adjustment" value="-1">
+                                                    <button type="submit" class="w-5 h-5 flex items-center justify-center rounded bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-extrabold text-slate-500 hover:text-slate-700 transition-colors shadow-sm" title="보정 1 차감">-</button>
+                                                </form>
+                                                <span th:text="${report.targetOwnerReportCount()} + '회'"
+                                                      th:class="${report.targetOwnerReportCount() >= 5 ? 'bg-rose-100 text-rose-700 border-rose-200' : (report.targetOwnerReportCount() >= 3 ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-700 border-slate-200')} + ' text-[10px] font-extrabold px-1.5 py-0.5 rounded-md border shadow-sm'">0회</span>
+                                                <form th:action="@{/admin/reports/users/{id}/adjust-reports(id=${report.targetOwnerNo()})}" method="post" class="inline-block">
+                                                    <input type="hidden" name="filterStatus" th:value="${status}">
+                                                    <input type="hidden" name="targetType" th:value="${targetType}">
+                                                    <input type="hidden" name="reasonType" th:value="${reasonType}">
+                                                    <input type="hidden" name="adjustment" value="1">
+                                                    <button type="submit" class="w-5 h-5 flex items-center justify-center rounded bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-extrabold text-slate-500 hover:text-slate-700 transition-colors shadow-sm" title="보정 1 증가">+</button>
+                                                </form>
+                                            </div>
                                         </div>
-                                        <div class="text-xs" th:text="${'ID: ' + (report.targetOwnerLoginId() ?: '-')}">ID</div>
+                                        <div class="text-xs mt-1" th:text="${'ID: ' + (report.targetOwnerLoginId() ?: '-')}">ID</div>
                                         <div class="text-xs" th:text="${'회원번호: ' + (report.targetOwnerNo() ?: '-')}">회원번호</div>
                                     </td>
                                     <td class="px-6 py-4 text-slate-600">

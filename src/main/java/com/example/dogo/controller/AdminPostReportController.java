@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.example.dogo.repository.user.UserRepository;
 
 @Controller
 @RequestMapping("/admin/reports")
@@ -27,10 +28,12 @@ public class AdminPostReportController {
 
 	private final PostReportService postReportService;
 	private final ChatService chatService;
+	private final UserRepository userRepository;
 
-	public AdminPostReportController(PostReportService postReportService, ChatService chatService) {
+	public AdminPostReportController(PostReportService postReportService, ChatService chatService, UserRepository userRepository) {
 		this.postReportService = postReportService;
 		this.chatService = chatService;
+		this.userRepository = userRepository;
 	}
 
 	@GetMapping
@@ -82,6 +85,34 @@ public class AdminPostReportController {
 		try {
 			postReportService.updateStatus(id, status, adminMemo, userDetails != null ? userDetails.getUser() : null);
 			redirectAttributes.addFlashAttribute("adminReportMessage", "신고 상태가 변경되었습니다.");
+		} catch (IllegalArgumentException exception) {
+			redirectAttributes.addFlashAttribute("adminReportError", exception.getMessage());
+		}
+
+		if (filterStatus != null) {
+			redirectAttributes.addAttribute("status", filterStatus);
+		}
+		if (targetType != null) {
+			redirectAttributes.addAttribute("targetType", targetType);
+		}
+		if (reasonType != null) {
+			redirectAttributes.addAttribute("reasonType", reasonType);
+		}
+		return "redirect:/admin/reports";
+	}
+
+	@PostMapping("/users/{id}/adjust-reports")
+	public String adjustReportCount(
+			@PathVariable Long id,
+			@RequestParam int adjustment,
+			@RequestParam(required = false) ReportStatus filterStatus,
+			@RequestParam(required = false) ReportTargetType targetType,
+			@RequestParam(required = false) ReportReasonType reasonType,
+			RedirectAttributes redirectAttributes
+	) {
+		try {
+			String nickname = postReportService.adjustReportCount(id, adjustment);
+			redirectAttributes.addFlashAttribute("adminReportMessage", nickname + "님의 신고 보정치가 업데이트되었습니다.");
 		} catch (IllegalArgumentException exception) {
 			redirectAttributes.addFlashAttribute("adminReportError", exception.getMessage());
 		}

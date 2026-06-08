@@ -53,6 +53,9 @@ public class User {
 	@Column(name = "WITHDRAWN_AT")
 	private java.time.LocalDateTime withdrawnAt;
 
+	@Column(name = "REPORT_COUNT_ADJUSTMENT", nullable = false)
+	private int reportCountAdjustment = 0;
+
 	public User(String email, String nickname, String phone) {
 		this.email = email;
 		this.nickname = nickname;
@@ -100,6 +103,10 @@ public class User {
 		} else {
 			this.withdrawnAt = null;
 		}
+	}
+
+	public void setReportCountAdjustment(int reportCountAdjustment) {
+		this.reportCountAdjustment = reportCountAdjustment;
 	}
 
 	@PrePersist

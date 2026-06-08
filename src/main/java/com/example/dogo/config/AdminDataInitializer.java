@@ -38,6 +38,14 @@ public class AdminDataInitializer implements CommandLineRunner {
             log.debug("USERS 테이블에 WITHDRAWN_AT 컬럼이 이미 존재하거나 추가 과정이 건너뛰어졌습니다.");
         }
 
+        // 기존 DB 하위 호환성을 위해 REPORT_COUNT_ADJUSTMENT 컬럼 추가 시도
+        try {
+            jdbcTemplate.execute("ALTER TABLE USERS ADD COLUMN REPORT_COUNT_ADJUSTMENT INT NOT NULL DEFAULT 0");
+            log.info("USERS 테이블에 REPORT_COUNT_ADJUSTMENT 컬럼을 성공적으로 생성하였습니다.");
+        } catch (Exception e) {
+            log.debug("USERS 테이블에 REPORT_COUNT_ADJUSTMENT 컬럼이 이미 존재하거나 추가 과정이 건너뛰어졌습니다.");
+        }
+
         if (!StringUtils.hasText(adminPassword)) {
             log.warn("admin.password가 비어 있어 관리자 계정 자동 생성을 건너뜁니다.");
             return;

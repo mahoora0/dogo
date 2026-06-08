@@ -4,6 +4,7 @@ import com.example.dogo.dto.AdminChatView;
 import com.example.dogo.service.ChatService;
 import com.example.dogo.service.chat.ChatUnavailableException;
 import com.example.dogo.service.report.PostReportService;
+import com.example.dogo.repository.user.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -19,9 +20,10 @@ class AdminPostReportControllerTest {
 
     private final PostReportService postReportService = mock(PostReportService.class);
     private final ChatService chatService = mock(ChatService.class);
+    private final UserRepository userRepository = mock(UserRepository.class);
 
     private final MockMvc mockMvc = MockMvcBuilders
-            .standaloneSetup(new AdminPostReportController(postReportService, chatService))
+            .standaloneSetup(new AdminPostReportController(postReportService, chatService, userRepository))
             .build();
 
     @Test

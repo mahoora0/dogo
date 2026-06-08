@@ -139,15 +139,18 @@ public class PostReportService {
 		Long targetOwnerNo = report.getTargetOwnerNo();
 		String targetOwnerNickname = "알 수 없음";
 		String targetOwnerLoginId = "-";
+		int adjustment = 0;
 		if (targetOwnerNo != null) {
 			var ownerOpt = userRepository.findById(targetOwnerNo);
 			if (ownerOpt.isPresent()) {
 				var owner = ownerOpt.get();
 				targetOwnerNickname = owner.getNickname();
 				targetOwnerLoginId = owner.getLoginId();
+				adjustment = owner.getReportCountAdjustment();
 			}
 		}
-		long targetOwnerReportCount = postReportRepository.countByTargetOwnerNoAndStatusNot(targetOwnerNo, ReportStatus.REJECTED);
+		long baseCount = postReportRepository.countByTargetOwnerNoAndStatusNot(targetOwnerNo, ReportStatus.REJECTED);
+		long targetOwnerReportCount = Math.max(0, baseCount + adjustment);
 
 		return new AdminReportRow(
 				report.getReportId(),
@@ -274,6 +277,25 @@ public class PostReportService {
 			return null;
 		}
 		return value.trim().replaceAll("\\s+", " ");
+	}
+
+	@Transactional
+	public String adjustReportCount(Long userNo, int adjustment) {
+		User user = userRepository.findById(userNo)
+				.orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+		
+		long baseCount = postReportRepository.countByTargetOwnerNoAndStatusNot(userNo, ReportStatus.REJECTED);
+		int currentAdjustment = user.getReportCountAdjustment();
+		int newAdjustment = currentAdjustment + adjustment;
+		
+		// 최종 신고 수가 0보다 작아지지 않도록 보정치 하한선을 제한
+		if (baseCount + newAdjustment < 0) {
+			newAdjustment = (int) -baseCount;
+		}
+		
+		user.setReportCountAdjustment(newAdjustment);
+		userRepository.save(user);
+		return user.getNickname();
 	}
 
 	private record ReportTargetSnapshot(Long ownerNo, String title, String url) {
