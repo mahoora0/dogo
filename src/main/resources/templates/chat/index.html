@@ -108,7 +108,14 @@
                 <div class="mt-4">
                     <h5 class="text-xs font-bold text-slate-400 mb-2">대화 중인 사용자</h5>
                     <div class="participant-info mb-4">
-                        <img id="participant-img" th:src="@{/images/logoNoName.png}" referrerpolicy="no-referrer" class="participant-avatar" alt="">
+                        <div class="relative w-12 h-12 flex-shrink-0">
+                            <img id="participant-img" src="" referrerpolicy="no-referrer" class="participant-avatar w-full h-full object-cover rounded-full hidden" alt="">
+                            <span id="participant-placeholder" class="w-full h-full flex items-center justify-center bg-slate-200 text-slate-500 rounded-full hidden" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-7 h-7">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6Zm-7 9a7 7 0 1114 0H3Z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                        </div>
                         <div>
                             <div id="participant-name" class="font-bold text-sm">상대방 이름</div>
                             <div class="text-[10px] text-slate-400">습득자</div>
@@ -129,8 +136,13 @@
                 </button>
                 
                 <!-- Profile Header (Avatar) -->
-                <div class="relative mb-4 mt-4">
-                    <img id="profile-modal-img" src="/images/logoNoName.png" referrerpolicy="no-referrer" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-sm" alt="Avatar">
+                <div class="relative mb-4 mt-4 w-24 h-24">
+                    <img id="profile-modal-img" src="" referrerpolicy="no-referrer" class="w-full h-full rounded-full object-cover border-4 border-slate-100 shadow-sm hidden" alt="Avatar">
+                    <span id="profile-modal-placeholder" class="w-full h-full rounded-full border-4 border-slate-100 shadow-sm flex items-center justify-center bg-slate-200 text-slate-500 hidden" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-14 h-14">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6Zm-7 9a7 7 0 1114 0H3Z" clip-rule="evenodd"/>
+                        </svg>
+                    </span>
                 </div>
                 
                 <!-- User Details -->
@@ -304,7 +316,16 @@
                 document.getElementById('item-info-location').innerText = room.itemPlace || '장소 정보 없음';
                 document.getElementById('item-info-date').innerText = room.itemDate || '날짜 정보 없음';
                 document.getElementById('participant-name').innerText = room.otherParticipantNickname;
-                setImageWithFallback(document.getElementById('participant-img'), room.otherParticipantProfileImage, DEFAULT_PROFILE_IMAGE);
+                const participantImg = document.getElementById('participant-img');
+                const participantPlaceholder = document.getElementById('participant-placeholder');
+                if (room.otherParticipantProfileImage) {
+                    participantImg.src = room.otherParticipantProfileImage;
+                    participantImg.classList.remove('hidden');
+                    if (participantPlaceholder) participantPlaceholder.classList.add('hidden');
+                } else {
+                    participantImg.classList.add('hidden');
+                    if (participantPlaceholder) participantPlaceholder.classList.remove('hidden');
+                }
 
                 // Bind click handlers for item detail and profile view
                 const detailBtn = document.getElementById('item-detail-btn');
@@ -416,8 +437,23 @@
                     bubbleContent = `<div class="message-bubble">${escapeHtml(msg.content)}</div>`;
                 }
 
+                let avatarHtml = '';
+                if (!isMe) {
+                    if (msg.senderProfileImage) {
+                        avatarHtml = `<img src="${escapeHtml(msg.senderProfileImage)}" referrerpolicy="no-referrer" class="message-avatar" alt="">`;
+                    } else {
+                        avatarHtml = `
+                            <span class="w-9 h-9 rounded-full flex items-center justify-center bg-slate-200 text-slate-500 flex-shrink-0" aria-hidden="true" style="width: 36px; height: 36px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 22px; height: 22px;">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6Zm-7 9a7 7 0 1114 0H3Z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                        `;
+                    }
+                }
+
                 msgDiv.innerHTML = `
-                    ${isMe ? '' : `<img src="${escapeHtml(msg.senderProfileImage || DEFAULT_PROFILE_IMAGE)}" referrerpolicy="no-referrer" class="message-avatar" alt="">`}
+                    ${avatarHtml}
                     <div class="message-content">
                         ${bubbleContent}
                         <div class="message-time">${timeStr}</div>
@@ -696,7 +732,16 @@
                         return res.json();
                     })
                     .then(data => {
-                        document.getElementById('profile-modal-img').src = data.profileImageUrl || '/images/logoNoName.png';
+                        const modalImg = document.getElementById('profile-modal-img');
+                        const modalPlaceholder = document.getElementById('profile-modal-placeholder');
+                        if (data.profileImageUrl) {
+                            modalImg.src = data.profileImageUrl;
+                            modalImg.classList.remove('hidden');
+                            if (modalPlaceholder) modalPlaceholder.classList.add('hidden');
+                        } else {
+                            modalImg.classList.add('hidden');
+                            if (modalPlaceholder) modalPlaceholder.classList.remove('hidden');
+                        }
                         document.getElementById('profile-modal-nickname').innerText = data.nickname;
                         document.getElementById('profile-modal-regdate').innerText = `가입일: ${data.regDate}`;
                         document.getElementById('profile-modal-lost-count').innerText = `${data.lostCount}건`;
