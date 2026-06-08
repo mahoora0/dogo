@@ -26,9 +26,10 @@ class ChatTemplateJavascriptInlineTest {
         String html = Files.readString(TEMPLATE);
 
         assertThat(html).contains("id=\"item-info-img\" th:src=\"@{/images/noImageSize.png}\"");
-        assertThat(html).contains("id=\"participant-img\" th:src=\"@{/images/logoNoName.png}\"");
+        assertThat(html).contains("id=\"participant-img\" src=\"\" referrerpolicy=\"no-referrer\"");
         assertThat(html).contains("setImageWithFallback(document.getElementById('item-info-img'), room.itemThumbnail, DEFAULT_ITEM_IMAGE)");
-        assertThat(html).contains("setImageWithFallback(document.getElementById('participant-img'), room.otherParticipantProfileImage, DEFAULT_PROFILE_IMAGE)");
+        assertThat(html).contains("if (room.otherParticipantProfileImage) {");
+        assertThat(html).contains("participantImg.src = room.otherParticipantProfileImage;");
         assertThat(html).contains("function setImageWithFallback(img, src, fallbackSrc)");
     }
 
