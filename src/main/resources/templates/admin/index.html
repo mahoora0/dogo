@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dogo Admin Dashboard</title>
+    <script>
+      tailwind.config = {
+        theme: {
+          screens: {
+            'sm': '0px',
+            'md': '0px',
+            'lg': '0px',
+            'xl': '0px',
+            '2xl': '0px',
+          }
+        }
+      }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,14 +28,14 @@
         <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/50 z-30 hidden transition-opacity duration-300 opacity-0"></div>
 
         <!-- Sidebar -->
-        <aside id="adminSidebar" class="w-64 bg-white border-r border-slate-200 fixed inset-y-0 left-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out md:static flex flex-col">
+        <aside id="adminSidebar" class="w-64 shrink-0 bg-white border-r border-slate-200 static flex flex-col z-40 h-full">
             <div class="p-6 flex items-center justify-between">
                 <a href="/" class="flex items-center gap-2 font-bold text-2xl text-blue-600">
                     <i data-lucide="package-search"></i>
                     <span>Dogo Admin</span>
                 </a>
                 <!-- Close menu button for mobile only -->
-                <button id="closeSidebarBtn" class="md:hidden text-slate-500 hover:text-slate-700 p-2 focus:outline-none">
+                <button id="closeSidebarBtn" class="hidden text-slate-500 hover:text-slate-700 p-2 focus:outline-none">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -87,12 +100,12 @@
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto">
             <!-- Top Header -->
-            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-20">
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-20 min-w-[1180px]">
                 <div class="flex items-center gap-2">
-                    <button type="button" id="mobileMenuBtn" class="md:hidden text-slate-500 hover:text-slate-700 focus:outline-none p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                    <button type="button" id="mobileMenuBtn" class="text-slate-500 hover:text-slate-700 focus:outline-none p-1 rounded-lg hover:bg-slate-100 transition-colors">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
-                    <h1 class="text-xl font-bold text-slate-800">대시보드 개요</h1>
+                    <h1 class="text-xl font-bold text-slate-800">대시보드</h1>
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
@@ -104,7 +117,7 @@
                 </div>
             </header>
 
-            <div class="p-8 space-y-8">
+            <div class="p-8 space-y-8 min-w-[1180px] mx-auto w-full">
                 <!-- 📞 대시보드 빠른 액션 (Quick Action Console) - 웅장한 가로형 3열 스트립 콘솔 -->
                 <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm transition-all duration-300">
                     <div class="flex items-center gap-3 mb-6">
@@ -117,7 +130,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-3 whitespace-nowrap gap-6">
                         <!-- Card 1: 📞 미답변 문의 대응 -->
                         <a href="/admin/inquiries" class="p-5 bg-slate-50 hover:bg-amber-50/50 border border-slate-100 hover:border-amber-100 rounded-2xl transition-all duration-300 group text-left flex flex-col justify-between min-h-[140px] relative overflow-hidden">
                             <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-amber-100/10 rounded-full blur-xl group-hover:bg-amber-100/20 transition-all"></div>
@@ -194,7 +207,7 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-3 whitespace-nowrap gap-6">
                         <!-- 컨트롤 2: 시간/위치 가중치 분석 스위치 & 실시간 정확도 결합 -->
                         <div class="p-5 bg-blue-50/40 border border-blue-100/80 rounded-2xl flex flex-col justify-between relative overflow-hidden">
                             <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-blue-100/30 rounded-full blur-xl"></div>
@@ -305,7 +318,7 @@
                 </div>
 
                 <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="grid grid-cols-4 gap-6">
                     <!-- Card 1: Users -->
                     <a href="/admin/users" class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                         <div class="flex items-center justify-between mb-4">

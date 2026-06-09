@@ -27,7 +27,7 @@
     <button class="btn btn-primary" onclick="savePoster('pdf')">PDF 저장</button>
   </div>
 </header>
-<div class="main-container">
+<div class="main-container tab-edit">
   <aside class="side-panel">
     <div class="panel-header"><h3>상세 정보 입력</h3>
       <p>전단지의 내용을 실시간으로 편집하세요.</p></div>
@@ -203,6 +203,11 @@
 <div id="custom-context-menu" class="context-menu">
   <div onclick="deleteSelectedElement()">🗑️ 이 요소 삭제하기</div>
 </div>
+<div class="mobile-tabs-container">
+  <button class="mobile-tab-btn active" onclick="switchFlyerTab('edit')">✏️ 정보 입력</button>
+  <button class="mobile-tab-btn" onclick="switchFlyerTab('preview')">👁️ 전단지 보기</button>
+</div>
+
 <script th:src="@{/js/lost-report.js}"></script>
 </body>
 </html>

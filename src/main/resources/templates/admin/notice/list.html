@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin_base :: setAdminContent(~{::content}, 'notice')}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin_base :: setAdminContent(~{::content}, 'notice')}" th:with="title='공지사항 관리'">
 <th:block th:fragment="content">
 
     <div class="notice-container max-w-5xl mx-auto">
@@ -66,12 +66,12 @@
         </div>
 
         <!-- 하단 영역: 페이징 바 및 관리자용 등록 버튼 분기 -->
-        <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="mt-6 flex flex-row items-center justify-between gap-4">
             
             <!-- 관리자용 등록버튼 -->
-            <div class="w-full sm:w-auto order-2 sm:order-1">
+            <div class="w-auto order-2 sm:order-1">
                 <a th:href="@{/admin/notice/new}"
-                   class="w-full sm:w-auto inline-flex justify-center items-center px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-colors shadow-sm">
+                   class="w-auto inline-flex justify-center items-center px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-colors shadow-sm">
                     공지사항 등록
                 </a>
             </div>

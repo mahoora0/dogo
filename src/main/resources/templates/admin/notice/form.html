@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin_base :: setAdminContent(~{::content}, 'notice')}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin_base :: setAdminContent(~{::content}, 'notice')}" th:with="title='공지사항 관리'">
 <th:block th:fragment="content">
 
     <div class="notice-form-container max-w-4xl mx-auto">

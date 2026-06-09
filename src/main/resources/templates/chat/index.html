@@ -49,6 +49,11 @@
             <div class="chat-main">
                 <div id="chat-header" class="chat-header hidden">
                     <div class="flex items-center gap-3">
+                        <button type="button" class="chat-back-btn" onclick="backToRoomList()" aria-label="채팅 목록으로 돌아가기">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                            </svg>
+                        </button>
                         <div>
                             <h3 id="current-room-name" class="font-bold text-slate-800">게시글 제목</h3>
                             <p class="text-[11px] text-slate-400">최근 접속: 오늘 오전 9:25</p>
@@ -316,7 +321,18 @@
                 });
             }
 
+            function backToRoomList() {
+                const wrapper = document.querySelector('.chat-wrapper');
+                if (wrapper) {
+                    wrapper.classList.remove('room-active');
+                }
+            }
+
             function selectRoom(roomId) {
+                const wrapper = document.querySelector('.chat-wrapper');
+                if (wrapper) {
+                    wrapper.classList.add('room-active');
+                }
                 if (currentRoomId !== null && currentRoomId != roomId) {
                     clearPendingImages();
                     dragDepth = 0;
