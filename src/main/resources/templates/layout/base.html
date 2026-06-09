@@ -3,13 +3,26 @@
 <th:block th:fragment="setContent(content)">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=1280">
     <title>DOGO 찾기 서비스</title>
     <script type="text/javascript"
             src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2b25620b9f4f16cf99df871475b41e4&libraries=services&autoload=false"></script>
     <script th:src="@{/js/common.js}"></script>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/areaList.css}">
+    <script>
+      tailwind.config = {
+        theme: {
+          screens: {
+            'sm': '0px',
+            'md': '0px',
+            'lg': '0px',
+            'xl': '0px',
+            '2xl': '0px',
+          }
+        }
+      }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script th:src="@{/js/ui-dialog.js}"></script>
@@ -292,6 +305,13 @@
             </form>
           </th:block>
         </div>
+
+        <!-- Hamburger Button -->
+        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="메뉴 열기">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -499,46 +519,126 @@
       </script>
     </th:block>
 
-    <!-- Mobile Dropdown Navigation Toggle Helper Script -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-          const category = item.querySelector('.nav-category');
-          if (category) {
-            category.addEventListener('click', function(e) {
-              if (window.innerWidth <= 820) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const isActive = item.classList.contains('mobile-active');
-                
-                navItems.forEach(otherItem => {
-                  otherItem.classList.remove('mobile-active');
-                });
-                
-                if (!isActive) {
-                  item.classList.add('mobile-active');
-                }
-              }
-            });
-          }
-          
-          const dropdown = item.querySelector('.dropdown-menu');
-          if (dropdown) {
-            dropdown.addEventListener('click', function(e) {
-              e.stopPropagation();
-            });
-          }
-        });
+    <!-- Mobile Drawer Menu -->
+    <div id="mobileDrawer" class="mobile-drawer-overlay">
+      <div class="mobile-drawer-content">
+        <div class="mobile-drawer-header">
+          <span class="mobile-drawer-title">메뉴</span>
+          <button id="mobileDrawerClose" class="mobile-drawer-close" aria-label="메뉴 닫기">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
         
-        document.addEventListener('click', function() {
-          navItems.forEach(item => {
-            item.classList.remove('mobile-active');
-          });
-        });
-      });
-    </script>
+        <div class="mobile-drawer-body">
+          <!-- User Profile info / Login links -->
+          <div class="mobile-drawer-user-section">
+            <th:block sec:authorize="isAnonymous()">
+              <a th:href="@{/login}" class="mobile-user-btn login-btn">로그인</a>
+              <a th:href="@{/join}" class="mobile-user-btn join-btn">회원가입</a>
+            </th:block>
+            <th:block sec:authorize="isAuthenticated()">
+              <div class="mobile-user-profile">
+                <img th:if="${#authentication.principal.user.profileImageUrl != null}"
+                     th:src="${#authentication.principal.user.profileImageUrl}"
+                     referrerpolicy="no-referrer"
+                     class="mobile-user-avatar">
+                <span th:unless="${#authentication.principal.user.profileImageUrl != null}" class="mobile-user-avatar-placeholder">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6Zm-7 9a7 7 0 1114 0H3Z" clip-rule="evenodd"/>
+                  </svg>
+                </span>
+                <div class="mobile-user-info">
+                  <span class="mobile-user-name" sec:authentication="principal.user.nickname">닉네임</span>
+                  <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="mobile-my-page-link">마이페이지</a>
+                </div>
+              </div>
+              <form th:action="@{/logout}" method="post" class="mt-4">
+                <button type="submit" class="mobile-logout-btn">로그아웃</button>
+              </form>
+            </th:block>
+          </div>
+          
+          <!-- Navigation Menu Categories -->
+          <div class="mobile-drawer-nav">
+            <!-- 1. 분실물 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>분실물</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a th:href="@{/lost-items}">분실물 검색</a>
+                <a th:href="@{/lost-items/new}">분실물 등록</a>
+              </div>
+            </div>
+            
+            <!-- 2. 습득물 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>습득물</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a th:href="@{/found-items}">습득물 검색</a>
+                <a th:href="@{/found-items/new}">습득물 등록</a>
+                <a th:href="@{/areas/list}">유실물센터</a>
+              </div>
+            </div>
+            
+            <!-- 3. 실종자 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>실종자</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a th:href="@{/missing-alerts}">실종 경보</a>
+                <a th:href="@{/missing-persons}">실종자 검색</a>
+                <a th:href="@{/missing-persons/new}">실종자 제보</a>
+              </div>
+            </div>
+            
+            <!-- 4. 실종동물 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>실종동물</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a th:href="@{/animal-reports}">실종동물 검색</a>
+                <a th:href="@{/animal-reports/new}">실종동물 제보</a>
+              </div>
+            </div>
+            
+            <!-- 5. 고객지원 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>고객지원</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a th:href="@{/faq}">자주묻는질문</a>
+                <a th:href="@{/inquiry}">문의하기</a>
+                <a th:href="@{/notice}">공지사항</a>
+                <a th:href="@{/guide}">이용가이드</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </th:block>
 </html>

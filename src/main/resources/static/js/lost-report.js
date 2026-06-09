@@ -1147,4 +1147,21 @@ function setCanvasZoom(factor) {
 
 function adjustCanvasZoom(amount) {
   setCanvasZoom(currentCanvasZoom + amount);
-}
+}
+
+function switchFlyerTab(tab) {
+  const container = document.querySelector('.main-container');
+  const buttons = document.querySelectorAll('.mobile-tab-btn');
+  if (tab === 'edit') {
+      container.classList.remove('tab-preview');
+      container.classList.add('tab-edit');
+      if (buttons[0]) buttons[0].classList.add('active');
+      if (buttons[1]) buttons[1].classList.remove('active');
+  } else {
+      container.classList.remove('tab-edit');
+      container.classList.add('tab-preview');
+      if (buttons[0]) buttons[0].classList.remove('active');
+      if (buttons[1]) buttons[1].classList.add('active');
+  }
+}
+

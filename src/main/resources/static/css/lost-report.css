@@ -755,6 +755,103 @@ input:checked + .slider:before {
 
 /* 말풍선 선택 및 호버 상태 */
 .element.feature-bubble.selected {
-    border: 1.5px solid #2563eb !important;
+    border: 1px solid #2563eb !important;
     box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2) !important;
-}
+}
+
+/* Mobile Tab Navigation for Flyer Editor */
+.mobile-tabs-container {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    z-index: 1000;
+    grid-template-columns: 1fr 1fr;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-tab-btn {
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.mobile-tab-btn.active {
+    color: #8b5cf6;
+    border-bottom: 3.5px solid #8b5cf6;
+    background-color: #faf5ff;
+}
+
+@media (max-width: 0px) {
+    .header {
+        padding: 0 16px;
+    }
+    
+    .nav-buttons .header-toggle-container {
+        display: none !important;
+    }
+    
+    .nav-buttons {
+        gap: 8px !important;
+    }
+    
+    .nav-buttons button {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+
+    .main-container {
+        flex-direction: column !important;
+        height: calc(100vh - 116px) !important;
+    }
+    
+    .side-panel {
+        width: 100% !important;
+        min-width: 100% !important;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .canvas-container {
+        width: 100% !important;
+        padding: 20px 10px !important;
+        background: #1e293b;
+        overflow: auto;
+    }
+    
+    .tab-edit .side-panel {
+        display: flex !important;
+    }
+    
+    .tab-edit .canvas-container {
+        display: none !important;
+    }
+    
+    .tab-preview .side-panel {
+        display: none !important;
+    }
+    
+    .tab-preview .canvas-container {
+        display: flex !important;
+    }
+    
+    .mobile-tabs-container {
+        display: grid;
+    }
+    
+    .canvas {
+        margin: 0 auto;
+    }
+}
+
