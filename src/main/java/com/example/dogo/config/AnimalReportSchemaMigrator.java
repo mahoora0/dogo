@@ -45,7 +45,28 @@ public class AnimalReportSchemaMigrator implements ApplicationRunner {
 		addColumnIfMissing("CARE_CONTACT_PHONE", "CARE_CONTACT_PHONE VARCHAR(100)");
 		addIndexIfMissing("UK_ANIMAL_PUBLIC_API", "CREATE UNIQUE INDEX UK_ANIMAL_PUBLIC_API ON " + TABLE_NAME + " (API_PROVIDER, EXTERNAL_ID)");
 		addIndexIfMissing("IDX_ANIMAL_REPORT_SOURCE", "CREATE INDEX IDX_ANIMAL_REPORT_SOURCE ON " + TABLE_NAME + " (SOURCE_TYPE, EVENT_DATE)");
+		migrateReportTypeConstraint();
 		migrateExistingProtectionRecords();
+	}
+
+	private void migrateReportTypeConstraint() {
+		// MySQL 8.0.16+ uses DROP CHECK; H2 / MySQL 8.0.19+ use DROP CONSTRAINT. Try both.
+		try {
+			jdbcTemplate.execute("ALTER TABLE " + TABLE_NAME + " DROP CONSTRAINT CK_ANIMAL_REPORT_TYPE");
+		} catch (Exception ignored) {
+			try {
+				jdbcTemplate.execute("ALTER TABLE " + TABLE_NAME + " DROP CHECK CK_ANIMAL_REPORT_TYPE");
+			} catch (Exception alsoIgnored) {
+				// Constraint may not exist yet (fresh schema)
+			}
+		}
+		try {
+			jdbcTemplate.execute("ALTER TABLE " + TABLE_NAME
+					+ " ADD CONSTRAINT CK_ANIMAL_REPORT_TYPE CHECK (REPORT_TYPE IN "
+					+ "('MISSING', 'SIGHTING', 'PROTECTING', 'RETURNED', 'TRANSFERRED'))");
+		} catch (Exception ignored) {
+			// Constraint already up to date or DB does not enforce check constraints
+		}
 	}
 
 	private void makeUserNoNullable() {
