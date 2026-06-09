@@ -46,6 +46,14 @@ public class AdminDataInitializer implements CommandLineRunner {
             log.debug("USERS 테이블에 REPORT_COUNT_ADJUSTMENT 컬럼이 이미 존재하거나 추가 과정이 건너뛰어졌습니다.");
         }
 
+        // USERS 테이블에서 불필요해진 PHONE 컬럼 제거 시도
+        try {
+            jdbcTemplate.execute("ALTER TABLE USERS DROP COLUMN PHONE");
+            log.info("USERS 테이블에서 PHONE 컬럼을 성공적으로 제거하였습니다.");
+        } catch (Exception e) {
+            log.debug("USERS 테이블에서 PHONE 컬럼이 존재하지 않거나 이미 제거되었습니다.");
+        }
+
         // 더미 유저 생성 호출 (Early return에 막히지 않도록 이곳에서 호출)
         seedDummyUsers();
 
@@ -68,7 +76,6 @@ public class AdminDataInitializer implements CommandLineRunner {
                 passwordEncoder.encode(adminPassword),
                 "admin@dogo.com",
                 "최고관리자",
-                "010-0000-0000",
                 null
             );
         
@@ -96,7 +103,6 @@ public class AdminDataInitializer implements CommandLineRunner {
                 passwordEncoder.encode(password),
                 email,
                 nickname,
-                "010-0000-0000",
                 null
             );
             userRepository.save(user);

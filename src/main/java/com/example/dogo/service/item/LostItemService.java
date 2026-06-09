@@ -491,7 +491,7 @@ public class LostItemService {
 
 	private User getOrCreateDevUser() {
 		return userRepository.findByEmail(DEV_USER_EMAIL)
-				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발용 사용자", "010-0000-0000")));
+				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발용 사용자")));
 	}
 
 	private LocalDateTime defaultLostAt(LocalDateTime lostAt) {

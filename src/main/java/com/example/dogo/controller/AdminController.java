@@ -492,14 +492,11 @@ public class AdminController {
                     predicates.add(cb.like(root.get("nickname"), searchKeyword));
                 } else if ("email".equals(searchType)) {
                     predicates.add(cb.like(root.get("email"), searchKeyword));
-                } else if ("phone".equals(searchType)) {
-                    predicates.add(cb.like(root.get("phone"), searchKeyword));
                 } else {
                     predicates.add(cb.or(
                         cb.like(root.get("loginId"), searchKeyword),
                         cb.like(root.get("nickname"), searchKeyword),
-                        cb.like(root.get("email"), searchKeyword),
-                        cb.like(root.get("phone"), searchKeyword)
+                        cb.like(root.get("email"), searchKeyword)
                     ));
                 }
             }

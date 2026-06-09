@@ -27,10 +27,7 @@ public class SmsController {
             return ResponseEntity.badRequest().body("연락처를 입력해주세요.");
         }
 
-        // Check if phone already exists
-        if (userRepository.existsByPhone(phone)) {
-            return ResponseEntity.badRequest().body("이미 등록된 연락처입니다.");
-        }
+        // Check if phone already exists (Removed because phone is no longer collected on users)
 
         try {
             smsService.sendVerificationCode(phone);

@@ -35,9 +35,6 @@ public class User {
 	@Column(name = "NICKNAME")
 	private String nickname;
 
-	@Column(name = "PHONE")
-	private String phone;
-
 	@Column(name = "PROFILE_IMAGE_URL")
 	private String profileImageUrl;
 
@@ -56,19 +53,17 @@ public class User {
 	@Column(name = "REPORT_COUNT_ADJUSTMENT", nullable = false)
 	private int reportCountAdjustment = 0;
 
-	public User(String email, String nickname, String phone) {
+	public User(String email, String nickname) {
 		this.email = email;
 		this.nickname = nickname;
-		this.phone = phone;
 		this.regDate = java.time.LocalDateTime.now();
 	}
 
-	public User(String loginId, String password, String email, String nickname, String phone, String profileImageUrl) {
+	public User(String loginId, String password, String email, String nickname, String profileImageUrl) {
 		this.loginId = loginId;
 		this.password = password;
 		this.email = email;
 		this.nickname = nickname;
-		this.phone = phone;
 		this.profileImageUrl = profileImageUrl;
 		this.regDate = java.time.LocalDateTime.now();
 	}

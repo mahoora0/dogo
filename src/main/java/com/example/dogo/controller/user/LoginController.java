@@ -554,7 +554,6 @@ public class LoginController {
             encodedPassword,
             userJoinDto.getEmail(),
             userJoinDto.getNickname(),
-            userJoinDto.getPhone(),
             profileImageUrl
     );
     userRepository.save(newUser);

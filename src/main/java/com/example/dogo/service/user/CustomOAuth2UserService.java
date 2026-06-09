@@ -82,8 +82,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             }
 
             if (finalUser == null) {
-                // 완전히 새로운 유저 (loginId, password, phone은 null)
-                finalUser = new com.example.dogo.entity.user.User(null, null, email, nickname, null, profileImageUrl);
+                // 완전히 새로운 유저 (loginId, password는 null)
+                finalUser = new com.example.dogo.entity.user.User(null, null, email, nickname, profileImageUrl);
                 userRepository.save(finalUser);
             }
             user = finalUser;

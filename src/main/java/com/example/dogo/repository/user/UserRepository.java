@@ -12,7 +12,6 @@ public interface UserRepository extends JpaRepository<User, Long>, org.springfra
 
 	Optional<User> findByEmail(String email);
 	boolean existsByEmail(String email);
-	boolean existsByPhone(String phone);
 	Optional<User> findByLoginId(String loginId);
 	boolean existsByNickname(String nickname);
 	boolean existsByLoginId(String loginId);
