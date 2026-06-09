@@ -183,7 +183,7 @@ public class ItemMatchScorer {
 	}
 
 	private boolean isOpenFoundStatus(String status) {
-		return status == null || status.equals("KEEPING");
+		return status == null || status.equals("KEEPING") || status.equals("TRANSFERRED");
 	}
 
 	private boolean hasConflictingCategory(LostItem lost, FoundItem found) {
