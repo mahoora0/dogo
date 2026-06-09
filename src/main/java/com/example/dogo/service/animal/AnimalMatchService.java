@@ -42,21 +42,25 @@ public class AnimalMatchService {
 
 	@Transactional
 	public void matchForReport(AnimalReport report) {
-		clearMatchesForReport(report.getReportId());
-		if (report.getReportType().equals("MISSING")) {
-			matchMissing(report);
+		MatchRunResult result;
+		if ("MISSING".equals(report.getReportType())) {
+			result = matchMissing(report);
 		} else {
-			matchSighting(report);
+			result = matchSighting(report);
 		}
-	}
-
-	private void clearMatchesForReport(Long reportId) {
-		matchRepository.deleteByMissingReport_ReportId(reportId);
-		matchRepository.deleteBySightingReport_ReportId(reportId);
+		if (!result.replaceExisting()) {
+			return;
+		}
+		if ("MISSING".equals(report.getReportType())) {
+			matchRepository.deleteByMissingReport_ReportId(report.getReportId());
+		} else {
+			matchRepository.deleteBySightingReport_ReportId(report.getReportId());
+		}
+		matchRepository.saveAll(result.matches());
 		matchRepository.flush();
 	}
 
-	private void matchMissing(AnimalReport missing) {
+	private MatchRunResult matchMissing(AnimalReport missing) {
 		LocalDate from = missing.getEventDate().minusDays(DATE_RANGE_DAYS);
 		LocalDate to = missing.getEventDate().plusDays(DATE_RANGE_DAYS);
 
@@ -65,20 +69,25 @@ public class AnimalMatchService {
 
 		if (sightings.isEmpty()) {
 			log.info("[pet-match] 후보 없음: missingId={}", missing.getReportId());
-			return;
+			return MatchRunResult.replaceWith(List.of());
 		}
 
 		Map<Long, float[]> queryVectors = embeddingService.loadVectors(List.of(missing.getReportId()));
 		float[] queryVec = queryVectors.get(missing.getReportId());
 		if (queryVec == null) {
 			log.info("[pet-match] 쿼리 벡터 없음 (이미지 미등록), 스킵: missingId={}", missing.getReportId());
-			return;
+			return MatchRunResult.keepExisting();
 		}
 
 		List<Long> sightingIds = sightings.stream().map(AnimalReport::getReportId).toList();
 		Map<Long, float[]> candidateVectors = embeddingService.loadVectors(sightingIds);
 
-		sightings.stream()
+		if (candidateVectors.isEmpty()) {
+			log.info("[pet-match] 후보 벡터 없음, 기존 매칭 유지: missingId={}", missing.getReportId());
+			return MatchRunResult.keepExisting();
+		}
+
+		List<AnimalReportMatch> matches = sightings.stream()
 				.filter(s -> candidateVectors.containsKey(s.getReportId()))
 				.map(s -> {
 					float cosine = VectorUtils.cosineSimilarity(queryVec, candidateVectors.get(s.getReportId()));
@@ -88,12 +97,14 @@ public class AnimalMatchService {
 				.filter(sc -> sc.score() >= MIN_SCORE)
 				.sorted((a, b) -> Double.compare(b.score(), a.score()))
 				.limit(MAX_CANDIDATES)
-				.forEach(sc -> saveMatch(missing, sc.report(), sc.score()));
+				.map(sc -> buildMatch(missing, sc.report(), sc.score()))
+				.toList();
 
-		log.info("[pet-match] 매칭 완료: missingId={}", missing.getReportId());
+		log.info("[pet-match] 매칭 완료: missingId={}, 후보={}건", missing.getReportId(), matches.size());
+		return MatchRunResult.replaceWith(matches);
 	}
 
-	private void matchSighting(AnimalReport sighting) {
+	private MatchRunResult matchSighting(AnimalReport sighting) {
 		LocalDate from = sighting.getEventDate().minusDays(DATE_RANGE_DAYS);
 		LocalDate to = sighting.getEventDate().plusDays(DATE_RANGE_DAYS);
 
@@ -102,20 +113,25 @@ public class AnimalMatchService {
 
 		if (missings.isEmpty()) {
 			log.info("[pet-match] 후보 없음: sightingId={}", sighting.getReportId());
-			return;
+			return MatchRunResult.replaceWith(List.of());
 		}
 
 		Map<Long, float[]> queryVectors = embeddingService.loadVectors(List.of(sighting.getReportId()));
 		float[] queryVec = queryVectors.get(sighting.getReportId());
 		if (queryVec == null) {
 			log.info("[pet-match] 쿼리 벡터 없음 (이미지 미등록), 스킵: sightingId={}", sighting.getReportId());
-			return;
+			return MatchRunResult.keepExisting();
 		}
 
 		List<Long> missingIds = missings.stream().map(AnimalReport::getReportId).toList();
 		Map<Long, float[]> candidateVectors = embeddingService.loadVectors(missingIds);
 
-		missings.stream()
+		if (candidateVectors.isEmpty()) {
+			log.info("[pet-match] 후보 벡터 없음, 기존 매칭 유지: sightingId={}", sighting.getReportId());
+			return MatchRunResult.keepExisting();
+		}
+
+		List<AnimalReportMatch> matches = missings.stream()
 				.filter(m -> candidateVectors.containsKey(m.getReportId()))
 				.map(m -> {
 					float cosine = VectorUtils.cosineSimilarity(queryVec, candidateVectors.get(m.getReportId()));
@@ -125,16 +141,27 @@ public class AnimalMatchService {
 				.filter(sc -> sc.score() >= MIN_SCORE)
 				.sorted((a, b) -> Double.compare(b.score(), a.score()))
 				.limit(MAX_CANDIDATES)
-				.forEach(sc -> saveMatch(sc.report(), sighting, sc.score()));
+				.map(sc -> buildMatch(sc.report(), sighting, sc.score()))
+				.toList();
 
-		log.info("[pet-match] 매칭 완료: sightingId={}", sighting.getReportId());
+		log.info("[pet-match] 매칭 완료: sightingId={}, 후보={}건", sighting.getReportId(), matches.size());
+		return MatchRunResult.replaceWith(matches);
 	}
 
-	private void saveMatch(AnimalReport missing, AnimalReport sighting, double score) {
-		if (matchRepository.existsByMissingReportAndSightingReport(missing, sighting)) return;
+	private AnimalReportMatch buildMatch(AnimalReport missing, AnimalReport sighting, double score) {
 		BigDecimal finalScore = BigDecimal.valueOf(score).setScale(2, RoundingMode.HALF_UP);
-		matchRepository.save(new AnimalReportMatch(missing, sighting, finalScore, embeddingService.currentModelName()));
+		return new AnimalReportMatch(missing, sighting, finalScore, embeddingService.currentModelName());
 	}
 
 	private record ScoredCandidate(AnimalReport report, double score) {}
+
+	private record MatchRunResult(boolean replaceExisting, List<AnimalReportMatch> matches) {
+		static MatchRunResult keepExisting() {
+			return new MatchRunResult(false, List.of());
+		}
+
+		static MatchRunResult replaceWith(List<AnimalReportMatch> matches) {
+			return new MatchRunResult(true, matches);
+		}
+	}
 }

@@ -171,6 +171,18 @@ class ItemMatchScorerTest {
 	}
 
 	@Test
+	void scoreAllowsTransferredFoundItem() {
+		LostItem lost = lostItem("검정 지갑", "지갑", LocalDateTime.of(2026, 5, 10, 12, 0), "서울", "강남역");
+		FoundItem found = foundItem("검정 지갑", "지갑", LocalDateTime.of(2026, 5, 10, 13, 0), "서울", "강남역", "검정");
+		ReflectionTestUtils.setField(found, "status", "TRANSFERRED");
+
+		MatchScoreResult result = scorer.score(lost, found);
+
+		assertThat(result.eligible()).isTrue();
+		assertThat(result.totalScore()).isGreaterThanOrEqualTo(MatchTestNumbers.MIN_STORE_SCORE);
+	}
+
+	@Test
 	void scoreRejectsCompletedStatus() {
 		LostItem lost = lostItem("검정 지갑", "지갑", LocalDateTime.of(2026, 5, 10, 12, 0), "서울", "강남역");
 		FoundItem found = foundItem("검정 지갑", "지갑", LocalDateTime.of(2026, 5, 10, 13, 0), "서울", "강남역", "검정");
