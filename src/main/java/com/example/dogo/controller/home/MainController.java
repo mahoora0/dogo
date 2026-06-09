@@ -68,4 +68,9 @@ public class MainController {
     model.addAttribute("recentItems", recentItems);
     return "index";
   }
+
+  @GetMapping("/privacy")
+  public String privacyPage() {
+    return "user/privacy";
+  }
 }
