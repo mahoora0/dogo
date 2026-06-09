@@ -1,0 +1,865 @@
+
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1280">
+    <title>DOGO 찾기 서비스</title>
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2b25620b9f4f16cf99df871475b41e4&libraries=services&autoload=false"></script>
+    <script src="/js/common.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/areaList.css">
+    <script>
+      tailwind.config = {
+        theme: {
+          screens: {
+            'sm': '0px',
+            'md': '0px',
+            'lg': '0px',
+            'xl': '0px',
+            '2xl': '0px',
+          },
+          extend: {
+            fontFamily: {
+              sans: ['Pretendard', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/ui-dialog.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  </head>
+
+  <body>
+    <header class="navbar">
+      <div class="header-container">
+        <div class="logo">
+          <a href="/" class="logo-link">
+            <img id="logoImg" src="/images/logo.png" alt="DOGO 로고" onerror="hideLogo()">
+            <span id="logoText" style="display: none;">DOGO</span>
+          </a>
+        </div>
+
+        <nav class="top-nav">
+          <!-- 1. 분실물 -->
+          <div class="nav-item">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+              </svg>
+              <span>분실물</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">분실물</div>
+              <a href="/lost-items">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+                </svg>
+                <span>분실물 검색</span>
+              </a>
+              <a href="/lost-items/new">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>분실물 등록</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 2. 습득물 -->
+          <div class="nav-item">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-green-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                <polyline stroke-linecap="round" stroke-linejoin="round" points="3.27 6.96 12 12.01 20.73 6.96" />
+                <line stroke-linecap="round" stroke-linejoin="round" x1="12" y1="22.08" x2="12" y2="12" />
+              </svg>
+              <span>습득물</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">습득물</div>
+              <a href="/found-items">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+                </svg>
+                <span>습득물 검색</span>
+              </a>
+              <a href="/found-items/new">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>습득물 등록</span>
+              </a>
+              <a href="/areas/list">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                </svg>
+                <span>유실물센터</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 3. 실종자 -->
+          <div class="nav-item">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-red-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              <span>실종자</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">실종자</div>
+              <a href="/missing-alerts">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
+                </svg>
+                <span>실종 경보</span>
+              </a>
+              <a href="/missing-persons">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+                </svg>
+                <span>실종자 검색</span>
+              </a>
+              <a href="/missing-persons/new">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>실종자 제보</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 4. 실종동물 -->
+          <div class="nav-item">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-orange-500">
+                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+              </svg>
+              <span>실종동물</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">실종동물</div>
+              <a href="/animal-reports">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-orange-500">
+                  <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+                </svg>
+                <span>실종동물 검색</span>
+              </a>
+              <a href="/animal-reports/new">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-orange-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>실종동물 제보</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 5. 고객지원 -->
+          <div class="nav-item">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-slate-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 5.25h.008v.008H12v-.008z" />
+              </svg>
+              <span>고객지원</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">고객지원</div>
+              <a href="/faq">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 5.25h.008v.008H12v-.008z" />
+                </svg>
+                <span>자주묻는질문</span>
+              </a>
+              <a href="/inquiry">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+                <span>문의하기</span>
+              </a>
+              <a href="/notice">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                </svg>
+                <span>공지사항</span>
+              </a>
+              <a href="/guide">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-16.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-16.25v14.25" />
+                </svg>
+                <span>이용가이드</span>
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="nav-links">
+          
+            <a href="/login" class="nav-link">로그인</a>
+            <a href="/join" class="nav-link">회원가입</a>
+          
+
+          <!-- 로그인 된 상태 -->
+          
+        </div>
+
+        <!-- Hamburger Button -->
+        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="메뉴 열기">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="main-layout main-layout--full-width">
+      <main class="content">
+        
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] items-start">
+        <!-- Image Gallery Section -->
+        <div class="flex min-w-0 flex-col gap-4">
+        <!-- 이미지 갤러리 (Swiper) -->
+        <div class="dogo-gallery flex min-w-0 flex-col gap-4" data-fancybox-group="found-gallery">
+          <div class="relative min-w-0 overflow-hidden rounded-3xl bg-slate-50 border border-slate-100 shadow-inner">
+            <div class="absolute left-4 top-4 z-20 rounded-full bg-slate-950/70 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
+              <span class="gallery-current">1</span> / <span>1</span>
+            </div>
+
+            <div class="swiper gallery-main relative z-10 w-full min-w-0">
+              <div class="swiper-wrapper">
+                <a href="https://minwon24.police.go.kr/lost112/find/getOpenapiAttachFileImage/F2026060800000244/1/C2026060800223815/1.do" data-fancybox="found-gallery"
+                   class="swiper-slide group block">
+                  <img src="https://minwon24.police.go.kr/lost112/find/getOpenapiAttachFileImage/F2026060800000244/1/C2026060800223815/1.do" alt="대표 이미지"
+                       class="aspect-square h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] sm:aspect-[4/3] lg:aspect-auto lg:h-[500px]">
+                </a>
+              </div>
+            </div>
+
+            
+            
+          </div>
+
+          
+        </div>
+
+        <!-- 이미지 없을 때 -->
+        
+
+        <!-- Description Box (Desktop) -->
+        <div class="hidden rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100 lg:block">
+          <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="inline-block w-1.5 h-4 rounded-full bg-emerald-600"></span>상세 설명
+          </h2>
+          <div class="rounded-xl bg-white p-4 font-semibold leading-7 text-slate-800 border border-slate-100 shadow-sm text-sm whitespace-pre-line">내용
+
+ 세종남부경찰서에서는 [2026.06.08]  [실내화 가방(브라운(갈)색)]을 습득/보관 하였습니다.
+분실하신 분께서는 본인을 증명할 수 있는 서류를 지참하시어 보관중으로 기재되어 있는 기관에
+방문하시어 보관물품을 수령하시기 바랍니다.
+
+특이사항 : 없음</div>
+        </div>
+      </div>
+
+      <!-- Detail Info Section -->
+      <div class="flex flex-col gap-6">
+        <div>
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <div class="mb-4 flex flex-wrap items-center gap-2">
+                <span class="rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset shadow-sm  bg-slate-100 text-slate-700 ring-slate-200">연계</span>
+                
+                <span class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">가방</span>
+              </div>
+              <h1 class="text-3xl font-extrabold text-slate-900 leading-tight">실내화 가방(브라운(갈)색)을 습득하여 보관하고 있습니다.</h1>
+            </div>
+
+            <!-- More actions (Kebab Menu) -->
+            
+          </div>
+          
+          <div class="mt-4 flex items-center gap-2 text-sm font-medium text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>2026년 06월 08일 01:00</span>
+            <span class="mx-1 text-slate-300">•</span>
+            <span>세종</span>
+          </div>
+          
+          
+        </div>
+
+        <!-- Description Box -->
+        <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100 lg:hidden">
+          <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="inline-block w-1.5 h-4 rounded-full bg-emerald-600"></span>상세 설명
+          </h2>
+          <div class="rounded-xl bg-white p-4 font-semibold leading-7 text-slate-800 border border-slate-100 shadow-sm text-sm whitespace-pre-line">내용
+
+ 세종남부경찰서에서는 [2026.06.08]  [실내화 가방(브라운(갈)색)]을 습득/보관 하였습니다.
+분실하신 분께서는 본인을 증명할 수 있는 서류를 지참하시어 보관중으로 기재되어 있는 기관에
+방문하시어 보관물품을 수령하시기 바랍니다.
+
+특이사항 : 없음</div>
+        </div>
+
+        <!-- Detailed Spec List -->
+        <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100">
+          <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="inline-block w-1.5 h-4 rounded-full bg-emerald-600"></span>상세 정보
+          </h2>
+          <dl class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">물품명</dt>
+              <dd class="font-bold text-sm text-slate-900">실내화 가방</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">습득 지역</dt>
+              <dd class="font-bold text-sm text-slate-900">세종</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">물품종류</dt>
+              <dd class="font-bold text-sm text-slate-900">가방</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">습득 장소</dt>
+              <dd class="font-bold text-sm text-slate-900">노상</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">보관 장소</dt>
+              <dd class="font-bold text-sm text-slate-900">
+                <span data-place="세종남부경찰서"
+                      onclick="openPlaceModal(this.dataset.place)"
+                      class="font-bold text-blue-600 cursor-pointer hover:underline">세종남부경찰서</span>
+                
+              </dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">색상</dt>
+              <dd class="font-bold text-sm text-slate-900">브라운(갈)</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">습득 일시</dt>
+              <dd class="font-bold text-sm text-slate-900">2026년 06월 08일 01:00</dd>
+            </div>
+            <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3 col-span-2">
+              <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">연락처</dt>
+              <dd class="font-bold text-sm text-slate-900">세종남부경찰서 / 044-320-8747</dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Sticky Bottom CTA (Mobile) / Regular CTA (Desktop) -->
+        <div class="mt-4 flex flex-col gap-3">
+          
+          
+          
+          
+
+          
+          <div class="flex gap-3">
+            
+            
+            <a href="/found-items" class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
+              목록
+            </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <!-- AI Match Section -->
+    <div class="mt-16">
+      <!-- 헤더 -->
+      <div class="mb-6 flex items-end justify-between">
+        <div>
+          <div class="mb-2 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+            AI 자동 매칭
+          </div>
+          <h2 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+            <span class="inline-block w-1.5 h-5 rounded-full bg-emerald-600"></span>이 물건을 찾는 분실 신고
+          </h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="match-count" class="text-sm font-medium text-slate-500"></span>
+          <button id="rematch-btn"
+                  onclick="runRematch(this)"
+                  class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            매칭 실행
+          </button>
+        </div>
+      </div>
+
+      <!-- 로딩 배너 -->
+      <div id="match-loading" class="mb-4 hidden items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+        <svg class="h-4 w-4 animate-spin text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+        </svg>
+        <span class="text-sm font-medium text-amber-700">AI가 유사한 분실 신고를 분석 중입니다...</span>
+      </div>
+
+      <!-- 매칭 결과 영역 -->
+      <div id="match-results">
+        <!-- SSE 대기 중: 분석 중 애니메이션 -->
+        
+
+        <!-- 결과 있음 -->
+        
+
+        <!-- 결과 없음 (SSE 대기 중 아닐 때) -->
+        <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50/50 px-6 py-16 text-center backdrop-blur-sm">
+          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <p class="text-base font-bold text-slate-600">아직 매칭된 분실 신고가 없습니다</p>
+          <p class="mt-2 text-sm text-slate-500">비슷한 분실 신고가 등록되면 시스템이 자동으로 추천해 드립니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Removed Custom Modal HTML -->
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+    <script src="/js/gallery.js"></script>
+    <script>
+      /* 게시글 등록 직후 백그라운드 매칭 결과를 실시간으로 수신 */
+      (function() {
+        var inProgress = false;
+        if (!inProgress) return;
+        var id = window.location.pathname.split('/').pop();
+        var es = new EventSource('/api/found-items/' + id + '/stream');
+        es.addEventListener('match-ready', function(e) {
+          es.close();
+          document.getElementById('match-results').innerHTML = e.data;
+          var matched = document.querySelectorAll('#match-results a').length;
+          document.getElementById('match-count').textContent = matched > 0 ? matched + '건의 매칭' : '';
+          history.replaceState(null, '', window.location.pathname);
+        });
+        es.onerror = function() {
+          es.close();
+        };
+      })();
+
+      const REMATCH_URL = '/api/found-items/' + window.location.pathname.split('/').pop() + '/rematch';
+      const NO_IMG_SVG = '<div class="flex h-full w-full items-center justify-center text-slate-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>';
+      const BTN_DEFAULT_HTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> 매칭 실행';
+      const BTN_LOADING_HTML = '<svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> 분석 중...';
+
+      function esc(s) {
+        if (!s) return '';
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function buildMatchCard(m) {
+        const href = m.type === 'lost' ? '/lost-items/' + m.id : '/found-items/' + m.id;
+        const imgHtml = m.imageUrl ? '<img src="' + esc(m.imageUrl) + '" alt="" class="h-full w-full object-cover transition-transform group-hover:scale-110">' : NO_IMG_SVG;
+        const reasons = m.matchReasons || [];
+        const reasonTags = reasons.slice(0, 2).map(r => '<span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">' + esc(r) + '</span>').join('') +
+          (reasons.length > 2 ? '<span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500">...</span>' : '');
+        return '<a href="' + href + '" class="group block rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-md">' +
+          '<div class="flex gap-4">' +
+          '<div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-slate-100">' + imgHtml +
+          '<div class="absolute bottom-1 right-1 flex h-7 items-center justify-center rounded-lg bg-slate-900 px-2 text-xs font-bold text-white shadow-sm">' + Math.round(m.score || 0) + '점</div></div>' +
+          '<div class="flex flex-col justify-center">' +
+          '<p class="line-clamp-1 text-base font-bold text-slate-900">' + esc(m.name || m.title || '') + '</p>' +
+          (m.place ? '<p class="mt-1 truncate text-xs text-slate-500">' + esc(m.place) + '</p>' : '') +
+          (reasons.length > 0 ? '<div class="mt-2 flex flex-wrap gap-1">' + reasonTags + '</div>' : '') +
+          '</div></div></a>';
+      }
+
+      function buildResults(matches) {
+        if (!matches.length) {
+          return '<div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50/50 px-6 py-16 text-center backdrop-blur-sm">' +
+            '<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>' +
+            '<p class="text-base font-bold text-slate-600">매칭된 분실 신고가 없습니다</p>' +
+            '<p class="mt-2 text-sm text-slate-500">비슷한 분실 신고가 등록되면 시스템이 자동으로 추천해 드립니다.</p></div>';
+        }
+        return '<div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">' +
+          '<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">' + matches.map(buildMatchCard).join('') + '</div></div>';
+      }
+
+      function runRematch(btn) {
+        const loading = document.getElementById('match-loading');
+        const results = document.getElementById('match-results');
+        const countEl = document.getElementById('match-count');
+        const errEl = document.getElementById('match-error');
+        if (errEl) errEl.remove();
+
+        btn.disabled = true;
+        btn.innerHTML = BTN_LOADING_HTML;
+        loading.classList.remove('hidden');
+        loading.style.display = 'flex';
+
+        fetch(REMATCH_URL, { method: 'POST' })
+          .then(function(res) {
+            var ct = res.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) throw new Error('서버 오류가 발생했습니다. (' + res.status + ')');
+            if (!res.ok) return res.json().then(function(body) { throw new Error(body.error || '매칭 요청에 실패했습니다.'); });
+            return res.json();
+          })
+          .then(function(matches) {
+            countEl.textContent = matches.length > 0 ? matches.length + '건의 매칭' : '';
+            results.innerHTML = buildResults(matches);
+          })
+          .catch(function(err) {
+            const div = document.createElement('div');
+            div.id = 'match-error';
+            div.className = 'mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700';
+            div.textContent = err.message;
+            results.insertAdjacentElement('beforebegin', div);
+          })
+          .finally(function() {
+            loading.classList.add('hidden');
+            loading.style.display = '';
+            btn.disabled = false;
+            btn.innerHTML = BTN_DEFAULT_HTML;
+          });
+      }
+    </script>
+    <script>
+      (function () {
+        var openBtn = document.querySelector('[data-report-open]');
+        var modal = document.querySelector('[data-report-modal]');
+        var moreBtn = document.getElementById('moreMenuBtn');
+        var moreDropdown = document.getElementById('moreDropdown');
+        
+        // Kebab menu dropdown toggle
+        if (moreBtn && moreDropdown) {
+          moreBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            moreDropdown.classList.toggle('hidden');
+          });
+          document.addEventListener('click', function (e) {
+            if (!moreDropdown.classList.contains('hidden') && !moreDropdown.contains(e.target)) {
+              moreDropdown.classList.add('hidden');
+            }
+          });
+        }
+
+        // Report modal show/hide
+        if (!openBtn || !modal) return;
+        function open() {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+          if (moreDropdown) {
+            moreDropdown.classList.add('hidden');
+          }
+        }
+        function close() {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
+        openBtn.addEventListener('click', open);
+        modal.querySelectorAll('[data-report-close]').forEach(function (btn) { btn.addEventListener('click', close); });
+        modal.addEventListener('click', function (event) { if (event.target === modal) close(); });
+        document.addEventListener('keydown', function (event) { if (event.key === 'Escape') close(); });
+      })();
+    </script>
+    <div>
+  <div id="placeModal" class="fixed inset-0 z-50 hidden bg-black/50">
+    <div class="mx-auto mt-20 w-[700px] max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl relative">
+
+      <button onclick="closePlaceModal()"
+              class="absolute right-4 top-4 text-2xl text-slate-400 hover:text-slate-700 transition-colors">
+        ×
+      </button>
+
+      <h3 id="modalTitle" class="mb-4 text-lg font-bold pr-8"></h3>
+
+      <!-- 장소 선택 목록 (여러 결과가 있을 때 표시) -->
+      <div id="placeSelectPanel" class="hidden mb-4">
+        <p class="text-sm text-slate-500 mb-2">
+          <span class="font-semibold text-slate-700">동일한 이름의 장소</span>가 여러 개 검색되었습니다. 정확한 장소를 선택해 주세요.
+        </p>
+        <div id="placeSelectList" class="space-y-2 max-h-52 overflow-y-auto rounded-lg border border-slate-200 divide-y divide-slate-100">
+          <!-- JS로 동적 추가 -->
+        </div>
+      </div>
+
+      <div id="modalMap" style="width:100%; height:400px;"></div>
+    </div>
+  </div>
+</div>
+  
+      </main>
+    </div>
+    <script src="/js/place-modal.js"></script>
+
+    <!-- Emergency Missing Animal Popup Modal -->
+    <div id="emergencyModal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-slate-900/65 backdrop-blur-md transition-opacity duration-300 opacity-0">
+      <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-red-100 transform scale-95 transition-transform duration-300 flex flex-col relative">
+        
+        <!-- Emergency Pulse Banner -->
+        <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 text-white flex items-center gap-3 shadow-md relative overflow-hidden">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15),transparent)] animate-pulse"></div>
+          <span class="w-3.5 h-3.5 bg-white rounded-full animate-ping flex-shrink-0"></span>
+          <h3 class="font-extrabold text-base tracking-wide flex-grow">🚨 긴급 실종 경보 (EMERGENCY)</h3>
+          <button type="button" onclick="closeEmergencyModal()" class="text-white/80 hover:text-white focus:outline-none transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="p-6 space-y-4">
+          <!-- Animal Image Container -->
+          <div class="relative w-full aspect-video bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 shadow-inner flex items-center justify-center">
+            <img id="emergencyImg" src="" alt="실종동물 이미지" class="w-full h-full object-cover hidden">
+            <div id="emergencyImgFallback" class="flex flex-col items-center justify-center text-slate-400 gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-slate-300">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+              </svg>
+              <span class="text-xs font-semibold">이미지가 등록되지 않았습니다</span>
+            </div>
+            <span class="absolute bottom-3 left-3 bg-red-600/90 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md">골든타임</span>
+          </div>
+          
+          <!-- Information Fields -->
+          <div class="space-y-3">
+            <div class="flex items-start gap-1">
+              <h4 id="emergencyTitle" class="text-base font-extrabold text-slate-900 leading-snug">실종된 반려동물을 찾습니다!</h4>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 text-xs border-t border-slate-100 pt-3">
+              <div>
+                <span id="emergencyBreedLabel" class="text-slate-400 block mb-0.5">품종</span>
+                <span id="emergencyBreed" class="font-bold text-slate-800 text-sm">-</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">실종일자</span>
+                <span id="emergencyDate" class="font-bold text-slate-800 text-sm">-</span>
+              </div>
+              <div class="col-span-2">
+                <span class="text-slate-400 block mb-0.5">실종 장소</span>
+                <span id="emergencyLocation" class="font-bold text-slate-800 text-sm">-</span>
+              </div>
+              <div class="col-span-2">
+                <span id="emergencyMarksLabel" class="text-slate-400 block mb-0.5">특징 및 착의</span>
+                <span id="emergencyMarks" class="font-bold text-slate-800 text-xs bg-slate-50 border border-slate-100 p-2 rounded-lg block leading-relaxed max-h-16 overflow-y-auto">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-2">
+          <button type="button" onclick="closeEmergencyModalForToday()" class="flex-1 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-colors">
+            오늘 하루 보지 않기
+          </button>
+          <a id="emergencyDetailLink" href="/animal-reports" class="flex-grow py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl transition-colors shadow-lg shadow-red-200 inline-flex items-center justify-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+            </svg>
+            제보 및 상세 보기
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      function closeEmergencyModal() {
+        const modal = document.getElementById('emergencyModal');
+        if (modal) {
+          const dialog = modal.querySelector('div');
+          modal.classList.remove('opacity-100');
+          modal.classList.add('opacity-0');
+          dialog.classList.remove('scale-100');
+          dialog.classList.add('scale-95');
+          setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+          }, 300);
+        }
+      }
+      
+      function closeEmergencyModalForToday() {
+        localStorage.setItem('emergency_hide_date', new Date().toDateString());
+        closeEmergencyModal();
+      }
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        const hideDate = localStorage.getItem('emergency_hide_date');
+        const today = new Date().toDateString();
+        if (hideDate === today) {
+          return;
+        }
+        
+        fetch('/admin/api/emergency/status')
+          .then(res => res.json())
+          .then(data => {
+            if (data.active) {
+              const modal = document.getElementById('emergencyModal');
+              const img = document.getElementById('emergencyImg');
+              const fallback = document.getElementById('emergencyImgFallback');
+              
+              document.getElementById('emergencyTitle').innerText = data.title;
+              document.getElementById('emergencyDate').innerText = data.date;
+              document.getElementById('emergencyLocation').innerText = data.location;
+              document.getElementById('emergencyMarks').innerText = data.distinctiveMarks || '특별한 특징 사항이 등록되어 있지 않습니다.';
+              
+              const breedLabel = document.getElementById('emergencyBreedLabel');
+              const marksLabel = document.getElementById('emergencyMarksLabel');
+              const breedVal = document.getElementById('emergencyBreed');
+              
+              if (data.type === 'PERSON') {
+                if (breedLabel) breedLabel.innerText = '나이/국적';
+                if (marksLabel) marksLabel.innerText = '신체 특징 및 착의';
+                if (breedVal) breedVal.innerText = data.age + '세 (' + data.nationality + ')';
+                document.getElementById('emergencyDetailLink').href = '/missing-persons/' + data.reportId;
+              } else {
+                if (breedLabel) breedLabel.innerText = '품종';
+                if (marksLabel) marksLabel.innerText = '특징 및 착의';
+                if (breedVal) breedVal.innerText = data.breed + ' (' + data.animalType + ')';
+                if (data.reportId > 0) {
+                  document.getElementById('emergencyDetailLink').href = '/animal-reports/' + data.reportId;
+                } else {
+                  document.getElementById('emergencyDetailLink').href = '/animal-reports';
+                }
+              }
+              
+              if (data.imageUrl) {
+                img.src = data.imageUrl;
+                img.classList.remove('hidden');
+                fallback.classList.add('hidden');
+              } else {
+                img.classList.add('hidden');
+                fallback.classList.remove('hidden');
+              }
+              
+              modal.classList.remove('hidden');
+              modal.classList.add('flex');
+              setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+              }, 50);
+            }
+          })
+          .catch(err => console.error('긴급 팝업 확인 실패:', err));
+      });
+    </script>
+
+    <!-- Global Chat Notification WebSocket -->
+    
+
+    <!-- Mobile Drawer Menu -->
+    <div id="mobileDrawer" class="mobile-drawer-overlay">
+      <div class="mobile-drawer-content">
+        <div class="mobile-drawer-header">
+          <span class="mobile-drawer-title">메뉴</span>
+          <button id="mobileDrawerClose" class="mobile-drawer-close" aria-label="메뉴 닫기">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div class="mobile-drawer-body">
+          <!-- User Profile info / Login links -->
+          <div class="mobile-drawer-user-section">
+            
+              <a href="/login" class="mobile-user-btn login-btn">로그인</a>
+              <a href="/join" class="mobile-user-btn join-btn">회원가입</a>
+            
+            
+          </div>
+          
+          <!-- Navigation Menu Categories -->
+          <div class="mobile-drawer-nav">
+            <!-- 1. 분실물 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>분실물</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a href="/lost-items">분실물 검색</a>
+                <a href="/lost-items/new">분실물 등록</a>
+              </div>
+            </div>
+            
+            <!-- 2. 습득물 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>습득물</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a href="/found-items">습득물 검색</a>
+                <a href="/found-items/new">습득물 등록</a>
+                <a href="/areas/list">유실물센터</a>
+              </div>
+            </div>
+            
+            <!-- 3. 실종자 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>실종자</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a href="/missing-alerts">실종 경보</a>
+                <a href="/missing-persons">실종자 검색</a>
+                <a href="/missing-persons/new">실종자 제보</a>
+              </div>
+            </div>
+            
+            <!-- 4. 실종동물 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>실종동물</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a href="/animal-reports">실종동물 검색</a>
+                <a href="/animal-reports/new">실종동물 제보</a>
+              </div>
+            </div>
+            
+            <!-- 5. 고객지원 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>고객지원</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a href="/faq">자주묻는질문</a>
+                <a href="/inquiry">문의하기</a>
+                <a href="/notice">공지사항</a>
+                <a href="/guide">이용가이드</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+
+</html>
