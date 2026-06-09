@@ -1,2 +1,4 @@
-body { font-family: 'Inter', sans-serif; min-width: 1436px; overflow-x: auto; }
+body, input, select, textarea, button { font-family: Pretendard, 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+option { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif; }
+body { min-width: 1436px; overflow-x: auto; }
 .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }

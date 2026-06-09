@@ -85,7 +85,7 @@ public class LostItemController {
 			@RequestParam(defaultValue = "regDate") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "9") int size,
+			@RequestParam(defaultValue = "12") int size,
 			Model model
 	) {
 		String safeField = LOST_SORT_FIELDS.contains(sortBy) ? sortBy : "regDate";

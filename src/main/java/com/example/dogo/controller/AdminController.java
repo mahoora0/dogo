@@ -122,6 +122,7 @@ public class AdminController {
     public String listLostItems(@RequestParam(value = "sourceType", required = false) String sourceType,
                                 @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                 @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                @RequestParam(value = "status", required = false) String status,
                                 @RequestParam(value = "page", defaultValue = "0") int page,
                                 Model model) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
@@ -134,6 +135,10 @@ public class AdminController {
 
             if (finalSourceType != null && ("USER".equals(finalSourceType) || "POLICE".equals(finalSourceType))) {
                 predicates.add(cb.equal(root.get("sourceType"), finalSourceType));
+            }
+
+            if (status != null && !status.trim().isEmpty()) {
+                predicates.add(cb.equal(root.get("status"), status));
             }
 
             if (keyword != null && !keyword.trim().isEmpty()) {
@@ -173,6 +178,7 @@ public class AdminController {
         model.addAttribute("sourceType", sourceType);
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
         return "admin/lost-items";
     }
 
@@ -183,13 +189,14 @@ public class AdminController {
                                        @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType,
                                        @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                        @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                       @RequestParam(value = "statusFilter", required = false, defaultValue = "") String statusFilter,
                                        @RequestParam(value = "page", defaultValue = "0") int page) {
         validateStatus(status, LOST_ITEM_STATUSES);
         LostItem item = lostItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item Id:" + id));
         item.setStatus(status);
         lostItemRepository.save(item);
-        return "redirect:/admin/lost-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
+        return "redirect:/admin/lost-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&status=" + statusFilter + "&page=" + page;
     }
 
     @PostMapping("/lost-items/{id}/delete")
@@ -198,12 +205,13 @@ public class AdminController {
                                  @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType,
                                  @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                  @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                 @RequestParam(value = "statusFilter", required = false, defaultValue = "") String statusFilter,
                                  @RequestParam(value = "page", defaultValue = "0") int page) {
         LostItem item = lostItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item Id:" + id));
         item.setDeleted(true);
         lostItemRepository.save(item);
-        return "redirect:/admin/lost-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
+        return "redirect:/admin/lost-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&status=" + statusFilter + "&page=" + page;
     }
 
     // --- 습득물 관리 ---
@@ -211,6 +219,7 @@ public class AdminController {
     public String listFoundItems(@RequestParam(value = "sourceType", required = false) String sourceType,
                                  @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                  @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                 @RequestParam(value = "status", required = false) String status,
                                  @RequestParam(value = "page", defaultValue = "0") int page,
                                  Model model) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
@@ -223,6 +232,10 @@ public class AdminController {
 
             if (finalSourceType != null && ("USER".equals(finalSourceType) || "POLICE".equals(finalSourceType))) {
                 predicates.add(cb.equal(root.get("sourceType"), finalSourceType));
+            }
+
+            if (status != null && !status.trim().isEmpty()) {
+                predicates.add(cb.equal(root.get("status"), status));
             }
 
             if (keyword != null && !keyword.trim().isEmpty()) {
@@ -261,6 +274,7 @@ public class AdminController {
         model.addAttribute("sourceType", sourceType);
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
         return "admin/found-items";
     }
 
@@ -271,13 +285,14 @@ public class AdminController {
                                         @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType,
                                         @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                         @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                        @RequestParam(value = "statusFilter", required = false, defaultValue = "") String statusFilter,
                                         @RequestParam(value = "page", defaultValue = "0") int page) {
         validateStatus(status, FOUND_ITEM_STATUSES);
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item Id:" + id));
         item.setStatus(status);
         foundItemRepository.save(item);
-        return "redirect:/admin/found-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
+        return "redirect:/admin/found-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&status=" + statusFilter + "&page=" + page;
     }
 
     private void validateStatus(String status, Set<String> allowedStatuses) {
@@ -292,18 +307,20 @@ public class AdminController {
                                   @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType,
                                   @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                   @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                  @RequestParam(value = "statusFilter", required = false, defaultValue = "") String statusFilter,
                                   @RequestParam(value = "page", defaultValue = "0") int page) {
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item Id:" + id));
         item.setDeleted(true);
         foundItemRepository.save(item);
-        return "redirect:/admin/found-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
+        return "redirect:/admin/found-items?sourceType=" + sourceType + "&searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&status=" + statusFilter + "&page=" + page;
     }
 
     // --- 실종동물 관리 ---
     @GetMapping("/animals")
     public String listAnimals(@RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                               @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                              @RequestParam(value = "reportType", required = false) String reportType,
                               @RequestParam(value = "page", defaultValue = "0") int page, 
                               Model model) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
@@ -312,6 +329,10 @@ public class AdminController {
         org.springframework.data.jpa.domain.Specification<AnimalReport> spec = (root, query, cb) -> {
             List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("deleted"), false));
+
+            if (reportType != null && !reportType.trim().isEmpty()) {
+                predicates.add(cb.equal(root.get("reportType"), reportType));
+            }
 
             if (keyword != null && !keyword.trim().isEmpty()) {
                 String searchKeyword = "%" + keyword.trim() + "%";
@@ -343,6 +364,7 @@ public class AdminController {
         model.addAttribute("page", reportPage);
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("reportType", reportType);
         return "admin/animals";
     }
 
@@ -352,12 +374,13 @@ public class AdminController {
                                      @RequestParam("reportType") String reportType,
                                      @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                      @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                     @RequestParam(value = "reportTypeFilter", required = false, defaultValue = "") String reportTypeFilter,
                                      @RequestParam(value = "page", defaultValue = "0") int page) {
         AnimalReport report = animalReportRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid report Id:" + id));
         report.setReportType(reportType);
         animalReportRepository.save(report);
-        return "redirect:/admin/animals?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
+        return "redirect:/admin/animals?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&reportType=" + reportTypeFilter + "&page=" + page;
     }
 
     @PostMapping("/animals/{id}/delete")
@@ -365,18 +388,20 @@ public class AdminController {
     public String deleteAnimal(@PathVariable("id") Long id,
                                @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                               @RequestParam(value = "reportTypeFilter", required = false, defaultValue = "") String reportTypeFilter,
                                @RequestParam(value = "page", defaultValue = "0") int page) {
         AnimalReport report = animalReportRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid report Id:" + id));
         report.setDeleted(true);
         animalReportRepository.save(report);
-        return "redirect:/admin/animals?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
+        return "redirect:/admin/animals?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&reportType=" + reportTypeFilter + "&page=" + page;
     }
 
     // --- 실종자 관리 ---
     @GetMapping("/missing-persons")
     public String listMissingPersons(@RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                      @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                     @RequestParam(value = "status", required = false) String status,
                                      @RequestParam(value = "page", defaultValue = "0") int page, 
                                      Model model) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10);
@@ -385,6 +410,10 @@ public class AdminController {
         org.springframework.data.jpa.domain.Specification<MissingPersonReport> spec = (root, query, cb) -> {
             List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("deleted"), false));
+
+            if (status != null && !status.trim().isEmpty()) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
 
             if (keyword != null && !keyword.trim().isEmpty()) {
                 String searchKeyword = "%" + keyword.trim() + "%";
@@ -410,6 +439,7 @@ public class AdminController {
         model.addAttribute("page", reportPage);
         model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
         return "admin/missing-persons";
     }
 
@@ -419,12 +449,13 @@ public class AdminController {
                                             @RequestParam("status") String status,
                                             @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                             @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                            @RequestParam(value = "statusFilter", required = false, defaultValue = "") String statusFilter,
                                             @RequestParam(value = "page", defaultValue = "0") int page) {
         MissingPersonReport report = missingPersonRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid report Id:" + id));
         report.setStatus(status);
         missingPersonRepository.save(report);
-        return "redirect:/admin/missing-persons?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
+        return "redirect:/admin/missing-persons?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&status=" + statusFilter + "&page=" + page;
     }
 
     @PostMapping("/missing-persons/{id}/delete")
@@ -432,12 +463,13 @@ public class AdminController {
     public String deleteMissingPerson(@PathVariable("id") Long id,
                                       @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                       @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+                                      @RequestParam(value = "statusFilter", required = false, defaultValue = "") String statusFilter,
                                       @RequestParam(value = "page", defaultValue = "0") int page) {
         MissingPersonReport report = missingPersonRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid report Id:" + id));
         report.setDeleted(true);
         missingPersonRepository.save(report);
-        return "redirect:/admin/missing-persons?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&page=" + page;
+        return "redirect:/admin/missing-persons?searchType=" + searchType + "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8) + "&status=" + statusFilter + "&page=" + page;
     }
 
     // --- 회원 관리 ---

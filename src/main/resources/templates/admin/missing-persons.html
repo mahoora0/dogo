@@ -130,6 +130,11 @@
 
                         <!-- Search Form -->
                         <form th:action="@{/admin/missing-persons}" method="get" class="flex flex-wrap items-center gap-2">
+                            <select name="status" onchange="this.form.submit()" class="text-xs font-bold rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="" th:selected="${status == null || status == ''}">상태 전체</option>
+                                <option value="OPEN" th:selected="${status == 'OPEN'}">실종</option>
+                                <option value="CLOSED" th:selected="${status == 'CLOSED'}">귀가</option>
+                            </select>
                             <select name="searchType" class="text-xs font-bold rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="" th:selected="${searchType == null || searchType == ''}">전체</option>
                                 <option value="clothing" th:selected="${searchType == 'clothing'}">의상</option>
@@ -142,7 +147,6 @@
                                     <i data-lucide="search" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
-                            <a th:if="${keyword != null and !#strings.isEmpty(keyword)}" th:href="@{/admin/missing-persons}" class="text-xs font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 px-3 py-2 rounded-xl">초기화</a>
                         </form>
                     </div>
                     
@@ -180,7 +184,7 @@
                                     
                                     <!-- 상태 수정 폼 -->
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <form th:action="@{/admin/missing-persons/{id}/status(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, page=${reports.number})}" method="post">
+                                        <form th:action="@{/admin/missing-persons/{id}/status(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, statusFilter=${status}, page=${reports.number})}" method="post">
                                             <select name="status" onchange="this.form.submit()" 
                                                     th:class="${report.status == 'OPEN' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-700 border-slate-200'} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
                                                 <option value="OPEN" th:selected="${report.status == 'OPEN'}">실종</option>
@@ -191,7 +195,7 @@
                                     
                                     <!-- 삭제 버튼 -->
                                     <td class="px-6 py-4 text-center font-semibold text-slate-900 text-sm whitespace-nowrap">
-                                        <form th:action="@{/admin/missing-persons/{id}/delete(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, page=${reports.number})}" method="post"
+                                        <form th:action="@{/admin/missing-persons/{id}/delete(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, statusFilter=${status}, page=${reports.number})}" method="post"
                                               data-confirm="정말로 이 실종자 신고글을 삭제하시겠습니까? (Soft Delete)">
                                             <button type="submit" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-colors inline-flex items-center justify-center">
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -218,7 +222,7 @@
                             <div class="inline-flex items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm divide-x divide-slate-200">
                                 <!-- 맨 처음 -->
                                 <a th:classappend="${reports.first} ? ' pointer-events-none opacity-40'"
-                                   th:href="@{/admin/missing-persons(searchType=${searchType}, keyword=${keyword}, page=0)}"
+                                   th:href="@{/admin/missing-persons(searchType=${searchType}, keyword=${keyword}, status=${status}, page=0)}"
                                    aria-label="첫 페이지"
                                    class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
@@ -226,7 +230,7 @@
 
                                 <!-- 이전 -->
                                 <a th:classappend="${reports.first} ? ' pointer-events-none opacity-40'"
-                                   th:href="@{/admin/missing-persons(searchType=${searchType}, keyword=${keyword}, page=${reports.number - 1})}"
+                                   th:href="@{/admin/missing-persons(searchType=${searchType}, keyword=${keyword}, status=${status}, page=${reports.number - 1})}"
                                    aria-label="이전 페이지"
                                    class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -234,14 +238,14 @@
 
                                 <!-- 번호 -->
                                 <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                                   th:href="@{/admin/missing-persons(searchType=${searchType}, keyword=${keyword}, page=${i})}"
+                                   th:href="@{/admin/missing-persons(searchType=${searchType}, keyword=${keyword}, status=${status}, page=${i})}"
                                    th:text="${i + 1}"
-                                   th:classappend="${i == reports.number} ? ' bg-slate-900 text-white font-semibold' : ' text-slate-650 hover:bg-slate-100 hover:text-slate-900'"
+                                   th:classappend="${i == reports.number} ? ' bg-slate-900 text-white font-semibold' : ' text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
                                    class="flex h-9 w-9 items-center justify-center transition-colors">1</a>
 
                                 <!-- 다음 -->
                                 <a th:classappend="${reports.last} ? ' pointer-events-none opacity-40'"
-                                   th:href="@{/admin/missing-persons(searchType=${searchType}, keyword=${keyword}, page=${reports.number + 1})}"
+                                   th:href="@{/admin/missing-persons(searchType=${searchType}, keyword=${keyword}, status=${status}, page=${reports.number + 1})}"
                                    aria-label="다음 페이지"
                                    class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -249,7 +253,7 @@
 
                                 <!-- 맨 끝 -->
                                 <a th:classappend="${reports.last} ? ' pointer-events-none opacity-40'"
-                                   th:href="@{/admin/missing-persons(searchType=${searchType}, keyword=${keyword}, page=${reports.totalPages - 1})}"
+                                   th:href="@{/admin/missing-persons(searchType=${searchType}, keyword=${keyword}, status=${status}, page=${reports.totalPages - 1})}"
                                    aria-label="마지막 페이지"
                                    class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>

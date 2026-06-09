@@ -129,11 +129,11 @@
                                 <span class="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full" th:text="'총 ' + ${items.totalElements} + '건'">총 0건</span>
                             </div>
                             <div class="flex gap-2">
-                                <a th:href="@{/admin/lost-items(sourceType='ALL', searchType=${searchType}, keyword=${keyword})}" 
+                                <a th:href="@{/admin/lost-items(sourceType='ALL', searchType=${searchType}, keyword=${keyword}, status=${status})}" 
                                    th:class="${sourceType == 'ALL' ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'} + ' px-4 py-2 rounded-xl text-xs font-bold transition-all'">전체보기</a>
-                                <a th:href="@{/admin/lost-items(sourceType='USER', searchType=${searchType}, keyword=${keyword})}" 
+                                <a th:href="@{/admin/lost-items(sourceType='USER', searchType=${searchType}, keyword=${keyword}, status=${status})}" 
                                    th:class="${sourceType == 'USER' ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'} + ' px-4 py-2 rounded-xl text-xs font-bold transition-all'">유저 등록 건</a>
-                                <a th:href="@{/admin/lost-items(sourceType='POLICE', searchType=${searchType}, keyword=${keyword})}" 
+                                <a th:href="@{/admin/lost-items(sourceType='POLICE', searchType=${searchType}, keyword=${keyword}, status=${status})}" 
                                    th:class="${sourceType == 'POLICE' ? 'bg-blue-600 text-white shadow-sm shadow-blue-100' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'} + ' px-4 py-2 rounded-xl text-xs font-bold transition-all'">경찰 연동 건</a>
                             </div>
                         </div>
@@ -141,8 +141,13 @@
                         <!-- Search Form -->
                         <form th:action="@{/admin/lost-items}" method="get" class="flex flex-wrap items-center gap-2">
                             <input type="hidden" name="sourceType" th:value="${sourceType}"/>
+                            <select name="status" onchange="this.form.submit()" class="text-xs font-bold rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="" th:selected="${status == null || status == ''}">상태 전체</option>
+                                <option value="WAITING" th:selected="${status == 'WAITING'}">분실</option>
+                                <option value="FOUND" th:selected="${status == 'FOUND'}">회수</option>
+                            </select>
                             <select name="searchType" class="text-xs font-bold rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="" th:selected="${searchType == null || searchType == ''}">전체</option>
+                                <option value="" th:selected="${searchType == null || searchType == ''}">검색조건 전체</option>
                                 <option value="title" th:selected="${searchType == 'title'}">제목</option>
                                 <option value="itemName" th:selected="${searchType == 'itemName'}">물품명</option>
                                 <option value="place" th:selected="${searchType == 'place'}">분실위치</option>
@@ -154,7 +159,6 @@
                                     <i data-lucide="search" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
-                            <a th:if="${keyword != null and !#strings.isEmpty(keyword)}" th:href="@{/admin/lost-items(sourceType=${sourceType})}" class="text-xs font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 px-3 py-2 rounded-xl">초기화</a>
                         </form>
                     </div>
                     
@@ -188,7 +192,7 @@
                                     
                                     <!-- 상태 수정 폼 -->
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <form th:action="@{/admin/lost-items/{id}/status(id=${item.lostId}, sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, page=${page.number})}" method="post">
+                                        <form th:action="@{/admin/lost-items/{id}/status(id=${item.lostId}, sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, statusFilter=${status}, page=${page.number})}" method="post">
                                             <select name="status" onchange="this.form.submit()" 
                                                     th:class="${item.status == 'FOUND' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-700 border-slate-200'} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
                                                 <option value="WAITING" th:selected="${item.status == 'WAITING'}">분실</option>
@@ -199,7 +203,7 @@
                                     
                                     <!-- 삭제 버튼 -->
                                     <td class="px-6 py-4 text-center whitespace-nowrap">
-                                        <form th:action="@{/admin/lost-items/{id}/delete(id=${item.lostId}, sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, page=${page.number})}" method="post"
+                                        <form th:action="@{/admin/lost-items/{id}/delete(id=${item.lostId}, sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, statusFilter=${status}, page=${page.number})}" method="post"
                                               data-confirm="정말로 이 분실물 글을 삭제하시겠습니까? (Soft Delete)">
                                             <button type="submit" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-colors inline-flex items-center justify-center">
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -226,7 +230,7 @@
                             <div class="inline-flex items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm divide-x divide-slate-200">
                                 <!-- 맨 처음 -->
                                 <a th:classappend="${page.first} ? ' pointer-events-none opacity-40'"
-                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, page=0)}"
+                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, status=${status}, page=0)}"
                                    aria-label="첫 페이지"
                                    class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
@@ -234,7 +238,7 @@
 
                                 <!-- 이전 -->
                                 <a th:classappend="${page.first} ? ' pointer-events-none opacity-40'"
-                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, page=${page.number - 1})}"
+                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, status=${status}, page=${page.number - 1})}"
                                    aria-label="이전 페이지"
                                    class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -242,14 +246,14 @@
 
                                 <!-- 번호 -->
                                 <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, page=${i})}"
+                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, status=${status}, page=${i})}"
                                    th:text="${i + 1}"
                                    th:classappend="${i == page.number} ? ' bg-slate-900 text-white font-semibold' : ' text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
                                    class="flex h-9 w-9 items-center justify-center transition-colors">1</a>
 
                                 <!-- 다음 -->
                                 <a th:classappend="${page.last} ? ' pointer-events-none opacity-40'"
-                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, page=${page.number + 1})}"
+                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, status=${status}, page=${page.number + 1})}"
                                    aria-label="다음 페이지"
                                    class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -257,7 +261,7 @@
 
                                 <!-- 맨 끝 -->
                                 <a th:classappend="${page.last} ? ' pointer-events-none opacity-40'"
-                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, page=${page.totalPages - 1})}"
+                                   th:href="@{/admin/lost-items(sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, status=${status}, page=${page.totalPages - 1})}"
                                    aria-label="마지막 페이지"
                                    class="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>

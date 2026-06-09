@@ -21,7 +21,11 @@ button,
 input,
 select,
 textarea {
-    font: inherit;
+    font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+option {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
 }
 
 .navbar {
@@ -1381,8 +1385,7 @@ textarea {
     text-decoration: none;
     display: block;
 }
+
 .mobile-nav-sub a:hover {
     color: #2563eb;
 }
-
-

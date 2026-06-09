@@ -46,7 +46,7 @@ public class MissingPersonController {
 			@RequestParam(defaultValue = "occurredAt") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "9") int size,
+			@RequestParam(defaultValue = "12") int size,
 			Model model
 	) {
 		String safeField = SORT_FIELDS.contains(sortBy) ? sortBy : "regdate";
