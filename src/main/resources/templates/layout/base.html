@@ -328,20 +328,20 @@
     </div>
 
     <!-- 공통 푸터 영역 (헤더 배경색 #fff와 매칭) -->
-    <footer class="bg-white border-t border-[#e8edf4] py-8 mt-12 w-full">
+    <footer class="bg-white border-t border-[#e8edf4] py-5 mt-12 w-full">
       <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="flex flex-col md:flex-row justify-between items-center gap-8">
           
-          <!-- Left Column: 로고 이미지 및 플랫폼 문구 -->
-          <div class="flex flex-col items-center md:items-start space-y-2.5 md:pl-12">
+          <!-- Left Column: 로고 이미지 및 플랫폼 문구 (가로 배치 & 하단 정렬 미세조정) -->
+          <div class="flex items-end gap-3.5 md:pl-12">
             <img th:src="@{/images/logo.png}" alt="DOGO 로고" class="w-14 h-14 object-contain">
-            <p class="text-[12px] text-gray-400 font-semibold text-center md:text-left leading-relaxed">
-              당신의 소중한 것을, 다시 찾을 수 있도록
+            <p class="text-[12px] text-gray-400 font-semibold text-left leading-snug translate-y-[2px]">
+              당신의 소중한 것을,<br>다시 찾을 수 있도록
             </p>
           </div>
           
           <!-- Middle Column: 카피라이트 -->
-          <div class="text-center translate-y-1.5 md:translate-y-3.5">
+          <div class="text-center">
             <p class="text-xs text-gray-400 font-medium tracking-tight">
               &copy; 2026 DOGO. All rights reserved.
             </p>
