@@ -102,23 +102,13 @@ class AnimalReportServiceEditTest {
 	}
 
 	@Test
-	void createSavesProtectingReportTypeDirectly() {
-		when(areaRepository.findByAreaName(any())).thenReturn(Optional.empty());
-		when(animalReportRepository.save(any(AnimalReport.class))).thenAnswer(invocation -> {
-			AnimalReport report = invocation.getArgument(0);
-			ReflectionTestUtils.setField(report, "reportId", 101L);
-			return report;
-		});
+	void createRejectsProtectingAsDirectUserReportType() {
 		AnimalReportCreateRequest req = validRequest();
 		req.setReportType("PROTECTING");
 
-		Long reportId = animalReportService.create(req, userWithNo(10L));
-
-		assertThat(reportId).isEqualTo(101L);
-		ArgumentCaptor<AnimalReport> captor = ArgumentCaptor.forClass(AnimalReport.class);
-		verify(animalReportRepository).save(captor.capture());
-		assertThat(captor.getValue().getReportType()).isEqualTo("PROTECTING");
-		assertThat(captor.getValue().getSightingCareStatus()).isNull();
+		assertThatThrownBy(() -> animalReportService.create(req, userWithNo(10L)))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("신고 구분을 선택해주세요.");
 	}
 
 	@Test
@@ -152,6 +142,7 @@ class AnimalReportServiceEditTest {
 		assertThat(reportId).isEqualTo(100L);
 		ArgumentCaptor<AnimalReport> captor = ArgumentCaptor.forClass(AnimalReport.class);
 		verify(animalReportRepository).save(captor.capture());
+		assertThat(captor.getValue().getReportType()).isEqualTo("SIGHTING");
 		assertThat(captor.getValue().getSightingCareStatus()).isEqualTo("PROTECTING");
 		assertThat(captor.getValue().getCareLocationName()).isNull();
 		assertThat(captor.getValue().getCareLocationAddress()).isNull();
@@ -178,6 +169,8 @@ class AnimalReportServiceEditTest {
 		assertThat(reportId).isEqualTo(100L);
 		ArgumentCaptor<AnimalReport> captor = ArgumentCaptor.forClass(AnimalReport.class);
 		verify(animalReportRepository).save(captor.capture());
+		assertThat(captor.getValue().getReportType()).isEqualTo("SIGHTING");
+		assertThat(captor.getValue().getSightingCareStatus()).isEqualTo("TRANSFERRED");
 		assertThat(captor.getValue().getCareLocationName()).isEqualTo("연계 동물병원");
 		assertThat(captor.getValue().getCareLocationAddress()).isEqualTo("서울특별시 강남구 병원로 2");
 		assertThat(captor.getValue().getCareContactPhone()).isEqualTo("02-111-2222");

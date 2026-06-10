@@ -40,8 +40,7 @@ public class AnimalReportController {
 	public List<Option> reportTypeOptions() {
 		return List.of(
 				new Option("MISSING", "실종"),
-				new Option("SIGHTING", "목격"),
-				new Option("PROTECTING", "보호")
+				new Option("SIGHTING", "목격/보호")
 		);
 	}
 
@@ -72,7 +71,6 @@ public class AnimalReportController {
 	@ModelAttribute("careStatusOptions")
 	public List<Option> careStatusOptions() {
 		return List.of(
-				new Option("UNKNOWN", "확인 필요"),
 				new Option("NONE", "단순 목격"),
 				new Option("PROTECTING", "보호 중"),
 				new Option("TRANSFERRED", "보호소/병원 인계")
