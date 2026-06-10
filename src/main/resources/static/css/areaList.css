@@ -356,7 +356,7 @@ html.mobile-view .area-content-grid {
 
 html.mobile-view .center-list-container {
     max-height: 300px;
-    height: 300px;
+    height: auto;
 }
 
 html.mobile-view #map {

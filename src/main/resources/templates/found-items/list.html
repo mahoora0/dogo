@@ -2,8 +2,8 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
-    <section class="mb-8 rounded-2xl border border-slate-200 bg-white px-6 py-8 shadow-sm">
-      <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+    <section class="mb-8 rounded-2xl border border-slate-200 bg-white px-6 py-8 shadow-sm search-header-card">
+      <div class="flex flex-row items-end justify-between gap-5 search-list-header">
         <div>
           <span class="mb-2 inline-block text-sm font-semibold text-slate-500">습득물 등록과 조회</span>
           <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">내가 주웠어요</h1>
@@ -19,10 +19,10 @@
 
     <!-- Interactive Search Form -->
     <form th:action="@{/found-items}" method="get" id="searchForm"
-          class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+          class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4 search-filter-form">
       
       <!-- 첫째 줄: 물품 상태 및 카테고리 -->
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-4 grid-cols-2 search-filter-row-1">
         <!-- Status Chips -->
         <div class="space-y-2">
           <label class="text-xs font-bold uppercase tracking-wider text-slate-400">물품 상태</label>
@@ -60,7 +60,7 @@
       </div>
 
       <!-- 둘째 줄: 발생일, 지역, 상세장소 -->
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 border-t border-slate-100 pt-4">
+      <div class="grid gap-4 grid-cols-3 border-t border-slate-100 pt-4 search-filter-row-2">
         <!-- 발생일 -->
         <div class="space-y-2">
           <label class="text-xs font-bold uppercase tracking-wider text-slate-400">발생일</label>
@@ -91,9 +91,9 @@
       </div>
 
       <!-- 셋째 줄: 검색어 입력 및 버튼 -->
-      <div class="border-t border-slate-100 pt-4">
-        <div class="grid gap-3 lg:grid-cols-12">
-          <div class="flex min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 transition focus-within:border-slate-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-slate-100 lg:col-span-8">
+      <div class="border-t border-slate-100 pt-4 search-filter-row-3">
+        <div class="grid gap-3 grid-cols-12">
+          <div class="flex min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 transition focus-within:border-slate-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-slate-100 col-span-8">
             <div class="relative shrink-0 border-r border-slate-200">
               <select id="keywordScopeSelect" name="keywordScope"
                       class="h-full w-32 appearance-none bg-transparent py-3.5 pl-4 pr-8 text-sm font-bold text-slate-700 outline-none sm:w-36">
@@ -110,7 +110,7 @@
             </div>
           </div>
           
-          <div class="grid grid-cols-2 gap-2 lg:col-span-4">
+          <div class="grid grid-cols-2 gap-2 col-span-4">
             <button type="submit"
                     class="flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 active:scale-[0.98]">
               검색하기

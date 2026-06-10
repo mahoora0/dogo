@@ -2,20 +2,19 @@
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
     <style>
-      body {
-        min-width: 1280px !important;
-        overflow-x: auto !important;
+      /* 모바일 대응: min-width 제거 */
+      html.mobile-view body,
+      html.mobile-view .navbar,
+      html.mobile-view .main-layout {
+        min-width: 0 !important;
+        overflow-x: hidden !important;
       }
-      .navbar {
-        min-width: 1280px !important;
-        position: relative !important;
-      }
-      .main-layout {
-        min-width: 1280px !important;
+      html.mobile-view .h-\[500px\] {
+        height: 260px !important;
       }
     </style>
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div class="grid gap-10 grid-cols-[1.2fr_0.8fr] items-start">
+      <div class="grid gap-6 grid-cols-1 sm:grid-cols-[1.2fr_0.8fr] items-start">
         <!-- Image Gallery Section -->
         <div class="flex min-w-0 flex-col gap-4">
         <!-- 이미지 갤러리 (Swiper) -->
@@ -95,7 +94,7 @@
                 <span th:text="${lostItem.category ?: '미분류'}"
                       class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">지갑</span>
               </div>
-              <h1 th:text="${lostItem.title}" class="text-3xl font-extrabold text-slate-900 leading-tight">검정 카드지갑을 찾습니다</h1>
+              <h1 th:text="${lostItem.title}" class="text-xl sm:text-3xl font-extrabold text-slate-900 leading-tight">검정 카드지갑을 찾습니다</h1>
             </div>
 
             <!-- More actions (Kebab Menu) -->
@@ -147,7 +146,7 @@
           <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
             <span class="inline-block w-1.5 h-4 rounded-full bg-blue-600"></span>상세 정보
           </h2>
-          <dl class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
               <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">물품명</dt>
               <dd th:text="${lostItem.name}" class="font-bold text-sm text-slate-900">검정 카드지갑</dd>

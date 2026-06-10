@@ -3,16 +3,12 @@
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
     <style>
-      body {
-        min-width: 1280px !important;
-        overflow-x: auto !important;
-      }
-      .navbar {
-        min-width: 1280px !important;
-        position: relative !important;
-      }
-      .main-layout {
-        min-width: 1280px !important;
+      /* 모바일 대응: min-width 제거 */
+      html.mobile-view body,
+      html.mobile-view .navbar,
+      html.mobile-view .main-layout {
+        min-width: 0 !important;
+        overflow-x: hidden !important;
       }
     </style>
     <div class="mb-6">
@@ -33,9 +29,9 @@
     </div>
 
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div class="flex flex-row gap-6">
+      <div class="flex flex-col sm:flex-row gap-6">
         <!-- 왼쪽 사이드바: 프로필 이미지 -->
-        <div class="w-[450px] shrink-0">
+        <div class="w-full sm:w-[450px] shrink-0">
           <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
             <div class="relative aspect-[3/4] w-full overflow-hidden flex items-center justify-center">
               <img th:src="${report.imageUrls != null and !#lists.isEmpty(report.imageUrls) ? report.imageUrls[0] : (report.base64Image != null ? report.base64Image : '/images/noImageSize.png')}"
@@ -73,7 +69,7 @@
                 <span th:text="${report.sourceLabel}"
                       class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">사용자 제보</span>
               </div>
-              <h1 th:text="${report.summary}" class="text-3xl font-bold tracking-tight text-slate-900">13세 Korea 실종</h1>
+              <h1 th:text="${report.summary}" class="text-xl sm:text-3xl font-bold tracking-tight text-slate-900">13세 Korea 실종</h1>
               <p th:text="${report.occurredPlace}" class="mt-2 text-sm font-semibold text-slate-600">Seoul</p>
             </div>
             
