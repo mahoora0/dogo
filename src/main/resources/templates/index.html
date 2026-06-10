@@ -8,12 +8,15 @@
       <em>확인하기</em>
     </a>
 
+
+
     <section class="home-actions" aria-label="빠른 이동">
       <a class="home-action-card home-action-card--lost-search" th:href="@{/lost-items/new}">
         <span class="home-action-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="10" cy="10" r="7"></circle>
-            <line x1="21" y1="21" x2="15" y2="15"></line>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
           </svg>
         </span>
         <p>물건을 잃어버리셨나요?</p>
@@ -29,10 +32,12 @@
 
       <a class="home-action-card home-action-card--found" th:href="@{/found-items/new}">
         <span class="home-action-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 12 20 22 4 22 4 12"></polyline>
+            <rect x="2" y="7" width="20" height="5"></rect>
+            <line x1="12" y1="22" x2="12" y2="7"></line>
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
           </svg>
         </span>
         <p>주인을 찾아주고싶어요?</p>
@@ -48,8 +53,9 @@
 
       <a class="home-action-card home-action-card--animal-missing" th:href="@{/missing-persons/new}">
         <span class="home-action-icon" aria-hidden="true">
-          <svg viewBox="0 0 448 512" fill="currentColor">
-            <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
           </svg>
         </span>
         <p>사람을 찾고 있나요?</p>
@@ -128,15 +134,17 @@
         <a th:each="item : ${recentItems}"
           th:href="${item.type == 'LOST' ? '/lost-items/' + item.id : (item.type == 'FOUND' ? '/found-items/' + item.id : (item.type == 'PERSON' ? '/missing-persons/' + item.id : '/animal-reports/' + item.id))}"
           class="home-recent-card" th:data-type="${item.type}">
-          <span th:text="${item.typeLabel}"
-            th:classappend="${item.type == 'LOST' ? ' home-badge--lost' : (item.type == 'FOUND' ? ' home-badge--found' : (item.type == 'PERSON' ? ' bg-red-500' : ' bg-orange-500'))}"
-            class="home-badge">분실물</span>
           <div class="home-recent-image">
             <img th:if="${item.imageUrl}" th:src="${item.imageUrl}" alt="">
             <img th:unless="${item.imageUrl}" th:src="@{/images/noImageSize.png}" alt="">
           </div>
           <div class="home-recent-body">
-            <strong th:text="${item.title}">검은색 지갑을 분실했어요</strong>
+            <div class="home-recent-title-wrapper">
+              <span th:text="${item.typeLabel}"
+                th:classappend="${item.type == 'LOST' ? ' home-badge--lost' : (item.type == 'FOUND' ? ' home-badge--found' : (item.type == 'PERSON' ? ' bg-red-500' : ' bg-orange-500'))}"
+                class="home-badge">분실물</span>
+              <strong th:text="${item.title}">검은색 지갑을 분실했어요</strong>
+            </div>
             <p>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Z" stroke="currentColor" stroke-width="2" />
@@ -169,13 +177,15 @@
 
         function applyFilter(filterValue, isInitial) {
           let visibleCount = 0;
+          const isMobile = document.documentElement.classList.contains('mobile-view');
 
           cards.forEach(card => {
             const cardType = card.getAttribute('data-type');
             const isMatch = (filterValue === 'all' || cardType === filterValue);
 
             if (isMatch && visibleCount < 8) {
-              card.style.display = 'block';
+              // removeProperty lets CSS take over (works with !important in stylesheet)
+              card.style.removeProperty('display');
               if (!isInitial) {
                 // Trigger animation
                 card.classList.remove('fade-in');
@@ -187,7 +197,8 @@
               }
               visibleCount++;
             } else {
-              card.style.display = 'none';
+              // setProperty with 'important' overrides CSS display:flex !important on mobile
+              card.style.setProperty('display', 'none', 'important');
               card.classList.remove('fade-in');
             }
           });
@@ -195,9 +206,9 @@
           // Display grid or show empty message depending on visibility
           if (grid) {
             if (visibleCount > 0) {
-              grid.style.display = 'grid';
+              grid.style.removeProperty('display'); // CSS controls: flex(mobile) or grid(desktop)
             } else {
-              grid.style.display = 'none';
+              grid.style.setProperty('display', 'none', 'important');
             }
           }
 

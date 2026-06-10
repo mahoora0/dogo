@@ -630,55 +630,50 @@
     background-color: #f1f5f9;
 }
 
-@media (max-width: 0px) {
-    .chat-info-panel {
-        display: none !important;
-    }
+html.mobile-view .chat-info-panel {
+    display: none !important;
 }
 
-@media (max-width: 0px) {
-    .chat-wrapper {
-        border-radius: 1rem;
-        height: calc(100vh - 130px);
-    }
-    
-    .chat-sidebar {
-        width: 100% !important;
-        border-right: none;
-    }
-    
-    .chat-main {
-        display: none !important;
-        width: 100% !important;
-    }
-    
-    /* When active room is selected, toggle views */
-    .chat-wrapper.room-active .chat-sidebar {
-        display: none !important;
-    }
-    
-    .chat-wrapper.room-active .chat-main {
-        display: flex !important;
-    }
-    
-    .chat-back-btn {
-        display: inline-flex;
-    }
-    
-    .chat-header {
-        padding: 0.75rem 1rem;
-    }
-    
-    .chat-messages {
-        padding: 1rem;
-    }
-    
-    .chat-input-area {
-        padding: 0.75rem 1rem;
-    }
-    
-    .message {
-        max-width: 90%;
-    }
+html.mobile-view .chat-wrapper {
+    border-radius: 1rem;
+    height: calc(100vh - 130px);
 }
 
+html.mobile-view .chat-sidebar {
+    width: 100% !important;
+    border-right: none;
+}
+
+html.mobile-view .chat-main {
+    display: none !important;
+    width: 100% !important;
+}
+
+/* When active room is selected, toggle views */
+html.mobile-view .chat-wrapper.room-active .chat-sidebar {
+    display: none !important;
+}
+
+html.mobile-view .chat-wrapper.room-active .chat-main {
+    display: flex !important;
+}
+
+html.mobile-view .chat-back-btn {
+    display: inline-flex;
+}
+
+html.mobile-view .chat-header {
+    padding: 0.75rem 1rem;
+}
+
+html.mobile-view .chat-messages {
+    padding: 1rem;
+}
+
+html.mobile-view .chat-input-area {
+    padding: 0.75rem 1rem;
+}
+
+html.mobile-view .message {
+    max-width: 90%;
+}

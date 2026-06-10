@@ -3,8 +3,20 @@
 <th:block th:with="noSidebar=true">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
+    <style>
+      /* 모바일 대응: min-width 제거 */
+      html.mobile-view body,
+      html.mobile-view .navbar,
+      html.mobile-view .main-layout {
+        min-width: 0 !important;
+        overflow-x: hidden !important;
+      }
+      html.mobile-view .h-\[500px\] {
+        height: 260px !important;
+      }
+    </style>
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div class="grid items-start gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+      <div class="grid items-start gap-6 grid-cols-1 sm:grid-cols-[1.2fr_0.8fr]">
       <!-- Left Column: Gallery & Description -->
       <div class="flex min-w-0 flex-col gap-4">
         <!-- 이미지 갤러리 (Swiper) -->
@@ -19,7 +31,7 @@
                 <a th:each="img : ${report.imageUrls}" th:href="${img}" data-fancybox="animal-gallery"
                    class="swiper-slide group block">
                   <img th:src="${img}" alt="대표 이미지"
-                       class="aspect-square h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] sm:aspect-[4/3] lg:aspect-auto lg:h-[500px]">
+                       class="h-[500px] w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02]">
                 </a>
               </div>
             </div>
@@ -46,7 +58,7 @@
         </div>
 
         <!-- 상세 설명 및 특징 (Desktop) -->
-        <div class="hidden rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100 lg:block">
+        <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100 block">
           <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
             <span class="inline-block w-1.5 h-4 rounded-full bg-amber-500"></span>특징
           </h2>
@@ -99,7 +111,7 @@
 
           <!-- Title & Actions -->
           <div class="flex items-start justify-between gap-4">
-            <h1 th:text="${report.title}" class="text-3xl font-black leading-tight tracking-tight text-slate-900">제목</h1>
+            <h1 th:text="${report.title}" class="text-xl sm:text-3xl font-black leading-tight tracking-tight text-slate-900">제목</h1>
 
             <!-- More actions (Kebab Menu) -->
             <div class="relative shrink-0" th:if="${!isOwner && report.userNo != null}">
@@ -134,7 +146,7 @@
         </div>
 
         <!-- 상세 설명 및 특징 (Mobile) -->
-        <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100 lg:hidden">
+        <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100 hidden">
           <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
             <span class="inline-block w-1.5 h-4 rounded-full bg-amber-500"></span>특징
           </h2>
@@ -155,7 +167,7 @@
           <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
             <span class="inline-block w-1.5 h-4 rounded-full bg-amber-500"></span>동물 프로필
           </h2>
-          <dl class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
               <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">동물 종류</dt>
               <dd th:text="${report.animalTypeLabel}" class="font-bold text-sm text-slate-900">개</dd>
@@ -270,7 +282,7 @@
           <!-- Report Modal (hidden by default) -->
           <div th:if="${!isOwner && report.userNo != null}" data-report-modal
                class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
-            <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+            <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
               <div class="mb-4 flex items-center justify-between">
                 <h2 class="text-lg font-bold text-slate-900">게시글 신고</h2>
                 <button type="button" data-report-close class="text-slate-400 transition hover:text-slate-600">
@@ -313,22 +325,22 @@
               <input type="hidden" name="itemId" th:value="${report.id()}">
               <input type="hidden" name="itemType" value="ANIMAL_REPORT">
               <button type="submit"
-                      class="w-full flex items-center justify-center rounded-full bg-slate-900 px-4 py-3 sm:px-6 font-bold text-white transition-all hover:bg-slate-700 active:scale-95 whitespace-nowrap">
+                      class="w-full flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 font-bold text-white transition-all hover:bg-slate-700 active:scale-95 whitespace-nowrap">
                 1:1 채팅하기
               </button>
             </form>
             <a th:if="${isOwner}" th:href="@{/animal-reports/{id}/edit(id=${report.id()})}"
-               class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
+               class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-6 py-3 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
               수정
             </a>
             <form th:if="${isOwner}" th:action="@{/animal-reports/{id}/delete(id=${report.id()})}" method="post" class="flex flex-1"
                   data-confirm="정말 삭제하시겠습니까?">
               <button type="submit"
-                      class="w-full flex items-center justify-center rounded-full border-2 border-red-200 bg-white px-4 py-3 sm:px-6 font-bold text-red-500 transition-all hover:bg-red-50 hover:text-red-700 active:scale-95 whitespace-nowrap">
+                      class="w-full flex items-center justify-center rounded-full border-2 border-red-200 bg-white px-6 py-3 font-bold text-red-500 transition-all hover:bg-red-50 hover:text-red-700 active:scale-95 whitespace-nowrap">
                 삭제
               </button>
             </form>
-            <a th:href="${listUrl}" class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
+            <a th:href="${listUrl}" class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-6 py-3 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
               목록
             </a>
           </div>
@@ -359,7 +371,7 @@
         </div>
 
         <!-- 결과 있음 -->
-        <div th:if="${!matchingInProgress && matchCandidates != null && !matchCandidates.isEmpty()}" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div th:if="${!matchingInProgress && matchCandidates != null && !matchCandidates.isEmpty()}" class="grid gap-4 grid-cols-3">
           <a th:each="candidate : ${matchCandidates}"
              th:href="@{/animal-reports/{id}(id=${candidate.reportId})}"
              class="group flex gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md">

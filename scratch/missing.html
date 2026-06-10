@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1280">
+    <title>DOGO 찾기 서비스</title>
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2b25620b9f4f16cf99df871475b41e4&libraries=services&autoload=false"></script>
+    <script src="/js/common.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/areaList.css">
+    <script>
+      tailwind.config = {
+        theme: {
+          screens: {
+            'sm': '0px',
+            'md': '0px',
+            'lg': '0px',
+            'xl': '0px',
+            '2xl': '0px',
+          },
+          extend: {
+            fontFamily: {
+              sans: ['Pretendard', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/ui-dialog.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  </head>
+
+  <body>
+    <header class="navbar">
+      <div class="header-container">
+        <div class="logo">
+          <a href="/" class="logo-link">
+            <img id="logoImg" src="/images/logo.png" alt="DOGO 로고" onerror="hideLogo()">
+            <span id="logoText" style="display: none;">DOGO</span>
+          </a>
+        </div>
+
+        <nav class="top-nav">
+          <!-- 1. 분실물 -->
+          <div class="nav-item">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+              </svg>
+              <span>분실물</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">분실물</div>
+              <a href="/lost-items">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+                </svg>
+                <span>분실물 검색</span>
+              </a>
+              <a href="/lost-items/new">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>분실물 등록</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 2. 습득물 -->
+          <div class="nav-item">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-green-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                <polyline stroke-linecap="round" stroke-linejoin="round" points="3.27 6.96 12 12.01 20.73 6.96" />
+                <line stroke-linecap="round" stroke-linejoin="round" x1="12" y1="22.08" x2="12" y2="12" />
+              </svg>
+              <span>습득물</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">습득물</div>
+              <a href="/found-items">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+                </svg>
+                <span>습득물 검색</span>
+              </a>
+              <a href="/found-items/new">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>습득물 등록</span>
+              </a>
+              <a href="/areas/list">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                </svg>
+                <span>유실물센터</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 3. 실종자 -->
+          <div class="nav-item active">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-red-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              <span>실종자</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">실종자</div>
+              <a href="/missing-alerts">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
+                </svg>
+                <span>실종 경보</span>
+              </a>
+              <a href="/missing-persons" class="active-sub">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+                </svg>
+                <span>실종자 검색</span>
+              </a>
+              <a href="/missing-persons/new">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>실종자 제보</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 4. 실종동물 -->
+          <div class="nav-item">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-orange-500">
+                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+              </svg>
+              <span>실종동물</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">실종동물</div>
+              <a href="/animal-reports">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-orange-500">
+                  <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+                </svg>
+                <span>실종동물 검색</span>
+              </a>
+              <a href="/animal-reports/new">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-orange-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+                <span>실종동물 제보</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 5. 고객지원 -->
+          <div class="nav-item">
+            <span class="nav-category">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-slate-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 5.25h.008v.008H12v-.008z" />
+              </svg>
+              <span>고객지원</span>
+            </span>
+            <div class="dropdown-menu">
+              <div class="dropdown-title">고객지원</div>
+              <a href="/faq">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 5.25h.008v.008H12v-.008z" />
+                </svg>
+                <span>자주묻는질문</span>
+              </a>
+              <a href="/inquiry">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+                <span>문의하기</span>
+              </a>
+              <a href="/notice">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                </svg>
+                <span>공지사항</span>
+              </a>
+              <a href="/guide">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-16.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-16.25v14.25" />
+                </svg>
+                <span>이용가이드</span>
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="nav-links">
+          
+            <a href="/login" class="nav-link">로그인</a>
+            <a href="/join" class="nav-link">회원가입</a>
+          
+
+          <!-- 로그인 된 상태 -->
+          
+        </div>
+
+        <!-- Hamburger Button -->
+        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="메뉴 열기">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="main-layout main-layout--full-width">
+      <main class="content">
+        
+    <div class="mb-6">
+      <a href="/missing-persons" class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+        목록으로 돌아가기
+      </a>
+    </div>
+
+    
+    
+
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="grid items-start gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+        <!-- 왼쪽 컬럼: 이미지 갤러리 -->
+        <div class="flex min-w-0 flex-col gap-4">
+          <!-- 이미지 갤러리 (Swiper) -->
+          
+
+          <!-- 이미지 없을 때 (단일 이미지/기본 이미지) -->
+          <div class="relative overflow-hidden rounded-3xl bg-slate-50 border border-slate-100 shadow-inner">
+            <a href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcU
+FhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgo
+KCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAFAAPADASIA
+AhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA
+AAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3
+ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm
+p6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA
+AwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx
+BhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK
+U1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3
+uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD1yb5I
+JGPQKTXhOpatazardM4BJlbkj3r3TUBnT5x3K4ryW78HxySO+0gsxNeXBNmt0jFSezk6MqmrETJj
+91clfo9Evg51yY2NU5fCl6n3GzWtmh6M2Iby/i/1N5J/31V2DxBq9uRmXcPeuSfSdWhPyknFRs2s
+QnDRs2KalJC5YnoUPjPUI8b4i/0rRh8eKoHnwuPX5TXmCardxY82Bvyq0uvxqv72Jh+FHtJIn2aP
+V7bxtp0gG9tv1rTg8R6dLjbOvPvXi6avZykE8Z9qtrc2kgG1wDVKs+pLpI9si1C1l+5Mh/Gp1ljY
+/K6n8a8UiwVHk3O0+xq7a3d/E2I7on6mr9siXSPYRz05pTkCvKJvE2p2ChpHVgPVsVm33xeXT4W8
++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
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" data-fancybox="person-gallery" class="group block">
+              <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcU
+FhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgo
+KCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAFAAPADASIA
+AhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA
+AAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3
+ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm
+p6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA
+AwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx
+BhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK
+U1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3
+uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD1yb5I
+JGPQKTXhOpatazardM4BJlbkj3r3TUBnT5x3K4ryW78HxySO+0gsxNeXBNmt0jFSezk6MqmrETJj
+91clfo9Evg51yY2NU5fCl6n3GzWtmh6M2Iby/i/1N5J/31V2DxBq9uRmXcPeuSfSdWhPyknFRs2s
+QnDRs2KalJC5YnoUPjPUI8b4i/0rRh8eKoHnwuPX5TXmCardxY82Bvyq0uvxqv72Jh+FHtJIn2aP
+V7bxtp0gG9tv1rTg8R6dLjbOvPvXi6avZykE8Z9qtrc2kgG1wDVKs+pLpI9si1C1l+5Mh/Gp1ljY
+/K6n8a8UiwVHk3O0+xq7a3d/E2I7on6mr9siXSPYRz05pTkCvKJvE2p2ChpHVgPVsVm33xeXT4W8
++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
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" alt="실종자 이미지"
+                   class="aspect-square h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] sm:aspect-[4/3] lg:aspect-auto lg:h-[500px]">
+            </a>
+          </div>
+        </div>
+
+        <!-- 오른쪽 컬럼: 실종자 상세 정보 -->
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-col gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div class="mb-4 flex flex-wrap gap-2">
+                <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm  bg-rose-500">실종</span>
+                
+                <span class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">데이터 출처: 경찰청</span>
+              </div>
+              <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">박창환 (44세)</h1>
+              <p class="mt-2 text-sm font-semibold text-slate-600">경남 창원시성산구 남양동</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <time class="text-sm font-bold text-slate-500">2026.06.09 00:00</time>
+              
+              <!-- More actions (Kebab Menu) -->
+              
+            </div>
+          </div>
+          
+          
+          <div class="mt-6">
+            
+            <!-- Grid container that dynamically adjusts columns depending on whether physical info is present -->
+            <div class="grid gap-6 grid-cols-1">
+              
+              <!-- 기본 정보 -->
+              <div class="rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100">
+                <h2 class="mb-5 text-base font-bold text-slate-900 flex items-center gap-2">
+                  <span class="inline-block w-1.5 h-4 rounded-full bg-blue-600"></span>기본 정보
+                </h2>
+                
+                <!-- Dynamic columns inside dl if it's full-width -->
+                <dl class="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">당시 나이</dt>
+                    <dd class="font-bold text-sm text-slate-900">44세</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">현재 나이</dt>
+                    <dd class="font-bold text-sm text-slate-900">44세</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">성별</dt>
+                    <dd class="font-bold text-sm text-slate-900">남자</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">대상 구분</dt>
+                    <dd class="font-bold text-sm text-slate-900">지적장애인(18세이상)</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">국적</dt>
+                    <dd class="font-bold text-sm text-slate-900">대한민국</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">발생일시</dt>
+                    <dd class="font-bold text-sm text-slate-900">2026.06.09 00:00</dd>
+                  </div>
+                  
+                  <div class="flex flex-col gap-1 border-b border-slate-200/60 pb-3 sm:col-span-2 lg:col-span-3">
+                    <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">발생장소</dt>
+                    <dd class="font-bold text-sm text-slate-900">경남 창원시성산구 남양동</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <!-- 신체 정보 -->
+              
+            </div>
+
+            <!-- 머리와 착의 -->
+            
+
+            <!-- 특이사항 및 신체 특징 (etcSpfeatr) -->
+            <div class="mt-6 rounded-2xl bg-slate-50 p-6 shadow-sm border border-slate-100">
+              <h2 class="mb-4 text-base font-bold text-slate-900 flex items-center gap-2">
+                <span class="inline-block w-1.5 h-4 rounded-full bg-blue-600"></span>특이사항 및 신체 특징
+              </h2>
+              <div class="rounded-xl bg-white p-4 font-medium leading-7 text-slate-800 border border-slate-200/60 shadow-sm">농아자, 타인과 소통이 불가, 1급 정신 지체 장애</div>
+            </div>
+
+            <!-- Action / CTA Buttons -->
+            <div class="mt-8 flex gap-3">
+              <a href="/missing-persons" class="flex flex-1 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-4 py-3 sm:px-6 font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 whitespace-nowrap">
+                목록
+              </a>
+            </div>
+
+            
+          </div>
+      </div>
+    </section>
+    <script>
+      (function () {
+        var openBtn = document.querySelector('[data-report-open]');
+        var modal = document.querySelector('[data-report-modal]');
+        var moreBtn = document.getElementById('moreMenuBtn');
+        var moreDropdown = document.getElementById('moreDropdown');
+        
+        // Kebab menu dropdown toggle
+        if (moreBtn && moreDropdown) {
+          moreBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            moreDropdown.classList.toggle('hidden');
+          });
+          document.addEventListener('click', function (e) {
+            if (!moreDropdown.classList.contains('hidden') && !moreDropdown.contains(e.target)) {
+              moreDropdown.classList.add('hidden');
+            }
+          });
+        }
+
+        // Report modal show/hide
+        if (!openBtn || !modal) return;
+        function open() {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+          if (moreDropdown) {
+            moreDropdown.classList.add('hidden');
+          }
+        }
+        function close() {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
+        openBtn.addEventListener('click', open);
+        modal.querySelectorAll('[data-report-close]').forEach(function (btn) { btn.addEventListener('click', close); });
+        modal.addEventListener('click', function (event) { if (event.target === modal) close(); });
+        document.addEventListener('keydown', function (event) { if (event.key === 'Escape') close(); });
+      })();
+    </script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+    <script src="/js/gallery.js"></script>
+  
+      </main>
+    </div>
+    <script src="/js/place-modal.js"></script>
+
+    <!-- Emergency Missing Animal Popup Modal -->
+    <div id="emergencyModal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-slate-900/65 backdrop-blur-md transition-opacity duration-300 opacity-0">
+      <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-red-100 transform scale-95 transition-transform duration-300 flex flex-col relative">
+        
+        <!-- Emergency Pulse Banner -->
+        <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 text-white flex items-center gap-3 shadow-md relative overflow-hidden">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15),transparent)] animate-pulse"></div>
+          <span class="w-3.5 h-3.5 bg-white rounded-full animate-ping flex-shrink-0"></span>
+          <h3 class="font-extrabold text-base tracking-wide flex-grow">🚨 긴급 실종 경보 (EMERGENCY)</h3>
+          <button type="button" onclick="closeEmergencyModal()" class="text-white/80 hover:text-white focus:outline-none transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="p-6 space-y-4">
+          <!-- Animal Image Container -->
+          <div class="relative w-full aspect-video bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 shadow-inner flex items-center justify-center">
+            <img id="emergencyImg" src="" alt="실종동물 이미지" class="w-full h-full object-cover hidden">
+            <div id="emergencyImgFallback" class="flex flex-col items-center justify-center text-slate-400 gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-slate-300">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+              </svg>
+              <span class="text-xs font-semibold">이미지가 등록되지 않았습니다</span>
+            </div>
+            <span class="absolute bottom-3 left-3 bg-red-600/90 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md">골든타임</span>
+          </div>
+          
+          <!-- Information Fields -->
+          <div class="space-y-3">
+            <div class="flex items-start gap-1">
+              <h4 id="emergencyTitle" class="text-base font-extrabold text-slate-900 leading-snug">실종된 반려동물을 찾습니다!</h4>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 text-xs border-t border-slate-100 pt-3">
+              <div>
+                <span id="emergencyBreedLabel" class="text-slate-400 block mb-0.5">품종</span>
+                <span id="emergencyBreed" class="font-bold text-slate-800 text-sm">-</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">실종일자</span>
+                <span id="emergencyDate" class="font-bold text-slate-800 text-sm">-</span>
+              </div>
+              <div class="col-span-2">
+                <span class="text-slate-400 block mb-0.5">실종 장소</span>
+                <span id="emergencyLocation" class="font-bold text-slate-800 text-sm">-</span>
+              </div>
+              <div class="col-span-2">
+                <span id="emergencyMarksLabel" class="text-slate-400 block mb-0.5">특징 및 착의</span>
+                <span id="emergencyMarks" class="font-bold text-slate-800 text-xs bg-slate-50 border border-slate-100 p-2 rounded-lg block leading-relaxed max-h-16 overflow-y-auto">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-2">
+          <button type="button" onclick="closeEmergencyModalForToday()" class="flex-1 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-colors">
+            오늘 하루 보지 않기
+          </button>
+          <a id="emergencyDetailLink" href="/animal-reports" class="flex-grow py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl transition-colors shadow-lg shadow-red-200 inline-flex items-center justify-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+            </svg>
+            제보 및 상세 보기
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      function closeEmergencyModal() {
+        const modal = document.getElementById('emergencyModal');
+        if (modal) {
+          const dialog = modal.querySelector('div');
+          modal.classList.remove('opacity-100');
+          modal.classList.add('opacity-0');
+          dialog.classList.remove('scale-100');
+          dialog.classList.add('scale-95');
+          setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+          }, 300);
+        }
+      }
+      
+      function closeEmergencyModalForToday() {
+        localStorage.setItem('emergency_hide_date', new Date().toDateString());
+        closeEmergencyModal();
+      }
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        const hideDate = localStorage.getItem('emergency_hide_date');
+        const today = new Date().toDateString();
+        if (hideDate === today) {
+          return;
+        }
+        
+        fetch('/admin/api/emergency/status')
+          .then(res => res.json())
+          .then(data => {
+            if (data.active) {
+              const modal = document.getElementById('emergencyModal');
+              const img = document.getElementById('emergencyImg');
+              const fallback = document.getElementById('emergencyImgFallback');
+              
+              document.getElementById('emergencyTitle').innerText = data.title;
+              document.getElementById('emergencyDate').innerText = data.date;
+              document.getElementById('emergencyLocation').innerText = data.location;
+              document.getElementById('emergencyMarks').innerText = data.distinctiveMarks || '특별한 특징 사항이 등록되어 있지 않습니다.';
+              
+              const breedLabel = document.getElementById('emergencyBreedLabel');
+              const marksLabel = document.getElementById('emergencyMarksLabel');
+              const breedVal = document.getElementById('emergencyBreed');
+              
+              if (data.type === 'PERSON') {
+                if (breedLabel) breedLabel.innerText = '나이/국적';
+                if (marksLabel) marksLabel.innerText = '신체 특징 및 착의';
+                if (breedVal) breedVal.innerText = data.age + '세 (' + data.nationality + ')';
+                document.getElementById('emergencyDetailLink').href = '/missing-persons/' + data.reportId;
+              } else {
+                if (breedLabel) breedLabel.innerText = '품종';
+                if (marksLabel) marksLabel.innerText = '특징 및 착의';
+                if (breedVal) breedVal.innerText = data.breed + ' (' + data.animalType + ')';
+                if (data.reportId > 0) {
+                  document.getElementById('emergencyDetailLink').href = '/animal-reports/' + data.reportId;
+                } else {
+                  document.getElementById('emergencyDetailLink').href = '/animal-reports';
+                }
+              }
+              
+              if (data.imageUrl) {
+                img.src = data.imageUrl;
+                img.classList.remove('hidden');
+                fallback.classList.add('hidden');
+              } else {
+                img.classList.add('hidden');
+                fallback.classList.remove('hidden');
+              }
+              
+              modal.classList.remove('hidden');
+              modal.classList.add('flex');
+              setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+              }, 50);
+            }
+          })
+          .catch(err => console.error('긴급 팝업 확인 실패:', err));
+      });
+    </script>
+
+    <!-- Global Chat Notification WebSocket -->
+    
+
+    <!-- Mobile Drawer Menu -->
+    <div id="mobileDrawer" class="mobile-drawer-overlay">
+      <div class="mobile-drawer-content">
+        <div class="mobile-drawer-header">
+          <span class="mobile-drawer-title">메뉴</span>
+          <button id="mobileDrawerClose" class="mobile-drawer-close" aria-label="메뉴 닫기">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div class="mobile-drawer-body">
+          <!-- User Profile info / Login links -->
+          <div class="mobile-drawer-user-section">
+            
+              <a href="/login" class="mobile-user-btn login-btn">로그인</a>
+              <a href="/join" class="mobile-user-btn join-btn">회원가입</a>
+            
+            
+          </div>
+          
+          <!-- Navigation Menu Categories -->
+          <div class="mobile-drawer-nav">
+            <!-- 1. 분실물 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>분실물</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a href="/lost-items">분실물 검색</a>
+                <a href="/lost-items/new">분실물 등록</a>
+              </div>
+            </div>
+            
+            <!-- 2. 습득물 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>습득물</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a href="/found-items">습득물 검색</a>
+                <a href="/found-items/new">습득물 등록</a>
+                <a href="/areas/list">유실물센터</a>
+              </div>
+            </div>
+            
+            <!-- 3. 실종자 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>실종자</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a href="/missing-alerts">실종 경보</a>
+                <a href="/missing-persons">실종자 검색</a>
+                <a href="/missing-persons/new">실종자 제보</a>
+              </div>
+            </div>
+            
+            <!-- 4. 실종동물 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>실종동물</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a href="/animal-reports">실종동물 검색</a>
+                <a href="/animal-reports/new">실종동물 제보</a>
+              </div>
+            </div>
+            
+            <!-- 5. 고객지원 -->
+            <div class="mobile-nav-group">
+              <button class="mobile-nav-toggle">
+                <span>고객지원</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              <div class="mobile-nav-sub">
+                <a href="/faq">자주묻는질문</a>
+                <a href="/inquiry">문의하기</a>
+                <a href="/notice">공지사항</a>
+                <a href="/guide">이용가이드</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>

@@ -5,11 +5,13 @@
     font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+html {
+    overflow-x: auto;
+}
+
 body {
     background: #f7f9fc;
     color: #111827;
-    min-width: 1280px;
-    overflow-x: auto;
 }
 
 a {
@@ -43,6 +45,7 @@ option {
     margin: 0 auto;
     max-width: 1180px;
     min-height: 64px;
+    min-width: 1280px;
     padding: 10px 24px;
     gap: 16px;
 }
@@ -258,11 +261,13 @@ option {
     gap: 22px;
     margin: 18px auto 48px;
     max-width: 1180px;
+    min-width: 1280px;
     padding: 0 24px;
 }
 
 .main-layout--full-width {
     max-width: 1280px;
+    min-width: 1280px;
 }
 
 .sidebar {
@@ -976,152 +981,146 @@ option {
     border-radius: 4px;
 }
 
-@media (max-width: 0px) {
-    .home-actions,
-    .home-recent-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .home-search-panel {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .home-search-panel button {
-        width: 100%;
-    }
-
-    .missing-alert-row {
-        flex-wrap: wrap;
-        gap: 16px;
-        padding: 16px 20px;
-    }
-    .missing-alert-col-right {
-        border-left: none;
-        padding-left: 0;
-        flex-basis: 100%;
-        margin-top: 4px;
-        padding-top: 12px;
-        border-top: 1px dashed #e6edf5;
-    }
-    .missing-alert-col-source {
-        position: absolute;
-        top: 16px;
-        right: 20px;
-    }
+html.mobile-view .header-container,
+html.mobile-view .main-layout,
+html.mobile-view .main-layout--full-width {
+    min-width: auto;
+}
+html.mobile-view .home-actions,
+html.mobile-view .home-recent-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-@media (max-width: 0px) {
-    .header-container {
-        padding: 10px 16px;
-    }
-
-    .main-layout {
-        display: block;
-        margin-top: 14px;
-        padding: 0 16px;
-    }
-
-    .sidebar {
-        margin-bottom: 16px;
-        position: static;
-        width: 100%;
-    }
-
-    .nav-container {
-        padding: 0 16px;
-        overflow-x: auto;
-        justify-content: flex-start;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .nav-container::-webkit-scrollbar {
-        display: none;
-    }
-
-    .top-nav {
-        gap: 16px;
-        padding: 4px 0;
-    }
-
-    .nav-item {
-        padding: 6px 0;
-    }
-
-    .nav-category {
-        padding: 6px 12px;
-        font-size: 14px;
-        white-space: nowrap;
-    }
-
-    .dropdown-menu {
-        left: 50%;
-        transform: translateX(-50%) translateY(5px);
-        min-width: 160px;
-        padding: 12px;
-        border-radius: 12px;
-    }
-
-    .nav-item.mobile-active .dropdown-menu {
-        transform: translateX(-50%) translateY(0);
-    }
+html.mobile-view .home-search-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-@media (max-width: 0px) {
-    .nav-links {
-        gap: 2px;
-    }
+html.mobile-view .home-search-panel button {
+    width: 100%;
+}
 
-    .nav-link,
-    .profile-link,
-    .chat-button {
-        font-size: 12px;
-        padding: 7px;
-    }
+html.mobile-view .missing-alert-row {
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 16px 20px;
+}
+html.mobile-view .missing-alert-col-right {
+    border-left: none;
+    padding-left: 0;
+    flex-basis: 100%;
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px dashed #e6edf5;
+}
+html.mobile-view .missing-alert-col-source {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+}
 
-    .home-actions,
-    .home-recent-grid,
-    .home-search-panel,
-    .missing-alert-toolbar {
-        grid-template-columns: 1fr;
-    }
+html.mobile-view .header-container {
+    padding: 10px 16px;
+}
 
-    .home-missing-alert-strip,
-    .missing-alert-hero {
-        align-items: stretch;
-        display: flex;
-        flex-direction: column;
-    }
+html.mobile-view .main-layout {
+    display: block;
+    margin-top: 14px;
+    padding: 0 16px;
+}
 
-    .home-missing-alert-strip strong {
-        white-space: normal;
-    }
+html.mobile-view .sidebar {
+    margin-bottom: 16px;
+    position: static;
+    width: 100%;
+}
 
-    .home-action-card {
-        min-height: 166px;
-    }
+html.mobile-view .nav-container {
+    padding: 0 16px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+}
 
-    .missing-alert-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-    }
-    .missing-alert-col-left {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        flex-basis: auto;
-    }
-    .missing-alert-col-mid {
-        flex-basis: auto;
-    }
-    .missing-alert-col-right {
-        flex-basis: auto;
-    }
-    .missing-alert-col-source {
-        position: static;
-        align-self: flex-start;
-        margin-top: 4px;
-    }
+html.mobile-view .nav-container::-webkit-scrollbar {
+    display: none;
+}
+
+html.mobile-view .top-nav {
+    gap: 16px;
+    padding: 4px 0;
+}
+
+html.mobile-view .nav-item {
+    padding: 6px 0;
+}
+
+html.mobile-view .nav-category {
+    padding: 6px 12px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+html.mobile-view .dropdown-menu {
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    min-width: 160px;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+html.mobile-view .nav-item.mobile-active .dropdown-menu {
+    transform: translateX(-50%) translateY(0);
+}
+
+html.mobile-view .nav-links {
+    gap: 2px;
+}
+
+html.mobile-view .nav-link,
+html.mobile-view .profile-link,
+html.mobile-view .chat-button {
+    font-size: 12px;
+    padding: 7px;
+}
+
+html.mobile-view .home-actions,
+html.mobile-view .home-recent-grid,
+html.mobile-view .home-search-panel,
+html.mobile-view .missing-alert-toolbar {
+    grid-template-columns: 1fr;
+}
+
+html.mobile-view .missing-alert-hero {
+    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+}
+
+html.mobile-view .home-action-card {
+    min-height: 166px;
+}
+
+html.mobile-view .missing-alert-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+}
+html.mobile-view .missing-alert-col-left {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-basis: auto;
+}
+html.mobile-view .missing-alert-col-mid {
+    flex-basis: auto;
+}
+html.mobile-view .missing-alert-col-right {
+    flex-basis: auto;
+}
+html.mobile-view .missing-alert-col-source {
+    position: static;
+    align-self: flex-start;
+    margin-top: 4px;
 }
 
 @keyframes cardFadeIn {
@@ -1160,37 +1159,35 @@ option {
     display: none;
 }
 
-@media (max-width: 0px) {
-    .top-nav {
-        display: none !important;
-    }
-    
-    .mobile-menu-btn {
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        color: #475569;
-        cursor: pointer;
-        border: none;
-        background: transparent;
-        border-radius: 8px;
-        transition: background-color 0.2s;
-    }
-    .mobile-menu-btn:hover {
-        background-color: #f1f5f9;
-    }
-    
-    /* Hide non-icon items in nav-links on mobile */
-    .nav-links .nav-link,
-    .nav-links form {
-        display: none !important;
-    }
-    
-    .profile-link span {
-        display: none !important; /* Keep only the avatar */
-    }
+html.mobile-view .top-nav {
+    display: none !important;
+}
+
+html.mobile-view .mobile-menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: #475569;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+html.mobile-view .mobile-menu-btn:hover {
+    background-color: #f1f5f9;
+}
+
+/* Hide non-icon items in nav-links on mobile */
+html.mobile-view .nav-links .nav-link,
+html.mobile-view .nav-links form {
+    display: none !important;
+}
+
+html.mobile-view .profile-link span {
+    display: none !important;
 }
 
 .mobile-drawer-overlay {
@@ -1215,18 +1212,18 @@ option {
 .mobile-drawer-content {
     position: absolute;
     top: 0;
-    right: -320px;
+    left: -320px;
     width: 320px;
     height: 100%;
     background-color: #ffffff;
-    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mobile-drawer-overlay.open .mobile-drawer-content {
-    right: 0;
+    left: 0;
 }
 
 .mobile-drawer-header {
@@ -1258,6 +1255,7 @@ option {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
+    padding-bottom: 80px;
 }
 
 .mobile-drawer-user-section {
@@ -1388,4 +1386,1034 @@ option {
 
 .mobile-nav-sub a:hover {
     color: #2563eb;
+}
+
+/* ==========================================================================
+   🏠 Homepage Promo Banner Styles
+   ========================================================================== */
+.home-banner {
+    background: linear-gradient(135deg, #eef4ff 0%, #eff6ff 100%);
+    border: 1px solid #dbeafe;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.02);
+}
+.home-banner-text h2 {
+    color: #1d4ed8;
+    font-size: 24px;
+    font-weight: 850;
+    line-height: 1.4;
+    margin: 0;
+    text-align: left;
+}
+.home-banner-image {
+    width: 130px;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.home-banner-image img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* ==========================================================================
+   📱 Mobile Bottom Navigation Bar Styles
+   ========================================================================== */
+.mobile-bottom-nav {
+    display: none;
+}
+
+/* ==========================================================================
+   📝 Mobile Register Type Selection Bottom Sheet Modal Styles
+   ========================================================================== */
+.mobile-register-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.mobile-register-modal-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+.mobile-register-modal-content {
+    position: absolute;
+    bottom: -100%;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    padding: 20px 20px 32px 20px;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
+    transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mobile-register-modal-overlay.open .mobile-register-modal-content {
+    bottom: 0;
+}
+.mobile-register-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.mobile-register-modal-title {
+    font-size: 17px;
+    font-weight: 850;
+    color: #1e293b;
+}
+.mobile-register-back-btn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.mobile-register-modal-body {
+    display: flex;
+    flex-direction: column;
+}
+.mobile-register-prompt {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #475569;
+    margin-bottom: 18px;
+    text-align: left;
+}
+.mobile-register-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+.mobile-register-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 4px;
+    border-radius: 14px;
+    font-size: 11.5px;
+    font-weight: 800;
+    text-decoration: none;
+    gap: 8px;
+    transition: transform 0.2s ease;
+}
+.mobile-register-card:active {
+    transform: scale(0.95);
+}
+.mobile-register-card.card-lost { background: #eff6ff; color: #1e40af; }
+.mobile-register-card.card-found { background: #f0fdf4; color: #166534; }
+.mobile-register-card.card-person { background: #faf5ff; color: #6b21a8; }
+.mobile-register-card.card-animal { background: #fff7ed; color: #c2410c; }
+
+.mobile-register-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1.5px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+.mobile-register-icon-wrapper svg {
+    width: 20px;
+    height: 20px;
+    color: currentColor;
+}
+
+/* ==========================================================================
+   📱 Mobile View Overrides (JS class: html.mobile-view, <= 480px)
+   ========================================================================== */
+html.mobile-view .header-container {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    position: relative !important;
+    min-height: 56px !important;
+    padding: 8px 16px !important;
+}
+html.mobile-view .mobile-menu-btn {
+    order: 1 !important;
+    display: inline-flex !important;
+}
+html.mobile-view .logo {
+    order: 2 !important;
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    margin-left: 0 !important;
+}
+html.mobile-view .nav-links {
+    order: 3 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+html.mobile-view .nav-links .nav-link,
+html.mobile-view .nav-links form,
+html.mobile-view .profile-link {
+    display: none !important;
+}
+html.mobile-view #notificationWrapper,
+html.mobile-view .chat-button {
+    display: none !important;
+}
+
+/* 2. Promo Banner */
+html.mobile-view .home-banner {
+    padding: 20px 24px !important;
+    border-radius: 12px !important;
+    margin-bottom: 20px !important;
+}
+html.mobile-view .home-banner-text h2 {
+    font-size: 19px !important;
+    line-height: 1.35 !important;
+}
+html.mobile-view .home-banner-image {
+    width: 100px !important;
+}
+
+/* 3. Service Cards Grid */
+html.mobile-view .home-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+}
+html.mobile-view .home-action-card {
+    display: grid !important;
+    grid-template-areas:
+        "icon title"
+        "icon desc" !important;
+    grid-template-columns: auto 1fr !important;
+    grid-template-rows: auto auto !important;
+    align-items: center !important;
+    gap: 6px 12px !important;
+    min-height: 100px !important;
+    padding: 20px 16px !important;
+    border-radius: 12px !important;
+}
+html.mobile-view .home-action-card .home-action-icon {
+    grid-area: icon !important;
+    margin-bottom: 0 !important;
+    width: 34px !important;
+    height: 34px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+html.mobile-view .home-action-card strong {
+    grid-area: title !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    margin-bottom: 0 !important;
+    line-height: 1.25 !important;
+    text-align: left !important;
+}
+html.mobile-view .home-action-card > span:not(.home-action-icon) {
+    grid-area: desc !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+    display: block !important;
+    text-align: left !important;
+}
+html.mobile-view .home-action-card p,
+html.mobile-view .home-action-card em {
+    display: none !important;
+}
+
+/* 4. Bottom Navigation Bar */
+html.mobile-view body {
+    padding-bottom: 74px !important;
+}
+html.mobile-view .mobile-bottom-nav {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 60px !important;
+    background: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    z-index: 9999 !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05) !important;
+    padding: 0 4px !important;
+    transition: transform 0.3s ease-in-out !important;
+}
+html.mobile-view .mobile-bottom-nav.nav-hidden {
+    transform: translateY(150%) !important;
+}
+html.mobile-view .mobile-bottom-nav-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #64748b !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    gap: 4px !important;
+    flex: 1 !important;
+    height: 100% !important;
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    padding: 4px 0 !important;
+}
+html.mobile-view .mobile-bottom-nav-item svg {
+    width: 22px !important;
+    height: 22px !important;
+    stroke-width: 2 !important;
+}
+html.mobile-view .mobile-bottom-nav-item.active {
+    color: #2563eb !important;
+}
+html.mobile-view .mobile-bottom-nav-item.register-btn {
+    position: relative !important;
+    overflow: visible !important;
+}
+html.mobile-view .plus-icon-wrapper {
+    width: 44px !important;
+    height: 44px !important;
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3) !important;
+    margin-top: -24px !important;
+    transition: transform 0.2s !important;
+}
+html.mobile-view .plus-icon-wrapper svg {
+    width: 22px !important;
+    height: 22px !important;
+    stroke-width: 3 !important;
+}
+html.mobile-view .plus-icon-wrapper:active {
+    transform: scale(0.95) !important;
+}
+
+/* 5. Recent Posts List */
+html.mobile-view .home-recent-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+html.mobile-view .home-recent-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 12px !important;
+    gap: 12px !important;
+    border-radius: 14px !important;
+    height: auto !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+}
+html.mobile-view .home-recent-image {
+    width: 72px !important;
+    height: 72px !important;
+    flex-shrink: 0 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    aspect-ratio: 1 !important;
+}
+html.mobile-view .home-recent-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+html.mobile-view .home-recent-body {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    height: 72px !important;
+    text-align: left !important;
+}
+html.mobile-view .home-recent-title-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+}
+html.mobile-view .home-recent-body strong {
+    font-size: 13.5px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    line-height: 1.3 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    flex: 1 !important;
+}
+html.mobile-view .home-recent-body p {
+    font-size: 11px !important;
+    margin-top: 2px !important;
+    color: #64748b !important;
+    align-items: center !important;
+    display: flex !important;
+    gap: 4px !important;
+}
+html.mobile-view .home-recent-body p svg {
+    width: 12px !important;
+    height: 12px !important;
+}
+html.mobile-view .home-recent-body .flex {
+    margin-top: 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+html.mobile-view .home-recent-body time {
+    font-size: 10px !important;
+    color: #94a3b8 !important;
+    margin-top: 0 !important;
+    order: 2 !important;
+}
+html.mobile-view .home-recent-body span[style*="font-size: 11px"] {
+    display: none !important;
+}
+html.mobile-view .home-badge {
+    position: static !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    font-size: 9px !important;
+    font-weight: 850 !important;
+    padding: 2px 5px !important;
+    border-radius: 4px !important;
+    height: 17px !important;
+    line-height: 1 !important;
+    color: #ffffff !important;
+}
+
+/* 6. Filter tabs */
+html.mobile-view .home-tabs {
+    gap: 6px !important;
+    margin-bottom: 14px !important;
+}
+html.mobile-view .home-tabs a {
+    border-radius: 9999px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    min-width: auto !important;
+}
+
+/* ===== 모바일 전용: 통합검색 숨김 ===== */
+html.mobile-view #homeSearchForm {
+    display: none !important;
+}
+
+/* ===== 모바일 전용: 긴급알림 컴팩트 ===== */
+html.mobile-view .home-missing-alert-strip {
+    padding: 9px 12px !important;
+    margin-bottom: 12px !important;
+    border-radius: 8px !important;
+    gap: 8px !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+}
+
+html.mobile-view .home-missing-alert-strip span {
+    font-size: 10px !important;
+    padding: 4px 7px !important;
+    border-radius: 5px !important;
+}
+
+html.mobile-view .home-missing-alert-strip strong {
+    font-size: 12px !important;
+}
+
+html.mobile-view .home-missing-alert-strip em {
+    display: none !important;
+}
+
+/* ===== 모바일 전용: 검색 결과 목록 가로형(Row) 배치 및 높이 조정 ===== */
+html.mobile-view .main-layout section.grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+html.mobile-view .main-layout section.grid > a {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 12px !important;
+    gap: 14px !important;
+    border-radius: 16px !important;
+    height: auto !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+}
+
+/* 이미지 컨테이너 크기 키우기 (120px) */
+html.mobile-view .main-layout section.grid > a > div:first-child {
+    width: 120px !important;
+    height: 120px !important;
+    flex-shrink: 0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    aspect-ratio: 1 / 1 !important;
+}
+
+html.mobile-view .main-layout section.grid > a > div:first-child img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* 이미지 안의 상태 배지 위치 조정 */
+html.mobile-view .main-layout section.grid > a > div:first-child > div.absolute {
+    top: 6px !important;
+    right: 6px !important;
+    left: auto !important;
+}
+
+html.mobile-view .main-layout section.grid > a > div:first-child > div.absolute span {
+    padding: 2px 6px !important;
+    font-size: 9px !important;
+}
+
+/* 카드 바디 영역 (높이를 이미지와 일치시켜 세로 정렬이 정돈되게 함) */
+html.mobile-view .main-layout section.grid > a > div:last-child {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    padding: 2px 0 !important;
+    min-width: 0 !important;
+    height: 120px !important;
+    text-align: left !important;
+}
+
+/* 제목 크기 조정 */
+html.mobile-view .main-layout section.grid > a h2 {
+    font-size: 14.5px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    line-height: 1.3 !important;
+    margin-top: 0 !important;
+    margin-bottom: 2px !important;
+}
+
+/* 카테고리 태그들 */
+html.mobile-view .main-layout section.grid > a div.mt-2,
+html.mobile-view .main-layout section.grid > a div.mt-4 {
+    margin-top: 2px !important;
+    gap: 4px !important;
+}
+
+html.mobile-view .main-layout section.grid > a div.mt-2 span,
+html.mobile-view .main-layout section.grid > a div.mt-4 span {
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+}
+
+/* 설명 본문 숨김 */
+html.mobile-view .main-layout section.grid > a p {
+    display: none !important;
+}
+
+/* 위치 및 시간 줄 간격 좁히기 */
+html.mobile-view .main-layout section.grid > a div.mt-3 {
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    column-gap: 10px !important;
+    row-gap: 2px !important;
+}
+
+html.mobile-view .main-layout section.grid > a div.mt-3 > div {
+    margin-top: 0 !important;
+    font-size: 11px !important;
+    gap: 4px !important;
+}
+
+html.mobile-view .main-layout section.grid > a div.mt-3 svg {
+    width: 12px !important;
+    height: 12px !important;
+}
+
+/* ===== 모바일 전용: 검색 페이지 상단 헤더 및 필터 영역 세로 전환 ===== */
+html.mobile-view .search-list-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+}
+
+html.mobile-view .search-list-header > div {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+}
+
+html.mobile-view .search-list-header a,
+html.mobile-view .search-list-header div.flex-col {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+html.mobile-view .search-filter-row-1 {
+    grid-template-columns: 1fr !important;
+}
+
+html.mobile-view .search-filter-row-2 {
+    grid-template-columns: 1fr !important;
+}
+
+html.mobile-view .search-filter-row-3 {
+    width: 100% !important;
+}
+
+html.mobile-view .search-filter-row-3 > .grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+}
+
+html.mobile-view .search-filter-row-3 .col-span-8,
+html.mobile-view .search-filter-row-3 .col-span-4 {
+    grid-column: span 12 / span 12 !important;
+}
+
+/* ===== 모바일 전용: 검색 페이지 상단 헤더 및 필터 영역 디자인 개선 ===== */
+html.mobile-view .search-header-card {
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+    border-radius: 12px !important;
+}
+
+html.mobile-view .search-header-card h1 {
+    font-size: 20px !important;
+}
+
+html.mobile-view .search-header-card p {
+    font-size: 12px !important;
+    margin-top: 4px !important;
+}
+
+html.mobile-view .search-header-card a,
+html.mobile-view .search-header-card button {
+    margin-top: 12px !important;
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+    height: auto !important;
+    width: 100% !important;
+}
+
+/* animal-reports 의 두 버튼 정렬 */
+html.mobile-view .search-list-header div.flex-col {
+    width: 100% !important;
+    gap: 8px !important;
+}
+
+html.mobile-view .search-list-header div.flex-col a {
+    margin-top: 0 !important;
+}
+
+html.mobile-view .search-filter-form {
+    padding: 14px !important;
+    margin-bottom: 14px !important;
+    border-radius: 12px !important;
+    gap: 12px !important;
+}
+
+html.mobile-view .search-filter-form .space-y-2 > label {
+    font-size: 10px !important;
+}
+
+html.mobile-view .search-filter-form select,
+html.mobile-view .search-filter-form input {
+    font-size: 12px !important;
+    padding: 8px 14px !important;
+    height: 38px !important;
+}
+
+html.mobile-view .search-filter-form input[type="date"] {
+    height: 38px !important;
+}
+
+/* 검색창 안의 키워드 입력 필드 */
+html.mobile-view .search-filter-row-3 .col-span-8 {
+    border-radius: 10px !important;
+}
+
+html.mobile-view .search-filter-row-3 #keywordScopeSelect {
+    font-size: 12px !important;
+    width: 90px !important;
+    padding-left: 10px !important;
+    padding-right: 20px !important;
+}
+
+html.mobile-view .search-filter-row-3 #keywordInput {
+    font-size: 12px !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    padding-left: 36px !important;
+    height: 38px !important;
+}
+
+/* 검색/초기화 버튼 줄 */
+html.mobile-view .search-filter-row-3 .col-span-4 {
+    display: flex !important;
+    gap: 8px !important;
+}
+
+html.mobile-view .search-filter-row-3 .col-span-4 button,
+html.mobile-view .search-filter-row-3 .col-span-4 a {
+    flex: 1 !important;
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+    height: 38px !important;
+    border-radius: 9999px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* 정렬 셀렉트박스 부분 */
+html.mobile-view .main-layout .mb-5.flex {
+    margin-bottom: 12px !important;
+}
+
+html.mobile-view .main-layout .mb-5.flex h3 {
+    font-size: 12px !important;
+}
+
+html.mobile-view .main-layout .mb-5.flex select {
+    font-size: 11px !important;
+    padding: 4px 24px 4px 10px !important;
+    background-position: right 6px center !important;
+}
+
+/* ===== 모바일 전용: 고객지원 게시판 (Notice, FAQ, Inquiry, Guide) 디자인 최적화 ===== */
+
+/* 1. 공지사항 (Notice) 테이블 -> 리스트 뷰 전환 */
+html.mobile-view .notice-container table,
+html.mobile-view .notice-container table thead,
+html.mobile-view .notice-container table tbody,
+html.mobile-view .notice-container table tr,
+html.mobile-view .notice-container table td {
+    display: block !important;
+    width: 100% !important;
+}
+
+html.mobile-view .notice-container table thead {
+    display: none !important;
+}
+
+html.mobile-view .notice-container table tbody tr {
+    padding: 14px 16px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    background: #ffffff !important;
+}
+
+html.mobile-view .notice-container table tbody tr td {
+    padding: 0 !important;
+    border: none !important;
+    text-align: left !important;
+    background: transparent !important;
+}
+
+html.mobile-view .notice-container table tbody tr td:nth-child(1) {
+    order: 1 !important;
+    width: auto !important;
+}
+
+html.mobile-view .notice-container table tbody tr td:nth-child(1) span {
+    display: inline-block !important;
+    padding: 2px 8px !important;
+    font-size: 10px !important;
+    border-radius: 4px !important;
+}
+
+html.mobile-view .notice-container table tbody tr td:nth-child(2) {
+    order: 2 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.4 !important;
+}
+
+html.mobile-view .notice-container table tbody tr td:nth-child(2) a {
+    max-width: 100% !important;
+    white-space: normal !important;
+    word-break: break-all !important;
+}
+
+html.mobile-view .notice-container table tbody tr td:nth-child(3) {
+    order: 3 !important;
+    display: inline-block !important;
+    width: auto !important;
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+}
+
+html.mobile-view .notice-container table tbody tr td:nth-child(4) {
+    order: 4 !important;
+    display: inline-block !important;
+    width: auto !important;
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+    margin-left: 8px !important;
+}
+
+html.mobile-view .notice-container table tbody tr td:nth-child(4)::before {
+    content: "· 조회수 " !important;
+}
+
+/* 2. 문의하기 (Inquiry) 테이블 -> 리스트 뷰 전환 및 그리드 카드 최적화 */
+html.mobile-view .inquiry-container table,
+html.mobile-view .inquiry-container table thead,
+html.mobile-view .inquiry-container table tbody,
+html.mobile-view .inquiry-container table tr,
+html.mobile-view .inquiry-container table td {
+    display: block !important;
+    width: 100% !important;
+}
+
+html.mobile-view .inquiry-container table thead {
+    display: none !important;
+}
+
+html.mobile-view .inquiry-container table tbody tr {
+    padding: 14px 16px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    background: #ffffff !important;
+}
+
+html.mobile-view .inquiry-container table tbody tr td {
+    padding: 0 !important;
+    border: none !important;
+    text-align: left !important;
+    background: transparent !important;
+}
+
+html.mobile-view .inquiry-container table tbody tr td:nth-child(1) {
+    order: 1 !important;
+    display: inline-block !important;
+    width: auto !important;
+    font-size: 11px !important;
+    color: #64748b !important;
+    margin-right: 8px !important;
+}
+
+html.mobile-view .inquiry-container table tbody tr td:nth-child(2) {
+    order: 2 !important;
+    display: inline-block !important;
+    width: auto !important;
+}
+
+html.mobile-view .inquiry-container table tbody tr td:nth-child(2) span {
+    display: inline-block !important;
+    padding: 2px 6px !important;
+    font-size: 9px !important;
+    border-radius: 4px !important;
+}
+
+html.mobile-view .inquiry-container table tbody tr td:nth-child(3) {
+    order: 3 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.4 !important;
+    margin-top: 2px !important;
+}
+
+html.mobile-view .inquiry-container table tbody tr td:nth-child(3) a {
+    max-width: 100% !important;
+    white-space: normal !important;
+    word-break: break-all !important;
+}
+
+html.mobile-view .inquiry-container table tbody tr td:nth-child(4) {
+    order: 4 !important;
+    display: block !important;
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+    margin-top: 2px !important;
+}
+
+/* 안내 카드 3열 그리드 -> 1열 변경 */
+html.mobile-view .inquiry-container .grid.md\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+}
+
+/* 필터 제어 영역 모바일 가로 정렬 */
+html.mobile-view .inquiry-container .mb-6.flex {
+    padding: 12px !important;
+    gap: 10px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+}
+
+html.mobile-view .inquiry-container .mb-6.flex form {
+    width: 100% !important;
+    display: flex !important;
+    gap: 8px !important;
+}
+
+html.mobile-view .inquiry-container .mb-6.flex form > div {
+    flex: 1 !important;
+}
+
+html.mobile-view .inquiry-container .mb-6.flex select {
+    width: 100% !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+}
+
+/* 3. 자주묻는질문 (FAQ) 모바일 정렬 */
+html.mobile-view .faq-container {
+    padding: 0 !important;
+}
+
+html.mobile-view .faq-container .mb-8.flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+}
+
+html.mobile-view .faq-container h2 {
+    font-size: 20px !important;
+}
+
+html.mobile-view .faq-container p.text-lg {
+    font-size: 13px !important;
+}
+
+html.mobile-view .faq-container .category-btn {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+}
+
+html.mobile-view .faq-container #faqSearchInput {
+    font-size: 13px !important;
+    padding: 10px 42px 10px 14px !important;
+}
+
+html.mobile-view .faq-item .faq-btn {
+    padding: 12px 16px !important;
+}
+
+html.mobile-view .faq-item .faq-btn span.text-lg {
+    font-size: 14px !important;
+}
+
+html.mobile-view .faq-item .faq-answer {
+    padding: 12px 16px !important;
+}
+
+html.mobile-view .faq-item .faq-answer p,
+html.mobile-view .faq-item .faq-answer div {
+    font-size: 13px !important;
+}
+
+/* 4. 이용가이드 (Guide) 모바일 정렬 */
+html.mobile-view .guide-container {
+    padding: 0 !important;
+}
+
+html.mobile-view .guide-container h2 {
+    font-size: 20px !important;
+}
+
+html.mobile-view .guide-container p.text-lg {
+    font-size: 13px !important;
+}
+
+html.mobile-view .guide-container .mb-8 .flex {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+}
+
+html.mobile-view .guide-container .mb-8 a {
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+    text-align: center !important;
+    line-height: 1.3 !important;
+}
+
+html.mobile-view .guide-container .flex-col.md\:flex-row {
+    flex-direction: column !important;
+    gap: 16px !important;
+}
+
+html.mobile-view .guide-container .md\:flex {
+    display: none !important;
+}
+
+html.mobile-view .guide-container .md\:hidden {
+    display: flex !important;
+}
+
+/* 공통: 헤더 타이틀 영역 마진 수정 */
+html.mobile-view .notice-container .mb-8.flex,
+html.mobile-view .inquiry-container .mb-8.flex,
+html.mobile-view .guide-container .mb-8.flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+}
+
+html.mobile-view .notice-container h2,
+html.mobile-view .inquiry-container h2,
+html.mobile-view .guide-container h2 {
+    font-size: 24px !important;
+}
+
+html.mobile-view .notice-container p.text-lg,
+html.mobile-view .inquiry-container p.text-lg,
+html.mobile-view .guide-container p.text-lg {
+    font-size: 13px !important;
+}
+
+html.mobile-view .notice-container select#categoryFilter {
+    width: 100% !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
 }
