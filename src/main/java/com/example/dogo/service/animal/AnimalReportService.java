@@ -53,7 +53,7 @@ public class AnimalReportService {
 
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
-	private static final Set<String> USER_REPORT_TYPES = Set.of("MISSING", "SIGHTING", "PROTECTING");
+	private static final Set<String> USER_REPORT_TYPES = Set.of("MISSING", "SIGHTING");
 	private static final Set<String> ANIMAL_TYPES = Set.of("DOG", "CAT", "OTHER");
 	private static final Set<String> GENDERS = Set.of("MALE", "FEMALE", "UNKNOWN");
 	private static final Set<String> NEUTERED_STATUSES = Set.of("NEUTERED", "NOT_NEUTERED", "UNKNOWN");
@@ -149,16 +149,7 @@ public class AnimalReportService {
 
 		User user = (loginUser != null) ? loginUser : getOrCreateDevUser();
 		Area regionArea = findRegionArea(request.getRegionName()).orElse(null);
-		String formReportType = request.getReportType().trim();
-		String reportType = formReportType;
-		if ("SIGHTING".equals(formReportType)) {
-			String careStatus = normalizedCareStatus(formReportType, request.getSightingCareStatus());
-			if ("PROTECTING".equals(careStatus)) {
-				reportType = "PROTECTING";
-			} else if ("TRANSFERRED".equals(careStatus)) {
-				reportType = "TRANSFERRED";
-			}
-		}
+		String reportType = request.getReportType().trim();
 		String animalType = request.getAnimalType().trim();
 		String breedName = blankToNull(request.getBreedName());
 		String title = defaultTitle(reportType, request.getTitle(), animalType, breedName);
@@ -174,7 +165,7 @@ public class AnimalReportService {
 				request.getDetailPlace().trim(),
 				blankToNull(request.getContactPhone()),
 				request.isContactPublic(),
-				normalizedCareStatus(formReportType, request.getSightingCareStatus()),
+				normalizedCareStatus(reportType, request.getSightingCareStatus()),
 				animalType,
 				breedName,
 				defaultInSet(request.getGender(), GENDERS, "UNKNOWN"),
@@ -309,16 +300,7 @@ public class AnimalReportService {
 				.orElseThrow(() -> new IllegalArgumentException("동물 신고 게시글을 찾을 수 없습니다."));
 		checkOwnership(report, loginUser);
 
-		String formReportType = request.getReportType().trim();
-		String reportType = formReportType;
-		if ("SIGHTING".equals(formReportType)) {
-			String careStatus = normalizedCareStatus(formReportType, request.getSightingCareStatus());
-			if ("PROTECTING".equals(careStatus)) {
-				reportType = "PROTECTING";
-			} else if ("TRANSFERRED".equals(careStatus)) {
-				reportType = "TRANSFERRED";
-			}
-		}
+		String reportType = request.getReportType().trim();
 		String animalType = request.getAnimalType().trim();
 		String breedName = blankToNull(request.getBreedName());
 		String title = defaultTitle(reportType, request.getTitle(), animalType, breedName);
@@ -334,7 +316,7 @@ public class AnimalReportService {
 				request.getDetailPlace().trim(),
 				blankToNull(request.getContactPhone()),
 				request.isContactPublic(),
-				normalizedCareStatus(formReportType, request.getSightingCareStatus()),
+				normalizedCareStatus(reportType, request.getSightingCareStatus()),
 				animalType,
 				breedName,
 				defaultInSet(request.getGender(), GENDERS, "UNKNOWN"),
@@ -1027,7 +1009,7 @@ public class AnimalReportService {
 	}
 
 	private String getFormReportType(String dbReportType) {
-		if ("TRANSFERRED".equals(dbReportType)) {
+		if ("PROTECTING".equals(dbReportType) || "TRANSFERRED".equals(dbReportType)) {
 			return "SIGHTING";
 		}
 		return dbReportType;
