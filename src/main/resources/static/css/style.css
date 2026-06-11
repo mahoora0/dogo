@@ -263,7 +263,8 @@ option {
     max-width: 1180px;
     min-width: 1280px;
     padding: 0 24px;
-    min-height: calc(100vh - 280px);
+    min-height: calc(100vh - 227px);
+    min-height: calc(100dvh - 227px);
 }
 
 .main-layout--full-width {
@@ -1653,7 +1654,14 @@ html.mobile-view .home-action-card em {
 
 /* 4. Bottom Navigation Bar */
 html.mobile-view body {
-    padding-bottom: 74px !important;
+    padding-bottom: 0 !important;
+}
+html.mobile-view footer {
+    padding-bottom: calc(1.25rem + 74px) !important;
+}
+html.mobile-view .main-layout {
+    min-height: calc(100vh - 301px);
+    min-height: calc(100dvh - 301px);
 }
 html.mobile-view .mobile-bottom-nav {
     display: flex !important;
