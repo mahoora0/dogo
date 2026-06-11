@@ -67,14 +67,11 @@
         <nav class="top-nav">
           <!-- 1. 분실물 -->
           <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/lost-items' || currentUri == '/lost-items/new') ? 'active' : ''}">
-            <span class="nav-category">
+            <a th:href="@{/lost-items}" class="nav-category">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-blue-600">
                 <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
                 <path d="M16 10a4 4 0 0 1-8 0"></path>
-            <a th:href="@{/lost-items}" class="nav-category">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
               </svg>
               <span>분실물</span>
             </a>
@@ -97,18 +94,13 @@
 
           <!-- 2. 습득물 -->
           <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/found-items' || currentUri == '/found-items/new' || currentUri == '/areas/list') ? 'active' : ''}">
-            <span class="nav-category">
+            <a th:href="@{/found-items}" class="nav-category">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-green-600">
                 <polyline points="20 12 20 22 4 22 4 12"></polyline>
                 <rect x="2" y="7" width="20" height="5"></rect>
                 <line x1="12" y1="22" x2="12" y2="7"></line>
                 <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
                 <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
-            <a th:href="@{/found-items}" class="nav-category">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-green-600">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                <polyline stroke-linecap="round" stroke-linejoin="round" points="3.27 6.96 12 12.01 20.73 6.96" />
-                <line stroke-linecap="round" stroke-linejoin="round" x1="12" y1="22.08" x2="12" y2="12" />
               </svg>
               <span>습득물</span>
             </a>
@@ -138,13 +130,10 @@
 
           <!-- 3. 실종자 -->
           <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/missing-alerts' || currentUri == '/missing-persons' || currentUri == '/missing-persons/new') ? 'active' : ''}">
-            <span class="nav-category">
+            <a th:href="@{/missing-persons}" class="nav-category">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-red-500">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
-            <a th:href="@{/missing-persons}" class="nav-category">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-red-500">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
               </svg>
               <span>실종자</span>
             </a>
@@ -173,9 +162,6 @@
 
           <!-- 4. 실종동물 -->
           <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/animal-reports' || currentUri == '/animal-reports/new') ? 'active' : ''}">
-            <span class="nav-category">
-              <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-orange-500">
-                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z"/>
             <a th:href="@{/animal-reports}" class="nav-category">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-orange-500">
                 <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
