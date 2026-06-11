@@ -3,7 +3,25 @@
 <th:block th:fragment="setContent(content)">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1280">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // 실제 창 크기 기반 모바일 감지 (window.innerWidth 사용 - CSS media query보다 정확)
+      (function() {
+        var MOBILE_BREAKPOINT = 560;
+        function updateMobileClass() {
+          if (window.innerWidth <= MOBILE_BREAKPOINT) {
+            document.documentElement.classList.add('mobile-view');
+          } else {
+            document.documentElement.classList.remove('mobile-view');
+          }
+        }
+        // 즉시 실행 + 창 크기 변경 감지
+        updateMobileClass();
+        window.addEventListener('resize', updateMobileClass);
+        // DOM 로드 후 한 번 더 확인
+        document.addEventListener('DOMContentLoaded', updateMobileClass);
+      })();
+    </script>
     <title>DOGO 찾기 서비스</title>
     <script type="text/javascript"
             src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2b25620b9f4f16cf99df871475b41e4&libraries=services&autoload=false"></script>
@@ -37,453 +55,458 @@
   </head>
 
   <body>
-    <header class="navbar">
-      <div class="header-container">
-        <div class="logo">
-          <a th:href="@{/}" class="logo-link">
-            <img id="logoImg" th:src="@{/images/logo.png}" alt="DOGO 로고" onerror="hideLogo()">
-            <span id="logoText" style="display: none;">DOGO</span>
-          </a>
-        </div>
+  <header class="navbar">
+    <div class="header-container">
+      <div class="logo">
+        <a th:href="@{/}" class="logo-link">
+          <img id="logoImg" th:src="@{/images/logo.png}" alt="DOGO 로고" onerror="hideLogo()">
+          <span id="logoText" style="display: none;">DOGO</span>
+        </a>
+      </div>
 
-        <nav class="top-nav">
-          <!-- 1. 분실물 -->
-          <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/lost-items' || currentUri == '/lost-items/new') ? 'active' : ''}">
+      <nav class="top-nav">
+        <!-- 1. 분실물 -->
+        <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/lost-items' || currentUri == '/lost-items/new') ? 'active' : ''}">
             <span class="nav-category">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-blue-600">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
               </svg>
               <span>분실물</span>
             </span>
-            <div class="dropdown-menu">
-              <div class="dropdown-title">분실물</div>
-              <a th:href="@{/lost-items}" th:classappend="${currentUri == '/lost-items' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
-                </svg>
-                <span>분실물 검색</span>
-              </a>
-              <a th:href="@{/lost-items/new}" th:classappend="${currentUri == '/lost-items/new' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                </svg>
-                <span>분실물 등록</span>
-              </a>
-            </div>
+          <div class="dropdown-menu">
+            <div class="dropdown-title">분실물</div>
+            <a th:href="@{/lost-items}" th:classappend="${currentUri == '/lost-items' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+              </svg>
+              <span>분실물 검색</span>
+            </a>
+            <a th:href="@{/lost-items/new}" th:classappend="${currentUri == '/lost-items/new' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+              </svg>
+              <span>분실물 등록</span>
+            </a>
           </div>
+        </div>
 
-          <!-- 2. 습득물 -->
-          <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/found-items' || currentUri == '/found-items/new' || currentUri == '/areas/list') ? 'active' : ''}">
+        <!-- 2. 습득물 -->
+        <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/found-items' || currentUri == '/found-items/new' || currentUri == '/areas/list') ? 'active' : ''}">
             <span class="nav-category">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-green-600">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                <polyline stroke-linecap="round" stroke-linejoin="round" points="3.27 6.96 12 12.01 20.73 6.96" />
-                <line stroke-linecap="round" stroke-linejoin="round" x1="12" y1="22.08" x2="12" y2="12" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-green-600">
+                <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                <rect x="2" y="7" width="20" height="5"></rect>
+                <line x1="12" y1="22" x2="12" y2="7"></line>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
               </svg>
               <span>습득물</span>
             </span>
-            <div class="dropdown-menu">
-              <div class="dropdown-title">습득물</div>
-              <a th:href="@{/found-items}" th:classappend="${currentUri == '/found-items' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
-                </svg>
-                <span>습득물 검색</span>
-              </a>
-              <a th:href="@{/found-items/new}" th:classappend="${currentUri == '/found-items/new' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                </svg>
-                <span>습득물 등록</span>
-              </a>
-              <a th:href="@{/areas/list}" th:classappend="${currentUri == '/areas/list' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                </svg>
-                <span>유실물센터</span>
-              </a>
-            </div>
+          <div class="dropdown-menu">
+            <div class="dropdown-title">습득물</div>
+            <a th:href="@{/found-items}" th:classappend="${currentUri == '/found-items' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+              </svg>
+              <span>습득물 검색</span>
+            </a>
+            <a th:href="@{/found-items/new}" th:classappend="${currentUri == '/found-items/new' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+              </svg>
+              <span>습득물 등록</span>
+            </a>
+            <a th:href="@{/areas/list}" th:classappend="${currentUri == '/areas/list' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+              <span>유실물센터</span>
+            </a>
           </div>
+        </div>
 
-          <!-- 3. 실종자 -->
-          <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/missing-alerts' || currentUri == '/missing-persons' || currentUri == '/missing-persons/new') ? 'active' : ''}">
+        <!-- 3. 실종자 -->
+        <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/missing-alerts' || currentUri == '/missing-persons' || currentUri == '/missing-persons/new') ? 'active' : ''}">
             <span class="nav-category">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-red-500">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-red-500">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
               </svg>
               <span>실종자</span>
             </span>
-            <div class="dropdown-menu">
-              <div class="dropdown-title">실종자</div>
-              <a th:href="@{/missing-alerts}" th:classappend="${currentUri == '/missing-alerts' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
-                </svg>
-                <span>실종 경보</span>
-              </a>
-              <a th:href="@{/missing-persons}" th:classappend="${currentUri == '/missing-persons' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
-                </svg>
-                <span>실종자 검색</span>
-              </a>
-              <a th:href="@{/missing-persons/new}" th:classappend="${currentUri == '/missing-persons/new' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                </svg>
-                <span>실종자 제보</span>
-              </a>
-            </div>
+          <div class="dropdown-menu">
+            <div class="dropdown-title">실종자</div>
+            <a th:href="@{/missing-alerts}" th:classappend="${currentUri == '/missing-alerts' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
+              </svg>
+              <span>실종 경보</span>
+            </a>
+            <a th:href="@{/missing-persons}" th:classappend="${currentUri == '/missing-persons' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+              </svg>
+              <span>실종자 검색</span>
+            </a>
+            <a th:href="@{/missing-persons/new}" th:classappend="${currentUri == '/missing-persons/new' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+              </svg>
+              <span>실종자 제보</span>
+            </a>
           </div>
+        </div>
 
-          <!-- 4. 실종동물 -->
-          <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/animal-reports' || currentUri == '/animal-reports/new') ? 'active' : ''}">
+        <!-- 4. 실종동물 -->
+        <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/animal-reports' || currentUri == '/animal-reports/new') ? 'active' : ''}">
             <span class="nav-category">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-orange-500">
-                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+              <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-orange-500">
+                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z"/>
               </svg>
               <span>실종동물</span>
             </span>
-            <div class="dropdown-menu">
-              <div class="dropdown-title">실종동물</div>
-              <a th:href="@{/animal-reports}" th:classappend="${currentUri == '/animal-reports' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-orange-500">
-                  <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
-                </svg>
-                <span>실종동물 검색</span>
-              </a>
-              <a th:href="@{/animal-reports/new}" th:classappend="${currentUri == '/animal-reports/new' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-orange-500">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                </svg>
-                <span>실종동물 제보</span>
-              </a>
-            </div>
+          <div class="dropdown-menu">
+            <div class="dropdown-title">실종동물</div>
+            <a th:href="@{/animal-reports}" th:classappend="${currentUri == '/animal-reports' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-orange-500">
+                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+              </svg>
+              <span>실종동물 검색</span>
+            </a>
+            <a th:href="@{/animal-reports/new}" th:classappend="${currentUri == '/animal-reports/new' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-orange-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+              </svg>
+              <span>실종동물 제보</span>
+            </a>
           </div>
+        </div>
 
-          <!-- 5. 고객지원 -->
-          <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/faq' || currentUri == '/inquiry' || currentUri == '/notice' || currentUri == '/guide') ? 'active' : ''}">
+        <!-- 5. 고객지원 -->
+        <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/faq' || currentUri == '/inquiry' || currentUri == '/notice' || currentUri == '/guide') ? 'active' : ''}">
             <span class="nav-category">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-slate-500">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 5.25h.008v.008H12v-.008z" />
               </svg>
               <span>고객지원</span>
             </span>
-            <div class="dropdown-menu">
-              <div class="dropdown-title">고객지원</div>
-              <a th:href="@{/faq}" th:classappend="${currentUri == '/faq' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 5.25h.008v.008H12v-.008z" />
-                </svg>
-                <span>자주묻는질문</span>
-              </a>
-              <a th:href="@{/inquiry}" th:classappend="${currentUri == '/inquiry' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                </svg>
-                <span>문의하기</span>
-              </a>
-              <a th:href="@{/notice}" th:classappend="${currentUri == '/notice' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-                </svg>
-                <span>공지사항</span>
-              </a>
-              <a th:href="@{/guide}" th:classappend="${currentUri == '/guide' ? 'active-sub' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-16.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-16.25v14.25" />
-                </svg>
-                <span>이용가이드</span>
-              </a>
-            </div>
+          <div class="dropdown-menu">
+            <div class="dropdown-title">고객지원</div>
+            <a th:href="@{/faq}" th:classappend="${currentUri == '/faq' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 5.25h.008v.008H12v-.008z" />
+              </svg>
+              <span>자주묻는질문</span>
+            </a>
+            <a th:href="@{/inquiry}" th:classappend="${currentUri == '/inquiry' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              </svg>
+              <span>문의하기</span>
+            </a>
+            <a th:href="@{/notice}" th:classappend="${currentUri == '/notice' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+              </svg>
+              <span>공지사항</span>
+            </a>
+            <a th:href="@{/guide}" th:classappend="${currentUri == '/guide' ? 'active-sub' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-16.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-16.25v14.25" />
+              </svg>
+              <span>이용가이드</span>
+            </a>
           </div>
-        </nav>
+        </div>
+      </nav>
 
-        <div class="nav-links">
-          <th:block sec:authorize="isAnonymous()">
-            <a th:href="@{/login}" class="nav-link">로그인</a>
-            <a th:href="@{/join}" class="nav-link">회원가입</a>
-          </th:block>
+      <div class="nav-links">
+        <th:block sec:authorize="isAnonymous()">
+          <a th:href="@{/login}" class="nav-link">로그인</a>
+          <a th:href="@{/join}" class="nav-link">회원가입</a>
+        </th:block>
 
-          <!-- 로그인 된 상태 -->
-          <th:block sec:authorize="isAuthenticated()">
-            <!-- 매칭 알림 종 아이콘 -->
-            <div class="relative inline-block text-left mr-1" id="notificationWrapper">
-              <button type="button" id="notificationBtn" class="chat-button relative focus:outline-none" title="알림">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
-                </svg>
-                <span class="chat-text">알림</span>
-                <span th:if="${unreadMatchCount != null and unreadMatchCount > 0}" th:text="${unreadMatchCount > 99 ? '99+' : unreadMatchCount}"
-                      class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+        <!-- 로그인 된 상태 -->
+        <th:block sec:authorize="isAuthenticated()">
+          <!-- 매칭 알림 종 아이콘 -->
+          <div class="relative inline-block text-left mr-1" id="notificationWrapper">
+            <button type="button" id="notificationBtn" class="chat-button relative focus:outline-none" title="알림">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
+              </svg>
+              <span class="chat-text">알림</span>
+              <span th:if="${unreadMatchCount != null and unreadMatchCount > 0}" th:text="${unreadMatchCount > 99 ? '99+' : unreadMatchCount}"
+                    class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
                   0
                 </span>
-              </button>
+            </button>
 
-              <!-- 알림 드롭다운 -->
-              <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden">
-                <div class="p-4 border-b border-slate-100 bg-slate-50">
-                  <h3 class="text-sm font-bold text-slate-900">새로운 매칭 알림</h3>
-                </div>
-                <div class="max-h-96 overflow-y-auto">
-                  <th:block th:if="${not #lists.isEmpty(topMatches)}">
-                    <a th:each="match : ${topMatches}" th:href="@{/found-items/{id}(id=${match.id})}"
-                       class="flex items-start gap-3 p-4 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors">
-                      <div class="w-12 h-12 flex-shrink-0 bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
-                        <img th:if="${match.imageUrl != null}" th:src="${match.imageUrl}" class="w-full h-full object-cover">
-                        <div th:unless="${match.imageUrl != null}" class="w-full h-full flex items-center justify-center text-slate-400 text-xs">IMG</div>
-                      </div>
-                      <div class="flex-grow min-w-0">
-                        <p class="text-[10px] font-bold text-indigo-600 mb-0.5">매칭 [[${match.score}]]점</p>
-                        <p class="text-sm font-semibold text-slate-900 truncate" th:text="${match.name}">물건명</p>
-                        <p class="text-[11px] text-slate-500 truncate" th:text="${match.area}">장소</p>
-                      </div>
-                    </a>
-                  </th:block>
-                  <div th:if="${#lists.isEmpty(topMatches)}" class="p-8 text-center text-sm text-slate-400">
-                    새로운 매칭 결과가 없습니다.
-                  </div>
-                </div>
-                <div class="p-3 bg-slate-50 border-t border-slate-100 text-center">
-                  <a th:href="@{/lost-items}" class="text-xs font-bold text-slate-600 hover:text-indigo-600">내 분실물 목록 보기</a>
+            <!-- 알림 드롭다운 -->
+            <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden">
+              <div class="p-4 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-sm font-bold text-slate-900">새로운 매칭 알림</h3>
+              </div>
+              <div class="max-h-96 overflow-y-auto">
+                <th:block th:if="${not #lists.isEmpty(topMatches)}">
+                  <a th:each="match : ${topMatches}" th:href="@{/found-items/{id}(id=${match.id})}"
+                     class="flex items-start gap-3 p-4 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors">
+                    <div class="w-12 h-12 flex-shrink-0 bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                      <img th:if="${match.imageUrl != null}" th:src="${match.imageUrl}" class="w-full h-full object-cover">
+                      <div th:unless="${match.imageUrl != null}" class="w-full h-full flex items-center justify-center text-slate-400 text-xs">IMG</div>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                      <p class="text-[10px] font-bold text-indigo-600 mb-0.5">매칭 [[${match.score}]]점</p>
+                      <p class="text-sm font-semibold text-slate-900 truncate" th:text="${match.name}">물건명</p>
+                      <p class="text-[11px] text-slate-500 truncate" th:text="${match.area}">장소</p>
+                    </div>
+                  </a>
+                </th:block>
+                <div th:if="${#lists.isEmpty(topMatches)}" class="p-8 text-center text-sm text-slate-400">
+                  새로운 매칭 결과가 없습니다.
                 </div>
               </div>
+              <div class="p-3 bg-slate-50 border-t border-slate-100 text-center">
+                <a th:href="@{/lost-items}" class="text-xs font-bold text-slate-600 hover:text-indigo-600">내 분실물 목록 보기</a>
+              </div>
             </div>
+          </div>
 
-            <script>
-              document.addEventListener('DOMContentLoaded', function() {
-                const btn = document.getElementById('notificationBtn');
-                const dropdown = document.getElementById('notificationDropdown');
-                const badge = btn ? btn.querySelector('.absolute') : null;
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const btn = document.getElementById('notificationBtn');
+              const dropdown = document.getElementById('notificationDropdown');
+              const badge = btn ? btn.querySelector('.absolute') : null;
 
-                if (btn && dropdown) {
-                  btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const isOpening = dropdown.classList.contains('hidden');
-                    dropdown.classList.toggle('hidden');
+              if (btn && dropdown) {
+                btn.addEventListener('click', function(e) {
+                  e.stopPropagation();
+                  const isOpening = dropdown.classList.contains('hidden');
+                  dropdown.classList.toggle('hidden');
 
-                    // 창을 열 때 숫자가 있다면 지우고 서버에 알림 (한 번만 실행)
-                    if (isOpening && badge) {
-                      badge.style.display = 'none';
-                      fetch('/api/matches/mark-as-read', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                      }).catch(err => console.error('알림 읽음 처리 실패:', err));
-                    }
-                  });
+                  // 창을 열 때 숫자가 있다면 지우고 서버에 알림 (한 번만 실행)
+                  if (isOpening && badge) {
+                    badge.style.display = 'none';
+                    fetch('/api/matches/mark-as-read', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' }
+                    }).catch(err => console.error('알림 읽음 처리 실패:', err));
+                  }
+                });
 
-                  document.addEventListener('click', function(e) {
-                    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
-                      dropdown.classList.add('hidden');
-                    }
-                  });
-                }
-              });
-            </script>
+                document.addEventListener('click', function(e) {
+                  if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                  }
+                });
+              }
+            });
+          </script>
 
-            <a th:href="@{/chat}" class="chat-button relative" title="채팅하기" onclick="document.getElementById('global-chat-badge').style.display='none';">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
-              </svg>
-              <span class="chat-text">채팅</span>
-              <span id="global-chat-badge"
-                    th:style="${currentUri != '/chat' && unreadChatCount != null && unreadChatCount > 0 ? '' : 'display: none;'}"
-                    th:text="${unreadChatCount != null && unreadChatCount > 99 ? '99+' : (unreadChatCount ?: 0)}"
-                    class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">0</span>
-            </a>
-            <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="profile-link">
-              <img th:if="${#authentication.principal.user.profileImageUrl != null}"
-                   th:src="${#authentication.principal.user.profileImageUrl}"
-                   referrerpolicy="no-referrer"
-                   class="profile-image" alt="프로필">
-              <span th:unless="${#authentication.principal.user.profileImageUrl != null}" class="profile-placeholder" aria-hidden="true">
+          <a th:href="@{/chat}" class="chat-button relative" title="채팅하기" onclick="document.getElementById('global-chat-badge').style.display='none';">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
+            </svg>
+            <span class="chat-text">채팅</span>
+            <span id="global-chat-badge"
+                  th:style="${currentUri != '/chat' && unreadChatCount != null && unreadChatCount > 0 ? '' : 'display: none;'}"
+                  th:text="${unreadChatCount != null && unreadChatCount > 99 ? '99+' : (unreadChatCount ?: 0)}"
+                  class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">0</span>
+          </a>
+          <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="profile-link">
+            <img th:if="${#authentication.principal.user.profileImageUrl != null}"
+                 th:src="${#authentication.principal.user.profileImageUrl}"
+                 referrerpolicy="no-referrer"
+                 class="profile-image" alt="프로필">
+            <span th:unless="${#authentication.principal.user.profileImageUrl != null}" class="profile-placeholder" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6Zm-7 9a7 7 0 1114 0H3Z" clip-rule="evenodd"/>
                 </svg>
               </span>
-              <span sec:authentication="principal.user.nickname">닉네임</span>
-            </a>
+            <span sec:authentication="principal.user.nickname">닉네임</span>
+          </a>
 
-            <!-- 기존 프로필 -->
-            <form th:action="@{/logout}" method="post">
-              <button type="submit" class="nav-link nav-link--button">로그아웃</button>
-            </form>
-          </th:block>
+          <!-- 기존 프로필 -->
+          <form th:action="@{/logout}" method="post">
+            <button type="submit" class="nav-link nav-link--button">로그아웃</button>
+          </form>
+        </th:block>
+      </div>
+
+      <!-- Hamburger Button -->
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="메뉴 열기">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="main-layout main-layout--full-width">
+    <main class="content">
+      <th:block th:replace="${content}"></th:block>
+    </main>
+  </div>
+
+  <!-- 공통 푸터 영역 (헤더 배경색 #fff와 매칭) -->
+  <footer class="bg-white border-t border-[#e8edf4] py-5 mt-12 w-full">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+
+        <!-- Left Column: 로고 이미지 및 플랫폼 문구 (가로 배치 & 하단 정렬 미세조정) -->
+        <div class="flex items-end gap-3.5 md:pl-12">
+          <img th:src="@{/images/logo.png}" alt="DOGO 로고" class="w-14 h-14 object-contain">
+          <p class="text-[12px] text-gray-400 font-semibold text-left leading-snug translate-y-[2px]">
+            당신의 소중한 것을,<br>다시 찾을 수 있도록
+          </p>
         </div>
 
-        <!-- Hamburger Button -->
-        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="메뉴 열기">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        <!-- Middle Column: 카피라이트 -->
+        <div class="text-center">
+          <p class="text-xs text-gray-400 font-medium tracking-tight">
+            &copy; 2026 DOGO. All rights reserved.
+          </p>
+        </div>
+
+        <!-- Right Column: 개인정보처리방침 & GitHub 링크가 나란히 배치됨 -->
+        <div class="flex items-center gap-6 text-sm font-bold text-gray-600 md:pr-12">
+          <a th:href="@{/privacy}" class="hover:text-gray-950 transition-colors">
+            개인정보처리방침
+          </a>
+          <span class="text-gray-300 select-none">|</span>
+          <a href="https://github.com" target="_blank" class="flex items-center gap-2 hover:text-gray-900 transition-colors">
+            <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+            </svg>
+            <span>GitHub</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </footer>
+
+  <script th:src="@{/js/place-modal.js}"></script>
+
+  <!-- Emergency Missing Animal Popup Modal -->
+  <div id="emergencyModal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-slate-900/65 backdrop-blur-md transition-opacity duration-300 opacity-0">
+    <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-red-100 transform scale-95 transition-transform duration-300 flex flex-col relative">
+
+      <!-- Emergency Pulse Banner -->
+      <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 text-white flex items-center gap-3 shadow-md relative overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15),transparent)] animate-pulse"></div>
+        <span class="w-3.5 h-3.5 bg-white rounded-full animate-ping flex-shrink-0"></span>
+        <h3 class="font-extrabold text-base tracking-wide flex-grow">🚨 긴급 실종 경보 (EMERGENCY)</h3>
+        <button type="button" onclick="closeEmergencyModal()" class="text-white/80 hover:text-white focus:outline-none transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-    </header>
 
-    <div class="main-layout main-layout--full-width">
-      <main class="content">
-        <th:block th:replace="${content}"></th:block>
-      </main>
-    </div>
+      <!-- Main Content -->
+      <div class="p-6 space-y-4">
+        <!-- Animal Image Container -->
+        <div class="relative w-full aspect-video bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 shadow-inner flex items-center justify-center">
+          <img id="emergencyImg" src="" alt="실종동물 이미지" class="w-full h-full object-cover hidden">
+          <div id="emergencyImgFallback" class="flex flex-col items-center justify-center text-slate-400 gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-slate-300">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+            </svg>
+            <span class="text-xs font-semibold">이미지가 등록되지 않았습니다</span>
+          </div>
+          <span class="absolute bottom-3 left-3 bg-red-600/90 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md">골든타임</span>
+        </div>
 
-    <!-- 공통 푸터 영역 (헤더 배경색 #fff와 매칭) -->
-    <footer class="bg-white border-t border-[#e8edf4] py-5 mt-12 w-full">
-      <div class="max-w-7xl mx-auto px-6 lg:px-8">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-8">
-          
-          <!-- Left Column: 로고 이미지 및 플랫폼 문구 (가로 배치 & 하단 정렬 미세조정) -->
-          <div class="flex items-end gap-3.5 md:pl-12">
-            <img th:src="@{/images/logo.png}" alt="DOGO 로고" class="w-14 h-14 object-contain">
-            <p class="text-[12px] text-gray-400 font-semibold text-left leading-snug translate-y-[2px]">
-              당신의 소중한 것을,<br>다시 찾을 수 있도록
-            </p>
+        <!-- Information Fields -->
+        <div class="space-y-3">
+          <div class="flex items-start gap-1">
+            <h4 id="emergencyTitle" class="text-base font-extrabold text-slate-900 leading-snug">실종된 반려동물을 찾습니다!</h4>
           </div>
-          
-          <!-- Middle Column: 카피라이트 -->
-          <div class="text-center">
-            <p class="text-xs text-gray-400 font-medium tracking-tight">
-              &copy; 2026 DOGO. All rights reserved.
-            </p>
+
+          <div class="grid grid-cols-2 gap-3 text-xs border-t border-slate-100 pt-3">
+            <div>
+              <span id="emergencyBreedLabel" class="text-slate-400 block mb-0.5">품종</span>
+              <span id="emergencyBreed" class="font-bold text-slate-800 text-sm">-</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block mb-0.5">실종일자</span>
+              <span id="emergencyDate" class="font-bold text-slate-800 text-sm">-</span>
+            </div>
+            <div class="col-span-2">
+              <span class="text-slate-400 block mb-0.5">실종 장소</span>
+              <span id="emergencyLocation" class="font-bold text-slate-800 text-sm">-</span>
+            </div>
+            <div class="col-span-2">
+              <span id="emergencyMarksLabel" class="text-slate-400 block mb-0.5">특징 및 착의</span>
+              <span id="emergencyMarks" class="font-bold text-slate-800 text-xs bg-slate-50 border border-slate-100 p-2 rounded-lg block leading-relaxed max-h-16 overflow-y-auto">-</span>
+            </div>
           </div>
-          
-          <!-- Right Column: 개인정보처리방침 & GitHub 링크가 나란히 배치됨 -->
-          <div class="flex items-center gap-6 text-sm font-bold text-gray-600 md:pr-12">
-            <a th:href="@{/privacy}" class="hover:text-gray-950 transition-colors">
-              개인정보처리방침
-            </a>
-            <span class="text-gray-300 select-none">|</span>
-            <a href="https://github.com" target="_blank" class="flex items-center gap-2 hover:text-gray-900 transition-colors">
-              <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
-              </svg>
-              <span>GitHub</span>
-            </a>
-          </div>
-          
         </div>
       </div>
-    </footer>
 
-    <script th:src="@{/js/place-modal.js}"></script>
-
-    <!-- Emergency Missing Animal Popup Modal -->
-    <div id="emergencyModal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-slate-900/65 backdrop-blur-md transition-opacity duration-300 opacity-0">
-      <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-red-100 transform scale-95 transition-transform duration-300 flex flex-col relative">
-        
-        <!-- Emergency Pulse Banner -->
-        <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 text-white flex items-center gap-3 shadow-md relative overflow-hidden">
-          <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15),transparent)] animate-pulse"></div>
-          <span class="w-3.5 h-3.5 bg-white rounded-full animate-ping flex-shrink-0"></span>
-          <h3 class="font-extrabold text-base tracking-wide flex-grow">🚨 긴급 실종 경보 (EMERGENCY)</h3>
-          <button type="button" onclick="closeEmergencyModal()" class="text-white/80 hover:text-white focus:outline-none transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <!-- Main Content -->
-        <div class="p-6 space-y-4">
-          <!-- Animal Image Container -->
-          <div class="relative w-full aspect-video bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 shadow-inner flex items-center justify-center">
-            <img id="emergencyImg" src="" alt="실종동물 이미지" class="w-full h-full object-cover hidden">
-            <div id="emergencyImgFallback" class="flex flex-col items-center justify-center text-slate-400 gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-slate-300">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-              </svg>
-              <span class="text-xs font-semibold">이미지가 등록되지 않았습니다</span>
-            </div>
-            <span class="absolute bottom-3 left-3 bg-red-600/90 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md">골든타임</span>
-          </div>
-          
-          <!-- Information Fields -->
-          <div class="space-y-3">
-            <div class="flex items-start gap-1">
-              <h4 id="emergencyTitle" class="text-base font-extrabold text-slate-900 leading-snug">실종된 반려동물을 찾습니다!</h4>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-3 text-xs border-t border-slate-100 pt-3">
-              <div>
-                <span id="emergencyBreedLabel" class="text-slate-400 block mb-0.5">품종</span>
-                <span id="emergencyBreed" class="font-bold text-slate-800 text-sm">-</span>
-              </div>
-              <div>
-                <span class="text-slate-400 block mb-0.5">실종일자</span>
-                <span id="emergencyDate" class="font-bold text-slate-800 text-sm">-</span>
-              </div>
-              <div class="col-span-2">
-                <span class="text-slate-400 block mb-0.5">실종 장소</span>
-                <span id="emergencyLocation" class="font-bold text-slate-800 text-sm">-</span>
-              </div>
-              <div class="col-span-2">
-                <span id="emergencyMarksLabel" class="text-slate-400 block mb-0.5">특징 및 착의</span>
-                <span id="emergencyMarks" class="font-bold text-slate-800 text-xs bg-slate-50 border border-slate-100 p-2 rounded-lg block leading-relaxed max-h-16 overflow-y-auto">-</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-2">
-          <button type="button" onclick="closeEmergencyModalForToday()" class="flex-1 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-colors">
-            오늘 하루 보지 않기
-          </button>
-          <a id="emergencyDetailLink" href="/animal-reports" class="flex-grow py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl transition-colors shadow-lg shadow-red-200 inline-flex items-center justify-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
-            </svg>
-            제보 및 상세 보기
-          </a>
-        </div>
+      <!-- Action Buttons -->
+      <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-2">
+        <button type="button" onclick="closeEmergencyModalForToday()" class="flex-1 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-colors">
+          오늘 하루 보지 않기
+        </button>
+        <a id="emergencyDetailLink" href="/animal-reports" class="flex-grow py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl transition-colors shadow-lg shadow-red-200 inline-flex items-center justify-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+          </svg>
+          제보 및 상세 보기
+        </a>
       </div>
     </div>
-    
-    <script>
-      function closeEmergencyModal() {
-        const modal = document.getElementById('emergencyModal');
-        if (modal) {
-          const dialog = modal.querySelector('div');
-          modal.classList.remove('opacity-100');
-          modal.classList.add('opacity-0');
-          dialog.classList.remove('scale-100');
-          dialog.classList.add('scale-95');
-          setTimeout(() => {
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-          }, 300);
-        }
+  </div>
+
+  <script>
+    function closeEmergencyModal() {
+      const modal = document.getElementById('emergencyModal');
+      if (modal) {
+        const dialog = modal.querySelector('div');
+        modal.classList.remove('opacity-100');
+        modal.classList.add('opacity-0');
+        dialog.classList.remove('scale-100');
+        dialog.classList.add('scale-95');
+        setTimeout(() => {
+          modal.classList.remove('flex');
+          modal.classList.add('hidden');
+        }, 300);
       }
-      
-      function closeEmergencyModalForToday() {
-        localStorage.setItem('emergency_hide_date', new Date().toDateString());
-        closeEmergencyModal();
+    }
+
+    function closeEmergencyModalForToday() {
+      localStorage.setItem('emergency_hide_date', new Date().toDateString());
+      closeEmergencyModal();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const hideDate = localStorage.getItem('emergency_hide_date');
+      const today = new Date().toDateString();
+      if (hideDate === today) {
+        return;
       }
-      
-      document.addEventListener('DOMContentLoaded', function() {
-        const hideDate = localStorage.getItem('emergency_hide_date');
-        const today = new Date().toDateString();
-        if (hideDate === today) {
-          return;
-        }
-        
-        fetch('/admin/api/emergency/status')
+
+      fetch('/admin/api/emergency/status')
           .then(res => res.json())
           .then(data => {
             if (data.active) {
               const modal = document.getElementById('emergencyModal');
               const img = document.getElementById('emergencyImg');
               const fallback = document.getElementById('emergencyImgFallback');
-              
+
               document.getElementById('emergencyTitle').innerText = data.title;
               document.getElementById('emergencyDate').innerText = data.date;
               document.getElementById('emergencyLocation').innerText = data.location;
               document.getElementById('emergencyMarks').innerText = data.distinctiveMarks || '특별한 특징 사항이 등록되어 있지 않습니다.';
-              
+
               const breedLabel = document.getElementById('emergencyBreedLabel');
               const marksLabel = document.getElementById('emergencyMarksLabel');
               const breedVal = document.getElementById('emergencyBreed');
-              
+
               if (data.type === 'PERSON') {
                 if (breedLabel) breedLabel.innerText = '나이/국적';
                 if (marksLabel) marksLabel.innerText = '신체 특징 및 착의';
@@ -499,7 +522,7 @@
                   document.getElementById('emergencyDetailLink').href = '/animal-reports';
                 }
               }
-              
+
               if (data.imageUrl) {
                 img.src = data.imageUrl;
                 img.classList.remove('hidden');
@@ -508,7 +531,7 @@
                 img.classList.add('hidden');
                 fallback.classList.remove('hidden');
               }
-              
+
               modal.classList.remove('hidden');
               modal.classList.add('flex');
               setTimeout(() => {
@@ -520,170 +543,520 @@
             }
           })
           .catch(err => console.error('긴급 팝업 확인 실패:', err));
+    });
+  </script>
+
+  <!-- Global Chat Notification WebSocket -->
+  <th:block sec:authorize="isAuthenticated()">
+    <script th:inline="javascript">
+      document.addEventListener('DOMContentLoaded', function() {
+        const globalUserNo = [[${#authentication.principal.user.userNo}]];
+        if (globalUserNo) {
+          const socket = new SockJS('/ws-stomp');
+          const globalStompClient = Stomp.over(socket);
+          globalStompClient.debug = null;
+          globalStompClient.connect({}, function (frame) {
+            globalStompClient.subscribe(`/sub/users/${globalUserNo}/messages`, function (message) {
+              const msg = JSON.parse(message.body);
+
+              let isCurrentlyReading = false;
+              if (window.location.pathname.startsWith('/chat')) {
+                // 채팅 페이지에 있을 때는 글로벌 배지를 업데이트하지 않음
+                isCurrentlyReading = true;
+              }
+
+              if (!isCurrentlyReading && msg.senderNo != globalUserNo) {
+                const badge = document.getElementById('global-chat-badge');
+                if (badge) {
+                  let currentText = badge.innerText;
+                  let count = 0;
+                  if (currentText === '99+') {
+                    count = 100;
+                  } else {
+                    count = parseInt(currentText) || 0;
+                  }
+                  count++;
+                  badge.innerText = count > 99 ? '99+' : count;
+                  badge.style.display = 'inline-flex';
+                }
+                // 모바일 배지도 동일하게 업데이트
+                const mobileBadge = document.getElementById('global-chat-badge-mobile');
+                if (mobileBadge) {
+                  let currentText = mobileBadge.innerText;
+                  let count = 0;
+                  if (currentText === '99+') {
+                    count = 100;
+                  } else {
+                    count = parseInt(currentText) || 0;
+                  }
+                  count++;
+                  mobileBadge.innerText = count > 99 ? '99+' : count;
+                  mobileBadge.style.display = 'inline-flex';
+                }
+              }
+            });
+          });
+        }
       });
     </script>
+  </th:block>
 
-    <!-- Global Chat Notification WebSocket -->
-    <th:block sec:authorize="isAuthenticated()">
-      <script th:inline="javascript">
-        document.addEventListener('DOMContentLoaded', function() {
-          const globalUserNo = [[${#authentication.principal.user.userNo}]];
-          if (globalUserNo) {
-            const socket = new SockJS('/ws-stomp');
-            const globalStompClient = Stomp.over(socket);
-            globalStompClient.debug = null;
-            globalStompClient.connect({}, function (frame) {
-              globalStompClient.subscribe(`/sub/users/${globalUserNo}/messages`, function (message) {
-                const msg = JSON.parse(message.body);
-                
-                let isCurrentlyReading = false;
-                if (window.location.pathname.startsWith('/chat')) {
-                    // 채팅 페이지에 있을 때는 글로벌 배지를 업데이트하지 않음
-                    isCurrentlyReading = true;
-                }
-                
-                if (!isCurrentlyReading && msg.senderNo != globalUserNo) {
-                    const badge = document.getElementById('global-chat-badge');
-                    if (badge) {
-                        let currentText = badge.innerText;
-                        let count = 0;
-                        if (currentText === '99+') {
-                            count = 100;
-                        } else {
-                            count = parseInt(currentText) || 0;
-                        }
-                        count++;
-                        badge.innerText = count > 99 ? '99+' : count;
-                        badge.style.display = 'inline-flex';
-                    }
-                }
-              });
-            });
-          }
-        });
-      </script>
-    </th:block>
+  <!-- Mobile Drawer Menu -->
+  <div id="mobileDrawer" class="mobile-drawer-overlay">
+    <div class="mobile-drawer-content">
+      <div class="mobile-drawer-header">
+        <span class="mobile-drawer-title">메뉴</span>
+        <button id="mobileDrawerClose" class="mobile-drawer-close" aria-label="메뉴 닫기">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
 
-    <!-- Mobile Drawer Menu -->
-    <div id="mobileDrawer" class="mobile-drawer-overlay">
-      <div class="mobile-drawer-content">
-        <div class="mobile-drawer-header">
-          <span class="mobile-drawer-title">메뉴</span>
-          <button id="mobileDrawerClose" class="mobile-drawer-close" aria-label="메뉴 닫기">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div class="mobile-drawer-body">
-          <!-- User Profile info / Login links -->
-          <div class="mobile-drawer-user-section">
-            <th:block sec:authorize="isAnonymous()">
-              <a th:href="@{/login}" class="mobile-user-btn login-btn">로그인</a>
-              <a th:href="@{/join}" class="mobile-user-btn join-btn">회원가입</a>
-            </th:block>
-            <th:block sec:authorize="isAuthenticated()">
-              <div class="mobile-user-profile">
-                <img th:if="${#authentication.principal.user.profileImageUrl != null}"
-                     th:src="${#authentication.principal.user.profileImageUrl}"
-                     referrerpolicy="no-referrer"
-                     class="mobile-user-avatar">
-                <span th:unless="${#authentication.principal.user.profileImageUrl != null}" class="mobile-user-avatar-placeholder">
+      <div class="mobile-drawer-body">
+        <!-- User Profile info / Login links -->
+        <div class="mobile-drawer-user-section">
+          <th:block sec:authorize="isAnonymous()">
+            <a th:href="@{/login}" class="mobile-user-btn login-btn">로그인</a>
+            <a th:href="@{/join}" class="mobile-user-btn join-btn">회원가입</a>
+          </th:block>
+          <th:block sec:authorize="isAuthenticated()">
+            <div class="mobile-user-profile">
+              <img th:if="${#authentication.principal.user.profileImageUrl != null}"
+                   th:src="${#authentication.principal.user.profileImageUrl}"
+                   referrerpolicy="no-referrer"
+                   class="mobile-user-avatar">
+              <span th:unless="${#authentication.principal.user.profileImageUrl != null}" class="mobile-user-avatar-placeholder">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6">
                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6Zm-7 9a7 7 0 1114 0H3Z" clip-rule="evenodd"/>
                   </svg>
                 </span>
-                <div class="mobile-user-info">
-                  <span class="mobile-user-name" sec:authentication="principal.user.nickname">닉네임</span>
-                  <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="mobile-my-page-link">마이페이지</a>
-                </div>
+              <div class="mobile-user-info">
+                <span class="mobile-user-name" sec:authentication="principal.user.nickname">닉네임</span>
+                <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="mobile-my-page-link">마이페이지</a>
               </div>
-              <form th:action="@{/logout}" method="post" class="mt-4">
-                <button type="submit" class="mobile-logout-btn">로그아웃</button>
-              </form>
-            </th:block>
+            </div>
+          </th:block>
+        </div>
+
+        <!-- Navigation Menu Categories -->
+        <div class="mobile-drawer-nav">
+          <!-- 1. 분실물 -->
+          <div class="mobile-nav-group">
+            <button class="mobile-nav-toggle">
+              <span>분실물</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+              </svg>
+            </button>
+            <div class="mobile-nav-sub">
+              <a th:href="@{/lost-items}">분실물 검색</a>
+              <a th:href="@{/lost-items/new}">분실물 등록</a>
+            </div>
           </div>
-          
-          <!-- Navigation Menu Categories -->
-          <div class="mobile-drawer-nav">
-            <!-- 1. 분실물 -->
-            <div class="mobile-nav-group">
-              <button class="mobile-nav-toggle">
-                <span>분실물</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
-              </button>
-              <div class="mobile-nav-sub">
-                <a th:href="@{/lost-items}">분실물 검색</a>
-                <a th:href="@{/lost-items/new}">분실물 등록</a>
-              </div>
+
+          <!-- 2. 습득물 -->
+          <div class="mobile-nav-group">
+            <button class="mobile-nav-toggle">
+              <span>습득물</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+              </svg>
+            </button>
+            <div class="mobile-nav-sub">
+              <a th:href="@{/found-items}">습득물 검색</a>
+              <a th:href="@{/found-items/new}">습득물 등록</a>
+              <a th:href="@{/areas/list}">유실물센터</a>
             </div>
-            
-            <!-- 2. 습득물 -->
-            <div class="mobile-nav-group">
-              <button class="mobile-nav-toggle">
-                <span>습득물</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
-              </button>
-              <div class="mobile-nav-sub">
-                <a th:href="@{/found-items}">습득물 검색</a>
-                <a th:href="@{/found-items/new}">습득물 등록</a>
-                <a th:href="@{/areas/list}">유실물센터</a>
-              </div>
+          </div>
+
+          <!-- 3. 실종자 -->
+          <div class="mobile-nav-group">
+            <button class="mobile-nav-toggle">
+              <span>실종자</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+              </svg>
+            </button>
+            <div class="mobile-nav-sub">
+              <a th:href="@{/missing-alerts}">실종 경보</a>
+              <a th:href="@{/missing-persons}">실종자 검색</a>
+              <a th:href="@{/missing-persons/new}">실종자 제보</a>
             </div>
-            
-            <!-- 3. 실종자 -->
-            <div class="mobile-nav-group">
-              <button class="mobile-nav-toggle">
-                <span>실종자</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
-              </button>
-              <div class="mobile-nav-sub">
-                <a th:href="@{/missing-alerts}">실종 경보</a>
-                <a th:href="@{/missing-persons}">실종자 검색</a>
-                <a th:href="@{/missing-persons/new}">실종자 제보</a>
-              </div>
+          </div>
+
+          <!-- 4. 실종동물 -->
+          <div class="mobile-nav-group">
+            <button class="mobile-nav-toggle">
+              <span>실종동물</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+              </svg>
+            </button>
+            <div class="mobile-nav-sub">
+              <a th:href="@{/animal-reports}">실종동물 검색</a>
+              <a th:href="@{/animal-reports/new}">실종동물 제보</a>
             </div>
-            
-            <!-- 4. 실종동물 -->
-            <div class="mobile-nav-group">
-              <button class="mobile-nav-toggle">
-                <span>실종동물</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
-              </button>
-              <div class="mobile-nav-sub">
-                <a th:href="@{/animal-reports}">실종동물 검색</a>
-                <a th:href="@{/animal-reports/new}">실종동물 제보</a>
-              </div>
-            </div>
-            
-            <!-- 5. 고객지원 -->
-            <div class="mobile-nav-group">
-              <button class="mobile-nav-toggle">
-                <span>고객지원</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
-              </button>
-              <div class="mobile-nav-sub">
-                <a th:href="@{/faq}">자주묻는질문</a>
-                <a th:href="@{/inquiry}">문의하기</a>
-                <a th:href="@{/notice}">공지사항</a>
-                <a th:href="@{/guide}">이용가이드</a>
-              </div>
+          </div>
+
+          <!-- 5. 고객지원 -->
+          <div class="mobile-nav-group">
+            <button class="mobile-nav-toggle">
+              <span>고객지원</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-200">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+              </svg>
+            </button>
+            <div class="mobile-nav-sub">
+              <a th:href="@{/faq}">자주묻는질문</a>
+              <a th:href="@{/inquiry}">문의하기</a>
+              <a th:href="@{/notice}">공지사항</a>
+              <a th:href="@{/guide}">이용가이드</a>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav">
+    <a th:href="@{/}" class="mobile-bottom-nav-item" th:classappend="${currentUri == '/' ? 'active' : ''}">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+      </svg>
+      <span>홈</span>
+    </a>
+    <button type="button" class="mobile-bottom-nav-item" id="mobileSearchBtn" th:classappend="${currentUri == '/lost-items' || currentUri == '/found-items' || currentUri == '/missing-persons' || currentUri == '/animal-reports' ? 'active' : ''}" aria-label="검색하기">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+      </svg>
+      <span>검색</span>
+    </button>
+    <button type="button" class="mobile-bottom-nav-item register-btn" id="mobileRegisterBtn" aria-label="등록하기">
+      <div class="plus-icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </div>
+      <span>등록</span>
+    </button>
+    <a th:href="@{/chat}" class="mobile-bottom-nav-item relative" th:classappend="${currentUri == '/chat' ? 'active' : ''}" onclick="document.getElementById('global-chat-badge-mobile') && (document.getElementById('global-chat-badge-mobile').style.display='none')">
+        <span class="relative inline-flex">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
+          </svg>
+          <span id="global-chat-badge-mobile"
+                th:style="${currentUri != '/chat' && unreadChatCount != null && unreadChatCount > 0 ? '' : 'display: none;'}"
+                th:text="${unreadChatCount != null && unreadChatCount > 99 ? '99+' : (unreadChatCount ?: 0)}"
+                class="absolute -top-1 -right-2 inline-flex items-center justify-center min-w-[16px] h-4 px-1 text-[9px] font-bold leading-none text-white bg-red-500 rounded-full">0</span>
+        </span>
+      <span>채팅</span>
+    </a>
+    <th:block sec:authorize="isAuthenticated()">
+      <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="mobile-bottom-nav-item relative" th:classappend="${currentUri == '/userpage' || currentUri == '/admin' ? 'active' : ''}">
+          <span class="relative inline-flex">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+            <span id="global-notif-badge-mobile"
+                  th:if="${unreadMatchCount != null and unreadMatchCount > 0}"
+                  th:text="${unreadMatchCount > 99 ? '99+' : unreadMatchCount}"
+                  class="absolute -top-1 -right-2 inline-flex items-center justify-center min-w-[16px] h-4 px-1 text-[9px] font-bold leading-none text-white bg-red-500 rounded-full"></span>
+          </span>
+        <span>마이페이지</span>
+      </a>
+    </th:block>
+    <th:block sec:authorize="isAnonymous()">
+      <a th:href="@{/login}" class="mobile-bottom-nav-item" th:classappend="${currentUri == '/login' ? 'active' : ''}">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+        </svg>
+        <span>로그인</span>
+      </a>
+    </th:block>
+  </nav>
+
+  <!-- Mobile Register Type Selection Bottom Sheet Modal -->
+  <div id="mobileRegisterModal" class="mobile-register-modal-overlay">
+    <div class="mobile-register-modal-content">
+      <div class="mobile-register-modal-header">
+        <button type="button" id="mobileRegisterCloseBtn" class="mobile-register-back-btn" aria-label="이전으로">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+        <span class="mobile-register-modal-title">등록하기</span>
+      </div>
+      <div class="mobile-register-modal-body">
+        <p class="mobile-register-prompt">등록 유형을 선택해주세요</p>
+        <div class="mobile-register-grid">
+          <a th:href="@{/lost-items/new}" class="mobile-register-card card-lost">
+            <div class="mobile-register-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+            </div>
+            <span>분실물</span>
+          </a>
+          <a th:href="@{/found-items/new}" class="mobile-register-card card-found">
+            <div class="mobile-register-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                <rect x="2" y="7" width="20" height="5"></rect>
+                <line x1="12" y1="22" x2="12" y2="7"></line>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+              </svg>
+            </div>
+            <span>습득물</span>
+          </a>
+          <a th:href="@{/missing-persons/new}" class="mobile-register-card card-person">
+            <div class="mobile-register-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <span>실종된 사람</span>
+          </a>
+          <a th:href="@{/animal-reports/new}" class="mobile-register-card card-animal">
+            <div class="mobile-register-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+              </svg>
+            </div>
+            <span>실종된 동물</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Search Type Selection Bottom Sheet Modal -->
+  <div id="mobileSearchModal" class="mobile-register-modal-overlay">
+    <div class="mobile-register-modal-content">
+      <div class="mobile-register-modal-header">
+        <button type="button" id="mobileSearchCloseBtn" class="mobile-register-back-btn" aria-label="이전으로">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+        <span class="mobile-register-modal-title">검색하기</span>
+      </div>
+      <div class="mobile-register-modal-body">
+        <p class="mobile-register-prompt">검색 유형을 선택해주세요</p>
+        <div class="mobile-register-grid">
+          <a th:href="@{/lost-items}" class="mobile-register-card card-lost">
+            <div class="mobile-register-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+            </div>
+            <span>분실물</span>
+          </a>
+          <a th:href="@{/found-items}" class="mobile-register-card card-found">
+            <div class="mobile-register-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                <rect x="2" y="7" width="20" height="5"></rect>
+                <line x1="12" y1="22" x2="12" y2="7"></line>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+              </svg>
+            </div>
+            <span>습득물</span>
+          </a>
+          <a th:href="@{/missing-persons}" class="mobile-register-card card-person">
+            <div class="mobile-register-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <span>실종자</span>
+          </a>
+          <a th:href="@{/animal-reports}" class="mobile-register-card card-animal">
+            <div class="mobile-register-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+              </svg>
+            </div>
+            <span>실종동물</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // ── 등록하기 바텀시트 ──
+      const regBtn = document.getElementById('mobileRegisterBtn');
+      const regModal = document.getElementById('mobileRegisterModal');
+      const regCloseBtn = document.getElementById('mobileRegisterCloseBtn');
+
+      function openModal(modal) { modal.classList.add('open'); }
+      function closeModal(modal) { modal.classList.remove('open'); }
+
+      if (regBtn && regModal && regCloseBtn) {
+        regBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          openModal(regModal);
+        });
+        regCloseBtn.addEventListener('click', function() { closeModal(regModal); });
+        regModal.addEventListener('click', function(e) {
+          if (e.target === regModal) closeModal(regModal);
+        });
+      }
+
+      // ── 검색하기 바텀시트 ──
+      const searchBtn = document.getElementById('mobileSearchBtn');
+      const searchModal = document.getElementById('mobileSearchModal');
+      const searchCloseBtn = document.getElementById('mobileSearchCloseBtn');
+
+      if (searchBtn && searchModal && searchCloseBtn) {
+        searchBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          openModal(searchModal);
+        });
+        searchCloseBtn.addEventListener('click', function() { closeModal(searchModal); });
+        searchModal.addEventListener('click', function(e) {
+          if (e.target === searchModal) closeModal(searchModal);
+        });
+      }
+
+      // ── 모바일 하단바 스크롤 토글 ──
+      let lastScrollY = window.scrollY;
+      const bottomNav = document.querySelector('.mobile-bottom-nav');
+      if (bottomNav) {
+        window.addEventListener('scroll', function() {
+          const currentScrollY = window.scrollY;
+          const scrollDifference = currentScrollY - lastScrollY;
+
+          if (currentScrollY <= 0) {
+            bottomNav.classList.remove('nav-hidden');
+          } else if (Math.abs(scrollDifference) > 5) {
+            if (scrollDifference > 0 && currentScrollY > 50) {
+              bottomNav.classList.add('nav-hidden');
+            } else {
+              bottomNav.classList.remove('nav-hidden');
+            }
+          }
+          lastScrollY = currentScrollY;
+        }, { passive: true });
+      }
+
+      // ── 무한 스크롤 (Infinite Scroll) 반응형 토글 ──
+      const gridContainer = document.querySelector('.main-layout section.grid');
+      const paginationNav = document.querySelector('.main-layout nav');
+
+      if (gridContainer && paginationNav) {
+        let observer = null;
+        let sentinel = null;
+        let currentPage = 0;
+        let isLoading = false;
+        let hasNextPage = false;
+
+        function initInfiniteScroll() {
+          const nextBtn = paginationNav.querySelector('a[aria-label="다음 페이지"]');
+          hasNextPage = nextBtn && !nextBtn.classList.contains('pointer-events-none');
+
+          const urlParams = new URLSearchParams(window.location.search);
+          currentPage = parseInt(urlParams.get('page')) || 0;
+          isLoading = false;
+
+          // sentinel이 없을 때만 생성
+          if (!sentinel) {
+            sentinel = document.createElement('div');
+            sentinel.id = 'infinite-scroll-sentinel';
+            sentinel.className = 'w-full h-10 flex items-center justify-center py-4 text-xs text-slate-400 font-bold';
+            sentinel.textContent = '불러오는 중...';
+            gridContainer.after(sentinel);
+          }
+          sentinel.style.display = 'block';
+
+          if (observer) {
+            observer.disconnect();
+          }
+
+          observer = new IntersectionObserver(function(entries) {
+            if (entries[0].isIntersecting && !isLoading && hasNextPage) {
+              loadNextPage();
+            }
+          }, { rootMargin: '100px' });
+
+          observer.observe(sentinel);
+        }
+
+        function loadNextPage() {
+          isLoading = true;
+          currentPage++;
+
+          const fetchUrl = new URL(window.location.href);
+          fetchUrl.searchParams.set('page', currentPage);
+
+          fetch(fetchUrl.toString())
+              .then(response => response.text())
+              .then(htmlText => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+
+                // 새 아이템 추출
+                const newItems = doc.querySelectorAll('.main-layout section.grid > a');
+                if (newItems.length > 0) {
+                  newItems.forEach(item => {
+                    gridContainer.appendChild(item);
+                  });
+                }
+
+                // 다음 페이지 존재 여부 업데이트
+                const newNextBtn = doc.querySelector('.main-layout nav a[aria-label="다음 페이지"]');
+                hasNextPage = newNextBtn && !newNextBtn.classList.contains('pointer-events-none');
+
+                if (!hasNextPage) {
+                  sentinel.textContent = '마지막 항목입니다.';
+                  if (observer) observer.unobserve(sentinel);
+                  setTimeout(() => {
+                    if (sentinel) sentinel.style.display = 'none';
+                  }, 2000);
+                }
+                isLoading = false;
+              })
+              .catch(err => {
+                console.error('무한 스크롤 데이터 로드 실패:', err);
+                isLoading = false;
+              });
+        }
+
+        function handleResponsiveScroll() {
+          const isMobile = document.documentElement.classList.contains('mobile-view');
+
+          if (isMobile) {
+            // 모바일 뷰: 페이징 네비 숨기고 무한 스크롤 활성화
+            paginationNav.style.setProperty('display', 'none', 'important');
+            initInfiniteScroll();
+          } else {
+            // 데스크톱 뷰: 페이징 네비 보이고 무한 스크롤 비활성화
+            paginationNav.style.removeProperty('display');
+            if (sentinel) {
+              sentinel.style.display = 'none';
+            }
+            if (observer) {
+              observer.disconnect();
+            }
+          }
+        }
+
+        // 초기 실행 및 리사이즈 이벤트 등록
+        handleResponsiveScroll();
+        window.addEventListener('resize', handleResponsiveScroll);
+      }
+    });
+  </script>
   </body>
 </th:block>
 </html>
