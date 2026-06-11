@@ -12,6 +12,18 @@ html {
 body {
     background: #f7f9fc;
     color: #111827;
+    min-width: 1280px;
+    overflow-x: auto;
+    position: relative;
+    min-height: 100vh;
+    padding-bottom: 160px; /* 푸터 높이만큼 하단 여백 확보 */
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
 }
 
 a {

@@ -1,0 +1,183 @@
+====== LOST_ITEM CATEGORIES ======
+- Main: 2026-05-09 01:00:00
+  * Sub: 서울특별시
+- Main: `CATEGORY_MAIN`
+  * Sub: `CATEGORY_SUB`
+- Main: 가방
+  * Sub: 기타가방
+  * Sub: 남성용가방
+  * Sub: 여성용가방
+- Main: 귀금속
+  * Sub: 귀걸이
+  * Sub: 기타
+  * Sub: 목걸이
+  * Sub: 반지
+  * Sub: 시계
+- Main: 기타물품
+  * Sub: 기타
+  * Sub: 선글라스
+  * Sub: 안경
+- Main: 도서용품
+  * Sub: 기타서적
+  * Sub: 소설
+  * Sub: 학습서적
+- Main: 무주물
+  * Sub: 무주물
+- Main: 산업용품
+  * Sub: 기타
+  * Sub: 기타물품
+- Main: 서류
+  * Sub: 기타물품
+  * Sub: 서류
+- Main: 쇼핑백
+  * Sub: 쇼핑백
+- Main: 스포츠용품
+  * Sub: 스포츠용품
+- Main: 악기
+  * Sub: 관악기
+  * Sub: 현악기
+- Main: 유가증권
+  * Sub: 기타
+  * Sub: 상품권
+  * Sub: 어음
+  * Sub: 채권
+- Main: 유류품
+  * Sub: 유류품
+- Main: 의류
+  * Sub: 기타의류
+  * Sub: 남성의류
+  * Sub: 모자
+  * Sub: 신발
+  * Sub: 아기의류
+  * Sub: 여성의류
+- Main: 자동차
+  * Sub: 기타용품
+  * Sub: 임시번호판
+  * Sub: 자동차번호판
+  * Sub: 자동차열쇠
+- Main: 전자기기
+  * Sub: 기타용품
+  * Sub: 무선이어폰
+  * Sub: 스마트워치
+  * Sub: 카메라
+  * Sub: 태블릿
+- Main: 증명서
+  * Sub: 기타
+  * Sub: 면허증
+  * Sub: 신분증
+  * Sub: 여권
+- Main: 지갑
+  * Sub: 기타 지갑
+  * Sub: 남성용 지갑
+  * Sub: 여성용 지갑
+- Main: 카드
+  * Sub: 교통카드
+  * Sub: 기타카드
+  * Sub: 신용(체크)카드
+  * Sub: 일반카드
+- Main: 컴퓨터
+  * Sub: LG노트북
+  * Sub: 기타
+  * Sub: 삼성노트북
+  * Sub: 애플노트북
+- Main: 현금
+  * Sub: 기타
+  * Sub: 수표
+  * Sub: 외화
+  * Sub: 현금
+- Main: 휴대폰
+  * Sub: LG휴대폰
+  * Sub: 기타통신기기
+  * Sub: 기타휴대폰
+  * Sub: 삼성휴대폰
+  * Sub: 아이폰
+
+====== FOUND_ITEM CATEGORIES ======
+- Main: `CATEGORY_MAIN`
+  * Sub: `CATEGORY_SUB`
+- Main: 가방
+  * Sub: 기타가방
+  * Sub: 남성용가방
+  * Sub: 여성용가방
+- Main: 귀금속
+  * Sub: 귀걸이
+  * Sub: 기타
+  * Sub: 목걸이
+  * Sub: 반지
+  * Sub: 시계
+- Main: 기타물품
+  * Sub: 기타
+  * Sub: 선글라스
+  * Sub: 안경
+- Main: 도서용품
+  * Sub: 기타서적
+  * Sub: 소설
+  * Sub: 컴퓨터서적
+  * Sub: 학습서적
+- Main: 무주물
+  * Sub: 무주물
+- Main: 산업용품
+  * Sub: 기타물품
+- Main: 서류
+  * Sub: 기타물품
+  * Sub: 서류
+- Main: 쇼핑백
+  * Sub: 쇼핑백
+- Main: 스포츠용품
+  * Sub: 스포츠용품
+- Main: 악기
+  * Sub: 현악기
+- Main: 유가증권
+  * Sub: 기타
+  * Sub: 상품권
+  * Sub: 어음
+  * Sub: 채권
+- Main: 유류품
+  * Sub: 유류품
+- Main: 의류
+  * Sub: 기타의류
+  * Sub: 남성의류
+  * Sub: 모자
+  * Sub: 신발
+  * Sub: 아기의류
+  * Sub: 여성의류
+- Main: 자동차
+  * Sub: 기타용품
+  * Sub: 자동차번호판
+  * Sub: 자동차열쇠
+- Main: 전자기기
+  * Sub: 기타용품
+  * Sub: 무선이어폰
+  * Sub: 스마트워치
+  * Sub: 카메라
+  * Sub: 태블릿
+- Main: 증명서
+  * Sub: 기타
+  * Sub: 면허증
+  * Sub: 신분증
+  * Sub: 여권
+- Main: 지갑
+  * Sub: 기타 지갑
+  * Sub: 남성용 지갑
+  * Sub: 여성용 지갑
+- Main: 카드
+  * Sub: 교통카드
+  * Sub: 기타카드
+  * Sub: 신용(체크)카드
+  * Sub: 일반카드
+- Main: 컴퓨터
+  * Sub: LG노트북
+  * Sub: 기타
+  * Sub: 삼성노트북
+  * Sub: 애플노트북
+- Main: 현금
+  * Sub: 기타
+  * Sub: 수표
+  * Sub: 외화
+  * Sub: 현금
+- Main: 휴대폰
+  * Sub: LG휴대폰
+  * Sub: 기타통신기기
+  * Sub: 기타휴대폰
+  * Sub: 삼성휴대폰
+  * Sub: 아이폰
