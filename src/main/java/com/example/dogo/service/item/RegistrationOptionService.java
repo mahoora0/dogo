@@ -53,16 +53,27 @@ public class RegistrationOptionService {
 
 	private static Map<String, List<String>> categorySubOptions() {
 		Map<String, List<String>> options = new LinkedHashMap<>();
-		options.put("지갑", List.of("반지갑", "장지갑", "카드지갑", "동전지갑", "기타 지갑"));
-		options.put("가방", List.of("백팩", "크로스백", "핸드백", "쇼핑백", "여행가방", "파우치", "기타 가방"));
-		options.put("휴대폰", List.of("스마트폰", "휴대폰 케이스", "기타 휴대폰"));
-		options.put("전자기기", List.of("노트북", "태블릿", "이어폰", "스마트워치", "카메라", "충전기", "기타 전자기기"));
-		options.put("카드/증명서", List.of("신용/체크카드", "신분증", "운전면허증", "학생증", "여권", "교통카드", "기타 카드/증명서"));
-		options.put("의류", List.of("외투", "상의", "하의", "신발", "모자", "기타 의류"));
-		options.put("악세서리/귀금속", List.of("시계", "안경/선글라스", "반지", "목걸이", "귀걸이", "키링", "기타 악세서리"));
-		options.put("문서/도서", List.of("책", "노트", "서류", "파일철", "기타 문서/도서"));
-		options.put("생활용품", List.of("우산", "열쇠", "화장품", "텀블러", "장난감", "운동용품", "기타 생활용품"));
-		options.put("기타", List.of("기타/모름"));
+		options.put("가방", List.of("남성용가방", "여성용가방", "기타가방"));
+		options.put("귀금속", List.of("반지", "목걸이", "귀걸이", "시계", "기타"));
+		options.put("기타물품", List.of("안경", "선글라스", "기타"));
+		options.put("도서용품", List.of("소설", "학습서적", "컴퓨터서적", "기타서적"));
+		options.put("무주물", List.of("무주물"));
+		options.put("산업용품", List.of("기타물품", "기타"));
+		options.put("서류", List.of("서류", "기타물품"));
+		options.put("쇼핑백", List.of("쇼핑백"));
+		options.put("스포츠용품", List.of("스포츠용품"));
+		options.put("악기", List.of("관악기", "현악기"));
+		options.put("유가증권", List.of("상품권", "어음", "채권", "기타"));
+		options.put("유류품", List.of("유류품"));
+		options.put("의류", List.of("여성의류", "남성의류", "아기의류", "신발", "모자", "기타의류"));
+		options.put("자동차", List.of("자동차열쇠", "자동차번호판", "임시번호판", "기타용품"));
+		options.put("전자기기", List.of("태블릿", "스마트워치", "무선이어폰", "카메라", "기타용품"));
+		options.put("증명서", List.of("신분증", "면허증", "여권", "기타"));
+		options.put("지갑", List.of("남성용 지갑", "여성용 지갑", "기타 지갑"));
+		options.put("카드", List.of("신용(체크)카드", "교통카드", "일반카드", "기타카드"));
+		options.put("컴퓨터", List.of("삼성노트북", "LG노트북", "애플노트북", "기타"));
+		options.put("현금", List.of("현금", "외화", "수표", "기타"));
+		options.put("휴대폰", List.of("삼성휴대폰", "아이폰", "LG휴대폰", "기타휴대폰", "기타통신기기"));
 		return immutableCopy(options);
 	}
 
