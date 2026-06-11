@@ -69,8 +69,8 @@ public class AdminController {
         double otherRatio = 23.0;
 
         if (totalLostCount > 0) {
-            long electronicsCount = lostItemRepository.countByDeletedFalseAndCategoryMainIn(java.util.List.of("전자기기", "휴대폰", "컴퓨터"));
-            long walletCount = lostItemRepository.countByDeletedFalseAndCategoryMainIn(java.util.List.of("지갑", "카드", "증명서", "서류"));
+            long electronicsCount = lostItemRepository.countByDeletedFalseAndCategoryMainIn(java.util.List.of("전자기기", "휴대폰"));
+            long walletCount = lostItemRepository.countByDeletedFalseAndCategoryMainIn(java.util.List.of("지갑", "카드/증명서"));
             long otherCount = Math.max(0, totalLostCount - (electronicsCount + walletCount));
 
             electronicsRatio = Math.round((double) electronicsCount / totalLostCount * 100);

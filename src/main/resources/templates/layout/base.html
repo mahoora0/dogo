@@ -67,14 +67,14 @@
         <nav class="top-nav">
           <!-- 1. 분실물 -->
           <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/lost-items' || currentUri == '/lost-items/new') ? 'active' : ''}">
-            <a th:href="@{/lost-items}" class="nav-category">
+            <span class="nav-category">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-blue-600">
                 <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
                 <path d="M16 10a4 4 0 0 1-8 0"></path>
               </svg>
               <span>분실물</span>
-            </a>
+            </span>
             <div class="dropdown-menu">
               <div class="dropdown-title">분실물</div>
               <a th:href="@{/lost-items}" th:classappend="${currentUri == '/lost-items' ? 'active-sub' : ''}">
@@ -94,7 +94,7 @@
 
           <!-- 2. 습득물 -->
           <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/found-items' || currentUri == '/found-items/new' || currentUri == '/areas/list') ? 'active' : ''}">
-            <a th:href="@{/found-items}" class="nav-category">
+            <span class="nav-category">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-green-600">
                 <polyline points="20 12 20 22 4 22 4 12"></polyline>
                 <rect x="2" y="7" width="20" height="5"></rect>
@@ -103,7 +103,7 @@
                 <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
               </svg>
               <span>습득물</span>
-            </a>
+            </span>
             <div class="dropdown-menu">
               <div class="dropdown-title">습득물</div>
               <a th:href="@{/found-items}" th:classappend="${currentUri == '/found-items' ? 'active-sub' : ''}">
@@ -130,13 +130,13 @@
 
           <!-- 3. 실종자 -->
           <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/missing-alerts' || currentUri == '/missing-persons' || currentUri == '/missing-persons/new') ? 'active' : ''}">
-            <a th:href="@{/missing-persons}" class="nav-category">
+            <span class="nav-category">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-red-500">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
               <span>실종자</span>
-            </a>
+            </span>
             <div class="dropdown-menu">
               <div class="dropdown-title">실종자</div>
               <a th:href="@{/missing-alerts}" th:classappend="${currentUri == '/missing-alerts' ? 'active-sub' : ''}">
@@ -162,12 +162,12 @@
 
           <!-- 4. 실종동물 -->
           <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/animal-reports' || currentUri == '/animal-reports/new') ? 'active' : ''}">
-            <a th:href="@{/animal-reports}" class="nav-category">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-orange-500">
-                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z" />
+            <span class="nav-category">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-orange-500">
+                <path d="M5.7 10.2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12.6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM9 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-8.2 8.9c0-3 2.4-5.3 5.2-5.3s5.2 2.3 5.2 5.3c0 2.1-1.6 3.2-3.2 2.3a4.2 4.2 0 0 0-4 0c-1.6.9-3.2-.2-3.2-2.3Z"/>
               </svg>
               <span>실종동물</span>
-            </a>
+            </span>
             <div class="dropdown-menu">
               <div class="dropdown-title">실종동물</div>
               <a th:href="@{/animal-reports}" th:classappend="${currentUri == '/animal-reports' ? 'active-sub' : ''}">
@@ -187,12 +187,12 @@
 
           <!-- 5. 고객지원 -->
           <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/faq' || currentUri == '/inquiry' || currentUri == '/notice' || currentUri == '/guide') ? 'active' : ''}">
-            <a th:href="@{/faq}" class="nav-category">
+            <span class="nav-category">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-slate-500">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 5.25h.008v.008H12v-.008z" />
               </svg>
               <span>고객지원</span>
-            </a>
+            </span>
             <div class="dropdown-menu">
               <div class="dropdown-title">고객지원</div>
               <a th:href="@{/faq}" th:classappend="${currentUri == '/faq' ? 'active-sub' : ''}">
