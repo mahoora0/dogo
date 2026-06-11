@@ -1664,6 +1664,8 @@ html.mobile-view .home-action-card em {
 
 /* 4. Bottom Navigation Bar */
 html.mobile-view body {
+    min-width: auto !important;
+    overflow-x: hidden;
     padding-bottom: 74px !important;
 }
 html.mobile-view .mobile-bottom-nav {
@@ -2429,3 +2431,27 @@ html.mobile-view .notice-container select#categoryFilter {
     font-size: 12px !important;
     padding: 6px 10px !important;
 }
+
+/* 5. Mobile search page grid & filter adjustments */
+html.mobile-view .search-filter-row-1,
+html.mobile-view .search-filter-row-2 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+}
+
+html.mobile-view .search-filter-row-3 > .grid-cols-12 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+html.mobile-view .search-filter-row-3 .col-span-8,
+html.mobile-view .search-filter-row-3 .col-span-4 {
+    width: 100% !important;
+}
+
+html.mobile-view .grid.grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+}
+
