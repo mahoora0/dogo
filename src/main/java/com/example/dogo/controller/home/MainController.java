@@ -4,6 +4,7 @@ import com.example.dogo.dto.item.RecentItemView;
 import com.example.dogo.security.CustomUserDetails;
 import com.example.dogo.service.item.FoundItemService;
 import com.example.dogo.service.item.LostItemService;
+import com.example.dogo.service.item.RegistrationOptionService;
 import com.example.dogo.service.match.ItemMatchService;
 import com.example.dogo.service.missing.MissingPersonService;
 import com.example.dogo.service.animal.AnimalReportService;
@@ -28,6 +29,7 @@ public class MainController {
   private final ItemMatchService itemMatchService;
   private final MissingPersonService missingPersonService;
   private final AnimalReportService animalReportService;
+  private final RegistrationOptionService registrationOptionService;
 
   @GetMapping("/")
   public String index(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
