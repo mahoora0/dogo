@@ -936,7 +936,7 @@
           window.addEventListener('scroll', function() {
             const currentScrollY = window.scrollY;
             const scrollDifference = currentScrollY - lastScrollY;
-            
+
             if (currentScrollY <= 0) {
               bottomNav.classList.remove('nav-hidden');
             } else if (Math.abs(scrollDifference) > 5) {
@@ -964,7 +964,7 @@
           function initInfiniteScroll() {
             const nextBtn = paginationNav.querySelector('a[aria-label="다음 페이지"]');
             hasNextPage = nextBtn && !nextBtn.classList.contains('pointer-events-none');
-            
+
             const urlParams = new URLSearchParams(window.location.search);
             currentPage = parseInt(urlParams.get('page')) || 0;
             isLoading = false;
@@ -995,7 +995,7 @@
           function loadNextPage() {
             isLoading = true;
             currentPage++;
-            
+
             const fetchUrl = new URL(window.location.href);
             fetchUrl.searchParams.set('page', currentPage);
 
@@ -1004,7 +1004,7 @@
               .then(htmlText => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(htmlText, 'text/html');
-                
+
                 // 새 아이템 추출
                 const newItems = doc.querySelectorAll('.main-layout section.grid > a');
                 if (newItems.length > 0) {
@@ -1016,7 +1016,7 @@
                 // 다음 페이지 존재 여부 업데이트
                 const newNextBtn = doc.querySelector('.main-layout nav a[aria-label="다음 페이지"]');
                 hasNextPage = newNextBtn && !newNextBtn.classList.contains('pointer-events-none');
-                
+
                 if (!hasNextPage) {
                   sentinel.textContent = '마지막 항목입니다.';
                   if (observer) observer.unobserve(sentinel);
@@ -1034,7 +1034,7 @@
 
           function handleResponsiveScroll() {
             const isMobile = document.documentElement.classList.contains('mobile-view');
-            
+
             if (isMobile) {
               // 모바일 뷰: 페이징 네비 숨기고 무한 스크롤 활성화
               paginationNav.style.setProperty('display', 'none', 'important');
