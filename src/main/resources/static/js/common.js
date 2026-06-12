@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const category = item.querySelector('.nav-category');
     if (category) {
       category.addEventListener('click', function(e) {
-        if (window.innerWidth <= 820) {
+        if (window.innerWidth <= 767) {
           e.preventDefault();
           e.stopPropagation();
           

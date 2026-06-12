@@ -45,7 +45,6 @@ option {
     margin: 0 auto;
     max-width: 1180px;
     min-height: 64px;
-    min-width: 1280px;
     padding: 10px 24px;
     gap: 16px;
 }
@@ -261,7 +260,6 @@ option {
     gap: 22px;
     margin: 18px auto 48px;
     max-width: 1180px;
-    min-width: 1280px;
     padding: 0 24px;
     min-height: calc(100vh - 227px);
     min-height: calc(100dvh - 227px);
@@ -269,7 +267,6 @@ option {
 
 .main-layout--full-width {
     max-width: 1280px;
-    min-width: 1280px;
 }
 
 .sidebar {
@@ -2425,4 +2422,31 @@ html.mobile-view .notice-container select#categoryFilter {
     width: 100% !important;
     font-size: 12px !important;
     padding: 6px 10px !important;
+}
+
+/* Tablet screens optimization (768px ~ 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .header-container {
+        padding: 10px 16px;
+        gap: 8px;
+    }
+    .top-nav {
+        gap: 8px;
+    }
+    .nav-category {
+        font-size: 13px;
+        padding: 6px 8px;
+        gap: 4px;
+    }
+    .nav-category svg {
+        width: 18px;
+        height: 18px;
+    }
+    .nav-links {
+        gap: 4px;
+    }
+    .nav-link, .profile-link, .chat-button {
+        font-size: 13px;
+        padding: 6px 8px;
+    }
 }

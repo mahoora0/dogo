@@ -37,7 +37,7 @@ public class LostItemController {
 
 	@ModelAttribute("categories")
 	public List<String> categories() {
-		return lostItemService.getSearchCategoryNames();
+		return registrationOptionService.getCategoryMainOptions();
 	}
 
 	@ModelAttribute("categorySubOptions")
