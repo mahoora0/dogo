@@ -76,6 +76,9 @@
     border-radius: 5px;
     cursor: pointer;
     font-weight: 600;
+    white-space: nowrap;
+    word-break: keep-all;
+    flex-shrink: 0;
 }
 
 .area-content-grid {
@@ -188,6 +191,7 @@
 
 #centerSearch {
     flex: 1;
+    min-width: 0;
     height: 42px;
     font-size: 16px;
 }
@@ -386,11 +390,23 @@
     }
 
     #centerSearch {
+        display: block;
+        flex: none;
         width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
     }
 
     .btn-search-black {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: 100%;
+        min-width: 0;
+        padding: 0 16px;
+        line-height: 1;
+        white-space: nowrap;
+        word-break: keep-all;
     }
 }
-
+

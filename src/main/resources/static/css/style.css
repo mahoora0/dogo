@@ -5,8 +5,9 @@
     font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-html {
-    overflow-x: auto;
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 body {
@@ -1873,13 +1874,13 @@ option {
     }
 
     /* ===== 모바일 전용: 검색 결과 목록 가로형(Row) 배치 및 높이 조정 ===== */
-    .main-layout section.grid {
+    .item-list-grid {
         display: flex !important;
         flex-direction: column !important;
         gap: 12px !important;
     }
 
-    .main-layout section.grid > a {
+    .item-list-card {
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
@@ -1891,7 +1892,7 @@ option {
     }
 
     /* 이미지 컨테이너 크기 키우기 (120px) */
-    .main-layout section.grid > a > div:first-child {
+    .item-list-card > div:first-child {
         width: 120px !important;
         height: 120px !important;
         flex-shrink: 0 !important;
@@ -1900,26 +1901,26 @@ option {
         aspect-ratio: 1 / 1 !important;
     }
 
-    .main-layout section.grid > a > div:first-child img {
+    .item-list-card > div:first-child img {
         width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
     }
 
     /* 이미지 안의 상태 배지 위치 조정 */
-    .main-layout section.grid > a > div:first-child > div.absolute {
+    .item-list-card > div:first-child > div.absolute {
         top: 6px !important;
         right: 6px !important;
         left: auto !important;
     }
 
-    .main-layout section.grid > a > div:first-child > div.absolute span {
+    .item-list-card > div:first-child > div.absolute span {
         padding: 2px 6px !important;
         font-size: 9px !important;
     }
 
     /* 카드 바디 영역 (높이를 이미지와 일치시켜 세로 정렬이 정돈되게 함) */
-    .main-layout section.grid > a > div:last-child {
+    .item-list-card > div:last-child {
         flex: 1 !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1931,7 +1932,7 @@ option {
     }
 
     /* 제목 크기 조정 */
-    .main-layout section.grid > a h2 {
+    .item-list-card h2 {
         font-size: 14.5px !important;
         font-weight: 800 !important;
         color: #1e293b !important;
@@ -1941,25 +1942,25 @@ option {
     }
 
     /* 카테고리 태그들 */
-    .main-layout section.grid > a div.mt-2,
-    .main-layout section.grid > a div.mt-4 {
+    .item-list-card div.mt-2,
+    .item-list-card div.mt-4 {
         margin-top: 2px !important;
         gap: 4px !important;
     }
 
-    .main-layout section.grid > a div.mt-2 span,
-    .main-layout section.grid > a div.mt-4 span {
+    .item-list-card div.mt-2 span,
+    .item-list-card div.mt-4 span {
         font-size: 10px !important;
         padding: 2px 6px !important;
     }
 
     /* 설명 본문 숨김 */
-    .main-layout section.grid > a p {
+    .item-list-card p {
         display: none !important;
     }
 
     /* 위치 및 시간 줄 간격 좁히기 */
-    .main-layout section.grid > a div.mt-3 {
+    .item-list-card div.mt-3 {
         margin-top: 4px !important;
         margin-bottom: 0 !important;
         display: flex !important;
@@ -1969,13 +1970,13 @@ option {
         row-gap: 2px !important;
     }
 
-    .main-layout section.grid > a div.mt-3 > div {
+    .item-list-card div.mt-3 > div {
         margin-top: 0 !important;
         font-size: 11px !important;
         gap: 4px !important;
     }
 
-    .main-layout section.grid > a div.mt-3 svg {
+    .item-list-card div.mt-3 svg {
         width: 12px !important;
         height: 12px !important;
     }
@@ -2103,11 +2104,13 @@ option {
     .search-filter-row-3 .col-span-4 {
         display: flex !important;
         gap: 8px !important;
+        min-width: 0 !important;
     }
 
     .search-filter-row-3 .col-span-4 button,
     .search-filter-row-3 .col-span-4 a {
         flex: 1 !important;
+        min-width: 0 !important;
         font-size: 13px !important;
         padding: 8px 12px !important;
         height: 38px !important;
@@ -2115,6 +2118,17 @@ option {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        line-height: 1.2 !important;
+    }
+
+    .search-filter-form button,
+    .search-filter-form a,
+    .search-header-card a,
+    .search-header-card button {
+        white-space: nowrap !important;
+        word-break: keep-all !important;
     }
 
     /* 정렬 셀렉트박스 부분 */
@@ -2429,6 +2443,80 @@ option {
         padding: 6px 10px !important;
     }
 
+    /* 상세 페이지 이미지 및 DL 그리드 반응형 */
+    .dogo-gallery .gallery-main .swiper-slide img,
+    .main-layout .h-\[500px\] {
+        height: 260px !important;
+        max-height: 280px !important;
+        object-fit: contain !important;
+    }
+
+    .main-layout dl.grid-cols-2 {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .main-layout dl.grid-cols-2 > div {
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding-bottom: 8px !important;
+    }
+
+    /* 등록/수정 폼 반응형 보정 */
+    .item-form input,
+    .item-form select,
+    .item-form textarea {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+        min-height: 44px !important;
+        font-size: 14px !important;
+        padding: 10px 14px !important;
+    }
+
+    .item-form textarea {
+        min-height: 120px !important;
+    }
+
+    .item-form label {
+        min-width: 0 !important;
+        margin-bottom: 8px !important;
+    }
+
+    .item-form fieldset {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    .item-form button,
+    .item-form a {
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+    }
+
+    .item-form .md\:col-span-2 {
+        grid-column: span 1 / span 1 !important;
+    }
+
+}
+@media (max-width: 380px) {
+    .header-container {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        gap: 6px !important;
+    }
+
+    .mobile-menu-btn {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .navbar .logo img {
+        height: 34px !important;
+    }
+
+    .nav-links {
+        gap: 4px !important;
+    }
 }
 /* Tablet screens optimization (768px ~ 1024px) */
 @media (min-width: 768px) and (max-width: 1024px) {

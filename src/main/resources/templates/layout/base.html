@@ -919,7 +919,7 @@
         }
 
         // ── 무한 스크롤 (Infinite Scroll) 반응형 토글 ──
-        const gridContainer = document.querySelector('.main-layout section.grid');
+        const gridContainer = document.querySelector('.item-list-grid');
         const paginationNav = document.querySelector('.main-layout nav');
 
         if (gridContainer && paginationNav) {
@@ -974,7 +974,7 @@
                 const doc = parser.parseFromString(htmlText, 'text/html');
 
                 // 새 아이템 추출
-                const newItems = doc.querySelectorAll('.main-layout section.grid > a');
+                const newItems = doc.querySelectorAll('.item-list-grid > a');
                 if (newItems.length > 0) {
                   newItems.forEach(item => {
                     gridContainer.appendChild(item);

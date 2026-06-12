@@ -142,9 +142,9 @@
     </div>
 
     <!-- Grid List -->
-    <section class="grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <section class="grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 item-list-grid">
       <a th:each="item : ${foundItems}" th:href="@{/found-items/{id}(id=${item.id}, keyword=${keyword}, keywordScope=${keywordScope}, category=${category}, area=${area}, status=${status}, startDate=${startDate}, detailPlace=${detailPlace}, sortBy=${sortBy}, sortDir=${sortDir}, page=${page}, size=${size})}"
-         class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md">
+         class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md item-list-card">
         <div class="relative h-44 w-full overflow-hidden bg-slate-50">
           <img th:if="${item.imageUrl}" th:src="${item.imageUrl}" alt=""
                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110">
