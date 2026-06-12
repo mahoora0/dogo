@@ -17,33 +17,27 @@ import java.util.List;
 public class MissingAlertService {
 
 	private final MissingPersonRepository missingPersonRepository;
-	private final Safe182AmberAlertClient safe182AmberAlertClient;
 
-	public MissingAlertService(MissingPersonRepository missingPersonRepository, Safe182AmberAlertClient safe182AmberAlertClient) {
+	public MissingAlertService(MissingPersonRepository missingPersonRepository) {
 		this.missingPersonRepository = missingPersonRepository;
-		this.safe182AmberAlertClient = safe182AmberAlertClient;
 	}
 
 	public Safe182AmberAlertPage fetchAlerts(int rowSize, Integer page, LocalDate occurrenceDate) {
-		try {
-			LocalDate dateToFetch = (occurrenceDate != null) ? occurrenceDate : LocalDate.now();
-			return safe182AmberAlertClient.fetchAlerts(dateToFetch, rowSize, page);
-		} catch (Exception exception) {
-			// Fallback to local DB if API call fails (network issue, credential issue, limit exceeded, etc.)
-			int safeRowSize = Math.max(1, Math.min(rowSize, 100));
-			int safePage = (page == null || page < 1) ? 0 : page - 1;
+		// Fetch only active missing persons (deleted = false, status = "OPEN") limited to 3 items
+		int limitSize = 3;
+		Page<MissingPersonReport> reportPage = missingPersonRepository.findAll(
+				(root, query, cb) -> cb.and(
+						cb.isFalse(root.get("deleted")),
+						cb.equal(root.get("status"), "OPEN")
+				),
+				PageRequest.of(0, limitSize, Sort.by(Sort.Direction.DESC, "regdate").and(Sort.by(Sort.Direction.DESC, "reportId")))
+		);
 
-			Page<MissingPersonReport> reportPage = missingPersonRepository.findBySourceTypeAndDeletedFalse(
-					"PUBLIC_API",
-					PageRequest.of(safePage, safeRowSize, Sort.by(Sort.Direction.DESC, "regdate").and(Sort.by(Sort.Direction.DESC, "reportId")))
-			);
+		List<Safe182AmberAlertView> alerts = reportPage.getContent().stream()
+				.map(this::toAmberAlertView)
+				.toList();
 
-			List<Safe182AmberAlertView> alerts = reportPage.getContent().stream()
-					.map(this::toAmberAlertView)
-					.toList();
-
-			return new Safe182AmberAlertPage("00", "OK", (int) reportPage.getTotalElements(), alerts);
-		}
+		return new Safe182AmberAlertPage("00", "OK", (int) reportPage.getTotalElements(), alerts);
 	}
 
 	private Safe182AmberAlertView toAmberAlertView(MissingPersonReport report) {
@@ -51,6 +45,7 @@ public class MissingAlertService {
 		String occurrenceDate = report.getOccurredAt() != null ? report.getOccurredAt().format(formatter) : "";
 		
 		return new Safe182AmberAlertView(
+				report.getReportId(),
 				occurrenceDate,
 				report.getClothing(),
 				report.getAge() != null ? String.valueOf(report.getAge()) : "",

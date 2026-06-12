@@ -2,9 +2,9 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
-    <a class="home-missing-alert-strip" th:href="@{/missing-alerts}" aria-label="실종 경보 확인">
+    <a class="home-missing-alert-strip" th:href="@{/missing-persons}" aria-label="실종자 확인">
       <span>긴급 알림</span>
-      <strong id="homeMissingAlertSummary">최근 안전Dream 실종 경보를 확인하고 제보에 참여해주세요.</strong>
+      <strong id="homeMissingAlertSummary">최근 등록된 실종자 정보를 확인하고 제보에 참여해주세요.</strong>
       <em>확인하기</em>
     </a>
 

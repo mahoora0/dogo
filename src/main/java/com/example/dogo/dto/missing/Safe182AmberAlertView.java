@@ -1,6 +1,7 @@
 package com.example.dogo.dto.missing;
 
 public record Safe182AmberAlertView(
+		Long id,
 		String occurrenceDate,
 		String dressing,
 		String ageNow,

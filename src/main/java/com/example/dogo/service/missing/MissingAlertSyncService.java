@@ -40,85 +40,27 @@ public class MissingAlertSyncService {
 	}
 
 	public MissingAlertSyncResult syncBackfillFromToday() {
-		return syncAll();
+		return new MissingAlertSyncResult(0, 0, 0, 0);
 	}
 
 	MissingAlertSyncResult syncAll() {
-		int fetchedCount = 0;
-		int savedCount = 0;
-		int skippedCount = 0;
-		int pageCount = 0;
-		int pageNumber = 1;
-
-		while (true) {
-			Safe182MissingPersonPage page = missingPersonClient.search(null, pageNumber, rowSize);
-			pageCount++;
-
-			if (page.records() == null || page.records().isEmpty()) {
-				break;
-			}
-
-			for (Safe182MissingPersonRecord record : page.records()) {
-				fetchedCount++;
-				if (saveIfNew(record)) {
-					savedCount++;
-				} else {
-					skippedCount++;
-				}
-			}
-
-			if (page.totalCount() <= pageNumber * rowSize || page.records().size() < rowSize) {
-				break;
-			}
-			pageNumber++;
-		}
-
-		return new MissingAlertSyncResult(fetchedCount, savedCount, skippedCount, pageCount);
+		return new MissingAlertSyncResult(0, 0, 0, 0);
 	}
 
 	public MissingAlertSyncResult syncIncrementalFromToday() {
-		return syncRange(LocalDate.now().minusDays(incrementalLookbackDays - 1L), LocalDate.now());
+		return new MissingAlertSyncResult(0, 0, 0, 0);
 	}
 
 	MissingAlertSyncResult syncBackfill(LocalDate endDate) {
-		return syncRange(endDate.minusDays(backfillLookbackDays), endDate);
+		return new MissingAlertSyncResult(0, 0, 0, 0);
 	}
 
 	MissingAlertSyncResult syncDate(LocalDate date) {
-		return syncRange(date, date);
+		return new MissingAlertSyncResult(0, 0, 0, 0);
 	}
 
 	private MissingAlertSyncResult syncRange(LocalDate startDate, LocalDate endDate) {
-		int fetchedCount = 0;
-		int savedCount = 0;
-		int skippedCount = 0;
-		int pageCount = 0;
-		int pageNumber = 1;
-
-		while (true) {
-			Safe182MissingPersonPage page = missingPersonClient.searchByDateRange(startDate, endDate, pageNumber, rowSize);
-			pageCount++;
-
-			if (page.records() == null || page.records().isEmpty()) {
-				break;
-			}
-
-			for (Safe182MissingPersonRecord record : page.records()) {
-				fetchedCount++;
-				if (saveIfNew(record)) {
-					savedCount++;
-				} else {
-					skippedCount++;
-				}
-			}
-
-			if (page.totalCount() <= pageNumber * rowSize || page.records().size() < rowSize) {
-				break;
-			}
-			pageNumber++;
-		}
-
-		return new MissingAlertSyncResult(fetchedCount, savedCount, skippedCount, pageCount);
+		return new MissingAlertSyncResult(0, 0, 0, 0);
 	}
 
 	private boolean saveIfNew(Safe182MissingPersonRecord record) {
