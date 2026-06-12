@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -201,6 +202,7 @@ public class AdminController {
 
     @PostMapping("/lost-items/{id}/delete")
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public String deleteLostItem(@PathVariable("id") Long id,
                                  @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType,
                                  @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
@@ -303,6 +305,7 @@ public class AdminController {
 
     @PostMapping("/found-items/{id}/delete")
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public String deleteFoundItem(@PathVariable("id") Long id,
                                   @RequestParam(value = "sourceType", required = false, defaultValue = "ALL") String sourceType,
                                   @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
@@ -385,6 +388,7 @@ public class AdminController {
 
     @PostMapping("/animals/{id}/delete")
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public String deleteAnimal(@PathVariable("id") Long id,
                                @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
@@ -460,6 +464,7 @@ public class AdminController {
 
     @PostMapping("/missing-persons/{id}/delete")
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public String deleteMissingPerson(@PathVariable("id") Long id,
                                       @RequestParam(value = "searchType", required = false, defaultValue = "") String searchType,
                                       @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
@@ -515,6 +520,7 @@ public class AdminController {
 
     @PostMapping("/users/{id}/role")
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public String updateUserRole(@PathVariable("id") Long id, @RequestParam("role") String role) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
@@ -544,6 +550,7 @@ public class AdminController {
 
     @PostMapping("/api/emergency/toggle")
     @ResponseBody
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public Map<String, Object> toggleEmergency() {
         emergencyActive = !emergencyActive;
         Map<String, Object> response = new HashMap<>();
@@ -553,6 +560,7 @@ public class AdminController {
 
     @PostMapping("/api/settings/toggle")
     @ResponseBody
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public Map<String, Object> toggleSetting(@RequestParam("key") String key, @RequestParam("value") boolean value) {
         if ("location_weight_enabled".equals(key)) {
             locationWeightEnabled = value;
@@ -634,6 +642,7 @@ public class AdminController {
     }
 
     @GetMapping("/backup/csv")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public void downloadBackupCsv(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"dogo_backup_" + java.time.LocalDate.now() + ".csv\"");

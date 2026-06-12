@@ -198,7 +198,7 @@
                                     
                                     <!-- 삭제 버튼 -->
                                     <td class="px-6 py-4 text-center">
-                                        <form th:action="@{/admin/animals/{id}/delete(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, reportTypeFilter=${reportType}, page=${reports.number})}" method="post"
+                                        <form sec:authorize="hasRole('SUPER_ADMIN')" th:action="@{/admin/animals/{id}/delete(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, reportTypeFilter=${reportType}, page=${reports.number})}" method="post"
                                               data-confirm="정말로 이 실종동물 신고글을 삭제하시겠습니까? (Soft Delete)">
                                             <button type="submit" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-colors inline-flex items-center justify-center">
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>

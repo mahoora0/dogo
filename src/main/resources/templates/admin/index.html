@@ -173,8 +173,8 @@
                             </div>
                         </a>
 
-                        <!-- Card 3: 📥 대량 데이터 백업 -->
-                        <div class="p-5 bg-slate-50 border border-slate-100 rounded-2xl transition-all duration-300 text-left flex flex-col justify-between min-h-[140px] relative overflow-hidden group">
+                        <!-- Card 3: 📥 대량 데이터 백업 (SUPER_ADMIN Only) -->
+                        <div sec:authorize="hasRole('SUPER_ADMIN')" class="p-5 bg-slate-50 border border-slate-100 rounded-2xl transition-all duration-300 text-left flex flex-col justify-between min-h-[140px] relative overflow-hidden group">
                             <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-100/10 rounded-full blur-xl group-hover:bg-emerald-100/20 transition-all"></div>
                             <div class="flex items-center justify-between z-10">
                                 <div class="p-2.5 bg-emerald-100 text-emerald-600 rounded-xl">
@@ -195,8 +195,8 @@
                 </div>
 
 
-                <!-- 🛠️ 시스템 핵심 컨트롤 패널 (System Core Control Tower) -->
-                <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm transition-all duration-300">
+                <!-- 🛠️ 시스템 핵심 컨트롤 패널 (System Core Control Tower) - SUPER_ADMIN Only -->
+                <div sec:authorize="hasRole('SUPER_ADMIN')" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm transition-all duration-300">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="p-2.5 bg-slate-900 text-white rounded-2xl">
                             <i data-lucide="sliders" class="w-5 h-5"></i>

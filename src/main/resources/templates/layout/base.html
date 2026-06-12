@@ -315,7 +315,7 @@
                   th:text="${unreadChatCount != null && unreadChatCount > 99 ? '99+' : (unreadChatCount ?: 0)}"
                   class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">0</span>
           </a>
-          <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="profile-link">
+          <a th:href="${#authentication.principal.user.role == 'ADMIN' || #authentication.principal.user.role == 'SUPER_ADMIN' ? '/admin' : '/userpage'}" class="profile-link">
             <img th:if="${#authentication.principal.user.profileImageUrl != null}"
                  th:src="${#authentication.principal.user.profileImageUrl}"
                  referrerpolicy="no-referrer"

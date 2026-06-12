@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Controller
 public class NoticeController {
@@ -122,6 +123,7 @@ public class NoticeController {
     }
 
     // [Admin] 삭제 처리
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @PostMapping("/admin/notice/{id}/delete")
     public String delete(@PathVariable Long id) {
         noticeService.deleteNotice(id);

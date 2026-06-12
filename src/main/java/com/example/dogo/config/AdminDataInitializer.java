@@ -63,29 +63,42 @@ public class AdminDataInitializer implements CommandLineRunner {
         }
 
         // 이미 해당 아이디의 계정이 존재하는지 확인
-        if (userRepository.findByLoginId(adminId).isPresent()) {
-            log.info("관리자 계정('{}')이 이미 존재합니다. 자동 생성을 건너뜁니다.", adminId);
-            return;
+        userRepository.findByLoginId(adminId).ifPresentOrElse(
+            user -> {
+                log.info("관리자 계정('{}')이 이미 존재합니다. 권한을 SUPER_ADMIN으로 업데이트합니다.", adminId);
+                user.setRole("SUPER_ADMIN");
+                userRepository.save(user);
+            },
+            () -> {
+                log.info("관리자 계정이 존재하지 않습니다. 자동 생성을 시작합니다: {}", adminId);
+                User admin = new User(
+                        adminId,
+                        passwordEncoder.encode(adminPassword),
+                        "superadmin@dogo.com",
+                        "최고관리자",
+                        null
+                    );
+                admin.setRole("SUPER_ADMIN");
+                userRepository.save(admin);
+                log.info("최고관리자 계정 생성이 완료되었습니다.");
+                log.info("ID: {}, PW: (설정된 비밀번호)", adminId);
+            }
+        );
+
+        // 테스트용 일반 관리자 계정 (ADMIN) 자동 생성
+        String subAdminId = "subadmin";
+        if (userRepository.findByLoginId(subAdminId).isEmpty()) {
+            User subAdmin = new User(
+                    subAdminId,
+                    passwordEncoder.encode("subadmin123!"),
+                    "subadmin@dogo.com",
+                    "일반관리자",
+                    null
+                );
+            subAdmin.setRole("ADMIN");
+            userRepository.save(subAdmin);
+            log.info("테스트용 일반관리자 계정 생성이 완료되었습니다. ID: {}, PW: subadmin123!", subAdminId);
         }
-
-        log.info("관리자 계정이 존재하지 않습니다. 자동 생성을 시작합니다: {}", adminId);
-
-        // 관리자 계정 생성
-        User admin = new User(
-                adminId,
-                passwordEncoder.encode(adminPassword),
-                "admin@dogo.com",
-                "최고관리자",
-                null
-            );
-        
-        // 권한을 ADMIN으로 설정
-        admin.setRole("ADMIN");
-
-        userRepository.save(admin);
-        
-        log.info("관리자 계정 생성이 완료되었습니다.");
-        log.info("ID: {}, PW: (설정된 비밀번호)", adminId);
     }
 
     private void seedDummyUsers() {
