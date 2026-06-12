@@ -2104,11 +2104,13 @@ option {
     .search-filter-row-3 .col-span-4 {
         display: flex !important;
         gap: 8px !important;
+        min-width: 0 !important;
     }
 
     .search-filter-row-3 .col-span-4 button,
     .search-filter-row-3 .col-span-4 a {
         flex: 1 !important;
+        min-width: 0 !important;
         font-size: 13px !important;
         padding: 8px 12px !important;
         height: 38px !important;
@@ -2116,6 +2118,17 @@ option {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        line-height: 1.2 !important;
+    }
+
+    .search-filter-form button,
+    .search-filter-form a,
+    .search-header-card a,
+    .search-header-card button {
+        white-space: nowrap !important;
+        word-break: keep-all !important;
     }
 
     /* 정렬 셀렉트박스 부분 */
@@ -2452,6 +2465,8 @@ option {
     .item-form input,
     .item-form select,
     .item-form textarea {
+        width: 100% !important;
+        min-width: 0 !important;
         height: auto !important;
         min-height: 44px !important;
         font-size: 14px !important;
@@ -2463,6 +2478,7 @@ option {
     }
 
     .item-form label {
+        min-width: 0 !important;
         margin-bottom: 8px !important;
     }
 
@@ -2471,10 +2487,36 @@ option {
         gap: 16px !important;
     }
 
+    .item-form button,
+    .item-form a {
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+    }
+
     .item-form .md\:col-span-2 {
         grid-column: span 1 / span 1 !important;
     }
 
+}
+@media (max-width: 380px) {
+    .header-container {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        gap: 6px !important;
+    }
+
+    .mobile-menu-btn {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .navbar .logo img {
+        height: 34px !important;
+    }
+
+    .nav-links {
+        gap: 4px !important;
+    }
 }
 /* Tablet screens optimization (768px ~ 1024px) */
 @media (min-width: 768px) and (max-width: 1024px) {
