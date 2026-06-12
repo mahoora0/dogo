@@ -349,46 +349,48 @@
     text-decoration: underline;
 }
 
-html.mobile-view .area-content-grid {
-    grid-template-columns: 1fr;
-    height: auto;
-}
+@media (max-width: 767px) {
+    .area-content-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
 
-html.mobile-view .center-list-container {
-    max-height: 300px;
-    height: auto;
-}
+    .center-list-container {
+        max-height: 300px;
+        height: auto;
+    }
 
-html.mobile-view #map {
-    height: 350px !important;
-}
+    #map {
+        height: 350px !important;
+    }
 
-html.mobile-view .search-inner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-}
+    .search-inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
 
-html.mobile-view .select-group {
-    flex-direction: column;
-    width: 100%;
-    gap: 8px !important;
-}
+    .select-group {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px !important;
+    }
 
-html.mobile-view .select-wrapper {
-    width: 100%;
-    min-width: 0;
-}
+    .select-wrapper {
+        width: 100%;
+        min-width: 0;
+    }
 
-html.mobile-view .divider {
-    display: none;
-}
+    .divider {
+        display: none;
+    }
 
-html.mobile-view #centerSearch {
-    width: 100%;
-}
+    #centerSearch {
+        width: 100%;
+    }
 
-html.mobile-view .btn-search-black {
-    width: 100%;
+    .btn-search-black {
+        width: 100%;
+    }
 }
 

@@ -980,146 +980,148 @@ option {
     border-radius: 4px;
 }
 
-html.mobile-view .header-container,
-html.mobile-view .main-layout,
-html.mobile-view .main-layout--full-width {
-    min-width: auto;
-}
-html.mobile-view .home-actions,
-html.mobile-view .home-recent-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+@media (max-width: 767px) {
+    .header-container,
+    .main-layout,
+    .main-layout--full-width {
+        min-width: auto;
+    }
+    .home-actions,
+    .home-recent-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 
-html.mobile-view .home-search-panel {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+    .home-search-panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 
-html.mobile-view .home-search-panel button {
-    width: 100%;
-}
+    .home-search-panel button {
+        width: 100%;
+    }
 
-html.mobile-view .missing-alert-row {
-    flex-wrap: wrap;
-    gap: 16px;
-    padding: 16px 20px;
-}
-html.mobile-view .missing-alert-col-right {
-    border-left: none;
-    padding-left: 0;
-    flex-basis: 100%;
-    margin-top: 4px;
-    padding-top: 12px;
-    border-top: 1px dashed #e6edf5;
-}
-html.mobile-view .missing-alert-col-source {
-    position: absolute;
-    top: 16px;
-    right: 20px;
-}
+    .missing-alert-row {
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 16px 20px;
+    }
+    .missing-alert-col-right {
+        border-left: none;
+        padding-left: 0;
+        flex-basis: 100%;
+        margin-top: 4px;
+        padding-top: 12px;
+        border-top: 1px dashed #e6edf5;
+    }
+    .missing-alert-col-source {
+        position: absolute;
+        top: 16px;
+        right: 20px;
+    }
 
-html.mobile-view .header-container {
-    padding: 10px 16px;
-}
+    .header-container {
+        padding: 10px 16px;
+    }
 
-html.mobile-view .main-layout {
-    display: block;
-    margin-top: 14px;
-    padding: 0 16px;
-}
+    .main-layout {
+        display: block;
+        margin-top: 14px;
+        padding: 0 16px;
+    }
 
-html.mobile-view .sidebar {
-    margin-bottom: 16px;
-    position: static;
-    width: 100%;
-}
+    .sidebar {
+        margin-bottom: 16px;
+        position: static;
+        width: 100%;
+    }
 
-html.mobile-view .nav-container {
-    padding: 0 16px;
-    overflow-x: auto;
-    justify-content: flex-start;
-    -webkit-overflow-scrolling: touch;
-}
+    .nav-container {
+        padding: 0 16px;
+        overflow-x: auto;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+    }
 
-html.mobile-view .nav-container::-webkit-scrollbar {
-    display: none;
-}
+    .nav-container::-webkit-scrollbar {
+        display: none;
+    }
 
-html.mobile-view .top-nav {
-    gap: 16px;
-    padding: 4px 0;
-}
+    .top-nav {
+        gap: 16px;
+        padding: 4px 0;
+    }
 
-html.mobile-view .nav-item {
-    padding: 6px 0;
-}
+    .nav-item {
+        padding: 6px 0;
+    }
 
-html.mobile-view .nav-category {
-    padding: 6px 12px;
-    font-size: 14px;
-    white-space: nowrap;
-}
+    .nav-category {
+        padding: 6px 12px;
+        font-size: 14px;
+        white-space: nowrap;
+    }
 
-html.mobile-view .dropdown-menu {
-    left: 50%;
-    transform: translateX(-50%) translateY(5px);
-    min-width: 160px;
-    padding: 12px;
-    border-radius: 12px;
-}
+    .dropdown-menu {
+        left: 50%;
+        transform: translateX(-50%) translateY(5px);
+        min-width: 160px;
+        padding: 12px;
+        border-radius: 12px;
+    }
 
-html.mobile-view .nav-item.mobile-active .dropdown-menu {
-    transform: translateX(-50%) translateY(0);
-}
+    .nav-item.mobile-active .dropdown-menu {
+        transform: translateX(-50%) translateY(0);
+    }
 
-html.mobile-view .nav-links {
-    gap: 2px;
-}
+    .nav-links {
+        gap: 2px;
+    }
 
-html.mobile-view .nav-link,
-html.mobile-view .profile-link,
-html.mobile-view .chat-button {
-    font-size: 12px;
-    padding: 7px;
-}
+    .nav-link,
+    .profile-link,
+    .chat-button {
+        font-size: 12px;
+        padding: 7px;
+    }
 
-html.mobile-view .home-actions,
-html.mobile-view .home-recent-grid,
-html.mobile-view .home-search-panel,
-html.mobile-view .missing-alert-toolbar {
-    grid-template-columns: 1fr;
-}
+    .home-actions,
+    .home-recent-grid,
+    .home-search-panel,
+    .missing-alert-toolbar {
+        grid-template-columns: 1fr;
+    }
 
-html.mobile-view .missing-alert-hero {
-    align-items: stretch;
-    display: flex;
-    flex-direction: column;
-}
+    .missing-alert-hero {
+        align-items: stretch;
+        display: flex;
+        flex-direction: column;
+    }
 
-html.mobile-view .home-action-card {
-    min-height: 166px;
-}
+    .home-action-card {
+        min-height: 166px;
+    }
 
-html.mobile-view .missing-alert-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-}
-html.mobile-view .missing-alert-col-left {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    flex-basis: auto;
-}
-html.mobile-view .missing-alert-col-mid {
-    flex-basis: auto;
-}
-html.mobile-view .missing-alert-col-right {
-    flex-basis: auto;
-}
-html.mobile-view .missing-alert-col-source {
-    position: static;
-    align-self: flex-start;
-    margin-top: 4px;
+    .missing-alert-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .missing-alert-col-left {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-basis: auto;
+    }
+    .missing-alert-col-mid {
+        flex-basis: auto;
+    }
+    .missing-alert-col-right {
+        flex-basis: auto;
+    }
+    .missing-alert-col-source {
+        position: static;
+        align-self: flex-start;
+        margin-top: 4px;
+    }
 }
 
 @keyframes cardFadeIn {
@@ -1158,35 +1160,37 @@ html.mobile-view .missing-alert-col-source {
     display: none;
 }
 
-html.mobile-view .top-nav {
-    display: none !important;
-}
+@media (max-width: 767px) {
+    .top-nav {
+        display: none !important;
+    }
 
-html.mobile-view .mobile-menu-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    color: #475569;
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    border-radius: 8px;
-    transition: background-color 0.2s;
-}
-html.mobile-view .mobile-menu-btn:hover {
-    background-color: #f1f5f9;
-}
+    .mobile-menu-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        color: #475569;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+    }
+    .mobile-menu-btn:hover {
+        background-color: #f1f5f9;
+    }
 
-/* Hide non-icon items in nav-links on mobile */
-html.mobile-view .nav-links .nav-link,
-html.mobile-view .nav-links form {
-    display: none !important;
-}
+    /* Hide non-icon items in nav-links on mobile */
+    .nav-links .nav-link,
+    .nav-links form {
+        display: none !important;
+    }
 
-html.mobile-view .profile-link span {
-    display: none !important;
+    .profile-link span {
+        display: none !important;
+    }
 }
 
 .mobile-drawer-overlay {
@@ -1549,881 +1553,883 @@ html.mobile-view .profile-link span {
 }
 
 /* ==========================================================================
-   📱 Mobile View Overrides (JS class: html.mobile-view, <= 480px)
+   📱 Mobile View Overrides (CSS media query: @media (max-width: 767px))
    ========================================================================== */
-html.mobile-view .header-container {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    position: relative !important;
-    min-height: 56px !important;
-    padding: 8px 16px !important;
-}
-html.mobile-view .mobile-menu-btn {
-    order: 1 !important;
-    display: inline-flex !important;
-}
-html.mobile-view .logo {
-    order: 2 !important;
-    position: absolute !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    margin-left: 0 !important;
-}
-html.mobile-view .nav-links {
-    order: 3 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-}
-html.mobile-view .nav-links .nav-link,
-html.mobile-view .nav-links form,
-html.mobile-view .profile-link {
-    display: none !important;
-}
-html.mobile-view #notificationWrapper,
-html.mobile-view .chat-button {
-    display: none !important;
-}
-
-/* 2. Promo Banner */
-html.mobile-view .home-banner {
-    padding: 20px 24px !important;
-    border-radius: 12px !important;
-    margin-bottom: 20px !important;
-}
-html.mobile-view .home-banner-text h2 {
-    font-size: 19px !important;
-    line-height: 1.35 !important;
-}
-html.mobile-view .home-banner-image {
-    width: 100px !important;
-}
-
-/* 3. Service Cards Grid */
-html.mobile-view .home-actions {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
-}
-html.mobile-view .home-action-card {
-    display: grid !important;
-    grid-template-areas:
-        "icon title"
-        "icon desc" !important;
-    grid-template-columns: auto 1fr !important;
-    grid-template-rows: auto auto !important;
-    align-items: center !important;
-    gap: 6px 12px !important;
-    min-height: 100px !important;
-    padding: 20px 16px !important;
-    border-radius: 12px !important;
-}
-html.mobile-view .home-action-card .home-action-icon {
-    grid-area: icon !important;
-    margin-bottom: 0 !important;
-    width: 34px !important;
-    height: 34px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-html.mobile-view .home-action-card strong {
-    grid-area: title !important;
-    font-size: 14px !important;
-    font-weight: 800 !important;
-    margin-bottom: 0 !important;
-    line-height: 1.25 !important;
-    text-align: left !important;
-}
-html.mobile-view .home-action-card > span:not(.home-action-icon) {
-    grid-area: desc !important;
-    font-size: 10.5px !important;
-    font-weight: 600 !important;
-    line-height: 1.3 !important;
-    display: block !important;
-    text-align: left !important;
-}
-html.mobile-view .home-action-card p,
-html.mobile-view .home-action-card em {
-    display: none !important;
-}
-
-/* 4. Bottom Navigation Bar */
-html.mobile-view body {
-    padding-bottom: 0 !important;
-}
-html.mobile-view footer {
-    padding-bottom: calc(1.25rem + 74px) !important;
-}
-html.mobile-view .main-layout {
-    min-height: calc(100vh - 301px);
-    min-height: calc(100dvh - 301px);
-}
-html.mobile-view .mobile-bottom-nav {
-    display: flex !important;
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    height: 60px !important;
-    background: #ffffff !important;
-    border-top: 1px solid #e2e8f0 !important;
-    justify-content: space-around !important;
-    align-items: center !important;
-    z-index: 9999 !important;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05) !important;
-    padding: 0 4px !important;
-    transition: transform 0.3s ease-in-out !important;
-}
-html.mobile-view .mobile-bottom-nav.nav-hidden {
-    transform: translateY(150%) !important;
-}
-html.mobile-view .mobile-bottom-nav-item {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    color: #64748b !important;
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    gap: 4px !important;
-    flex: 1 !important;
-    height: 100% !important;
-    border: none !important;
-    background: transparent !important;
-    cursor: pointer !important;
-    text-decoration: none !important;
-    padding: 4px 0 !important;
-}
-html.mobile-view .mobile-bottom-nav-item svg {
-    width: 22px !important;
-    height: 22px !important;
-    stroke-width: 2 !important;
-}
-html.mobile-view .mobile-bottom-nav-item.active {
-    color: #2563eb !important;
-}
-html.mobile-view .mobile-bottom-nav-item.register-btn {
-    position: relative !important;
-    overflow: visible !important;
-}
-html.mobile-view .plus-icon-wrapper {
-    width: 44px !important;
-    height: 44px !important;
-    background: #2563eb !important;
-    color: #ffffff !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3) !important;
-    margin-top: -24px !important;
-    transition: transform 0.2s !important;
-}
-html.mobile-view .plus-icon-wrapper svg {
-    width: 22px !important;
-    height: 22px !important;
-    stroke-width: 3 !important;
-}
-html.mobile-view .plus-icon-wrapper:active {
-    transform: scale(0.95) !important;
-}
-
-/* 5. Recent Posts List */
-html.mobile-view .home-recent-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-}
-html.mobile-view .home-recent-card {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    padding: 12px !important;
-    gap: 12px !important;
-    border-radius: 14px !important;
-    height: auto !important;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02) !important;
-}
-html.mobile-view .home-recent-image {
-    width: 72px !important;
-    height: 72px !important;
-    flex-shrink: 0 !important;
-    border-radius: 10px !important;
-    overflow: hidden !important;
-    aspect-ratio: 1 !important;
-}
-html.mobile-view .home-recent-image img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-}
-html.mobile-view .home-recent-body {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    padding: 0 !important;
-    min-width: 0 !important;
-    height: 72px !important;
-    text-align: left !important;
-}
-html.mobile-view .home-recent-title-wrapper {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    min-width: 0 !important;
-}
-html.mobile-view .home-recent-body strong {
-    font-size: 13.5px !important;
-    font-weight: 800 !important;
-    color: #1e293b !important;
-    line-height: 1.3 !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    flex: 1 !important;
-}
-html.mobile-view .home-recent-body p {
-    font-size: 11px !important;
-    margin-top: 2px !important;
-    color: #64748b !important;
-    align-items: center !important;
-    display: flex !important;
-    gap: 4px !important;
-}
-html.mobile-view .home-recent-body p svg {
-    width: 12px !important;
-    height: 12px !important;
-}
-html.mobile-view .home-recent-body .flex {
-    margin-top: 0 !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-}
-html.mobile-view .home-recent-body time {
-    font-size: 10px !important;
-    color: #94a3b8 !important;
-    margin-top: 0 !important;
-    order: 2 !important;
-}
-html.mobile-view .home-recent-body span[style*="font-size: 11px"] {
-    display: none !important;
-}
-html.mobile-view .home-badge {
-    position: static !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex-shrink: 0 !important;
-    font-size: 9px !important;
-    font-weight: 850 !important;
-    padding: 2px 5px !important;
-    border-radius: 4px !important;
-    height: 17px !important;
-    line-height: 1 !important;
-    color: #ffffff !important;
-}
-
-/* 6. Filter tabs */
-html.mobile-view .home-tabs {
-    gap: 6px !important;
-    margin-bottom: 14px !important;
-}
-html.mobile-view .home-tabs a {
-    border-radius: 9999px !important;
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-    min-width: auto !important;
-}
-
-/* ===== 모바일 전용: 통합검색 숨김 ===== */
-html.mobile-view #homeSearchForm {
-    display: none !important;
-}
-
-/* ===== 모바일 전용: 긴급알림 컴팩트 ===== */
-html.mobile-view .home-missing-alert-strip {
-    padding: 9px 12px !important;
-    margin-bottom: 12px !important;
-    border-radius: 8px !important;
-    gap: 8px !important;
-    grid-template-columns: auto minmax(0, 1fr) !important;
-}
-
-html.mobile-view .home-missing-alert-strip span {
-    font-size: 10px !important;
-    padding: 4px 7px !important;
-    border-radius: 5px !important;
-}
-
-html.mobile-view .home-missing-alert-strip strong {
-    font-size: 12px !important;
-}
-
-html.mobile-view .home-missing-alert-strip em {
-    display: none !important;
-}
-
-/* ===== 모바일 전용: 검색 결과 목록 가로형(Row) 배치 및 높이 조정 ===== */
-html.mobile-view .main-layout section.grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-}
-
-html.mobile-view .main-layout section.grid > a {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    padding: 12px !important;
-    gap: 14px !important;
-    border-radius: 16px !important;
-    height: auto !important;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02) !important;
-}
-
-/* 이미지 컨테이너 크기 키우기 (120px) */
-html.mobile-view .main-layout section.grid > a > div:first-child {
-    width: 120px !important;
-    height: 120px !important;
-    flex-shrink: 0 !important;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    aspect-ratio: 1 / 1 !important;
-}
-
-html.mobile-view .main-layout section.grid > a > div:first-child img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-}
-
-/* 이미지 안의 상태 배지 위치 조정 */
-html.mobile-view .main-layout section.grid > a > div:first-child > div.absolute {
-    top: 6px !important;
-    right: 6px !important;
-    left: auto !important;
-}
-
-html.mobile-view .main-layout section.grid > a > div:first-child > div.absolute span {
-    padding: 2px 6px !important;
-    font-size: 9px !important;
-}
-
-/* 카드 바디 영역 (높이를 이미지와 일치시켜 세로 정렬이 정돈되게 함) */
-html.mobile-view .main-layout section.grid > a > div:last-child {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    padding: 2px 0 !important;
-    min-width: 0 !important;
-    height: 120px !important;
-    text-align: left !important;
-}
-
-/* 제목 크기 조정 */
-html.mobile-view .main-layout section.grid > a h2 {
-    font-size: 14.5px !important;
-    font-weight: 800 !important;
-    color: #1e293b !important;
-    line-height: 1.3 !important;
-    margin-top: 0 !important;
-    margin-bottom: 2px !important;
-}
-
-/* 카테고리 태그들 */
-html.mobile-view .main-layout section.grid > a div.mt-2,
-html.mobile-view .main-layout section.grid > a div.mt-4 {
-    margin-top: 2px !important;
-    gap: 4px !important;
-}
-
-html.mobile-view .main-layout section.grid > a div.mt-2 span,
-html.mobile-view .main-layout section.grid > a div.mt-4 span {
-    font-size: 10px !important;
-    padding: 2px 6px !important;
-}
-
-/* 설명 본문 숨김 */
-html.mobile-view .main-layout section.grid > a p {
-    display: none !important;
-}
-
-/* 위치 및 시간 줄 간격 좁히기 */
-html.mobile-view .main-layout section.grid > a div.mt-3 {
-    margin-top: 4px !important;
-    margin-bottom: 0 !important;
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
-    column-gap: 10px !important;
-    row-gap: 2px !important;
-}
-
-html.mobile-view .main-layout section.grid > a div.mt-3 > div {
-    margin-top: 0 !important;
-    font-size: 11px !important;
-    gap: 4px !important;
-}
-
-html.mobile-view .main-layout section.grid > a div.mt-3 svg {
-    width: 12px !important;
-    height: 12px !important;
-}
-
-/* ===== 모바일 전용: 검색 페이지 상단 헤더 및 필터 영역 세로 전환 ===== */
-html.mobile-view .search-list-header {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 16px !important;
-}
-
-html.mobile-view .search-list-header > div {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-}
-
-html.mobile-view .search-list-header a,
-html.mobile-view .search-list-header div.flex-col {
-    width: 100% !important;
-    display: flex !important;
-    justify-content: center !important;
-}
-
-html.mobile-view .search-filter-row-1 {
-    grid-template-columns: 1fr !important;
-}
-
-html.mobile-view .search-filter-row-2 {
-    grid-template-columns: 1fr !important;
-}
-
-html.mobile-view .search-filter-row-3 {
-    width: 100% !important;
-}
-
-html.mobile-view .search-filter-row-3 > .grid {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
-}
-
-html.mobile-view .search-filter-row-3 .col-span-8,
-html.mobile-view .search-filter-row-3 .col-span-4 {
-    grid-column: span 12 / span 12 !important;
-}
-
-/* ===== 모바일 전용: 검색 페이지 상단 헤더 및 필터 영역 디자인 개선 ===== */
-html.mobile-view .search-header-card {
-    padding: 16px !important;
-    margin-bottom: 12px !important;
-    border-radius: 12px !important;
-}
-
-html.mobile-view .search-header-card h1 {
-    font-size: 20px !important;
-}
-
-html.mobile-view .search-header-card p {
-    font-size: 12px !important;
-    margin-top: 4px !important;
-}
-
-html.mobile-view .search-header-card a,
-html.mobile-view .search-header-card button {
-    margin-top: 12px !important;
-    padding: 10px 16px !important;
-    font-size: 13px !important;
-    height: auto !important;
-    width: 100% !important;
-}
-
-/* animal-reports 의 두 버튼 정렬 */
-html.mobile-view .search-list-header div.flex-col {
-    width: 100% !important;
-    gap: 8px !important;
-}
-
-html.mobile-view .search-list-header div.flex-col a {
-    margin-top: 0 !important;
-}
-
-html.mobile-view .search-filter-form {
-    padding: 14px !important;
-    margin-bottom: 14px !important;
-    border-radius: 12px !important;
-    gap: 12px !important;
-}
-
-html.mobile-view .search-filter-form .space-y-2 > label {
-    font-size: 10px !important;
-}
-
-html.mobile-view .search-filter-form select,
-html.mobile-view .search-filter-form input {
-    font-size: 12px !important;
-    padding: 8px 14px !important;
-    height: 38px !important;
-}
-
-html.mobile-view .search-filter-form input[type="date"] {
-    height: 38px !important;
-}
-
-/* 검색창 안의 키워드 입력 필드 */
-html.mobile-view .search-filter-row-3 .col-span-8 {
-    border-radius: 10px !important;
-}
-
-html.mobile-view .search-filter-row-3 #keywordScopeSelect {
-    font-size: 12px !important;
-    width: 90px !important;
-    padding-left: 10px !important;
-    padding-right: 20px !important;
-}
-
-html.mobile-view .search-filter-row-3 #keywordInput {
-    font-size: 12px !important;
-    padding-top: 8px !important;
-    padding-bottom: 8px !important;
-    padding-left: 36px !important;
-    height: 38px !important;
-}
-
-/* 검색/초기화 버튼 줄 */
-html.mobile-view .search-filter-row-3 .col-span-4 {
-    display: flex !important;
-    gap: 8px !important;
-}
-
-html.mobile-view .search-filter-row-3 .col-span-4 button,
-html.mobile-view .search-filter-row-3 .col-span-4 a {
-    flex: 1 !important;
-    font-size: 13px !important;
-    padding: 8px 12px !important;
-    height: 38px !important;
-    border-radius: 9999px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-/* 정렬 셀렉트박스 부분 */
-html.mobile-view .main-layout .mb-5.flex {
-    margin-bottom: 12px !important;
-}
-
-html.mobile-view .main-layout .mb-5.flex h3 {
-    font-size: 12px !important;
-}
-
-html.mobile-view .main-layout .mb-5.flex select {
-    font-size: 11px !important;
-    padding: 4px 24px 4px 10px !important;
-    background-position: right 6px center !important;
-}
-
-/* ===== 모바일 전용: 고객지원 게시판 (Notice, FAQ, Inquiry, Guide) 디자인 최적화 ===== */
-
-/* 1. 공지사항 (Notice) 테이블 -> 리스트 뷰 전환 */
-html.mobile-view .notice-container table,
-html.mobile-view .notice-container table thead,
-html.mobile-view .notice-container table tbody,
-html.mobile-view .notice-container table tr,
-html.mobile-view .notice-container table td {
-    display: block !important;
-    width: 100% !important;
-}
-
-html.mobile-view .notice-container table thead {
-    display: none !important;
-}
-
-html.mobile-view .notice-container table tbody tr {
-    padding: 14px 16px !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 6px !important;
-    background: #ffffff !important;
-}
-
-html.mobile-view .notice-container table tbody tr td {
-    padding: 0 !important;
-    border: none !important;
-    text-align: left !important;
-    background: transparent !important;
-}
-
-html.mobile-view .notice-container table tbody tr td:nth-child(1) {
-    order: 1 !important;
-    width: auto !important;
-}
-
-html.mobile-view .notice-container table tbody tr td:nth-child(1) span {
-    display: inline-block !important;
-    padding: 2px 8px !important;
-    font-size: 10px !important;
-    border-radius: 4px !important;
-}
-
-html.mobile-view .notice-container table tbody tr td:nth-child(2) {
-    order: 2 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1.4 !important;
-}
-
-html.mobile-view .notice-container table tbody tr td:nth-child(2) a {
-    max-width: 100% !important;
-    white-space: normal !important;
-    word-break: break-all !important;
-}
-
-html.mobile-view .notice-container table tbody tr td:nth-child(3) {
-    order: 3 !important;
-    display: inline-block !important;
-    width: auto !important;
-    font-size: 11px !important;
-    color: #94a3b8 !important;
-}
-
-html.mobile-view .notice-container table tbody tr td:nth-child(4) {
-    order: 4 !important;
-    display: inline-block !important;
-    width: auto !important;
-    font-size: 11px !important;
-    color: #94a3b8 !important;
-    margin-left: 8px !important;
-}
-
-html.mobile-view .notice-container table tbody tr td:nth-child(4)::before {
-    content: "· 조회수 " !important;
-}
-
-/* 2. 문의하기 (Inquiry) 테이블 -> 리스트 뷰 전환 및 그리드 카드 최적화 */
-html.mobile-view .inquiry-container table,
-html.mobile-view .inquiry-container table thead,
-html.mobile-view .inquiry-container table tbody,
-html.mobile-view .inquiry-container table tr,
-html.mobile-view .inquiry-container table td {
-    display: block !important;
-    width: 100% !important;
-}
-
-html.mobile-view .inquiry-container table thead {
-    display: none !important;
-}
-
-html.mobile-view .inquiry-container table tbody tr {
-    padding: 14px 16px !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 6px !important;
-    background: #ffffff !important;
-}
-
-html.mobile-view .inquiry-container table tbody tr td {
-    padding: 0 !important;
-    border: none !important;
-    text-align: left !important;
-    background: transparent !important;
-}
-
-html.mobile-view .inquiry-container table tbody tr td:nth-child(1) {
-    order: 1 !important;
-    display: inline-block !important;
-    width: auto !important;
-    font-size: 11px !important;
-    color: #64748b !important;
-    margin-right: 8px !important;
-}
-
-html.mobile-view .inquiry-container table tbody tr td:nth-child(2) {
-    order: 2 !important;
-    display: inline-block !important;
-    width: auto !important;
-}
-
-html.mobile-view .inquiry-container table tbody tr td:nth-child(2) span {
-    display: inline-block !important;
-    padding: 2px 6px !important;
-    font-size: 9px !important;
-    border-radius: 4px !important;
-}
-
-html.mobile-view .inquiry-container table tbody tr td:nth-child(3) {
-    order: 3 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1.4 !important;
-    margin-top: 2px !important;
-}
-
-html.mobile-view .inquiry-container table tbody tr td:nth-child(3) a {
-    max-width: 100% !important;
-    white-space: normal !important;
-    word-break: break-all !important;
-}
-
-html.mobile-view .inquiry-container table tbody tr td:nth-child(4) {
-    order: 4 !important;
-    display: block !important;
-    font-size: 11px !important;
-    color: #94a3b8 !important;
-    margin-top: 2px !important;
-}
-
-/* 안내 카드 3열 그리드 -> 1열 변경 */
-html.mobile-view .inquiry-container .grid.md\:grid-cols-3 {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
-}
-
-/* 필터 제어 영역 모바일 가로 정렬 */
-html.mobile-view .inquiry-container .mb-6.flex {
-    padding: 12px !important;
-    gap: 10px !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-}
-
-html.mobile-view .inquiry-container .mb-6.flex form {
-    width: 100% !important;
-    display: flex !important;
-    gap: 8px !important;
-}
-
-html.mobile-view .inquiry-container .mb-6.flex form > div {
-    flex: 1 !important;
-}
-
-html.mobile-view .inquiry-container .mb-6.flex select {
-    width: 100% !important;
-    font-size: 12px !important;
-    padding: 6px 10px !important;
-}
-
-/* 3. 자주묻는질문 (FAQ) 모바일 정렬 */
-html.mobile-view .faq-container {
-    padding: 0 !important;
-}
-
-html.mobile-view .faq-container .mb-8.flex {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 12px !important;
-}
-
-html.mobile-view .faq-container h2 {
-    font-size: 20px !important;
-}
-
-html.mobile-view .faq-container p.text-lg {
-    font-size: 13px !important;
-}
-
-html.mobile-view .faq-container .category-btn {
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-}
-
-html.mobile-view .faq-container #faqSearchInput {
-    font-size: 13px !important;
-    padding: 10px 42px 10px 14px !important;
-}
-
-html.mobile-view .faq-item .faq-btn {
-    padding: 12px 16px !important;
-}
+@media (max-width: 767px) {
+    .header-container {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        position: relative !important;
+        min-height: 56px !important;
+        padding: 8px 16px !important;
+    }
+    .mobile-menu-btn {
+        order: 1 !important;
+        display: inline-flex !important;
+    }
+    .logo {
+        order: 2 !important;
+        position: absolute !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        margin-left: 0 !important;
+    }
+    .nav-links {
+        order: 3 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+    .nav-links .nav-link,
+    .nav-links form,
+    .profile-link {
+        display: none !important;
+    }
+    #notificationWrapper,
+    .chat-button {
+        display: none !important;
+    }
+
+    /* 2. Promo Banner */
+    .home-banner {
+        padding: 20px 24px !important;
+        border-radius: 12px !important;
+        margin-bottom: 20px !important;
+    }
+    .home-banner-text h2 {
+        font-size: 19px !important;
+        line-height: 1.35 !important;
+    }
+    .home-banner-image {
+        width: 100px !important;
+    }
+
+    /* 3. Service Cards Grid */
+    .home-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+    .home-action-card {
+        display: grid !important;
+        grid-template-areas:
+            "icon title"
+            "icon desc" !important;
+        grid-template-columns: auto 1fr !important;
+        grid-template-rows: auto auto !important;
+        align-items: center !important;
+        gap: 6px 12px !important;
+        min-height: 100px !important;
+        padding: 20px 16px !important;
+        border-radius: 12px !important;
+    }
+    .home-action-card .home-action-icon {
+        grid-area: icon !important;
+        margin-bottom: 0 !important;
+        width: 34px !important;
+        height: 34px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .home-action-card strong {
+        grid-area: title !important;
+        font-size: 14px !important;
+        font-weight: 800 !important;
+        margin-bottom: 0 !important;
+        line-height: 1.25 !important;
+        text-align: left !important;
+    }
+    .home-action-card > span:not(.home-action-icon) {
+        grid-area: desc !important;
+        font-size: 10.5px !important;
+        font-weight: 600 !important;
+        line-height: 1.3 !important;
+        display: block !important;
+        text-align: left !important;
+    }
+    .home-action-card p,
+    .home-action-card em {
+        display: none !important;
+    }
+
+    /* 4. Bottom Navigation Bar */
+    body {
+        padding-bottom: 0 !important;
+    }
+    footer {
+        padding-bottom: calc(1.25rem + 74px) !important;
+    }
+    .main-layout {
+        min-height: calc(100vh - 301px);
+        min-height: calc(100dvh - 301px);
+    }
+    .mobile-bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 60px !important;
+        background: #ffffff !important;
+        border-top: 1px solid #e2e8f0 !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        z-index: 9999 !important;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05) !important;
+        padding: 0 4px !important;
+        transition: transform 0.3s ease-in-out !important;
+    }
+    .mobile-bottom-nav.nav-hidden {
+        transform: translateY(150%) !important;
+    }
+    .mobile-bottom-nav-item {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #64748b !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        gap: 4px !important;
+        flex: 1 !important;
+        height: 100% !important;
+        border: none !important;
+        background: transparent !important;
+        cursor: pointer !important;
+        text-decoration: none !important;
+        padding: 4px 0 !important;
+    }
+    .mobile-bottom-nav-item svg {
+        width: 22px !important;
+        height: 22px !important;
+        stroke-width: 2 !important;
+    }
+    .mobile-bottom-nav-item.active {
+        color: #2563eb !important;
+    }
+    .mobile-bottom-nav-item.register-btn {
+        position: relative !important;
+        overflow: visible !important;
+    }
+    .plus-icon-wrapper {
+        width: 44px !important;
+        height: 44px !important;
+        background: #2563eb !important;
+        color: #ffffff !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3) !important;
+        margin-top: -24px !important;
+        transition: transform 0.2s !important;
+    }
+    .plus-icon-wrapper svg {
+        width: 22px !important;
+        height: 22px !important;
+        stroke-width: 3 !important;
+    }
+    .plus-icon-wrapper:active {
+        transform: scale(0.95) !important;
+    }
+
+    /* 5. Recent Posts List */
+    .home-recent-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+    .home-recent-card {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        padding: 12px !important;
+        gap: 12px !important;
+        border-radius: 14px !important;
+        height: auto !important;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+    }
+    .home-recent-image {
+        width: 72px !important;
+        height: 72px !important;
+        flex-shrink: 0 !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+        aspect-ratio: 1 !important;
+    }
+    .home-recent-image img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+    .home-recent-body {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        padding: 0 !important;
+        min-width: 0 !important;
+        height: 72px !important;
+        text-align: left !important;
+    }
+    .home-recent-title-wrapper {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        min-width: 0 !important;
+    }
+    .home-recent-body strong {
+        font-size: 13.5px !important;
+        font-weight: 800 !important;
+        color: #1e293b !important;
+        line-height: 1.3 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        flex: 1 !important;
+    }
+    .home-recent-body p {
+        font-size: 11px !important;
+        margin-top: 2px !important;
+        color: #64748b !important;
+        align-items: center !important;
+        display: flex !important;
+        gap: 4px !important;
+    }
+    .home-recent-body p svg {
+        width: 12px !important;
+        height: 12px !important;
+    }
+    .home-recent-body .flex {
+        margin-top: 0 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+    .home-recent-body time {
+        font-size: 10px !important;
+        color: #94a3b8 !important;
+        margin-top: 0 !important;
+        order: 2 !important;
+    }
+    .home-recent-body span[style*="font-size: 11px"] {
+        display: none !important;
+    }
+    .home-badge {
+        position: static !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        font-size: 9px !important;
+        font-weight: 850 !important;
+        padding: 2px 5px !important;
+        border-radius: 4px !important;
+        height: 17px !important;
+        line-height: 1 !important;
+        color: #ffffff !important;
+    }
+
+    /* 6. Filter tabs */
+    .home-tabs {
+        gap: 6px !important;
+        margin-bottom: 14px !important;
+    }
+    .home-tabs a {
+        border-radius: 9999px !important;
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+        min-width: auto !important;
+    }
+
+    /* ===== 모바일 전용: 통합검색 숨김 ===== */
+    #homeSearchForm {
+        display: none !important;
+    }
+
+    /* ===== 모바일 전용: 긴급알림 컴팩트 ===== */
+    .home-missing-alert-strip {
+        padding: 9px 12px !important;
+        margin-bottom: 12px !important;
+        border-radius: 8px !important;
+        gap: 8px !important;
+        grid-template-columns: auto minmax(0, 1fr) !important;
+    }
+
+    .home-missing-alert-strip span {
+        font-size: 10px !important;
+        padding: 4px 7px !important;
+        border-radius: 5px !important;
+    }
+
+    .home-missing-alert-strip strong {
+        font-size: 12px !important;
+    }
+
+    .home-missing-alert-strip em {
+        display: none !important;
+    }
+
+    /* ===== 모바일 전용: 검색 결과 목록 가로형(Row) 배치 및 높이 조정 ===== */
+    .main-layout section.grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    .main-layout section.grid > a {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        padding: 12px !important;
+        gap: 14px !important;
+        border-radius: 16px !important;
+        height: auto !important;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+    }
+
+    /* 이미지 컨테이너 크기 키우기 (120px) */
+    .main-layout section.grid > a > div:first-child {
+        width: 120px !important;
+        height: 120px !important;
+        flex-shrink: 0 !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        aspect-ratio: 1 / 1 !important;
+    }
+
+    .main-layout section.grid > a > div:first-child img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+
+    /* 이미지 안의 상태 배지 위치 조정 */
+    .main-layout section.grid > a > div:first-child > div.absolute {
+        top: 6px !important;
+        right: 6px !important;
+        left: auto !important;
+    }
+
+    .main-layout section.grid > a > div:first-child > div.absolute span {
+        padding: 2px 6px !important;
+        font-size: 9px !important;
+    }
+
+    /* 카드 바디 영역 (높이를 이미지와 일치시켜 세로 정렬이 정돈되게 함) */
+    .main-layout section.grid > a > div:last-child {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        padding: 2px 0 !important;
+        min-width: 0 !important;
+        height: 120px !important;
+        text-align: left !important;
+    }
+
+    /* 제목 크기 조정 */
+    .main-layout section.grid > a h2 {
+        font-size: 14.5px !important;
+        font-weight: 800 !important;
+        color: #1e293b !important;
+        line-height: 1.3 !important;
+        margin-top: 0 !important;
+        margin-bottom: 2px !important;
+    }
+
+    /* 카테고리 태그들 */
+    .main-layout section.grid > a div.mt-2,
+    .main-layout section.grid > a div.mt-4 {
+        margin-top: 2px !important;
+        gap: 4px !important;
+    }
+
+    .main-layout section.grid > a div.mt-2 span,
+    .main-layout section.grid > a div.mt-4 span {
+        font-size: 10px !important;
+        padding: 2px 6px !important;
+    }
+
+    /* 설명 본문 숨김 */
+    .main-layout section.grid > a p {
+        display: none !important;
+    }
+
+    /* 위치 및 시간 줄 간격 좁히기 */
+    .main-layout section.grid > a div.mt-3 {
+        margin-top: 4px !important;
+        margin-bottom: 0 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        column-gap: 10px !important;
+        row-gap: 2px !important;
+    }
+
+    .main-layout section.grid > a div.mt-3 > div {
+        margin-top: 0 !important;
+        font-size: 11px !important;
+        gap: 4px !important;
+    }
+
+    .main-layout section.grid > a div.mt-3 svg {
+        width: 12px !important;
+        height: 12px !important;
+    }
+
+    /* ===== 모바일 전용: 검색 페이지 상단 헤더 및 필터 영역 세로 전환 ===== */
+    .search-list-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 16px !important;
+    }
+
+    .search-list-header > div {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    .search-list-header a,
+    .search-list-header div.flex-col {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+
+    .search-filter-row-1 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .search-filter-row-2 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .search-filter-row-3 {
+        width: 100% !important;
+    }
+
+    .search-filter-row-3 > .grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .search-filter-row-3 .col-span-8,
+    .search-filter-row-3 .col-span-4 {
+        grid-column: span 12 / span 12 !important;
+    }
+
+    /* ===== 모바일 전용: 검색 페이지 상단 헤더 및 필터 영역 디자인 개선 ===== */
+    .search-header-card {
+        padding: 16px !important;
+        margin-bottom: 12px !important;
+        border-radius: 12px !important;
+    }
+
+    .search-header-card h1 {
+        font-size: 20px !important;
+    }
+
+    .search-header-card p {
+        font-size: 12px !important;
+        margin-top: 4px !important;
+    }
+
+    .search-header-card a,
+    .search-header-card button {
+        margin-top: 12px !important;
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+        height: auto !important;
+        width: 100% !important;
+    }
+
+    /* animal-reports 의 두 버튼 정렬 */
+    .search-list-header div.flex-col {
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    .search-list-header div.flex-col a {
+        margin-top: 0 !important;
+    }
+
+    .search-filter-form {
+        padding: 14px !important;
+        margin-bottom: 14px !important;
+        border-radius: 12px !important;
+        gap: 12px !important;
+    }
+
+    .search-filter-form .space-y-2 > label {
+        font-size: 10px !important;
+    }
+
+    .search-filter-form select,
+    .search-filter-form input {
+        font-size: 12px !important;
+        padding: 8px 14px !important;
+        height: 38px !important;
+    }
+
+    .search-filter-form input[type="date"] {
+        height: 38px !important;
+    }
+
+    /* 검색창 안의 키워드 입력 필드 */
+    .search-filter-row-3 .col-span-8 {
+        border-radius: 10px !important;
+    }
+
+    .search-filter-row-3 #keywordScopeSelect {
+        font-size: 12px !important;
+        width: 90px !important;
+        padding-left: 10px !important;
+        padding-right: 20px !important;
+    }
+
+    .search-filter-row-3 #keywordInput {
+        font-size: 12px !important;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+        padding-left: 36px !important;
+        height: 38px !important;
+    }
+
+    /* 검색/초기화 버튼 줄 */
+    .search-filter-row-3 .col-span-4 {
+        display: flex !important;
+        gap: 8px !important;
+    }
+
+    .search-filter-row-3 .col-span-4 button,
+    .search-filter-row-3 .col-span-4 a {
+        flex: 1 !important;
+        font-size: 13px !important;
+        padding: 8px 12px !important;
+        height: 38px !important;
+        border-radius: 9999px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* 정렬 셀렉트박스 부분 */
+    .main-layout .mb-5.flex {
+        margin-bottom: 12px !important;
+    }
+
+    .main-layout .mb-5.flex h3 {
+        font-size: 12px !important;
+    }
+
+    .main-layout .mb-5.flex select {
+        font-size: 11px !important;
+        padding: 4px 24px 4px 10px !important;
+        background-position: right 6px center !important;
+    }
+
+    /* ===== 모바일 전용: 고객지원 게시판 (Notice, FAQ, Inquiry, Guide) 디자인 최적화 ===== */
+
+    /* 1. 공지사항 (Notice) 테이블 -> 리스트 뷰 전환 */
+    .notice-container table,
+    .notice-container table thead,
+    .notice-container table tbody,
+    .notice-container table tr,
+    .notice-container table td {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .notice-container table thead {
+        display: none !important;
+    }
+
+    .notice-container table tbody tr {
+        padding: 14px 16px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+        background: #ffffff !important;
+    }
+
+    .notice-container table tbody tr td {
+        padding: 0 !important;
+        border: none !important;
+        text-align: left !important;
+        background: transparent !important;
+    }
+
+    .notice-container table tbody tr td:nth-child(1) {
+        order: 1 !important;
+        width: auto !important;
+    }
+
+    .notice-container table tbody tr td:nth-child(1) span {
+        display: inline-block !important;
+        padding: 2px 8px !important;
+        font-size: 10px !important;
+        border-radius: 4px !important;
+    }
+
+    .notice-container table tbody tr td:nth-child(2) {
+        order: 2 !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        line-height: 1.4 !important;
+    }
+
+    .notice-container table tbody tr td:nth-child(2) a {
+        max-width: 100% !important;
+        white-space: normal !important;
+        word-break: break-all !important;
+    }
+
+    .notice-container table tbody tr td:nth-child(3) {
+        order: 3 !important;
+        display: inline-block !important;
+        width: auto !important;
+        font-size: 11px !important;
+        color: #94a3b8 !important;
+    }
+
+    .notice-container table tbody tr td:nth-child(4) {
+        order: 4 !important;
+        display: inline-block !important;
+        width: auto !important;
+        font-size: 11px !important;
+        color: #94a3b8 !important;
+        margin-left: 8px !important;
+    }
+
+    .notice-container table tbody tr td:nth-child(4)::before {
+        content: "· 조회수 " !important;
+    }
+
+    /* 2. 문의하기 (Inquiry) 테이블 -> 리스트 뷰 전환 및 그리드 카드 최적화 */
+    .inquiry-container table,
+    .inquiry-container table thead,
+    .inquiry-container table tbody,
+    .inquiry-container table tr,
+    .inquiry-container table td {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .inquiry-container table thead {
+        display: none !important;
+    }
+
+    .inquiry-container table tbody tr {
+        padding: 14px 16px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+        background: #ffffff !important;
+    }
+
+    .inquiry-container table tbody tr td {
+        padding: 0 !important;
+        border: none !important;
+        text-align: left !important;
+        background: transparent !important;
+    }
+
+    .inquiry-container table tbody tr td:nth-child(1) {
+        order: 1 !important;
+        display: inline-block !important;
+        width: auto !important;
+        font-size: 11px !important;
+        color: #64748b !important;
+        margin-right: 8px !important;
+    }
+
+    .inquiry-container table tbody tr td:nth-child(2) {
+        order: 2 !important;
+        display: inline-block !important;
+        width: auto !important;
+    }
+
+    .inquiry-container table tbody tr td:nth-child(2) span {
+        display: inline-block !important;
+        padding: 2px 6px !important;
+        font-size: 9px !important;
+        border-radius: 4px !important;
+    }
+
+    .inquiry-container table tbody tr td:nth-child(3) {
+        order: 3 !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        line-height: 1.4 !important;
+        margin-top: 2px !important;
+    }
+
+    .inquiry-container table tbody tr td:nth-child(3) a {
+        max-width: 100% !important;
+        white-space: normal !important;
+        word-break: break-all !important;
+    }
+
+    .inquiry-container table tbody tr td:nth-child(4) {
+        order: 4 !important;
+        display: block !important;
+        font-size: 11px !important;
+        color: #94a3b8 !important;
+        margin-top: 2px !important;
+    }
+
+    /* 안내 카드 3열 그리드 -> 1열 변경 */
+    .inquiry-container .grid.md\:grid-cols-3 {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    /* 필터 제어 영역 모바일 가로 정렬 */
+    .inquiry-container .mb-6.flex {
+        padding: 12px !important;
+        gap: 10px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    .inquiry-container .mb-6.flex form {
+        width: 100% !important;
+        display: flex !important;
+        gap: 8px !important;
+    }
+
+    .inquiry-container .mb-6.flex form > div {
+        flex: 1 !important;
+    }
+
+    .inquiry-container .mb-6.flex select {
+        width: 100% !important;
+        font-size: 12px !important;
+        padding: 6px 10px !important;
+    }
+
+    /* 3. 자주묻는질문 (FAQ) 모바일 정렬 */
+    .faq-container {
+        padding: 0 !important;
+    }
+
+    .faq-container .mb-8.flex {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .faq-container h2 {
+        font-size: 20px !important;
+    }
+
+    .faq-container p.text-lg {
+        font-size: 13px !important;
+    }
+
+    .faq-container .category-btn {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+
+    .faq-container #faqSearchInput {
+        font-size: 13px !important;
+        padding: 10px 42px 10px 14px !important;
+    }
+
+    .faq-item .faq-btn {
+        padding: 12px 16px !important;
+    }
+
+    .faq-item .faq-btn span.text-lg {
+        font-size: 14px !important;
+    }
+
+    .faq-item .faq-answer {
+        padding: 12px 16px !important;
+    }
+
+    .faq-item .faq-answer p,
+    .faq-item .faq-answer div {
+        font-size: 13px !important;
+    }
+
+    /* 4. 이용가이드 (Guide) 모바일 정렬 */
+    .guide-container {
+        padding: 0 !important;
+    }
+
+    .guide-container h2 {
+        font-size: 20px !important;
+    }
+
+    .guide-container p.text-lg {
+        font-size: 13px !important;
+    }
+
+    .guide-container .mb-8 .flex {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .guide-container .mb-8 a {
+        padding: 8px 10px !important;
+        font-size: 11px !important;
+        text-align: center !important;
+        line-height: 1.3 !important;
+    }
+
+    .guide-container .flex-col.md\:flex-row {
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    .guide-container .md\:flex {
+        display: none !important;
+    }
+
+    .guide-container .md\:hidden {
+        display: flex !important;
+    }
+
+    /* 공통: 헤더 타이틀 영역 마진 수정 */
+    .notice-container .mb-8.flex,
+    .inquiry-container .mb-8.flex,
+    .guide-container .mb-8.flex {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .notice-container h2,
+    .inquiry-container h2,
+    .guide-container h2 {
+        font-size: 24px !important;
+    }
+
+    .notice-container p.text-lg,
+    .inquiry-container p.text-lg,
+    .guide-container p.text-lg {
+        font-size: 13px !important;
+    }
+
+    .notice-container select#categoryFilter {
+        width: 100% !important;
+        font-size: 12px !important;
+        padding: 6px 10px !important;
+    }
 
-html.mobile-view .faq-item .faq-btn span.text-lg {
-    font-size: 14px !important;
 }
-
-html.mobile-view .faq-item .faq-answer {
-    padding: 12px 16px !important;
-}
-
-html.mobile-view .faq-item .faq-answer p,
-html.mobile-view .faq-item .faq-answer div {
-    font-size: 13px !important;
-}
-
-/* 4. 이용가이드 (Guide) 모바일 정렬 */
-html.mobile-view .guide-container {
-    padding: 0 !important;
-}
-
-html.mobile-view .guide-container h2 {
-    font-size: 20px !important;
-}
-
-html.mobile-view .guide-container p.text-lg {
-    font-size: 13px !important;
-}
-
-html.mobile-view .guide-container .mb-8 .flex {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
-}
-
-html.mobile-view .guide-container .mb-8 a {
-    padding: 8px 10px !important;
-    font-size: 11px !important;
-    text-align: center !important;
-    line-height: 1.3 !important;
-}
-
-html.mobile-view .guide-container .flex-col.md\:flex-row {
-    flex-direction: column !important;
-    gap: 16px !important;
-}
-
-html.mobile-view .guide-container .md\:flex {
-    display: none !important;
-}
-
-html.mobile-view .guide-container .md\:hidden {
-    display: flex !important;
-}
-
-/* 공통: 헤더 타이틀 영역 마진 수정 */
-html.mobile-view .notice-container .mb-8.flex,
-html.mobile-view .inquiry-container .mb-8.flex,
-html.mobile-view .guide-container .mb-8.flex {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 10px !important;
-    margin-bottom: 16px !important;
-}
-
-html.mobile-view .notice-container h2,
-html.mobile-view .inquiry-container h2,
-html.mobile-view .guide-container h2 {
-    font-size: 24px !important;
-}
-
-html.mobile-view .notice-container p.text-lg,
-html.mobile-view .inquiry-container p.text-lg,
-html.mobile-view .guide-container p.text-lg {
-    font-size: 13px !important;
-}
-
-html.mobile-view .notice-container select#categoryFilter {
-    width: 100% !important;
-    font-size: 12px !important;
-    padding: 6px 10px !important;
-}
-
 /* Tablet screens optimization (768px ~ 1024px) */
 @media (min-width: 768px) and (max-width: 1024px) {
     .header-container {
