@@ -129,7 +129,7 @@
         </div>
 
         <!-- 3. 실종자 -->
-        <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/missing-alerts' || currentUri == '/missing-persons' || currentUri == '/missing-persons/new') ? 'active' : ''}">
+        <div class="nav-item" th:classappend="${currentUri != null && (currentUri == '/missing-persons' || currentUri == '/missing-persons/new') ? 'active' : ''}">
             <a th:href="@{/missing-persons}" class="nav-category">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-red-500">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -139,12 +139,6 @@
             </a>
           <div class="dropdown-menu">
             <div class="dropdown-title">실종자</div>
-            <a th:href="@{/missing-alerts}" th:classappend="${currentUri == '/missing-alerts' ? 'active-sub' : ''}">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a2.427 2.427 0 0 1-4.571 0m4.571 0a1.125 1.125 0 0 1-2.25 0" />
-              </svg>
-              <span>실종 경보</span>
-            </a>
             <a th:href="@{/missing-persons}" th:classappend="${currentUri == '/missing-persons' ? 'active-sub' : ''}">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-red-500">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
@@ -157,6 +151,7 @@
               </svg>
               <span>실종자 제보</span>
             </a>
+          </div>
           </div>
         </div>
 
@@ -679,7 +674,6 @@
               </svg>
             </button>
             <div class="mobile-nav-sub">
-              <a th:href="@{/missing-alerts}">실종 경보</a>
               <a th:href="@{/missing-persons}">실종자 검색</a>
               <a th:href="@{/missing-persons/new}">실종자 제보</a>
             </div>

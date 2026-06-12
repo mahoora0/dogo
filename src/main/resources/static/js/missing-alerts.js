@@ -162,7 +162,32 @@
     if (!summary || alerts.length === 0) {
       return;
     }
-    summary.textContent = `${alertSummary(alerts[0])} 실종 경보가 접수되었습니다.`;
+
+    const strip = document.querySelector(".home-missing-alert-strip");
+    let currentIndex = 0;
+
+    function showNextAlert() {
+      const alert = alerts[currentIndex];
+      const name = compactText(alert.name, "");
+      const suffix = name ? ` (${name}) 실종 제보가 접수되었습니다.` : " 실종 제보가 접수되었습니다.";
+      summary.textContent = `${alertSummary(alert)}${suffix}`;
+
+      if (strip) {
+        if (alert.id) {
+          strip.href = `/missing-persons/${alert.id}`;
+        } else {
+          strip.href = `/missing-persons`;
+        }
+      }
+
+      currentIndex = (currentIndex + 1) % alerts.length;
+    }
+
+    showNextAlert();
+
+    if (alerts.length > 1) {
+      setInterval(showNextAlert, 4000);
+    }
   }
 
   // 페이징 컨트롤 동적 렌더링 함수

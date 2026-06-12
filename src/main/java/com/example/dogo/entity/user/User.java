@@ -59,6 +59,10 @@ public class User {
 		this.regDate = java.time.LocalDateTime.now();
 	}
 
+	public User(String email, String nickname, String phone) {
+		this(email, nickname);
+	}
+
 	public User(String loginId, String password, String email, String nickname, String profileImageUrl) {
 		this.loginId = loginId;
 		this.password = password;
@@ -66,6 +70,10 @@ public class User {
 		this.nickname = nickname;
 		this.profileImageUrl = profileImageUrl;
 		this.regDate = java.time.LocalDateTime.now();
+	}
+
+	public User(String loginId, String password, String email, String nickname, String phone, String profileImageUrl) {
+		this(loginId, password, email, nickname, profileImageUrl);
 	}
 
 	public void updateProfileImage(String profileImageUrl) {

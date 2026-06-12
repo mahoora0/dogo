@@ -42,6 +42,7 @@ class MissingAlertApiControllerTest {
 
 	private Safe182AmberAlertView alert() {
 		return new Safe182AmberAlertView(
+				1L,
 				"20260518",
 				"파란색 상의",
 				"12",
@@ -68,7 +69,7 @@ class MissingAlertApiControllerTest {
 		private Safe182AmberAlertPage response = new Safe182AmberAlertPage("00", "OK", 0, List.of());
 
 		RecordingMissingAlertService() {
-			super(null, null);
+			super(null);
 		}
 
 		@Override
