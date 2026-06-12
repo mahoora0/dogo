@@ -3,14 +3,16 @@
   <th:block th:fragment="content">
     <style>
       /* 모바일 대응: min-width 제거 */
-      html.mobile-view body,
-      html.mobile-view .navbar,
-      html.mobile-view .main-layout {
-        min-width: 0 !important;
-        overflow-x: hidden !important;
-      }
-      html.mobile-view .h-\[500px\] {
-        height: 260px !important;
+      @media (max-width: 767px) {
+        body,
+        .navbar,
+        .main-layout {
+          min-width: 0 !important;
+          overflow-x: hidden !important;
+        }
+        .h-\[500px\] {
+          height: 260px !important;
+        }
       }
     </style>
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

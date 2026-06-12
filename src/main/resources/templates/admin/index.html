@@ -2,25 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1280">
     <title>Dogo Admin Dashboard</title>
-    <script>
-      tailwind.config = {
-        theme: {
-          screens: {
-            'sm': '0px',
-            'md': '0px',
-            'lg': '0px',
-            'xl': '0px',
-            '2xl': '0px',
-          }
-        }
-      }
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
 <body class="bg-slate-50 text-slate-900">
     <div class="flex h-screen overflow-hidden relative">
@@ -100,7 +87,7 @@
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto">
             <!-- Top Header -->
-            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-20 min-w-[1180px]">
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-20 min-w-[1024px]">
                 <div class="flex items-center gap-2">
                     <button type="button" id="mobileMenuBtn" class="hidden text-slate-500 hover:text-slate-700 focus:outline-none p-1 rounded-lg hover:bg-slate-100 transition-colors">
                         <i data-lucide="menu" class="w-6 h-6"></i>
@@ -117,7 +104,7 @@
                 </div>
             </header>
 
-            <div class="p-8 space-y-8 min-w-[1180px] mx-auto w-full">
+            <div class="p-8 space-y-8 min-w-[1024px] mx-auto w-full">
                 <!-- 📞 대시보드 빠른 액션 (Quick Action Console) - 웅장한 가로형 3열 스트립 콘솔 -->
                 <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm transition-all duration-300">
                     <div class="flex items-center gap-3 mb-6">

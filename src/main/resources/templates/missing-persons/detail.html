@@ -4,11 +4,13 @@
   <th:block th:fragment="content">
     <style>
       /* 모바일 대응: min-width 제거 */
-      html.mobile-view body,
-      html.mobile-view .navbar,
-      html.mobile-view .main-layout {
-        min-width: 0 !important;
-        overflow-x: hidden !important;
+      @media (max-width: 767px) {
+        body,
+        .navbar,
+        .main-layout {
+          min-width: 0 !important;
+          overflow-x: hidden !important;
+        }
       }
     </style>
     <div class="mb-6">
