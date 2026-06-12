@@ -174,7 +174,7 @@
                                     <th class="px-6 py-4">습득 위치</th>
                                     <th class="px-6 py-4">습득 일시</th>
                                     <th class="px-6 py-4">상태</th>
-                                    <th class="px-6 py-4 text-center">관리</th>
+                                    <th class="px-6 py-4 text-center whitespace-nowrap" sec:authorize="hasRole('SUPER_ADMIN')">관리</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -204,8 +204,8 @@
                                     </td>
                                     
                                     <!-- 삭제 버튼 -->
-                                    <td class="px-6 py-4 text-center whitespace-nowrap">
-                                        <form sec:authorize="hasRole('SUPER_ADMIN')" th:action="@{/admin/found-items/{id}/delete(id=${item.foundId}, sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, statusFilter=${status}, page=${items.number})}" method="post"
+                                    <td class="px-6 py-4 text-center whitespace-nowrap" sec:authorize="hasRole('SUPER_ADMIN')">
+                                        <form th:action="@{/admin/found-items/{id}/delete(id=${item.foundId}, sourceType=${sourceType}, searchType=${searchType}, keyword=${keyword}, statusFilter=${status}, page=${items.number})}" method="post"
                                               data-confirm="정말로 이 습득물 글을 삭제하시겠습니까? (Soft Delete)">
                                             <button type="submit" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-colors inline-flex items-center justify-center">
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
