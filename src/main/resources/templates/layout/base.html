@@ -303,18 +303,18 @@
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48L4.32 19.58a.45.45 0 0 0 .67.54l1.917-1.352a9.905 9.905 0 0 0 5.093 1.482Z" />
               </svg>
-              <span class="chat-text">채팅</span>
-              <span id="global-chat-badge"
-                    th:style="${currentUri != '/chat' && unreadChatCount != null && unreadChatCount > 0 ? '' : 'display: none;'}"
-                    th:text="${unreadChatCount != null && unreadChatCount > 99 ? '99+' : (unreadChatCount ?: 0)}"
-                    class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">0</span>
-            </a>
-            <a th:href="${#authentication.principal.user.role == 'ADMIN' ? '/admin' : '/userpage'}" class="profile-link">
-              <img th:if="${#authentication.principal.user.profileImageUrl != null}"
-                   th:src="${#authentication.principal.user.profileImageUrl}"
-                   referrerpolicy="no-referrer"
-                   class="profile-image" alt="프로필">
-              <span th:unless="${#authentication.principal.user.profileImageUrl != null}" class="profile-placeholder" aria-hidden="true">
+            <span class="chat-text">채팅</span>
+            <span id="global-chat-badge"
+                  th:style="${currentUri != '/chat' && unreadChatCount != null && unreadChatCount > 0 ? '' : 'display: none;'}"
+                  th:text="${unreadChatCount != null && unreadChatCount > 99 ? '99+' : (unreadChatCount ?: 0)}"
+                  class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">0</span>
+          </a>
+          <a th:href="${#authentication.principal.user.role == 'ADMIN' || #authentication.principal.user.role == 'SUPER_ADMIN' ? '/admin' : '/userpage'}" class="profile-link">
+            <img th:if="${#authentication.principal.user.profileImageUrl != null}"
+                 th:src="${#authentication.principal.user.profileImageUrl}"
+                 referrerpolicy="no-referrer"
+                 class="profile-image" alt="프로필">
+            <span th:unless="${#authentication.principal.user.profileImageUrl != null}" class="profile-placeholder" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6Zm-7 9a7 7 0 1114 0H3Z" clip-rule="evenodd"/>
                 </svg>
@@ -348,7 +348,7 @@
     <footer class="bg-white border-t border-[#e8edf4] py-5 mt-12 w-full">
       <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="flex flex-col md:flex-row justify-between items-center gap-8">
-          
+
           <!-- Left Column: 로고 이미지 및 플랫폼 문구 (가로 배치 & 하단 정렬 미세조정) -->
           <div class="flex items-end gap-3.5 md:pl-12">
             <img th:src="@{/images/logo.png}" alt="DOGO 로고" class="w-14 h-14 object-contain">
@@ -356,14 +356,14 @@
               당신의 소중한 것을,<br>다시 찾을 수 있도록
             </p>
           </div>
-          
+
           <!-- Middle Column: 카피라이트 -->
           <div class="text-center">
             <p class="text-xs text-gray-400 font-medium tracking-tight">
               &copy; 2026 DOGO. All rights reserved.
             </p>
           </div>
-          
+
           <!-- Right Column: 개인정보처리방침 & GitHub 링크가 나란히 배치됨 -->
           <div class="flex items-center gap-6 text-sm font-bold text-gray-600 md:pr-12">
             <a th:href="@{/privacy}" class="hover:text-gray-950 transition-colors">
@@ -377,7 +377,7 @@
               <span>GitHub</span>
             </a>
           </div>
-          
+
         </div>
       </div>
     </footer>
@@ -387,7 +387,7 @@
     <!-- Emergency Missing Animal Popup Modal -->
     <div id="emergencyModal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-slate-900/65 backdrop-blur-md transition-opacity duration-300 opacity-0">
       <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-red-100 transform scale-95 transition-transform duration-300 flex flex-col relative">
-        
+
         <!-- Emergency Pulse Banner -->
         <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 text-white flex items-center gap-3 shadow-md relative overflow-hidden">
           <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15),transparent)] animate-pulse"></div>
@@ -399,7 +399,7 @@
             </svg>
           </button>
         </div>
-        
+
         <!-- Main Content -->
         <div class="p-6 space-y-4">
           <!-- Animal Image Container -->
@@ -413,13 +413,13 @@
             </div>
             <span class="absolute bottom-3 left-3 bg-red-600/90 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md">골든타임</span>
           </div>
-          
+
           <!-- Information Fields -->
           <div class="space-y-3">
             <div class="flex items-start gap-1">
               <h4 id="emergencyTitle" class="text-base font-extrabold text-slate-900 leading-snug">실종된 반려동물을 찾습니다!</h4>
             </div>
-            
+
             <div class="grid grid-cols-2 gap-3 text-xs border-t border-slate-100 pt-3">
               <div>
                 <span id="emergencyBreedLabel" class="text-slate-400 block mb-0.5">품종</span>
@@ -440,7 +440,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Action Buttons -->
         <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-2">
           <button type="button" onclick="closeEmergencyModalForToday()" class="flex-1 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-colors">
@@ -455,7 +455,7 @@
         </div>
       </div>
     </div>
-    
+
     <script>
       function closeEmergencyModal() {
         const modal = document.getElementById('emergencyModal');
@@ -471,19 +471,19 @@
           }, 300);
         }
       }
-      
+
       function closeEmergencyModalForToday() {
         localStorage.setItem('emergency_hide_date', new Date().toDateString());
         closeEmergencyModal();
       }
-      
+
       document.addEventListener('DOMContentLoaded', function() {
         const hideDate = localStorage.getItem('emergency_hide_date');
         const today = new Date().toDateString();
         if (hideDate === today) {
           return;
         }
-        
+
         fetch('/admin/api/emergency/status')
           .then(res => res.json())
           .then(data => {
@@ -491,16 +491,16 @@
               const modal = document.getElementById('emergencyModal');
               const img = document.getElementById('emergencyImg');
               const fallback = document.getElementById('emergencyImgFallback');
-              
+
               document.getElementById('emergencyTitle').innerText = data.title;
               document.getElementById('emergencyDate').innerText = data.date;
               document.getElementById('emergencyLocation').innerText = data.location;
               document.getElementById('emergencyMarks').innerText = data.distinctiveMarks || '특별한 특징 사항이 등록되어 있지 않습니다.';
-              
+
               const breedLabel = document.getElementById('emergencyBreedLabel');
               const marksLabel = document.getElementById('emergencyMarksLabel');
               const breedVal = document.getElementById('emergencyBreed');
-              
+
               if (data.type === 'PERSON') {
                 if (breedLabel) breedLabel.innerText = '나이/국적';
                 if (marksLabel) marksLabel.innerText = '신체 특징 및 착의';
@@ -516,7 +516,7 @@
                   document.getElementById('emergencyDetailLink').href = '/animal-reports';
                 }
               }
-              
+
               if (data.imageUrl) {
                 img.src = data.imageUrl;
                 img.classList.remove('hidden');
@@ -525,7 +525,7 @@
                 img.classList.add('hidden');
                 fallback.classList.remove('hidden');
               }
-              
+
               modal.classList.remove('hidden');
               modal.classList.add('flex');
               setTimeout(() => {
@@ -552,13 +552,13 @@
             globalStompClient.connect({}, function (frame) {
               globalStompClient.subscribe(`/sub/users/${globalUserNo}/messages`, function (message) {
                 const msg = JSON.parse(message.body);
-                
+
                 let isCurrentlyReading = false;
                 if (window.location.pathname.startsWith('/chat')) {
                     // 채팅 페이지에 있을 때는 글로벌 배지를 업데이트하지 않음
                     isCurrentlyReading = true;
                 }
-                
+
                 if (!isCurrentlyReading && msg.senderNo != globalUserNo) {
                     const badge = document.getElementById('global-chat-badge');
                     if (badge) {
@@ -606,7 +606,7 @@
             </svg>
           </button>
         </div>
-        
+
         <div class="mobile-drawer-body">
           <!-- User Profile info / Login links -->
           <div class="mobile-drawer-user-section">
@@ -632,7 +632,7 @@
               </div>
             </th:block>
           </div>
-          
+
           <!-- Navigation Menu Categories -->
           <div class="mobile-drawer-nav">
             <!-- 1. 분실물 -->
@@ -648,7 +648,7 @@
                 <a th:href="@{/lost-items/new}">분실물 등록</a>
               </div>
             </div>
-            
+
             <!-- 2. 습득물 -->
             <div class="mobile-nav-group">
               <button class="mobile-nav-toggle">
@@ -663,7 +663,7 @@
                 <a th:href="@{/areas/list}">유실물센터</a>
               </div>
             </div>
-            
+
             <!-- 3. 실종자 -->
             <div class="mobile-nav-group">
               <button class="mobile-nav-toggle">
@@ -677,7 +677,7 @@
                 <a th:href="@{/missing-persons/new}">실종자 제보</a>
               </div>
             </div>
-            
+
             <!-- 4. 실종동물 -->
             <div class="mobile-nav-group">
               <button class="mobile-nav-toggle">
@@ -691,7 +691,7 @@
                 <a th:href="@{/animal-reports/new}">실종동물 제보</a>
               </div>
             </div>
-            
+
             <!-- 5. 고객지원 -->
             <div class="mobile-nav-group">
               <button class="mobile-nav-toggle">
@@ -929,7 +929,7 @@
           window.addEventListener('scroll', function() {
             const currentScrollY = window.scrollY;
             const scrollDifference = currentScrollY - lastScrollY;
-            
+
             if (currentScrollY <= 0) {
               bottomNav.classList.remove('nav-hidden');
             } else if (Math.abs(scrollDifference) > 5) {
@@ -957,7 +957,7 @@
           function initInfiniteScroll() {
             const nextBtn = paginationNav.querySelector('a[aria-label="다음 페이지"]');
             hasNextPage = nextBtn && !nextBtn.classList.contains('pointer-events-none');
-            
+
             const urlParams = new URLSearchParams(window.location.search);
             currentPage = parseInt(urlParams.get('page')) || 0;
             isLoading = false;
@@ -988,7 +988,7 @@
           function loadNextPage() {
             isLoading = true;
             currentPage++;
-            
+
             const fetchUrl = new URL(window.location.href);
             fetchUrl.searchParams.set('page', currentPage);
 
@@ -997,7 +997,7 @@
               .then(htmlText => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(htmlText, 'text/html');
-                
+
                 // 새 아이템 추출
                 const newItems = doc.querySelectorAll('.main-layout section.grid > a');
                 if (newItems.length > 0) {
@@ -1009,7 +1009,7 @@
                 // 다음 페이지 존재 여부 업데이트
                 const newNextBtn = doc.querySelector('.main-layout nav a[aria-label="다음 페이지"]');
                 hasNextPage = newNextBtn && !newNextBtn.classList.contains('pointer-events-none');
-                
+
                 if (!hasNextPage) {
                   sentinel.textContent = '마지막 항목입니다.';
                   if (observer) observer.unobserve(sentinel);
@@ -1027,7 +1027,7 @@
 
           function handleResponsiveScroll() {
             const isMobile = document.documentElement.classList.contains('mobile-view');
-            
+
             if (isMobile) {
               // 모바일 뷰: 페이징 네비 숨기고 무한 스크롤 활성화
               paginationNav.style.setProperty('display', 'none', 'important');

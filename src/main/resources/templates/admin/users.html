@@ -186,7 +186,10 @@
                                     <td class="px-6 py-4 text-slate-700 text-sm font-medium whitespace-nowrap" th:text="${user.nickname}">닉네임</td>
                                     
                                     <!-- Email -->
-                                    <td class="px-6 py-4 text-slate-600 text-sm whitespace-nowrap" th:text="${user.email}">이메일</td>
+                                    <td class="px-6 py-4 text-slate-600 text-sm whitespace-nowrap">
+                                        <span sec:authorize="hasRole('SUPER_ADMIN')" th:text="${user.email}"></span>
+                                        <span sec:authorize="!hasRole('SUPER_ADMIN')" th:text="${user.email != null and user.email.contains('@') ? #strings.substringBefore(user.email, '@') + '@***.***' : '***'}"></span>
+                                    </td>
                                     
                                     <!-- RegDate -->
                                     <td class="px-6 py-4 text-slate-500 text-sm whitespace-nowrap" th:text="${#temporals.format(user.regDate, 'yyyy-MM-dd HH:mm')}">날짜</td>
@@ -194,11 +197,15 @@
                                     <!-- Role Update Form -->
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <form th:action="@{/admin/users/{id}/role(id=${user.userNo})}" method="post">
-                                            <select name="role" onchange="this.form.submit()" 
-                                                    th:class="${user.role == 'ADMIN' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-slate-50 text-slate-700 border-slate-200'} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
+                                            <select name="role" onchange="this.form.submit()" sec:authorize="hasRole('SUPER_ADMIN')"
+                                                    th:class="${user.role == 'ADMIN' ? 'bg-amber-50 text-amber-700 border-amber-200' : (user.role == 'SUPER_ADMIN' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-50 text-slate-700 border-slate-200')} + ' text-xs font-bold rounded-lg border px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500'">
                                                 <option value="USER" th:selected="${user.role == 'USER'}">일반 사용자</option>
-                                                <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">시스템 관리자</option>
+                                                <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">일반 관리자</option>
+                                                <option value="SUPER_ADMIN" th:selected="${user.role == 'SUPER_ADMIN'}">최고 관리자</option>
                                             </select>
+                                            <span sec:authorize="!hasRole('SUPER_ADMIN')" th:text="${user.role == 'ADMIN' ? '일반 관리자' : (user.role == 'SUPER_ADMIN' ? '최고 관리자' : '일반 사용자')}"
+                                                  th:class="${user.role == 'ADMIN' ? 'bg-amber-50 text-amber-700 border-amber-200' : (user.role == 'SUPER_ADMIN' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-50 text-slate-700 border-slate-200')} + ' text-xs font-bold rounded-lg border px-2 py-1.5 inline-block'">
+                                            </span>
                                         </form>
                                     </td>
                                     

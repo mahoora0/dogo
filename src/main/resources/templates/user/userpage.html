@@ -45,7 +45,7 @@
               </div>
               <div class="text-gray-600 font-medium text-sm sm:text-base">
                 <p>가입일: <span th:text="${#authentication.principal.user.regDate != null ? #temporals.format(#authentication.principal.user.regDate, 'yyyy.MM.dd') : '정보 없음'}">2023.01.15</span></p>
-                <p>회원등급: <span th:text="${#authentication.principal.user.role == 'ADMIN' ? '관리자' : '일반'}">일반</span></p>
+                <p>회원등급: <span th:text="${#authentication.principal.user.role == 'SUPER_ADMIN' ? '최고관리자' : (#authentication.principal.user.role == 'ADMIN' ? '관리자' : '일반')}">일반</span></p>
               </div>
             </div>
           </div>

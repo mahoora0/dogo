@@ -165,7 +165,7 @@
                                     <th class="px-6 py-4">발생 위치</th>
                                     <th class="px-6 py-4">발생 일시</th>
                                     <th class="px-6 py-4">상태</th>
-                                    <th class="px-6 py-4 text-center">관리</th>
+                                    <th class="px-6 py-4 text-center whitespace-nowrap" sec:authorize="hasRole('SUPER_ADMIN')">관리</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -197,7 +197,7 @@
                                     </td>
                                     
                                     <!-- 삭제 버튼 -->
-                                    <td class="px-6 py-4 text-center">
+                                    <td class="px-6 py-4 text-center" sec:authorize="hasRole('SUPER_ADMIN')">
                                         <form th:action="@{/admin/animals/{id}/delete(id=${report.reportId}, searchType=${searchType}, keyword=${keyword}, reportTypeFilter=${reportType}, page=${reports.number})}" method="post"
                                               data-confirm="정말로 이 실종동물 신고글을 삭제하시겠습니까? (Soft Delete)">
                                             <button type="submit" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-colors inline-flex items-center justify-center">

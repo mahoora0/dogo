@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Controller
 public class FAQController {
@@ -54,6 +55,7 @@ public class FAQController {
     }
 
     // [Admin] 삭제 처리
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @PostMapping("/admin/faq/{id}/delete")
     public String deleteFaq(@PathVariable Long id) {
         faqService.deleteFAQ(id);
