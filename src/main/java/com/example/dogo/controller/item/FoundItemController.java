@@ -37,7 +37,7 @@ public class FoundItemController {
 
 	@ModelAttribute("categories")
 	public List<String> categories() {
-		return foundItemService.getSearchCategoryNames();
+		return registrationOptionService.getCategoryMainOptions();
 	}
 
 	@ModelAttribute("categorySubOptions")

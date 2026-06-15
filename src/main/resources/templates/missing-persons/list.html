@@ -108,9 +108,9 @@
       </select>
     </div>
 
-    <section th:if="${!#lists.isEmpty(reports)}" class="grid gap-5 grid-cols-4">
+    <section th:if="${!#lists.isEmpty(reports)}" class="grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 item-list-grid">
       <a th:each="report : ${reports}" th:href="@{/missing-persons/{id}(id=${report.id})}"
-         class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md flex flex-col">
+         class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md flex flex-col item-list-card">
         <!-- 실종자 이미지 영역 -->
         <div class="relative h-56 w-full overflow-hidden bg-slate-100 border-b border-slate-100 flex items-center justify-center">
           <img th:src="${report.imageUrls != null and !#lists.isEmpty(report.imageUrls) ? report.imageUrls[0] : (report.base64Image != null ? report.base64Image : '/images/noImageSize.png')}"

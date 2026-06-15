@@ -76,6 +76,9 @@
     border-radius: 5px;
     cursor: pointer;
     font-weight: 600;
+    white-space: nowrap;
+    word-break: keep-all;
+    flex-shrink: 0;
 }
 
 .area-content-grid {
@@ -188,6 +191,7 @@
 
 #centerSearch {
     flex: 1;
+    min-width: 0;
     height: 42px;
     font-size: 16px;
 }
@@ -349,46 +353,60 @@
     text-decoration: underline;
 }
 
-html.mobile-view .area-content-grid {
-    grid-template-columns: 1fr;
-    height: auto;
+@media (max-width: 767px) {
+    .area-content-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .center-list-container {
+        max-height: 300px;
+        height: auto;
+    }
+
+    #map {
+        height: 350px !important;
+    }
+
+    .search-inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .select-group {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px !important;
+    }
+
+    .select-wrapper {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .divider {
+        display: none;
+    }
+
+    #centerSearch {
+        display: block;
+        flex: none;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .btn-search-black {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-width: 0;
+        padding: 0 16px;
+        line-height: 1;
+        white-space: nowrap;
+        word-break: keep-all;
+    }
 }
 
-html.mobile-view .center-list-container {
-    max-height: 300px;
-    height: auto;
-}
-
-html.mobile-view #map {
-    height: 350px !important;
-}
-
-html.mobile-view .search-inner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-}
-
-html.mobile-view .select-group {
-    flex-direction: column;
-    width: 100%;
-    gap: 8px !important;
-}
-
-html.mobile-view .select-wrapper {
-    width: 100%;
-    min-width: 0;
-}
-
-html.mobile-view .divider {
-    display: none;
-}
-
-html.mobile-view #centerSearch {
-    width: 100%;
-}
-
-html.mobile-view .btn-search-black {
-    width: 100%;
-}
-

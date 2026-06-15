@@ -2,15 +2,6 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
-    <style>
-      /* 모바일 대응: min-width 제거 */
-      html.mobile-view body,
-      html.mobile-view .navbar,
-      html.mobile-view .main-layout {
-        min-width: 0 !important;
-        overflow-x: hidden !important;
-      }
-    </style>
     <div class="mb-6">
       <a th:href="@{/missing-persons}" class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition hover:text-slate-900">
         목록으로 돌아가기

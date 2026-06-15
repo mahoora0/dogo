@@ -3,18 +3,6 @@
 <th:block th:with="noSidebar=true">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
-    <style>
-      /* 모바일 대응: min-width 제거 */
-      html.mobile-view body,
-      html.mobile-view .navbar,
-      html.mobile-view .main-layout {
-        min-width: 0 !important;
-        overflow-x: hidden !important;
-      }
-      html.mobile-view .h-\[500px\] {
-        height: 260px !important;
-      }
-    </style>
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <div class="grid items-start gap-6 grid-cols-1 sm:grid-cols-[1.2fr_0.8fr]">
       <!-- Left Column: Gallery & Description -->
@@ -256,7 +244,13 @@
               </div>
               <div th:if="${report.shelterName != null && report.shelterName != ''}" class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
                 <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">보호소</dt>
-                <dd th:text="${report.shelterName}" class="font-bold text-sm text-slate-900">보호소</dd>
+                <dd class="font-bold text-sm text-slate-900">
+                  <span th:text="${report.shelterName}"
+                        th:data-place="${report.shelterAddress != null && report.shelterAddress != '' ? report.shelterAddress : report.shelterName}"
+                        th:data-title="${report.shelterName}"
+                        onclick="openPlaceModal(this.dataset.place, this.dataset.title)"
+                        class="font-bold text-blue-600 cursor-pointer hover:underline"></span>
+                </dd>
               </div>
               <div th:if="${report.shelterAddress != null && report.shelterAddress != ''}" class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
                 <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">보호소 주소</dt>
@@ -481,6 +475,7 @@
         document.addEventListener('keydown', function (event) { if (event.key === 'Escape') close(); });
       })();
     </script>
+    <div th:replace="~{area/place-modal :: placeModal}"></div>
   </th:block>
 </th:block>
 </th:block>

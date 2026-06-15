@@ -794,63 +794,65 @@ input:checked + .slider:before {
     background-color: #faf5ff;
 }
 
-html.mobile-view .header {
-    padding: 0 16px;
-}
+@media (max-width: 767px) {
+    .header {
+        padding: 0 16px;
+    }
 
-html.mobile-view .nav-buttons .header-toggle-container {
-    display: none !important;
-}
+    .nav-buttons .header-toggle-container {
+        display: none !important;
+    }
 
-html.mobile-view .nav-buttons {
-    gap: 8px !important;
-}
+    .nav-buttons {
+        gap: 8px !important;
+    }
 
-html.mobile-view .nav-buttons button {
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-}
+    .nav-buttons button {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
 
-html.mobile-view .main-container {
-    flex-direction: column !important;
-    height: calc(100vh - 116px) !important;
-}
+    .main-container {
+        flex-direction: column !important;
+        height: calc(100vh - 116px) !important;
+    }
 
-html.mobile-view .side-panel {
-    width: 100% !important;
-    min-width: 100% !important;
-    border-right: none;
-    border-bottom: 1px solid #e2e8f0;
-}
+    .side-panel {
+        width: 100% !important;
+        min-width: 100% !important;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
 
-html.mobile-view .canvas-container {
-    width: 100% !important;
-    padding: 20px 10px !important;
-    background: #1e293b;
-    overflow: auto;
-}
+    .canvas-container {
+        width: 100% !important;
+        padding: 20px 10px !important;
+        background: #1e293b;
+        overflow: auto;
+    }
 
-html.mobile-view .tab-edit .side-panel {
-    display: flex !important;
-}
+    .tab-edit .side-panel {
+        display: flex !important;
+    }
 
-html.mobile-view .tab-edit .canvas-container {
-    display: none !important;
-}
+    .tab-edit .canvas-container {
+        display: none !important;
+    }
 
-html.mobile-view .tab-preview .side-panel {
-    display: none !important;
-}
+    .tab-preview .side-panel {
+        display: none !important;
+    }
 
-html.mobile-view .tab-preview .canvas-container {
-    display: flex !important;
-}
+    .tab-preview .canvas-container {
+        display: flex !important;
+    }
 
-html.mobile-view .mobile-tabs-container {
-    display: grid;
-}
+    .mobile-tabs-container {
+        display: grid;
+    }
 
-html.mobile-view .canvas {
-    margin: 0 auto;
+    .canvas {
+        margin: 0 auto;
+    }
 }
 

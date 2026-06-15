@@ -26,8 +26,9 @@ class MainControllerTest {
 	private final ItemMatchService itemMatchService = mock(ItemMatchService.class);
 	private final MissingPersonService missingPersonService = mock(MissingPersonService.class);
 	private final AnimalReportService animalReportService = mock(AnimalReportService.class);
+	private final com.example.dogo.service.item.RegistrationOptionService registrationOptionService = mock(com.example.dogo.service.item.RegistrationOptionService.class);
 	private final MockMvc mockMvc = MockMvcBuilders
-			.standaloneSetup(new MainController(lostItemService, foundItemService, itemMatchService, missingPersonService, animalReportService))
+			.standaloneSetup(new MainController(lostItemService, foundItemService, itemMatchService, missingPersonService, animalReportService, registrationOptionService))
 			.setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
 			.build();
 

@@ -1,18 +1,6 @@
 <th:block th:with="noSidebar=true">
 <th:block th:replace="~{layout/base :: setContent(~{this::content})}">
   <th:block th:fragment="content">
-    <style>
-      /* 모바일 대응: min-width 제거 */
-      html.mobile-view body,
-      html.mobile-view .navbar,
-      html.mobile-view .main-layout {
-        min-width: 0 !important;
-        overflow-x: hidden !important;
-      }
-      html.mobile-view .h-\[500px\] {
-        height: 260px !important;
-      }
-    </style>
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <div class="grid gap-6 grid-cols-1 sm:grid-cols-[1.2fr_0.8fr] items-start">
         <!-- Image Gallery Section -->

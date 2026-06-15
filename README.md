@@ -1,4 +1,8 @@
-# DOGO
+# DOGO 프로젝트
+분실물/실종자 통합 플랫폼 DOGO입니다.
+
+👉 [프로젝트 소개 페이지 보기](https://mahoora0.github.io/dogo/)
+
 
 ## Local Setup
 
