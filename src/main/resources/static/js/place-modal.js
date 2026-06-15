@@ -90,7 +90,7 @@ function escHtml(str) {
   return d.innerHTML;
 }
 
-window.openPlaceModal = async function (placeName) {
+window.openPlaceModal = async function (placeName, searchTitle) {
   const modal = document.getElementById("placeModal");
   const title = document.getElementById("modalTitle");
   const panel = document.getElementById("placeSelectPanel");
@@ -103,19 +103,42 @@ window.openPlaceModal = async function (placeName) {
 
   // 모달 초기화
   modal.classList.remove("hidden");
-  title.innerText = placeName + " 위치";
+  title.innerText = (searchTitle || placeName) + " 위치";
   if (panel) panel.classList.add("hidden");
 
+  // 주소 정제 (괄호가 있는 경우 괄호 앞부분만 추출하여 검색 정확도 향상)
+  let searchQuery = placeName;
+  if (placeName && placeName.includes('(')) {
+    searchQuery = placeName.split('(')[0].trim();
+  }
+
   try {
-    const response = await fetch(
-      `/api/place/search?query=${encodeURIComponent(placeName)}`
+    let response = await fetch(
+      `/api/place/search?query=${encodeURIComponent(searchQuery)}`
     );
 
     if (!response.ok) {
       throw new Error("장소 검색 실패");
     }
 
-    const data = await response.json();
+    let data = await response.json();
+
+    // 주소 정제 결과가 없는데 원래 주소에 괄호가 포함되어 있었다면 원본 주소로 재시도
+    if ((!data.documents || data.documents.length === 0) && searchQuery !== placeName) {
+      try {
+        const retryResponse = await fetch(
+          `/api/place/search?query=${encodeURIComponent(placeName)}`
+        );
+        if (retryResponse.ok) {
+          const retryData = await retryResponse.json();
+          if (retryData.documents && retryData.documents.length > 0) {
+            data = retryData;
+          }
+        }
+      } catch (retryError) {
+        console.error("재시도 실패:", retryError);
+      }
+    }
 
     if (!data.documents || data.documents.length === 0) {
       alert("위치를 찾을 수 없습니다.");

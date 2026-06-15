@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOGO 프로젝트 소개</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+      body {
+          font-family: 'Pretendard', sans-serif;
+          background-color: #f8fafc;
+      }
+
+      .gradient-text {
+          background-clip: text;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-image: linear-gradient(to right, #2563eb, #3b82f6, #06b6d4);
+      }
+  </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900">
+
+<header class="bg-white shadow-sm sticky top-0 z-50">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-blue-600">DOGO</h1>
+    <nav class="hidden sm:flex gap-6 font-medium text-sm text-slate-600">
+      <a href="#about" class="hover:text-blue-600 transition">프로젝트 소개</a>
+      <a href="#tech" class="hover:text-blue-600 transition">기술 스택</a>
+      <a href="#features" class="hover:text-blue-600 transition">주요 기능</a>
+      <a href="#team" class="hover:text-blue-600 transition">팀원 및 역할</a>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-6 py-12 space-y-24">
+
+  <!-- Hero Section -->
+  <section class="text-center space-y-6 pt-12">
+    <h2 class="text-5xl font-extrabold tracking-tight">
+      당신의 소중한 것을 다시 찾을 수 있도록, <br>
+      <span class="gradient-text">종합 분실물/실종자 찾기 플랫폼 DOGO</span>
+    </h2>
+    <p class="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
+      DOGO는 잃어버린 물건, 반려동물, 그리고 소중한 사람을 찾기 위해 만들어진 통합 플랫폼입니다. 직관적인 UI와 실시간 채팅, 위치 기반 서비스를 통해 빠르고 정확한 매칭을 지원합니다.
+    </p>
+  </section>
+
+  <!-- About Project -->
+  <section id="about" class="scroll-mt-24">
+    <h3 class="text-3xl font-bold mb-8 flex items-center gap-3">
+      <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-xl">📖</span>
+      프로젝트 개요
+    </h3>
+    <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 leading-relaxed text-slate-600 space-y-4">
+      <p>
+        매년 수많은 분실물과 실종 사고가 발생하지만, 이를 효율적으로 찾고 제보할 수 있는 통합된 창구가 부족합니다.
+        <strong>DOGO</strong>는 이러한 문제를 해결하고자 기획되었습니다.
+      </p>
+      <p>
+        누구나 쉽게 분실물을 등록하고, 습득물을 제보할 수 있으며, 경찰청 데이터를 연동하여 실종자 정보까지 한곳에서 확인할 수 있습니다.
+        나아가 실종 동물 찾기 기능과 실시간 알림, 1:1 채팅 기능을 통해 사용자들이 서로 빠르게 소통하고 도움을 주고받을 수 있도록 돕습니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section id="tech" class="scroll-mt-24">
+    <h3 class="text-3xl font-bold mb-8 flex items-center gap-3">
+      <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl">🛠️</span>
+      사용 기술 및 환경 (Tech Stack)
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Backend -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+        <h4 class="text-xl font-bold mb-4 text-slate-800 border-b pb-2">Backend</h4>
+        <ul class="space-y-2 text-slate-600 font-medium">
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Java 17</li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Spring Boot 3
+          </li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Spring Data
+            JPA
+          </li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Spring
+            Security & OAuth2
+          </li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> WebSocket
+            (STOMP)
+          </li>
+        </ul>
+      </div>
+      <!-- Frontend -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+        <h4 class="text-xl font-bold mb-4 text-slate-800 border-b pb-2">Frontend</h4>
+        <ul class="space-y-2 text-slate-600 font-medium">
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> HTML5 / CSS3 /
+            JS
+          </li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> Thymeleaf
+            (Template Engine)
+          </li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> Tailwind CSS
+          </li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> SweetAlert2</li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> Lucide Icons
+          </li>
+        </ul>
+      </div>
+      <!-- Database & Tools -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+        <h4 class="text-xl font-bold mb-4 text-slate-800 border-b pb-2">DB & Tools</h4>
+        <ul class="space-y-2 text-slate-600 font-medium">
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> MySQL</li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Gradle</li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Git / GitHub
+          </li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Twilio (SMS
+            API)
+          </li>
+          <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Kakao Maps
+            API
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Features -->
+  <section id="features" class="scroll-mt-24">
+    <h3 class="text-3xl font-bold mb-8 flex items-center gap-3">
+      <span class="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center text-xl">✨</span>
+      주요 기능
+    </h3>
+    <div class="space-y-6">
+      <!-- Feature 1 -->
+      <div
+          class="flex flex-col md:flex-row gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-rose-100 transition">
+        <div class="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+          <svg class="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-xl font-bold text-slate-800 mb-2">분실물 / 습득물 등록 및 자동 매칭</h4>
+          <p class="text-slate-600 leading-relaxed">카카오 지도 API를 활용하여 잃어버린 위치나 습득한 위치를 정확히 지정합니다. 카테고리, 날짜, 색상 등 조건을 통해
+            유사한 물건이 등록되면 매칭 점수를 계산하여 알림을 제공합니다.</p>
+        </div>
+      </div>
+      <!-- Feature 2 -->
+      <div
+          class="flex flex-col md:flex-row gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-rose-100 transition">
+        <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+          <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-xl font-bold text-slate-800 mb-2">실종자 긴급 알림</h4>
+          <p class="text-slate-600 leading-relaxed">골든타임이 중요한 실종 사건의 경우 메인 화면 팝업 및 긴급 알림 배너를 통해 사용자의 주의를 끕니다. 발견자가 위치와
+            사진을 신속하게 제보할 수 있습니다.</p>
+        </div>
+      </div>
+      <!-- Feature 3 -->
+      <div
+          class="flex flex-col md:flex-row gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-rose-100 transition">
+        <div class="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center shrink-0">
+          <svg class="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-xl font-bold text-slate-800 mb-2">실시간 1:1 채팅</h4>
+          <p class="text-slate-600 leading-relaxed">WebSocket(STOMP)을 이용한 실시간 채팅을 지원합니다. 개인정보(전화번호) 노출 없이 사용자 간 안전하게
+            연락하고 물건의 특징을 확인할 수 있습니다.</p>
+        </div>
+      </div>
+      <!-- Feature 4 -->
+      <div
+          class="flex flex-col md:flex-row gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-rose-100 transition">
+        <div class="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+          <svg class="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-xl font-bold text-slate-800 mb-2">통합 관리자 시스템 및 고객지원</h4>
+          <p class="text-slate-600 leading-relaxed">회원 관리, 게시글 모니터링, 신고 관리를 위한 대시보드를 제공합니다. 공지사항, FAQ, 1:1 문의 등 고객지원 기능을
+            통해 원활한 서비스 운영을 돕습니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team & Roles -->
+  <section id="team" class="scroll-mt-24 pb-24">
+    <h3 class="text-3xl font-bold mb-8 flex items-center gap-3">
+      <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-xl">👥</span>
+      팀원 및 담당 페이지
+    </h3>
+
+    <div class="overflow-x-auto bg-white rounded-2xl shadow-sm border border-slate-100">
+      <table class="w-full text-left border-collapse min-w-[800px]">
+        <thead>
+        <tr class="bg-slate-50 border-b border-slate-100 text-slate-600">
+          <th class="py-4 px-6 font-bold w-[15%]">이름</th>
+          <th class="py-4 px-6 font-bold w-[15%]">역할</th>
+          <th class="py-4 px-6 font-bold">담당 페이지 및 핵심 기여</th>
+        </tr>
+        </thead>
+        <tbody class="text-slate-700 divide-y divide-slate-100">
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-4 px-6 font-semibold text-slate-900">강규림</td>
+          <td class="py-4 px-6"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Full-stack</span>
+          </td>
+          <td class="py-4 px-6">
+            <ul class="list-disc list-inside space-y-1 text-sm text-slate-600">
+              <li>카카오 맵 API를 활용한 장소 검색 및 위치 기반 마커 표시</li>
+              <li>메인 홈 페이지, 헤더 등 공통 레이아웃 템플릿 작업</li>
+              <li>실종자 게시판 UI/UX 디자인 및 구현</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-4 px-6 font-semibold text-slate-900">팀원 2</td>
+          <td class="py-4 px-6"><span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">Backend / DB</span>
+          </td>
+          <td class="py-4 px-6">
+            <ul class="list-disc list-inside space-y-1 text-sm text-slate-600">
+              <li>WebSocket과 STOMP를 활용한 실시간 1:1 채팅 서버 구축 및 연동</li>
+              <li>메인 페이지 긴급 알림(모달 팝업 및 배너) 기능 제작</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-4 px-6 font-semibold text-slate-900">팀원 3</td>
+          <td class="py-4 px-6"><span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">Frontend / UX</span>
+          </td>
+          <td class="py-4 px-6">
+            <ul class="list-disc list-inside space-y-1 text-sm text-slate-600">
+              <li>Spring Security 및 OAuth2 연동 (로그인 / 회원가입 기능)</li>
+              <li>관리자 포털(Admin) 대시보드 및 전체 통계 기능 구현</li>
+              <li>마이페이지, 유저별 작성 글 관리 화면</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-4 px-6 font-semibold text-slate-900">팀원 4</td>
+          <td class="py-4 px-6"><span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">Full-stack</span>
+          </td>
+          <td class="py-4 px-6">
+            <ul class="list-disc list-inside space-y-1 text-sm text-slate-600">
+              <li>프로젝트 초기 아키텍처 및 DB 스키마 설계</li>
+              <li>분실물 및 습득물 게시판 구현 (목록, 상세조회, 등록, 수정)</li>
+              <li>매칭 알고리즘 로직 구현</li>
+              <li>실종동물 게시판 UI/UX 디자인 및 구현 반응형 웹 대응</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-4 px-6 font-semibold text-slate-900">팀원 5</td>
+          <td class="py-4 px-6"><span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">Full-stack</span>
+          </td>
+          <td class="py-4 px-6">
+            <ul class="list-disc list-inside space-y-1 text-sm text-slate-600">
+              <li>고객센터(FAQ, 1:1 문의, 공지사항, 이용가이드) 제작</li>
+              <li>매칭 알림 서비스 개발</li>
+            </ul>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-sm text-slate-400 mt-4 px-2 italic">* 위 팀원 이름과 담당 역할은 예시 텍스트이므로, 실제 프로젝트 참여자에 맞게 수정하여 사용해 주세요.</p>
+  </section>
+
+</main>
+
+<footer class="bg-slate-900 text-slate-400 py-8 text-center text-sm">
+  <p>&copy; 2026 DOGO Project. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

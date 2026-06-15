@@ -244,7 +244,13 @@
               </div>
               <div th:if="${report.shelterName != null && report.shelterName != ''}" class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
                 <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">보호소</dt>
-                <dd th:text="${report.shelterName}" class="font-bold text-sm text-slate-900">보호소</dd>
+                <dd class="font-bold text-sm text-slate-900">
+                  <span th:text="${report.shelterName}"
+                        th:data-place="${report.shelterAddress != null && report.shelterAddress != '' ? report.shelterAddress : report.shelterName}"
+                        th:data-title="${report.shelterName}"
+                        onclick="openPlaceModal(this.dataset.place, this.dataset.title)"
+                        class="font-bold text-blue-600 cursor-pointer hover:underline"></span>
+                </dd>
               </div>
               <div th:if="${report.shelterAddress != null && report.shelterAddress != ''}" class="flex flex-col gap-1 border-b border-slate-200/60 pb-3">
                 <dt class="font-semibold text-xs text-slate-500 whitespace-nowrap">보호소 주소</dt>
@@ -469,6 +475,7 @@
         document.addEventListener('keydown', function (event) { if (event.key === 'Escape') close(); });
       })();
     </script>
+    <div th:replace="~{area/place-modal :: placeModal}"></div>
   </th:block>
 </th:block>
 </th:block>
