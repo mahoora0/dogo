@@ -4,8 +4,11 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>DOGO</title>
     <link rel="icon" th:href="@{/images/logoNoName.png}">
+    <script th:src="@{/js/csrf.js}"></script>
     <script type="text/javascript"
             src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2b25620b9f4f16cf99df871475b41e4&libraries=services&autoload=false"></script>
     <script th:src="@{/js/common.js}"></script>

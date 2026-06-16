@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1280">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>Dogo Admin</title>
     <link rel="icon" th:href="@{/images/logoNoName.png}">
+    <script th:src="@{/js/csrf.js}"></script>
     <script>
       tailwind.config = {
         theme: {
