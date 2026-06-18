@@ -19,7 +19,7 @@
     <!-- Re-search Form -->
     <div class="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div class="px-6 py-5">
-        <form action="/animal-reports/image-search" method="post" enctype="multipart/form-data"
+        <form th:action="@{/animal-reports/image-search}" method="post" enctype="multipart/form-data"
               class="flex flex-col gap-4 sm:flex-row sm:items-end">
           <input type="hidden" name="reportType" th:value="${reportType}">
           <input type="hidden" name="animalType" th:value="${animalType}">
