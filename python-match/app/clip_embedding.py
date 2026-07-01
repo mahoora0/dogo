@@ -67,7 +67,11 @@ def _load_clip_model():
 
 def encode_image(image_bytes: bytes, animal_type: str | None = None) -> tuple[list[float], str, str]:
     model, processor = _load_clip_model()
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    try:
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    except Exception as exc:
+        logger.warning(f"Failed to identify image, using fallback dummy image: {exc}")
+        image = Image.new("RGB", (224, 224), color=(128, 128, 128))
     cropped_image, crop_type = crop_pet(image, animal_type)
     inputs = processor(images=cropped_image, return_tensors="pt")
     t0 = time.perf_counter()
@@ -82,7 +86,13 @@ def encode_image(image_bytes: bytes, animal_type: str | None = None) -> tuple[li
 def encode_images(image_items: list[tuple[bytes, str | None]]) -> tuple[list[list[float]], str, list[str]]:
     model, processor = _load_clip_model()
     t0 = time.perf_counter()
-    images = [Image.open(io.BytesIO(image_bytes)).convert("RGB") for image_bytes, _ in image_items]
+    images = []
+    for image_bytes, _ in image_items:
+        try:
+            images.append(Image.open(io.BytesIO(image_bytes)).convert("RGB"))
+        except Exception as exc:
+            logger.warning(f"Failed to identify image, using fallback dummy image: {exc}")
+            images.append(Image.new("RGB", (224, 224), color=(128, 128, 128)))
     animal_types = [animal_type for _, animal_type in image_items]
     t_decode = time.perf_counter()
     cropped_images, crop_types = crop_pets(images, animal_types)
