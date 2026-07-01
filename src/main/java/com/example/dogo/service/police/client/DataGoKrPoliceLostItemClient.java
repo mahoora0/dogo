@@ -4,11 +4,13 @@ import com.example.dogo.dto.police.PoliceLostItemDetailResponse;
 import com.example.dogo.dto.police.PoliceLostItemPage;
 import com.example.dogo.service.police.parser.PoliceLostItemXmlParser;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -29,11 +31,17 @@ public class DataGoKrPoliceLostItemClient implements PoliceLostItemClient {
 			@Value("${police.lost-item.service-key:}") String serviceKey,
 			PoliceLostItemXmlParser parser
 	) {
+		SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+		factory.setConnectTimeout(Duration.ofSeconds(15));
+		factory.setReadTimeout(Duration.ofSeconds(15));
+
 		this.listRestClient = RestClient.builder()
 				.baseUrl(baseUrl)
+				.requestFactory(factory)
 				.build();
 		this.detailRestClient = RestClient.builder()
 				.baseUrl(detailUrl)
+				.requestFactory(factory)
 				.build();
 		this.serviceKey = serviceKey;
 		this.parser = parser;

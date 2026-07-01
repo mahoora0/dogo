@@ -39,8 +39,9 @@ public class MainController {
     recentItems.addAll(missingPersonService.getRecentItems(RECENT_ITEM_LIMIT));
     recentItems.addAll(animalReportService.getRecentItems(RECENT_ITEM_LIMIT));
     recentItems.sort((a, b) -> {
-      java.time.LocalDateTime dateA = ("PERSON".equals(a.type()) || "ANIMAL".equals(a.type())) ? a.itemAt() : a.regDate();
-      java.time.LocalDateTime dateB = ("PERSON".equals(b.type()) || "ANIMAL".equals(b.type())) ? b.itemAt() : b.regDate();
+      // 모든 타입을 실제 발생일(itemAt) 기준으로 정렬, 없으면 regDate 폴백
+      java.time.LocalDateTime dateA = a.itemAt() != null ? a.itemAt() : a.regDate();
+      java.time.LocalDateTime dateB = b.itemAt() != null ? b.itemAt() : b.regDate();
       if (dateA == null && dateB == null) return 0;
       if (dateA == null) return 1;
       if (dateB == null) return -1;

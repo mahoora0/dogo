@@ -123,7 +123,7 @@ public class LostItemService {
 	@Transactional(readOnly = true)
 	public List<RecentItemView> getRecentItems(int limit) {
 		Pageable pageable = Pageable.ofSize(limit);
-		List<LostItem> items = lostItemRepository.findByDeletedFalseOrderByRegDateDescLostIdDesc(pageable);
+		List<LostItem> items = lostItemRepository.findByDeletedFalseOrderByLostAtDescLostIdDesc(pageable);
 		Map<Long, String> thumbnails = resolveThumbnails(items);
 		return items.stream()
 				.map(item -> new RecentItemView(

@@ -38,7 +38,7 @@ class PoliceItemStartupBackfillRunnerTest {
 		private int backfillCount;
 
 		RecordingPoliceLostItemSyncRunner() {
-			super(null, null, false, false);
+			super(null, null, false, false, false);
 		}
 
 		@Override
@@ -51,7 +51,7 @@ class PoliceItemStartupBackfillRunnerTest {
 		private int backfillCount;
 
 		RecordingPoliceFoundItemSyncRunner() {
-			super(null, null, false, false);
+			super(null, null, false, false, false);
 		}
 
 		@Override

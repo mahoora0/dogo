@@ -106,7 +106,7 @@ public class FoundItemService {
 	@Transactional(readOnly = true)
 	public List<RecentItemView> getRecentItems(int limit) {
 		Pageable pageable = Pageable.ofSize(limit);
-		List<FoundItem> items = foundItemRepository.findByDeletedFalseOrderByRegDateDescFoundIdDesc(pageable);
+		List<FoundItem> items = foundItemRepository.findByDeletedFalseOrderByFoundAtDescFoundIdDesc(pageable);
 		Map<Long, String> thumbnails = resolveThumbnails(items);
 		return items.stream()
 				.map(item -> new RecentItemView(

@@ -5,20 +5,12 @@ import com.example.dogo.dto.police.PoliceFoundItemPage;
 import com.example.dogo.dto.police.PoliceFoundItemResponse;
 import com.example.dogo.dto.police.PoliceFoundItemSyncResult;
 import com.example.dogo.dto.police.PoliceRegionCode;
-import com.example.dogo.entity.item.FoundItem;
-import com.example.dogo.repository.item.FoundItemRepository;
-import com.example.dogo.service.match.FoundItemMatchRequestedEvent;
 import com.example.dogo.service.police.client.PoliceCommonCodeClient;
 import com.example.dogo.service.police.client.PoliceFoundItemClient;
-import com.example.dogo.service.police.mapper.PoliceFoundItemMapper;
-import com.example.dogo.service.police.station.PoliceStationAddressResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -32,11 +24,7 @@ public class PoliceFoundItemSyncService {
 
 	private final PoliceFoundItemClient client;
 	private final PoliceCommonCodeClient commonCodeClient;
-	private final PoliceFoundItemMapper mapper;
-	private final PoliceStationAddressResolver stationAddressResolver;
-	private final FoundItemRepository foundItemRepository;
-	private final PoliceFoundItemImageService imageService;
-	private final ApplicationEventPublisher eventPublisher;
+	private final PoliceFoundItemSaver saver;
 	private final int numOfRows;
 	private final int incrementalEmptyPageLimit;
 	private final int backfillLookbackDays;
@@ -45,11 +33,7 @@ public class PoliceFoundItemSyncService {
 	public PoliceFoundItemSyncService(
 			PoliceFoundItemClient client,
 			PoliceCommonCodeClient commonCodeClient,
-			PoliceFoundItemMapper mapper,
-			PoliceStationAddressResolver stationAddressResolver,
-			FoundItemRepository foundItemRepository,
-			PoliceFoundItemImageService imageService,
-			ApplicationEventPublisher eventPublisher,
+			PoliceFoundItemSaver saver,
 			@Value("${police.found-item.num-of-rows:100}") int numOfRows,
 			@Value("${police.found-item.incremental-empty-page-limit:2}") int incrementalEmptyPageLimit,
 			@Value("${police.found-item.backfill-lookback-days:1}") int backfillLookbackDays,
@@ -57,24 +41,18 @@ public class PoliceFoundItemSyncService {
 	) {
 		this.client = client;
 		this.commonCodeClient = commonCodeClient;
-		this.mapper = mapper;
-		this.stationAddressResolver = stationAddressResolver;
-		this.foundItemRepository = foundItemRepository;
-		this.imageService = imageService;
-		this.eventPublisher = eventPublisher;
+		this.saver = saver;
 		this.numOfRows = numOfRows;
 		this.incrementalEmptyPageLimit = incrementalEmptyPageLimit;
 		this.backfillLookbackDays = Math.max(backfillLookbackDays, 1);
 		this.incrementalLookbackDays = Math.max(incrementalLookbackDays, 1);
 	}
 
-	@Transactional
 	public PoliceFoundItemSyncResult syncBackfillLastMonth() {
 		LocalDate endDate = LocalDate.now();
 		return syncBackfill(endDate.minusDays(backfillLookbackDays), endDate);
 	}
 
-	@Transactional
 	public PoliceFoundItemSyncResult syncIncrementalLastMonth() {
 		LocalDate endDate = LocalDate.now();
 		return syncIncremental(endDate.minusDays(incrementalLookbackDays), endDate);
@@ -160,7 +138,17 @@ public class PoliceFoundItemSyncService {
 			int newCount = 0;
 			for (PoliceFoundItemResponse response : page.items()) {
 				fetchedCount++;
-				if (saveIfNew(response, includeDetail, regionCode == null ? null : regionCode.name())) {
+
+				// 상세 정보는 트랜잭션 밖에서 미리 조회 (HTTP 호출을 트랜잭션 안에서 하지 않음)
+				Optional<PoliceFoundItemDetailResponse> detail = Optional.empty();
+				if (includeDetail && response != null && StringUtils.hasText(response.atcId()) && StringUtils.hasText(response.fdSn())) {
+					detail = fetchDetail(response.atcId().trim(), response.fdSn());
+				}
+
+				String regionName = regionCode == null ? null : regionCode.name();
+
+				// 각 item을 독립 트랜잭션으로 저장 (saver 빈을 통해 프록시 적용)
+				if (saver.saveIfNew(response, detail, regionName)) {
 					savedCount++;
 					newCount++;
 				} else {
@@ -186,83 +174,27 @@ public class PoliceFoundItemSyncService {
 		return new PoliceFoundItemSyncResult(fetchedCount, savedCount, skippedCount, pageCount);
 	}
 
-	private boolean saveIfNew(PoliceFoundItemResponse response, boolean includeDetail, String regionName) {
-		if (response == null || !StringUtils.hasText(response.atcId())) {
-			return false;
-		}
-
-		String atcId = response.atcId().trim();
-		Integer fdSn = mapper.parseOptionalFdSn(response.fdSn());
-		if (fdSn == null) {
-			return false;
-		}
-
-		Optional<FoundItem> existingItem = foundItemRepository.findByAtcIdAndFdSn(atcId, fdSn);
-		if (existingItem.isPresent()) {
-			updateExisting(existingItem.get(), response, includeDetail, regionName);
-			return false;
-		}
-
+	private Optional<PoliceFoundItemDetailResponse> fetchDetail(String atcId, String fdSn) {
 		try {
-			Optional<PoliceFoundItemDetailResponse> detail = includeDetail ? fetchDetail(atcId, fdSn) : Optional.empty();
-			String foundArea = detail
-					.flatMap(detailResponse -> stationAddressResolver.resolveFoundArea(detailResponse, regionName))
-					.orElse(regionName);
-			FoundItem foundItem = mapper.toFoundItem(response, detail.orElse(null), foundArea);
-			FoundItem savedItem = foundItemRepository.save(foundItem);
-			if (detail.isPresent()) {
-				imageService.saveImageIfPresent(savedItem, detail.get());
-			} else {
-				imageService.saveImageIfPresent(savedItem, response);
+			Integer fdSnInt = parseOptionalFdSn(fdSn);
+			if (fdSnInt == null) {
+				return Optional.empty();
 			}
-			eventPublisher.publishEvent(new FoundItemMatchRequestedEvent(savedItem.getFoundId()));
-			return true;
-		} catch (DataIntegrityViolationException exception) {
-			log.debug("이미 저장된 경찰청 습득물입니다. atcId={}, fdSn={}", atcId, fdSn, exception);
-			return false;
-		} catch (IllegalArgumentException exception) {
-			log.warn("경찰청 습득물 응답을 저장하지 못했습니다. atcId={}, fdSn={}, reason={}", atcId, fdSn, exception.getMessage());
-			return false;
+			return client.fetchFoundItemDetail(atcId, fdSnInt);
+		} catch (RuntimeException exception) {
+			log.warn("경찰청 습득물 상세 조회에 실패했습니다. 목록 정보만 저장합니다. atcId={}", atcId, exception);
+			return Optional.empty();
 		}
 	}
 
-	private void updateExisting(
-			FoundItem existingItem,
-			PoliceFoundItemResponse response,
-			boolean includeDetail,
-			String regionName
-	) {
-		Optional<PoliceFoundItemDetailResponse> detail = includeDetail
-				? fetchDetail(existingItem.getAtcId(), existingItem.getFdSn())
-				: Optional.empty();
-		String foundArea = detail
-				.flatMap(detailResponse -> stationAddressResolver.resolveFoundArea(detailResponse, regionName))
-				.orElse(regionName);
-		FoundItem mappedItem = mapper.toFoundItem(response, detail.orElse(null), foundArea);
-		existingItem.updatePoliceDetail(
-				mappedItem.getTitle(),
-				mappedItem.getContent(),
-				mappedItem.getItemName(),
-				mappedItem.getCategoryMain(),
-				mappedItem.getCategorySub(),
-				mappedItem.getColorName(),
-				mappedItem.getFoundAt(),
-				mappedItem.getFoundArea(),
-				mappedItem.getFoundPlace(),
-				mappedItem.getKeepPlace(),
-				mappedItem.getContact(),
-				mappedItem.getCustodyStatus(),
-				mappedItem.getReceiveType(),
-				mappedItem.getStatus()
-		);
-	}
-
-	private Optional<PoliceFoundItemDetailResponse> fetchDetail(String atcId, Integer fdSn) {
+	private Integer parseOptionalFdSn(String fdSn) {
+		if (!StringUtils.hasText(fdSn)) {
+			return null;
+		}
 		try {
-			return client.fetchFoundItemDetail(atcId, fdSn);
-		} catch (RuntimeException exception) {
-			log.warn("경찰청 습득물 상세 조회에 실패했습니다. 목록 정보만 저장합니다. atcId={}, fdSn={}", atcId, fdSn, exception);
-			return Optional.empty();
+			return Integer.parseInt(fdSn.trim());
+		} catch (NumberFormatException e) {
+			return null;
 		}
 	}
 }

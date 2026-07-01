@@ -18,39 +18,43 @@ public class PoliceLostItemSyncRunner {
 	private final LostItemRepository lostItemRepository;
 	private final boolean syncEnabled;
 	private final boolean backfillOnStartup;
+	private final boolean forceBackfill;
 
 	public PoliceLostItemSyncRunner(
 			PoliceLostItemSyncService syncService,
 			LostItemRepository lostItemRepository,
 			@Value("${police.lost-item.sync.enabled:true}") boolean syncEnabled,
-			@Value("${police.lost-item.backfill-on-startup:true}") boolean backfillOnStartup
+			@Value("${police.lost-item.backfill-on-startup:true}") boolean backfillOnStartup,
+			@Value("${police.lost-item.force-backfill:false}") boolean forceBackfill
 	) {
 		this.syncService = syncService;
 		this.lostItemRepository = lostItemRepository;
 		this.syncEnabled = syncEnabled;
 		this.backfillOnStartup = backfillOnStartup;
+		this.forceBackfill = forceBackfill;
 	}
 
 	public void backfillOnStartupIfEmpty() {
 		if (!syncEnabled || !backfillOnStartup) {
 			return;
 		}
-		if (lostItemRepository.existsBySourceType(POLICE_SOURCE_TYPE)) {
-			log.info("경찰청 분실물 초기 백필을 건너뜁니다. 이미 저장된 경찰청 데이터가 있습니다.");
-			return;
-		}
 
 		try {
-			PoliceLostItemSyncResult result = syncService.syncBackfillLastMonth();
+			boolean hasData = lostItemRepository.existsBySourceType(POLICE_SOURCE_TYPE);
+			boolean runFullBackfill = forceBackfill || !hasData;
+			PoliceLostItemSyncResult result = runFullBackfill
+					? syncService.syncBackfillLastMonth()
+					: syncService.syncIncrementalLastMonth();
 			log.info(
-					"경찰청 분실물 초기 백필 완료. fetched={}, saved={}, skipped={}, pages={}",
+					"경찰청 분실물 초기 {} 완료. fetched={}, saved={}, skipped={}, pages={}",
+					runFullBackfill ? "백필" : "증분 동기화",
 					result.fetchedCount(),
 					result.savedCount(),
 					result.skippedCount(),
 					result.pageCount()
 			);
 		} catch (Exception exception) {
-			log.error("경찰청 분실물 초기 백필에 실패했습니다.", exception);
+			log.error("경찰청 분실물 초기 동기화에 실패했습니다.", exception);
 		}
 	}
 

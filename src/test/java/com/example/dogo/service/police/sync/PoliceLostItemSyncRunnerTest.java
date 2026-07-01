@@ -27,6 +27,40 @@ class PoliceLostItemSyncRunnerTest {
 				syncService,
 				lostItemRepository,
 				true,
+				true,
+				false
+		);
+
+		runner.backfillOnStartupIfEmpty();
+
+		verify(syncService).syncBackfillLastMonth();
+	}
+
+	@Test
+	void backfillOnStartupRunsIncrementalWhenPoliceDataAlreadyExists() {
+		when(lostItemRepository.existsBySourceType("POLICE")).thenReturn(true);
+		PoliceLostItemSyncRunner runner = new PoliceLostItemSyncRunner(
+				syncService,
+				lostItemRepository,
+				true,
+				true,
+				false
+		);
+
+		runner.backfillOnStartupIfEmpty();
+
+		verify(syncService, never()).syncBackfillLastMonth();
+		verify(syncService).syncIncrementalLastMonth();
+	}
+
+	@Test
+	void backfillOnStartupRunsWhenForceBackfillTrueEvenIfPoliceDataExists() {
+		when(lostItemRepository.existsBySourceType("POLICE")).thenReturn(true);
+		PoliceLostItemSyncRunner runner = new PoliceLostItemSyncRunner(
+				syncService,
+				lostItemRepository,
+				true,
+				true,
 				true
 		);
 
@@ -36,26 +70,12 @@ class PoliceLostItemSyncRunnerTest {
 	}
 
 	@Test
-	void backfillOnStartupSkipsWhenPoliceDataAlreadyExists() {
-		when(lostItemRepository.existsBySourceType("POLICE")).thenReturn(true);
-		PoliceLostItemSyncRunner runner = new PoliceLostItemSyncRunner(
-				syncService,
-				lostItemRepository,
-				true,
-				true
-		);
-
-		runner.backfillOnStartupIfEmpty();
-
-		verify(syncService, never()).syncBackfillLastMonth();
-	}
-
-	@Test
 	void backfillOnStartupSkipsWhenDisabled() {
 		PoliceLostItemSyncRunner runner = new PoliceLostItemSyncRunner(
 				syncService,
 				lostItemRepository,
 				true,
+				false,
 				false
 		);
 
@@ -71,6 +91,7 @@ class PoliceLostItemSyncRunnerTest {
 				syncService,
 				lostItemRepository,
 				true,
+				false,
 				false
 		);
 
@@ -85,7 +106,8 @@ class PoliceLostItemSyncRunnerTest {
 				syncService,
 				lostItemRepository,
 				false,
-				true
+				true,
+				false
 		);
 
 		runner.syncIncremental();

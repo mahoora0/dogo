@@ -82,13 +82,13 @@ public class LostItemController {
 			@RequestParam(required = false) String status,
 			@RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
 			@RequestParam(required = false) String detailPlace,
-			@RequestParam(defaultValue = "regDate") String sortBy,
+			@RequestParam(defaultValue = "lostAt") String sortBy,
 			@RequestParam(defaultValue = "desc") String sortDir,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "12") int size,
 			Model model
 	) {
-		String safeField = LOST_SORT_FIELDS.contains(sortBy) ? sortBy : "regDate";
+		String safeField = LOST_SORT_FIELDS.contains(sortBy) ? sortBy : "lostAt";
 		Sort.Direction direction = "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
 		Sort sort = Sort.by(direction, safeField).and(Sort.by(Sort.Direction.DESC, "lostId"));
 
