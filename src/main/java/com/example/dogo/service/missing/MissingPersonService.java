@@ -11,6 +11,7 @@ import com.example.dogo.service.upload.UploadFileValidator;
 import com.example.dogo.repository.missing.MissingPersonImageRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
 import com.example.dogo.repository.user.UserRepository;
+import com.example.dogo.service.missing.sync.Safe182MissingPersonSyncService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,22 +35,26 @@ import java.util.UUID;
 @Service
 public class MissingPersonService {
 
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MissingPersonService.class);
 	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 
 	private final MissingPersonRepository missingPersonRepository;
 	private final MissingPersonImageRepository missingPersonImageRepository;
 	private final UserRepository userRepository;
+	private final Safe182MissingPersonSyncService safe182MissingPersonSyncService;
 	private final Path missingPersonUploadPath;
 
 	public MissingPersonService(
 			MissingPersonRepository missingPersonRepository,
 			MissingPersonImageRepository missingPersonImageRepository,
 			UserRepository userRepository,
+			Safe182MissingPersonSyncService safe182MissingPersonSyncService,
 			@Value("${file.upload-dir}") String uploadDir
 	) {
 		this.missingPersonRepository = missingPersonRepository;
 		this.missingPersonImageRepository = missingPersonImageRepository;
 		this.userRepository = userRepository;
+		this.safe182MissingPersonSyncService = safe182MissingPersonSyncService;
 		this.missingPersonUploadPath = Path.of(uploadDir, "missing-persons").toAbsolutePath().normalize();
 	}
 
@@ -68,6 +73,13 @@ public class MissingPersonService {
 			String detailPlace,
 			Pageable pageable
 	) {
+		if (StringUtils.hasText(keyword)) {
+			try {
+				safe182MissingPersonSyncService.syncSearch(keyword.trim());
+			} catch (Exception exception) {
+				log.error("Failed to sync search with Safe182 API for keyword: {}", keyword, exception);
+			}
+		}
 		Page<MissingPersonReport> page = missingPersonRepository.findAll(
 				searchSpec(keyword, status, sourceType, region, startDate, detailPlace),
 				pageable

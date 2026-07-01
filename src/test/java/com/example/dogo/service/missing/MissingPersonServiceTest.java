@@ -7,6 +7,7 @@ import com.example.dogo.entity.user.User;
 import com.example.dogo.repository.missing.MissingPersonImageRepository;
 import com.example.dogo.repository.missing.MissingPersonRepository;
 import com.example.dogo.repository.user.UserRepository;
+import com.example.dogo.service.missing.sync.Safe182MissingPersonSyncService;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -28,10 +29,12 @@ class MissingPersonServiceTest {
 	private final MissingPersonRepository missingPersonRepository = mock(MissingPersonRepository.class);
 	private final MissingPersonImageRepository missingPersonImageRepository = mock(MissingPersonImageRepository.class);
 	private final UserRepository userRepository = mock(UserRepository.class);
+	private final Safe182MissingPersonSyncService safe182MissingPersonSyncService = mock(Safe182MissingPersonSyncService.class);
 	private final MissingPersonService missingPersonService = new MissingPersonService(
 			missingPersonRepository,
 			missingPersonImageRepository,
 			userRepository,
+			safe182MissingPersonSyncService,
 			"build/test-uploads"
 	);
 
@@ -128,6 +131,16 @@ class MissingPersonServiceTest {
 		missingPersonService.search("Seoul", "OPEN", "PUBLIC_API", "서울특별시", java.time.LocalDate.now(), "강남역", PageRequest.of(0, 9));
 
 		verify(missingPersonRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class));
+	}
+
+	@Test
+	void searchTriggersApiSyncWhenKeywordIsPresent() {
+		when(missingPersonRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(PageRequest.class)))
+				.thenReturn(new PageImpl<>(List.of()));
+
+		missingPersonService.search("Seoul", "OPEN", "PUBLIC_API", PageRequest.of(0, 9));
+
+		verify(safe182MissingPersonSyncService).syncSearch("Seoul");
 	}
 
 	@Test

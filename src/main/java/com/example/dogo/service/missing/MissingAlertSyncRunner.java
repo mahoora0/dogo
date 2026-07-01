@@ -31,11 +31,45 @@ public class MissingAlertSyncRunner {
 	}
 
 	public void backfillOnStartupIfEmpty() {
-		// Sync disabled since Safe182 data is stale
+		if (!syncEnabled || !backfillOnStartup) {
+			return;
+		}
+
+		try {
+			boolean hasPublicApiData = missingPersonRepository.existsBySourceType(PUBLIC_API_SOURCE_TYPE);
+			MissingAlertSyncResult result = hasPublicApiData
+					? syncService.syncIncrementalFromToday()
+					: syncService.syncBackfillFromToday();
+			log.info(
+					"Safe182 missing person startup {} sync completed. fetched={}, saved={}, skipped={}, pages={}",
+					hasPublicApiData ? "incremental" : "backfill",
+					result.fetchedCount(),
+					result.savedCount(),
+					result.skippedCount(),
+					result.pageCount()
+			);
+		} catch (Exception exception) {
+			log.error("Safe182 missing person startup sync failed.", exception);
+		}
 	}
 
 	@Scheduled(cron = "${safe182.missing-alert.sync-cron:0 20 * * * *}")
 	public void syncIncremental() {
-		// Sync disabled since Safe182 data is stale
+		if (!syncEnabled) {
+			return;
+		}
+
+		try {
+			MissingAlertSyncResult result = syncService.syncIncrementalFromToday();
+			log.info(
+					"Safe182 missing person incremental sync completed. fetched={}, saved={}, skipped={}, pages={}",
+					result.fetchedCount(),
+					result.savedCount(),
+					result.skippedCount(),
+					result.pageCount()
+			);
+		} catch (Exception exception) {
+			log.error("Safe182 missing person incremental sync failed.", exception);
+		}
 	}
 }

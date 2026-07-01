@@ -10,7 +10,6 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@org.junit.jupiter.api.Disabled("Safe182 alert sync is disabled")
 class MissingAlertSyncRunnerTest {
 
 	@Test

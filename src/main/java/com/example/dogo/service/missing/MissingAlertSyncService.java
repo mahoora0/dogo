@@ -40,27 +40,85 @@ public class MissingAlertSyncService {
 	}
 
 	public MissingAlertSyncResult syncBackfillFromToday() {
-		return new MissingAlertSyncResult(0, 0, 0, 0);
+		return syncAll();
 	}
 
 	MissingAlertSyncResult syncAll() {
-		return new MissingAlertSyncResult(0, 0, 0, 0);
+		int fetchedCount = 0;
+		int savedCount = 0;
+		int skippedCount = 0;
+		int pageCount = 0;
+		int pageNumber = 1;
+
+		while (true) {
+			Safe182MissingPersonPage page = missingPersonClient.search(null, pageNumber, rowSize);
+			pageCount++;
+
+			if (page.records() == null || page.records().isEmpty()) {
+				break;
+			}
+
+			for (Safe182MissingPersonRecord record : page.records()) {
+				fetchedCount++;
+				if (saveIfNew(record)) {
+					savedCount++;
+				} else {
+					skippedCount++;
+				}
+			}
+
+			if (page.totalCount() <= pageNumber * rowSize || page.records().size() < rowSize) {
+				break;
+			}
+			pageNumber++;
+		}
+
+		return new MissingAlertSyncResult(fetchedCount, savedCount, skippedCount, pageCount);
 	}
 
 	public MissingAlertSyncResult syncIncrementalFromToday() {
-		return new MissingAlertSyncResult(0, 0, 0, 0);
+		return syncRange(LocalDate.now().minusDays(incrementalLookbackDays - 1L), LocalDate.now());
 	}
 
 	MissingAlertSyncResult syncBackfill(LocalDate endDate) {
-		return new MissingAlertSyncResult(0, 0, 0, 0);
+		return syncRange(endDate.minusDays(backfillLookbackDays), endDate);
 	}
 
 	MissingAlertSyncResult syncDate(LocalDate date) {
-		return new MissingAlertSyncResult(0, 0, 0, 0);
+		return syncRange(date, date);
 	}
 
 	private MissingAlertSyncResult syncRange(LocalDate startDate, LocalDate endDate) {
-		return new MissingAlertSyncResult(0, 0, 0, 0);
+		int fetchedCount = 0;
+		int savedCount = 0;
+		int skippedCount = 0;
+		int pageCount = 0;
+		int pageNumber = 1;
+
+		while (true) {
+			Safe182MissingPersonPage page = missingPersonClient.searchByDateRange(startDate, endDate, pageNumber, rowSize);
+			pageCount++;
+
+			if (page.records() == null || page.records().isEmpty()) {
+				break;
+			}
+
+			for (Safe182MissingPersonRecord record : page.records()) {
+				fetchedCount++;
+				if (saveIfNew(record)) {
+					savedCount++;
+				} else {
+					skippedCount++;
+				}
+			}
+
+			if (page.totalCount() <= pageNumber * rowSize || page.records().size() < rowSize) {
+				break;
+			}
+			pageNumber++;
+		}
+
+		return new MissingAlertSyncResult(fetchedCount, savedCount, skippedCount, pageCount);
 	}
 
 	private boolean saveIfNew(Safe182MissingPersonRecord record) {

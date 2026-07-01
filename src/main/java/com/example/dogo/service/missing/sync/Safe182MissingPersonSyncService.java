@@ -5,6 +5,7 @@ import com.example.dogo.repository.missing.MissingPersonRepository;
 import com.example.dogo.service.missing.client.Safe182MissingPersonClient;
 import com.example.dogo.service.missing.client.Safe182MissingPersonRecord;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -25,7 +26,7 @@ public class Safe182MissingPersonSyncService {
 		this.repository = repository;
 	}
 
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public Safe182MissingPersonSyncResult syncSearch(String keyword) {
 		var page = client.search(keyword, SEARCH_PAGE, SEARCH_ROW_SIZE);
 		int imported = 0;
