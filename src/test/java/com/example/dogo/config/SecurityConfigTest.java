@@ -1,6 +1,7 @@
 package com.example.dogo.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -19,5 +20,17 @@ class SecurityConfigTest {
 
         assertThat(key).isEqualTo("generated-secret");
         assertThat(key).isNotEqualTo("uniqueAndSecret");
+    }
+
+    @Test
+    void parseAllowedOriginsAcceptsExplicitOrigins() {
+        assertThat(WebSocketConfig.parseAllowedOrigins("https://dogo.example, http://localhost:8080"))
+                .containsExactly("https://dogo.example", "http://localhost:8080");
+    }
+
+    @Test
+    void parseAllowedOriginsRejectsWildcard() {
+        assertThatThrownBy(() -> WebSocketConfig.parseAllowedOrigins("https://dogo.example,*"))
+                .isInstanceOf(IllegalStateException.class);
     }
 }

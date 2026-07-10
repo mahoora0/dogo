@@ -2,6 +2,7 @@ package com.example.dogo.config;
 
 import com.example.dogo.service.ChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -22,6 +23,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final ChatService chatService;
 
+    @Value("${app.websocket.allowed-origins:http://localhost:8080}")
+    private String configuredAllowedOrigins;
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/sub");
@@ -31,7 +35,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-stomp")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOrigins(parseAllowedOrigins(configuredAllowedOrigins))
                 .withSockJS();
     }
 
@@ -50,5 +54,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 return message;
             }
         });
+    }
+
+    static String[] parseAllowedOrigins(String configuredAllowedOrigins) {
+        if (configuredAllowedOrigins == null || configuredAllowedOrigins.isBlank()) {
+            throw new IllegalStateException("app.websocket.allowed-origins must contain at least one origin.");
+        }
+
+        String[] origins = java.util.Arrays.stream(configuredAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toArray(String[]::new);
+        if (origins.length == 0 || java.util.Arrays.stream(origins).anyMatch("*"::equals)) {
+            throw new IllegalStateException("Wildcard WebSocket origins are not allowed.");
+        }
+        return origins;
     }
 }

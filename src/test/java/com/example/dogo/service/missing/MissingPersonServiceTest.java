@@ -15,7 +15,6 @@ import org.springframework.data.domain.PageRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,10 +40,10 @@ class MissingPersonServiceTest {
 	@Test
 	void createStoresRequiredMissingPersonFields() {
 		MissingPersonCreateRequest request = createRequest();
-		when(userRepository.findByEmail("dev@dogo.local")).thenReturn(Optional.of(new User("dev@dogo.local", "dev", "010-0000-0000")));
+		User user = new User("login@dogo.local", "로그인 사용자", "010-0000-0000");
 		when(missingPersonRepository.save(any(MissingPersonReport.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-		missingPersonService.create(request, null);
+		missingPersonService.create(request, user);
 
 		verify(missingPersonRepository).save(any(MissingPersonReport.class));
 	}

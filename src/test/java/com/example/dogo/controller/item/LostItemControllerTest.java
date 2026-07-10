@@ -26,7 +26,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -100,8 +100,7 @@ class LostItemControllerTest {
 	}
 
 	@Test
-	void createRedirectsToCreatedLostItemDetail() throws Exception {
-		when(lostItemService.create(any(LostItemCreateRequest.class), isNull())).thenReturn(7L);
+	void createRedirectsAnonymousUserToLogin() throws Exception {
 
 		mockMvc.perform(post("/lost-items")
 						.param("title", "검정 지갑을 찾습니다")
@@ -113,9 +112,9 @@ class LostItemControllerTest {
 						.param("contact", "010-1234-5678")
 						.param("content", "카드가 들어있습니다"))
 				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/lost-items/7?created=true"));
+				.andExpect(redirectedUrl("/login"));
 
-		verify(lostItemService).create(any(LostItemCreateRequest.class), isNull());
+		verify(lostItemService, never()).create(any(), any());
 	}
 
 	@Test

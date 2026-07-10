@@ -122,8 +122,7 @@ class LostItemServiceTest {
 
 	@Test
 	void createSavesLostItemAndSkipsEmptyImage() {
-		User user = new User("dev@dogo.local", "개발용 사용자", "010-0000-0000");
-		when(userRepository.findByEmail("dev@dogo.local")).thenReturn(Optional.of(user));
+		User user = new User("login@dogo.local", "로그인 사용자", "010-0000-0000");
 		when(lostItemRepository.save(any(LostItem.class))).thenAnswer(invocation -> {
 			LostItem saved = invocation.getArgument(0);
 			ReflectionTestUtils.setField(saved, "lostId", 10L);
@@ -132,7 +131,7 @@ class LostItemServiceTest {
 
 		LostItemCreateRequest request = request("검정 지갑을 찾습니다", "검정 지갑", null);
 
-		Long id = lostItemService.create(request, null);
+		Long id = lostItemService.create(request, user);
 
 		assertThat(id).isEqualTo(10L);
 
@@ -151,8 +150,7 @@ class LostItemServiceTest {
 
 	@Test
 	void createStoresUploadedImageMetadataAndFile() throws Exception {
-		User user = new User("dev@dogo.local", "개발용 사용자", "010-0000-0000");
-		when(userRepository.findByEmail("dev@dogo.local")).thenReturn(Optional.of(user));
+		User user = new User("login@dogo.local", "로그인 사용자", "010-0000-0000");
 		when(lostItemRepository.save(any(LostItem.class))).thenAnswer(invocation -> {
 			LostItem saved = invocation.getArgument(0);
 			ReflectionTestUtils.setField(saved, "lostId", 11L);
@@ -165,7 +163,7 @@ class LostItemServiceTest {
 				"test-image".getBytes()
 		);
 
-		lostItemService.create(request("검정 지갑을 찾습니다", "검정 지갑", image), null);
+		lostItemService.create(request("검정 지갑을 찾습니다", "검정 지갑", image), user);
 
 		ArgumentCaptor<LostItemImage> captor = ArgumentCaptor.forClass(LostItemImage.class);
 		verify(lostItemImageRepository).save(captor.capture());

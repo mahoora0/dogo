@@ -164,8 +164,11 @@ public class AnimalReportController {
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			Model model
 	) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
 		try {
-			Long reportId = animalReportService.create(request, userDetails != null ? userDetails.getUser() : null);
+			Long reportId = animalReportService.create(request, userDetails.getUser());
 			return "redirect:/animal-reports/" + reportId + "?created=true";
 		} catch (IllegalArgumentException exception) {
 			model.addAttribute("errorMessage", exception.getMessage());

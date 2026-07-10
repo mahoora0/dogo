@@ -3,12 +3,16 @@ package com.example.dogo.controller.missing;
 import com.example.dogo.dto.missing.MissingPersonCreateRequest;
 import com.example.dogo.dto.missing.MissingPersonDetailView;
 import com.example.dogo.dto.missing.MissingPersonView;
+import com.example.dogo.entity.user.User;
+import com.example.dogo.security.CustomUserDetails;
 import com.example.dogo.service.missing.MissingPersonService;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -19,6 +23,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -66,8 +71,22 @@ class MissingPersonControllerTest {
 	}
 
 	@Test
-	void createRedirectsToDetail() throws Exception {
+	void createRedirectsAnonymousUserToLogin() throws Exception {
+		mockMvc.perform(post("/missing-persons")
+						.param("age", "13"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/login"));
+
+		verify(missingPersonService, never()).create(any(), any());
+	}
+
+	@Test
+	void createRedirectsToDetailForAuthenticatedUser() throws Exception {
 		when(missingPersonService.create(any(MissingPersonCreateRequest.class), any())).thenReturn(12L);
+		User user = new User("login@dogo.local", "로그인 사용자", "010-0000-0000");
+		CustomUserDetails details = new CustomUserDetails(user);
+		SecurityContextHolder.getContext().setAuthentication(
+				new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities()));
 
 		mockMvc.perform(post("/missing-persons")
 						.param("age", "13")
@@ -83,6 +102,7 @@ class MissingPersonControllerTest {
 						.param("clothing", "Blue hoodie"))
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/missing-persons/12?created=true"));
+		SecurityContextHolder.clearContext();
 	}
 
 	@Test

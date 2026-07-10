@@ -35,6 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class LoginControllerTest {
@@ -197,6 +198,58 @@ class LoginControllerTest {
 
         verify(userRepository, never()).save(any(User.class));
         verifyNoInteractions(profileService);
+    }
+
+    @Test
+    void joinRejectsMismatchedPasswordsBeforeConsumingVerificationToken() throws Exception {
+        mockMvc.perform(multipart("/join")
+                        .param("loginId", "tester")
+                        .param("nickname", "테스터")
+                        .param("password", "newPassword!")
+                        .param("passwordConfirm", "differentPassword!")
+                        .param("email", "test@dogo.com")
+                        .param("emailVerificationToken", "join-token"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/join?error=passwordMismatch"));
+
+        verifyNoInteractions(mailService, profileService, passwordEncoder);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void joinRejectsDuplicateLoginIdBeforeConsumingVerificationToken() throws Exception {
+        when(userRepository.existsByLoginId("tester")).thenReturn(true);
+
+        mockMvc.perform(multipart("/join")
+                        .param("loginId", "tester")
+                        .param("nickname", "테스터")
+                        .param("password", "newPassword!")
+                        .param("passwordConfirm", "newPassword!")
+                        .param("email", "test@dogo.com")
+                        .param("emailVerificationToken", "join-token"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/join?error=loginIdExists"));
+
+        verifyNoInteractions(mailService, profileService, passwordEncoder);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void joinCreatesUserOnlyAfterServerSideValidationAndVerification() throws Exception {
+        when(mailService.consumeToken("join-token", "test@dogo.com", MailService.VerificationPurpose.JOIN)).thenReturn(true);
+        when(passwordEncoder.encode("newPassword!")).thenReturn("password-hash");
+
+        mockMvc.perform(multipart("/join")
+                        .param("loginId", "tester")
+                        .param("nickname", "테스터")
+                        .param("password", "newPassword!")
+                        .param("passwordConfirm", "newPassword!")
+                        .param("email", "test@dogo.com")
+                        .param("emailVerificationToken", "join-token"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+
+        verify(userRepository).save(any(User.class));
     }
 
     @Test

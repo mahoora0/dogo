@@ -140,8 +140,7 @@ class FoundItemServiceTest {
 
 	@Test
 	void createStoresUploadedImageMetadataAndFile() throws Exception {
-		User user = new User("dev@dogo.local", "개발자 사용자", "010-0000-0000");
-		when(userRepository.findByEmail("dev@dogo.local")).thenReturn(Optional.of(user));
+		User user = new User("login@dogo.local", "로그인 사용자", "010-0000-0000");
 		when(foundItemRepository.save(any(FoundItem.class))).thenAnswer(invocation -> {
 			FoundItem saved = invocation.getArgument(0);
 			ReflectionTestUtils.setField(saved, "foundId", 11L);
@@ -154,7 +153,7 @@ class FoundItemServiceTest {
 				"test-image".getBytes()
 		);
 
-		foundItemService.create(request("검정 지갑을 주웠습니다", "검정 지갑", image), null);
+		foundItemService.create(request("검정 지갑을 주웠습니다", "검정 지갑", image), user);
 
 		ArgumentCaptor<FoundItemImage> captor = ArgumentCaptor.forClass(FoundItemImage.class);
 		verify(foundItemImageRepository).save(captor.capture());

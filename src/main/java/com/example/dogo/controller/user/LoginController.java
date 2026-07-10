@@ -49,10 +49,15 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Controller
 @RequiredArgsConstructor
 public class LoginController {
+
+  private static final Pattern LOGIN_ID_PATTERN = Pattern.compile("^[a-z0-9]{4,20}$");
+  private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+  private static final Pattern PASSWORD_SPECIAL_CHARACTER_PATTERN = Pattern.compile("[!@#$%^&*(),.?\":{}|<>]");
     
   private final UserRepository userRepository;
   private final UserSocialAccountRepository userSocialAccountRepository;
@@ -536,6 +541,21 @@ public class LoginController {
 
   @PostMapping("/join")
   public String joinProcess(@ModelAttribute com.example.dogo.dto.user.UserJoinDto userJoinDto) {
+    String validationError = validateJoinRequest(userJoinDto);
+    if (validationError != null) {
+      return "redirect:/join?error=" + validationError;
+    }
+
+    if (userRepository.existsByLoginId(userJoinDto.getLoginId())) {
+      return "redirect:/join?error=loginIdExists";
+    }
+    if (userRepository.existsByEmail(userJoinDto.getEmail())) {
+      return "redirect:/join?error=emailExists";
+    }
+    if (userRepository.existsByNickname(userJoinDto.getNickname())) {
+      return "redirect:/join?error=nicknameExists";
+    }
+
     if (!mailService.consumeToken(
             userJoinDto.getEmailVerificationToken(),
             userJoinDto.getEmail(),
@@ -559,6 +579,43 @@ public class LoginController {
     userRepository.save(newUser);
 
     return "redirect:/login";
+  }
+
+  private String validateJoinRequest(com.example.dogo.dto.user.UserJoinDto request) {
+    if (request == null
+        || !StringUtils.hasText(request.getLoginId())
+        || !StringUtils.hasText(request.getNickname())
+        || !StringUtils.hasText(request.getEmail())
+        || !StringUtils.hasText(request.getPassword())
+        || !StringUtils.hasText(request.getPasswordConfirm())) {
+      return "required";
+    }
+
+    String loginId = request.getLoginId().trim();
+    String nickname = request.getNickname().trim();
+    String email = request.getEmail().trim();
+    String password = request.getPassword();
+
+    if (!LOGIN_ID_PATTERN.matcher(loginId).matches()) {
+      return "invalidLoginId";
+    }
+    if (nickname.length() > 50 || nickname.chars().anyMatch(Character::isISOControl)) {
+      return "invalidNickname";
+    }
+    if (email.length() > 255 || !EMAIL_PATTERN.matcher(email).matches()) {
+      return "invalidEmail";
+    }
+    if (password.length() < 8 || password.length() > 72 || !PASSWORD_SPECIAL_CHARACTER_PATTERN.matcher(password).find()) {
+      return "invalidPassword";
+    }
+    if (!password.equals(request.getPasswordConfirm())) {
+      return "passwordMismatch";
+    }
+
+    request.setLoginId(loginId);
+    request.setNickname(nickname);
+    request.setEmail(email);
+    return null;
   }
 
   @PostMapping("/user/withdraw")

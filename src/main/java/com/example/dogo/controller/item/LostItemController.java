@@ -143,8 +143,11 @@ public class LostItemController {
 	public String create(@ModelAttribute("request") LostItemCreateRequest request,
 						 @AuthenticationPrincipal CustomUserDetails userDetails,
 						 Model model) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
 		try {
-			Long lostItemId = lostItemService.create(request, userDetails != null ? userDetails.getUser() : null);
+			Long lostItemId = lostItemService.create(request, userDetails.getUser());
 			return "redirect:/lost-items/" + lostItemId + "?created=true";
 		} catch (IllegalArgumentException exception) {
 			model.addAttribute("errorMessage", exception.getMessage());

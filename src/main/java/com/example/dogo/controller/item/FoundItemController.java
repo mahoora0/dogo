@@ -143,8 +143,11 @@ public class FoundItemController {
 	public String create(@ModelAttribute("request") FoundItemCreateRequest request,
 						 @AuthenticationPrincipal CustomUserDetails userDetails,
 						 Model model) {
+		if (userDetails == null) {
+			return "redirect:/login";
+		}
 		try {
-			Long foundItemId = foundItemService.create(request, userDetails != null ? userDetails.getUser() : null);
+			Long foundItemId = foundItemService.create(request, userDetails.getUser());
 			return "redirect:/found-items/" + foundItemId + "?created=true";
 		} catch (IllegalArgumentException exception) {
 			model.addAttribute("errorMessage", exception.getMessage());

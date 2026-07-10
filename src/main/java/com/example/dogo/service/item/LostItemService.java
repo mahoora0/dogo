@@ -42,7 +42,6 @@ import java.util.UUID;
 @Service
 public class LostItemService {
 
-	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
 
 	private final LostItemRepository lostItemRepository;
@@ -361,7 +360,10 @@ public class LostItemService {
 	public Long create(LostItemCreateRequest request, User loginUser) {
 		validateCreateRequest(request);
 
-		User user = (loginUser != null) ? loginUser : getOrCreateDevUser();
+		if (loginUser == null) {
+			throw new IllegalArgumentException("로그인 후 분실물을 등록할 수 있습니다.");
+		}
+		User user = loginUser;
 		LostItem lostItem = new LostItem(
 				user,
 				defaultText(request.getTitle(), request.getItemName()),
@@ -487,11 +489,6 @@ public class LostItemService {
 		if (!StringUtils.hasText(request.getLostPlace())) {
 			throw new IllegalArgumentException("분실 장소를 입력해주세요.");
 		}
-	}
-
-	private User getOrCreateDevUser() {
-		return userRepository.findByEmail(DEV_USER_EMAIL)
-				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발용 사용자")));
 	}
 
 	private LocalDateTime defaultLostAt(LocalDateTime lostAt) {

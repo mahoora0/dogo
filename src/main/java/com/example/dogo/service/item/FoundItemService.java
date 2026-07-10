@@ -40,7 +40,6 @@ import java.util.UUID;
 @Service
 public class FoundItemService {
 
-	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
 
 	private final FoundItemRepository foundItemRepository;
@@ -339,7 +338,10 @@ public class FoundItemService {
 	public Long create(FoundItemCreateRequest request, User loginUser) {
 		validateCreateRequest(request);
 
-		User user = (loginUser != null) ? loginUser : getOrCreateDevUser();
+		if (loginUser == null) {
+			throw new IllegalArgumentException("로그인 후 습득물을 등록할 수 있습니다.");
+		}
+		User user = loginUser;
 		FoundItem foundItem = new FoundItem(
 				user,
 				defaultText(request.getTitle(), request.getItemName()),
@@ -452,11 +454,6 @@ public class FoundItemService {
 		if (!StringUtils.hasText(request.getFoundPlace())) {
 			throw new IllegalArgumentException("습득 장소를 입력해주세요.");
 		}
-	}
-
-	private User getOrCreateDevUser() {
-		return userRepository.findByEmail(DEV_USER_EMAIL)
-				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발용 사용자")));
 	}
 
 	private LocalDateTime defaultFoundAt(LocalDateTime foundAt) {

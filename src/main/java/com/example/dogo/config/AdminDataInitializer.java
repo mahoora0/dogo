@@ -54,9 +54,6 @@ public class AdminDataInitializer implements CommandLineRunner {
             log.debug("USERS 테이블에서 PHONE 컬럼이 존재하지 않거나 이미 제거되었습니다.");
         }
 
-        // 더미 유저 생성 호출 (Early return에 막히지 않도록 이곳에서 호출)
-        seedDummyUsers();
-
         if (!StringUtils.hasText(adminPassword)) {
             log.warn("admin.password가 비어 있어 관리자 계정 자동 생성을 건너뜁니다.");
             return;
@@ -85,41 +82,5 @@ public class AdminDataInitializer implements CommandLineRunner {
             }
         );
 
-        // 테스트용 일반 관리자 계정 (ADMIN) 자동 생성
-        String subAdminId = "subadmin";
-        if (userRepository.findByLoginId(subAdminId).isEmpty()) {
-            User subAdmin = new User(
-                    subAdminId,
-                    passwordEncoder.encode("subadmin123!"),
-                    "subadmin@dogo.com",
-                    "일반관리자",
-                    null
-                );
-            subAdmin.setRole("ADMIN");
-            userRepository.save(subAdmin);
-            log.info("테스트용 일반관리자 계정 생성이 완료되었습니다. ID: {}, PW: subadmin123!", subAdminId);
-        }
-    }
-
-    private void seedDummyUsers() {
-        for (char c = 'a'; c <= 'z'; c++) {
-            String id = String.valueOf(c).repeat(4);
-            if (userRepository.findByLoginId(id).isPresent()) {
-                continue;
-            }
-            String password = String.valueOf(c).repeat(7) + "!";
-            String email = id + "@test.com";
-            String nickname = id;
-            
-            User user = new User(
-                id,
-                passwordEncoder.encode(password),
-                email,
-                nickname,
-                null
-            );
-            userRepository.save(user);
-        }
-        log.info("26명의 더미 유저 생성이 완료되었습니다. (aaaa ~ zzzz)");
     }
 }

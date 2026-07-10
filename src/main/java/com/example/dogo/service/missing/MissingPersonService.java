@@ -36,7 +36,6 @@ import java.util.UUID;
 public class MissingPersonService {
 
 	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MissingPersonService.class);
-	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 
 	private final MissingPersonRepository missingPersonRepository;
 	private final MissingPersonImageRepository missingPersonImageRepository;
@@ -119,7 +118,10 @@ public class MissingPersonService {
 	public Long create(MissingPersonCreateRequest request, User loginUser) {
 		validateCreateRequest(request);
 
-		User user = (loginUser != null) ? loginUser : getOrCreateDevUser();
+		if (loginUser == null) {
+			throw new IllegalArgumentException("로그인 후 실종자 제보를 등록할 수 있습니다.");
+		}
+		User user = loginUser;
 		MissingPersonReport report = new MissingPersonReport(
 				user,
 				request.getAge(),
@@ -459,11 +461,6 @@ public class MissingPersonService {
 		if (!StringUtils.hasText(request.getClothing())) {
 			throw new IllegalArgumentException("착의사항을 입력해주세요.");
 		}
-	}
-
-	private User getOrCreateDevUser() {
-		return userRepository.findByEmail(DEV_USER_EMAIL)
-				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발자 사용자")));
 	}
 
 	private String summary(MissingPersonReport report) {

@@ -60,7 +60,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/inquiry").permitAll() // 목록 페이지는 누구나 접근 가능
                 .requestMatchers(new RegexRequestMatcher("^/inquiry/\\d+$", "GET")).permitAll()
                 .requestMatchers("/inquiry/**").authenticated() // 등록 등은 로그인 필요
-                .requestMatchers("/", "/login", "/join", "/find-account", "/api/user/**", "/api/mail/**", "/api/sms/**", "/api/place/**", "/missing-alerts", "/api/missing-alerts/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/animal-reports/**", "/missing-persons/**", "/lost-report", "/lost-report/**", "/areas/**", "/api/areas/**", "/api/police/**", "/api/korail/**", "/api/subway/**", "/api/lost-items/*/stream", "/api/found-items/*/stream", "/api/animal-reports/*/stream", "/faq", "/faq/**", "/notice/**", "/guide", "/error", "/uploads/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/", "/login", "/join", "/find-account", "/api/user/**", "/api/place/**", "/missing-alerts", "/api/missing-alerts/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/animal-reports/**", "/missing-persons/**", "/lost-report", "/lost-report/**", "/areas/**", "/api/areas/**", "/api/police/**", "/api/korail/**", "/api/subway/**", "/api/lost-items/*/stream", "/api/found-items/*/stream", "/api/animal-reports/*/stream", "/faq", "/faq/**", "/notice/**", "/guide", "/error", "/uploads/**").permitAll()
+                .requestMatchers("/api/user/**", "/api/mail/**", "/api/sms/**").permitAll()
                 .requestMatchers("/admin/api/emergency/status").permitAll()
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .anyRequest().authenticated()

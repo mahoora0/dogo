@@ -51,7 +51,6 @@ import java.util.stream.Collectors;
 @Service
 public class AnimalReportService {
 
-	private static final String DEV_USER_EMAIL = "dev@dogo.local";
 	private static final String PLACEHOLDER_IMAGE = "/images/noImageSize.png";
 	private static final Set<String> USER_REPORT_TYPES = Set.of("MISSING", "SIGHTING");
 	private static final Set<String> ANIMAL_TYPES = Set.of("DOG", "CAT", "OTHER");
@@ -147,7 +146,10 @@ public class AnimalReportService {
 	public Long create(AnimalReportCreateRequest request, User loginUser) {
 		validateCreateRequest(request);
 
-		User user = (loginUser != null) ? loginUser : getOrCreateDevUser();
+		if (loginUser == null) {
+			throw new IllegalArgumentException("로그인 후 동물 신고를 등록할 수 있습니다.");
+		}
+		User user = loginUser;
 		Area regionArea = findRegionArea(request.getRegionName()).orElse(null);
 		String reportType = request.getReportType().trim();
 		String animalType = request.getAnimalType().trim();
@@ -581,11 +583,6 @@ public class AnimalReportService {
 			case "COLOR" -> List.of("furColor");
 			default -> List.of("title", "breedName", "furColor", "distinctiveMarks", "content", "detailPlace", "regionName");
 		};
-	}
-
-	private User getOrCreateDevUser() {
-		return userRepository.findByEmail(DEV_USER_EMAIL)
-				.orElseGet(() -> userRepository.save(new User(DEV_USER_EMAIL, "개발용 사용자")));
 	}
 
 	private String defaultTitle(String reportType, String title, String animalType, String breedName) {
