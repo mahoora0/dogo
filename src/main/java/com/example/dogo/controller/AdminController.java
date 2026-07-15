@@ -576,6 +576,7 @@ public class AdminController {
 
     @GetMapping("/api/emergency/status")
     @ResponseBody
+    @Transactional(readOnly = true)
     public Map<String, Object> getEmergencyStatus() {
         Map<String, Object> response = new HashMap<>();
         response.put("active", emergencyActive);

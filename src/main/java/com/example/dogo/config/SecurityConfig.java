@@ -60,7 +60,29 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/inquiry").permitAll() // 목록 페이지는 누구나 접근 가능
                 .requestMatchers(new RegexRequestMatcher("^/inquiry/\\d+$", "GET")).permitAll()
                 .requestMatchers("/inquiry/**").authenticated() // 등록 등은 로그인 필요
-                .requestMatchers("/", "/login", "/join", "/find-account", "/api/user/**", "/api/mail/**", "/api/sms/**", "/api/place/**", "/missing-alerts", "/api/missing-alerts/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-items/**", "/found-items/**", "/animal-reports/**", "/missing-persons/**", "/lost-report", "/lost-report/**", "/areas/**", "/api/areas/**", "/api/police/**", "/api/korail/**", "/api/subway/**", "/api/lost-items/*/stream", "/api/found-items/*/stream", "/api/animal-reports/*/stream", "/faq", "/faq/**", "/notice/**", "/guide", "/error", "/uploads/**").permitAll()
+
+                // 분실물 (lost-items) 목록 및 상세 조회만 로그인 없이 가능, 등록/수정/삭제/상태변경 등은 로그인 필요
+                .requestMatchers(HttpMethod.GET, "/lost-items").permitAll()
+                .requestMatchers(new RegexRequestMatcher("^/lost-items/\\d+$", "GET")).permitAll()
+                .requestMatchers("/lost-items/**").authenticated()
+
+                // 습득물 (found-items) 목록 및 상세 조회만 로그인 없이 가능, 등록/수정/삭제/상태변경 등은 로그인 필요
+                .requestMatchers(HttpMethod.GET, "/found-items").permitAll()
+                .requestMatchers(new RegexRequestMatcher("^/found-items/\\d+$", "GET")).permitAll()
+                .requestMatchers("/found-items/**").authenticated()
+
+                // 반려동물 신고 (animal-reports) 목록, 상세 조회, 이미지 검색만 로그인 없이 가능, 등록/수정/삭제/상태변경 등은 로그인 필요
+                .requestMatchers(HttpMethod.GET, "/animal-reports").permitAll()
+                .requestMatchers(new RegexRequestMatcher("^/animal-reports/\\d+$", "GET")).permitAll()
+                .requestMatchers(HttpMethod.POST, "/animal-reports/image-search").permitAll()
+                .requestMatchers("/animal-reports/**").authenticated()
+
+                // 실종자 (missing-persons) 목록 및 상세 조회만 로그인 없이 가능, 등록/수정/삭제/상태변경 등은 로그인 필요
+                .requestMatchers(HttpMethod.GET, "/missing-persons").permitAll()
+                .requestMatchers(new RegexRequestMatcher("^/missing-persons/\\d+$", "GET")).permitAll()
+                .requestMatchers("/missing-persons/**").authenticated()
+
+                .requestMatchers("/", "/login", "/join", "/find-account", "/api/user/**", "/api/mail/**", "/api/sms/**", "/api/place/**", "/missing-alerts", "/api/missing-alerts/**", "/css/**", "/js/**", "/images/**", "/oauth2/**", "/lost-report", "/lost-report/**", "/areas/**", "/api/areas/**", "/api/police/**", "/api/korail/**", "/api/subway/**", "/api/lost-items/*/stream", "/api/found-items/*/stream", "/api/animal-reports/*/stream", "/faq", "/faq/**", "/notice/**", "/guide", "/error", "/uploads/**").permitAll()
                 .requestMatchers("/admin/api/emergency/status").permitAll()
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .anyRequest().authenticated()

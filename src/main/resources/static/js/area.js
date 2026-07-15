@@ -359,7 +359,11 @@ function renderMarkersOnMap(policeData, korailData, subwayData, selection) {
           : `${item.stationName || ''}역 유실물센터`;
 
       // Filter markers by keyword if searched
-      if (keyword && !name.includes(keyword)) return;
+      if (keyword) {
+        const nameMatches = name.includes(keyword);
+        const policeMatches = type === 'POLICE' && (keyword === '경찰' || keyword === '경찰서' || keyword === '파출소' || keyword === '지구대');
+        if (!nameMatches && !policeMatches) return;
+      }
 
       // Use latitude/longitude if they exist and are not 0
       const lat = parseFloat(item.latitude);
@@ -476,7 +480,12 @@ function renderCenterList(data, keyword) {
   if (!centerList) return;
   centerList.innerHTML = '';
 
-  const filtered = data.filter(item => keyword === '' || item.name.includes(keyword));
+  const filtered = data.filter(item => {
+    if (keyword === '') return true;
+    const nameMatches = item.name.includes(keyword);
+    const policeMatches = item.type === 'POLICE' && (keyword === '경찰' || keyword === '경찰서' || keyword === '파출소' || keyword === '지구대');
+    return nameMatches || policeMatches;
+  });
 
   if (filtered.length === 0) {
     centerList.innerHTML = '<div class="p-4 text-center text-gray-500">검색 결과가 없습니다.</div>';

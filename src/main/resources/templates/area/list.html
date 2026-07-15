@@ -73,7 +73,7 @@
 
     </div>
 
-    <script th:src="@{/js/area.js}"></script>
+    <script th:src="@{/js/area.js(v=${#dates.createNow().getTime()})}"></script>
 
   </th:block>
 </th:block>

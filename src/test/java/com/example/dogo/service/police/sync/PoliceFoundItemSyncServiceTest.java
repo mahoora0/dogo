@@ -58,14 +58,17 @@ class PoliceFoundItemSyncServiceTest {
 			ReflectionTestUtils.setField(saved, "foundId", idSequence.getAndIncrement());
 			return saved;
 		});
-		syncService = new PoliceFoundItemSyncService(
-				client,
-				commonCodeClient,
+		PoliceFoundItemSaver saver = new PoliceFoundItemSaver(
 				new PoliceFoundItemMapper(),
 				new PoliceStationAddressResolver(),
 				foundItemRepository,
 				imageService,
-				eventPublisher,
+				eventPublisher
+		);
+		syncService = new PoliceFoundItemSyncService(
+				client,
+				commonCodeClient,
+				saver,
 				100,
 				2,
 				1,
@@ -190,9 +193,7 @@ class PoliceFoundItemSyncServiceTest {
 
 	@Test
 	void publicSyncEntrypointsAreTransactionalForExistingItemUpdates() throws Exception {
-		assertThat(PoliceFoundItemSyncService.class.getMethod("syncBackfillLastMonth").isAnnotationPresent(Transactional.class))
-				.isTrue();
-		assertThat(PoliceFoundItemSyncService.class.getMethod("syncIncrementalLastMonth").isAnnotationPresent(Transactional.class))
+		assertThat(PoliceFoundItemSaver.class.getMethod("saveIfNew", PoliceFoundItemResponse.class, Optional.class, String.class).isAnnotationPresent(Transactional.class))
 				.isTrue();
 	}
 

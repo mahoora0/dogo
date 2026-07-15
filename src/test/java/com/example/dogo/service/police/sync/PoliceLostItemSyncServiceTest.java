@@ -47,12 +47,15 @@ class PoliceLostItemSyncServiceTest {
 			ReflectionTestUtils.setField(saved, "lostId", 100L);
 			return saved;
 		});
-		syncService = new PoliceLostItemSyncService(
-				client,
+		PoliceLostItemSaver saver = new PoliceLostItemSaver(
 				new PoliceLostItemMapper(),
 				lostItemRepository,
 				imageService,
-				eventPublisher,
+				eventPublisher
+		);
+		syncService = new PoliceLostItemSyncService(
+				client,
+				saver,
 				100,
 				2,
 				1,
@@ -166,9 +169,7 @@ class PoliceLostItemSyncServiceTest {
 
 	@Test
 	void publicSyncEntrypointsAreTransactionalForExistingItemUpdates() throws Exception {
-		assertThat(PoliceLostItemSyncService.class.getMethod("syncBackfillLastMonth").isAnnotationPresent(Transactional.class))
-				.isTrue();
-		assertThat(PoliceLostItemSyncService.class.getMethod("syncIncrementalLastMonth").isAnnotationPresent(Transactional.class))
+		assertThat(PoliceLostItemSaver.class.getMethod("saveIfNew", PoliceLostItemResponse.class, boolean.class, Optional.class).isAnnotationPresent(Transactional.class))
 				.isTrue();
 	}
 

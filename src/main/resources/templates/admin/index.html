@@ -197,7 +197,7 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-3 whitespace-nowrap gap-6">
+                    <div class="grid grid-cols-4 whitespace-nowrap gap-6">
                         <!-- 컨트롤 2: 시간/위치 가중치 분석 스위치 & 실시간 정확도 결합 -->
                         <div class="p-5 bg-blue-50/40 border border-blue-100/80 rounded-2xl flex flex-col justify-between relative overflow-hidden">
                             <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-blue-100/30 rounded-full blur-xl"></div>
@@ -259,6 +259,38 @@
                             
                             <div class="text-[10px] font-bold text-indigo-600 bg-indigo-50/50 rounded-lg p-2 text-center z-10">
                                 💡 서버 과부하 상황 발생시 즉시 OFF 설정 권장
+                            </div>
+                        </div>
+
+                        <!-- 컨트롤 3.5: 긴급 알림 설정 (Emergency Alert) 스위치 -->
+                        <div class="p-5 bg-red-50/40 border border-red-100/80 rounded-2xl flex flex-col justify-between relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-red-100/30 rounded-full blur-xl"></div>
+                            <div class="flex items-center justify-between z-10">
+                                <span class="text-xs font-bold text-red-700 bg-red-100/50 px-2.5 py-1 rounded-full flex items-center gap-1">
+                                    <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+                                    긴급 상황 알림
+                                </span>
+                                <label class="relative inline-flex items-center cursor-pointer scale-90">
+                                    <input type="checkbox" id="emergencyAlertToggle" class="sr-only peer" th:checked="${emergencyActive}">
+                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+                                </label>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-800 mt-4 z-10">🚨 긴급 실종 경보 제어</h4>
+                            <p class="text-xs text-slate-500 mt-1 mb-3 leading-relaxed z-10">메인 화면 전체를 덮는 강렬한 긴급 모달을 즉시 표출하여 유저들의 제보를 유도합니다.</p>
+                            
+                            <!-- 📈 실시간 응답 지표 -->
+                            <div class="mt-1 mb-3 bg-white/70 backdrop-blur-sm p-3 border border-red-100/50 rounded-xl z-10">
+                                <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                                    <span>📢 실시간 알림 전송망</span>
+                                    <span class="font-bold text-red-650">READY</span>
+                                </div>
+                                <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                    <div class="bg-red-600 h-full rounded-full" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-[10px] font-bold text-red-600 bg-red-50/50 rounded-lg p-2 text-center z-10">
+                                💡 골든타임 사수를 위해 상황 발생시 즉시 ON 설정
                             </div>
                         </div>
 
@@ -497,6 +529,26 @@
                     '🟢 형태 및 키워드 동적 필터링 분석 기능이 정상 작동 중입니다.',
                     '🟡 형태 및 키워드 동적 필터링 분석 기능이 대기 모드로 전환되었습니다.'
                 );
+            });
+        }
+
+        const emergencyAlertToggle = document.getElementById('emergencyAlertToggle');
+        if (emergencyAlertToggle) {
+            emergencyAlertToggle.addEventListener('change', function() {
+                fetch('/admin/api/emergency/toggle', {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showToast(this.checked ? '🚨 긴급 실종 경보 팝업이 활성화되었습니다.' : '🔕 긴급 실종 경보가 해제되었습니다.');
+                    } else {
+                        showToast('🔴 긴급 경보 제어에 실패하였습니다. 권한을 확인하세요.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating emergency setting:', error);
+                    showToast('🔴 네트워크 오류로 인해 설정을 반영하지 못했습니다.');
+                });
             });
         }
 

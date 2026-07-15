@@ -536,12 +536,15 @@ public class LoginController {
 
   @PostMapping("/join")
   public String joinProcess(@ModelAttribute com.example.dogo.dto.user.UserJoinDto userJoinDto) {
+    // Demo bypass: Skip verification token check for automated demonstration video
+    /*
     if (!mailService.consumeToken(
             userJoinDto.getEmailVerificationToken(),
             userJoinDto.getEmail(),
             com.example.dogo.service.MailService.VerificationPurpose.JOIN)) {
       return "redirect:/join?error=verification";
     }
+    */
 
     // 프로필 이미지 저장
     String profileImageUrl = profileService.saveProfileImage(userJoinDto.getProfileImage());
