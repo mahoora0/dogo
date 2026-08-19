@@ -44,7 +44,7 @@ public class ItemMatchEventListener {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
 	public void handleLostItemMatchRequested(LostItemMatchRequestedEvent event) {
 		try {
-			embedLostItemIfEnabled(event.lostId());
+			tryEmbedLostItem(event.lostId());
 			itemMatchService.matchForLostItemId(event.lostId());
 			String html = fragmentRenderer.renderLostItemMatches(
 					itemMatchService.getMatchesForLostItemPreview(event.lostId()));
@@ -58,13 +58,29 @@ public class ItemMatchEventListener {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
 	public void handleFoundItemMatchRequested(FoundItemMatchRequestedEvent event) {
 		try {
-			embedFoundItemIfEnabled(event.foundId());
+			tryEmbedFoundItem(event.foundId());
 			itemMatchService.matchForFoundItemId(event.foundId());
 			String html = fragmentRenderer.renderFoundItemMatches(
 					itemMatchService.getMatchesForFoundItem(event.foundId()));
 			sseMatchRegistry.push("found:" + event.foundId(), html);
 		} catch (Exception exception) {
 			log.warn("습득물 매칭 실행 중 오류가 발생했습니다. foundId={}", event.foundId(), exception);
+		}
+	}
+
+	private void tryEmbedLostItem(Long lostId) {
+		try {
+			embedLostItemIfEnabled(lostId);
+		} catch (Exception exception) {
+			log.warn("분실물 임베딩 실패, 규칙 기반 매칭을 계속합니다. lostId={}", lostId, exception);
+		}
+	}
+
+	private void tryEmbedFoundItem(Long foundId) {
+		try {
+			embedFoundItemIfEnabled(foundId);
+		} catch (Exception exception) {
+			log.warn("습득물 임베딩 실패, 규칙 기반 매칭을 계속합니다. foundId={}", foundId, exception);
 		}
 	}
 
