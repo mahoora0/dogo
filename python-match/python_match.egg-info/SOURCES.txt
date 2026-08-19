@@ -1,0 +1,15 @@
+pyproject.toml
+app/__init__.py
+app/clip_embedding.py
+app/logger.py
+app/main.py
+app/schemas.py
+app/similarity.py
+python_match.egg-info/PKG-INFO
+python_match.egg-info/SOURCES.txt
+python_match.egg-info/dependency_links.txt
+python_match.egg-info/requires.txt
+python_match.egg-info/top_level.txt
+tests/test_api.py
+tests/test_clip_embedding.py
+tests/test_similarity.py
