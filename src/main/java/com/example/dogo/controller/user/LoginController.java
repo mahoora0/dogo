@@ -116,14 +116,7 @@ public class LoginController {
         return ResponseEntity.ok(java.util.Map.of("success", true, "social", true)); // 소셜 가입 회원
       }
       
-      // 마스킹 처리 (아이디 뒷자리 일부 마스킹: 예: admin -> ad***)
-      String maskedId = loginId;
-      if (loginId.length() > 3) {
-        maskedId = loginId.substring(0, 3) + "*".repeat(loginId.length() - 3);
-      } else {
-        maskedId = loginId.substring(0, 1) + "*".repeat(loginId.length() - 1);
-      }
-      return ResponseEntity.ok(java.util.Map.of("success", true, "loginId", maskedId));
+      return ResponseEntity.ok(java.util.Map.of("success", true, "loginId", loginId));
     }
     
     return ResponseEntity.badRequest().body("일치하는 회원 정보를 찾을 수 없습니다.");

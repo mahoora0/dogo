@@ -163,7 +163,7 @@ class LoginControllerTest {
     }
 
     @Test
-    void findIdReturnsMaskedIdAfterValidVerificationToken() throws Exception {
+    void findIdReturnsFullIdAfterValidVerificationToken() throws Exception {
         User user = mock(User.class);
         when(mailService.consumeToken(
                 "find-id-token",
@@ -182,7 +182,7 @@ class LoginControllerTest {
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.loginId", is("tes***")));
+                .andExpect(jsonPath("$.loginId", is("tester")));
     }
 
     @Test

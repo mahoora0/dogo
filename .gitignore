@@ -3,6 +3,7 @@ HELP.md
 bootrun.*.log
 .env
 .gradle
+.gradle-codex/
 build/
 .tmp/
 !gradle/wrapper/gradle-wrapper.jar
