@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DOGO 데이터베이스 구성도</title>
+  <style>
+    :root {
+      --navy: #0d2c61;
+      --blue: #1764c0;
+      --sky: #eaf3ff;
+      --ink: #17233b;
+      --muted: #65738b;
+      --line: #b9c7da;
+      --paper: #ffffff;
+      --bg: #eef3f9;
+      --item: #2767c7;
+      --animal: #7b4bc4;
+      --member: #168c8c;
+      --support: #d27525;
+      --public: #68758a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 1180px;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+      padding: 0 26px;
+      color: white;
+      background: #071d40;
+      box-shadow: 0 5px 18px rgb(7 29 64 / 18%);
+    }
+
+    .toolbar strong { font-size: 17px; letter-spacing: -.02em; }
+    .toolbar-actions { display: flex; align-items: center; gap: 9px; }
+
+    button {
+      border: 1px solid rgb(255 255 255 / 28%);
+      border-radius: 8px;
+      padding: 8px 13px;
+      color: white;
+      background: rgb(255 255 255 / 8%);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover, button.active { color: #071d40; background: white; }
+
+    .page-wrap { padding: 24px; }
+
+    .slide {
+      position: relative;
+      width: 1600px;
+      min-height: 900px;
+      margin: 0 auto;
+      overflow: hidden;
+      background:
+        linear-gradient(rgb(13 44 97 / 3%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(13 44 97 / 3%) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+      border-radius: 12px;
+      box-shadow: 0 18px 55px rgb(31 53 86 / 17%);
+    }
+
+    header {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 34px 46px 19px;
+      border-bottom: 1px solid #dbe4ef;
+      background: rgb(255 255 255 / 94%);
+    }
+
+    h1 { margin: 0; color: var(--navy); font-size: 42px; line-height: 1; letter-spacing: -.045em; }
+    .subtitle { margin: 10px 0 0; color: var(--muted); font-size: 16px; }
+    .db-badge { color: var(--blue); font-size: 14px; font-weight: 800; }
+
+    .legend { display: flex; gap: 9px; }
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      color: #435169;
+      background: white;
+      border: 1px solid #dbe4ef;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    .board {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 21px 18px;
+      padding: 26px 42px 28px;
+    }
+
+    .table-card {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      min-height: 118px;
+      flex-direction: column;
+      justify-content: center;
+      padding: 18px 17px 16px;
+      border: 1.5px solid #cbd7e6;
+      border-top: 6px solid var(--tone);
+      border-radius: 12px;
+      background: rgb(255 255 255 / 97%);
+      box-shadow: 0 7px 16px rgb(40 68 107 / 9%);
+      text-align: center;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      transition: box-shadow .16s ease, border-color .16s ease;
+    }
+
+    .table-card:hover {
+      border-color: color-mix(in srgb, var(--tone) 55%, #cbd7e6);
+      box-shadow: 0 11px 24px rgb(40 68 107 / 15%);
+    }
+
+    .table-card.dragging {
+      z-index: 20;
+      cursor: grabbing;
+      box-shadow: 0 18px 38px rgb(24 49 86 / 24%);
+      transition: none;
+    }
+
+    .table-card::after {
+      position: absolute;
+      inset: 8px;
+      border: 1px solid color-mix(in srgb, var(--tone) 15%, transparent);
+      border-radius: 7px;
+      content: "";
+      pointer-events: none;
+    }
+
+    .table-name {
+      position: relative;
+      z-index: 1;
+      color: var(--navy);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 17px;
+      font-weight: 850;
+      line-height: 1.18;
+      overflow-wrap: normal;
+      word-break: normal;
+      letter-spacing: -.01em;
+    }
+
+    .table-card.long .table-name { font-size: 14px; }
+    .table-card.very-long .table-name { font-size: 12.5px; line-height: 1.12; }
+
+    .table-desc {
+      position: relative;
+      z-index: 1;
+      margin-top: 10px;
+      color: #526078;
+      font-size: 13.5px;
+      font-weight: 650;
+      line-height: 1.4;
+      word-break: keep-all;
+    }
+
+    .member { --tone: var(--member); }
+    .item { --tone: var(--item); }
+    .animal { --tone: var(--animal); }
+    .support { --tone: var(--support); }
+    .public { --tone: var(--public); }
+
+    #relations {
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .relation {
+      fill: none;
+      stroke: #7890ad;
+      stroke-width: 1.7;
+      opacity: .48;
+    }
+
+    .relation.logical { stroke: #8458c4; stroke-dasharray: 7 6; }
+    .arrow { fill: #7890ad; opacity: .7; }
+    .arrow.logical { fill: #8458c4; }
+
+    .note {
+      position: absolute;
+      z-index: 5;
+      right: 43px;
+      bottom: 20px;
+      color: #7c8799;
+      font-size: 11px;
+    }
+
+    body[data-view="all"] .slide { min-height: 900px; }
+    body[data-view="all"] .board { grid-template-columns: repeat(7, 1fr); gap: 17px 14px; }
+    body[data-view="all"] .table-card { min-height: 126px; padding-inline: 13px; }
+    body[data-view="all"] .table-name { font-size: 15px; }
+    body[data-view="all"] .table-card.long .table-name { font-size: 12.5px; }
+    body[data-view="all"] .table-card.very-long .table-name { font-size: 11px; }
+    body[data-view="all"] .table-desc { font-size: 12.5px; }
+
+    body.capture .toolbar { display: none; }
+    body.capture .page-wrap { padding: 0; }
+    body.capture .slide { border-radius: 0; box-shadow: none; }
+
+    @media print {
+      body { min-width: 0; background: white; }
+      .toolbar { display: none; }
+      .page-wrap { padding: 0; }
+      .slide { box-shadow: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body data-view="core">
+  <div class="toolbar">
+    <strong>캡처 설정</strong>
+    <div class="toolbar-actions">
+      <button class="active" data-mode="core">핵심 관계도</button>
+      <button data-mode="all">전체 테이블</button>
+      <button id="toggle-lines">관계선 숨기기</button>
+      <button id="reset-layout">배치 초기화</button>
+      <button id="capture-mode">PPT 캡처 모드</button>
+      <button id="fullscreen">전체 화면</button>
+    </div>
+  </div>
+
+  <main class="page-wrap">
+    <section class="slide" id="slide">
+      <header>
+        <div>
+          <h1>DOGO ERD</h1>
+          <p class="subtitle" id="subtitle">서비스의 핵심 데이터와 연결 관계를 한눈에 보는 데이터베이스 구성도</p>
+        </div>
+        <div>
+          <div class="legend">
+            <span><i class="dot" style="background:var(--member)"></i>회원·소통</span>
+            <span><i class="dot" style="background:var(--item)"></i>분실물</span>
+            <span><i class="dot" style="background:var(--animal)"></i>동물·실종자</span>
+            <span><i class="dot" style="background:var(--support)"></i>운영·고객지원</span>
+            <span><i class="dot" style="background:var(--public)"></i>지역·공공데이터</span>
+          </div>
+          <div class="db-badge" style="text-align:right;margin-top:11px">MySQL · Spring Data JPA</div>
+        </div>
+      </header>
+
+      <svg id="relations" aria-hidden="true"></svg>
+      <div class="board" id="board"></div>
+      <div class="note">실선: JPA 연관관계 · 점선: 논리적 데이터 연결</div>
+    </section>
+  </main>
+
+  <script>
+    const tables = [
+      { id: 'USERS', desc: '회원 계정과 권한 정보를 관리', group: 'member', core: true },
+      { id: 'USER_SOCIAL_ACCOUNT', desc: '소셜 로그인 계정을 회원과 연결', group: 'member', core: true },
+      { id: 'LOST_ITEM', desc: '사용자가 잃어버린 물건 정보를 저장', group: 'item', core: true },
+      { id: 'LOST_ITEM_IMAGE', desc: '분실물 게시글의 사진을 관리', group: 'item', core: true },
+      { id: 'FOUND_ITEM', desc: '발견하거나 습득한 물건 정보를 저장', group: 'item', core: true },
+      { id: 'FOUND_ITEM_IMAGE', desc: '습득물 게시글의 사진을 관리', group: 'item', core: true },
+      { id: 'ITEM_MATCH', desc: '분실물과 습득물의 매칭 결과를 저장', group: 'item', core: true },
+      { id: 'ITEM_EMBEDDING', desc: '물건 설명의 의미 분석 결과를 저장', group: 'item', core: true },
+      { id: 'CATEGORY', desc: '물건 분류 기준과 카테고리를 관리', group: 'item', core: false },
+      { id: 'ANIMAL_REPORT', desc: '실종·목격 동물 신고 정보를 저장', group: 'animal', core: true },
+      { id: 'ANIMAL_REPORT_IMAGE', desc: '동물 신고에 등록된 사진을 관리', group: 'animal', core: true },
+      { id: 'ANIMAL_REPORT_IMAGE_EMBEDDING', desc: '동물 사진의 AI 특징값을 저장', group: 'animal', core: false },
+      { id: 'ANIMAL_REPORT_MATCH', desc: '실종 동물과 목격 신고의 매칭 결과', group: 'animal', core: true },
+      { id: 'MISSING_PERSON_REPORT', desc: '실종자 신고와 공개 정보를 저장', group: 'animal', core: true },
+      { id: 'MISSING_PERSON_IMAGE', desc: '실종자 신고에 등록된 사진을 관리', group: 'animal', core: false },
+      { id: 'CHAT_ROOM', desc: '게시글 작성자와 문의자의 대화방', group: 'member', core: true },
+      { id: 'CHAT_MESSAGE', desc: '채팅방에서 주고받은 메시지를 저장', group: 'member', core: true },
+      { id: 'NOTICE', desc: '서비스 공지사항을 관리', group: 'support', core: false },
+      { id: 'FAQ', desc: '자주 묻는 질문과 답변을 관리', group: 'support', core: false },
+      { id: 'INQUIRY', desc: '사용자의 일대일 문의 내용을 저장', group: 'support', core: true },
+      { id: 'INQUIRY_FILE', desc: '일대일 문의에 첨부된 파일을 관리', group: 'support', core: false },
+      { id: 'POST_REPORT', desc: '게시글 신고와 관리자 처리 내역을 저장', group: 'support', core: true },
+      { id: 'AREA', desc: '지역 계층과 지도 위치 정보를 관리', group: 'public', core: true },
+      { id: 'POLICE_STATION', desc: '경찰서 위치와 연락처 정보를 저장', group: 'public', core: false },
+      { id: 'SUBWAY_LOST_CENTER', desc: '지하철 유실물 센터 정보를 저장', group: 'public', core: false },
+      { id: 'KORAIL_STATION_LOCATION', desc: '철도역의 위치 정보를 저장', group: 'public', core: false },
+      { id: 'KORAIL_LOST_FOUND_CENTER', desc: '코레일 유실물 센터 정보를 저장', group: 'public', core: false }
+    ];
+
+    const relations = [
+      ['USER_SOCIAL_ACCOUNT','USERS'], ['LOST_ITEM','USERS'], ['FOUND_ITEM','USERS'],
+      ['LOST_ITEM_IMAGE','LOST_ITEM'], ['FOUND_ITEM_IMAGE','FOUND_ITEM'],
+      ['ITEM_MATCH','LOST_ITEM'], ['ITEM_MATCH','FOUND_ITEM'],
+      ['ITEM_EMBEDDING','LOST_ITEM','logical'], ['ITEM_EMBEDDING','FOUND_ITEM','logical'],
+      ['ANIMAL_REPORT','USERS'], ['ANIMAL_REPORT','AREA'],
+      ['ANIMAL_REPORT_IMAGE','ANIMAL_REPORT'], ['ANIMAL_REPORT_MATCH','ANIMAL_REPORT'],
+      ['ANIMAL_REPORT_IMAGE_EMBEDDING','ANIMAL_REPORT','logical'],
+      ['ANIMAL_REPORT_IMAGE_EMBEDDING','ANIMAL_REPORT_IMAGE','logical'],
+      ['MISSING_PERSON_REPORT','USERS'], ['MISSING_PERSON_IMAGE','MISSING_PERSON_REPORT'],
+      ['CHAT_ROOM','USERS'], ['CHAT_ROOM','LOST_ITEM'], ['CHAT_ROOM','FOUND_ITEM'], ['CHAT_ROOM','ANIMAL_REPORT'],
+      ['CHAT_MESSAGE','CHAT_ROOM'], ['CHAT_MESSAGE','USERS'],
+      ['INQUIRY','USERS'], ['INQUIRY_FILE','INQUIRY'], ['POST_REPORT','USERS']
+    ];
+
+    const board = document.querySelector('#board');
+    const svg = document.querySelector('#relations');
+    let mode = 'core';
+    let linesVisible = true;
+    let dragState = null;
+
+    function storageKey() {
+      return `dogo-erd-layout-${mode}`;
+    }
+
+    function readLayout() {
+      try { return JSON.parse(localStorage.getItem(storageKey()) || '{}'); }
+      catch { return {}; }
+    }
+
+    function saveLayout() {
+      const layout = {};
+      document.querySelectorAll('.table-card').forEach(card => {
+        layout[card.dataset.id] = {
+          x: Number(card.dataset.x || 0),
+          y: Number(card.dataset.y || 0)
+        };
+      });
+      localStorage.setItem(storageKey(), JSON.stringify(layout));
+    }
+
+    function applyPosition(card, x, y) {
+      card.dataset.x = String(Math.round(x));
+      card.dataset.y = String(Math.round(y));
+      card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+    }
+
+    function enableDrag(card) {
+      card.addEventListener('pointerdown', e => {
+        if (e.button !== 0) return;
+        card.setPointerCapture(e.pointerId);
+        dragState = {
+          card,
+          startX: e.clientX,
+          startY: e.clientY,
+          baseX: Number(card.dataset.x || 0),
+          baseY: Number(card.dataset.y || 0)
+        };
+        card.classList.add('dragging');
+      });
+
+      card.addEventListener('pointermove', e => {
+        if (!dragState || dragState.card !== card) return;
+        applyPosition(
+          card,
+          dragState.baseX + e.clientX - dragState.startX,
+          dragState.baseY + e.clientY - dragState.startY
+        );
+        drawRelations();
+      });
+
+      const finishDrag = () => {
+        if (!dragState || dragState.card !== card) return;
+        card.classList.remove('dragging');
+        dragState = null;
+        saveLayout();
+        drawRelations();
+      };
+      card.addEventListener('pointerup', finishDrag);
+      card.addEventListener('pointercancel', finishDrag);
+    }
+
+    function renderCards() {
+      board.innerHTML = '';
+      const visible = mode === 'core' ? tables.filter(t => t.core) : tables;
+      const savedLayout = readLayout();
+      visible.forEach(t => {
+        const card = document.createElement('article');
+        const lengthClass = t.id.length > 27 ? 'very-long' : t.id.length > 18 ? 'long' : '';
+        card.className = `table-card ${t.group} ${lengthClass}`;
+        card.dataset.id = t.id;
+        const readableName = t.id.replaceAll('_', '_<wbr>');
+        card.innerHTML = `<div class="table-name">${readableName}</div><div class="table-desc">${t.desc}</div>`;
+        const saved = savedLayout[t.id] || { x: 0, y: 0 };
+        applyPosition(card, saved.x, saved.y);
+        enableDrag(card);
+        board.appendChild(card);
+      });
+      document.querySelector('#subtitle').textContent = mode === 'core'
+        ? '서비스의 핵심 데이터와 연결 관계를 한눈에 보는 데이터베이스 구성도'
+        : `실제 엔티티 기준 전체 ${tables.length}개 테이블 요약`;
+      requestAnimationFrame(drawRelations);
+    }
+
+    function drawRelations() {
+      svg.innerHTML = '';
+      if (!linesVisible) return;
+      const slideRect = document.querySelector('#slide').getBoundingClientRect();
+      svg.setAttribute('viewBox', `0 0 ${slideRect.width} ${slideRect.height}`);
+      relations.forEach(([from, to, type]) => {
+        const a = document.querySelector(`[data-id="${from}"]`);
+        const b = document.querySelector(`[data-id="${to}"]`);
+        if (!a || !b) return;
+        const ar = a.getBoundingClientRect();
+        const br = b.getBoundingClientRect();
+        const ax = ar.left - slideRect.left + ar.width / 2;
+        const ay = ar.top - slideRect.top + ar.height / 2;
+        const bx = br.left - slideRect.left + br.width / 2;
+        const by = br.top - slideRect.top + br.height / 2;
+        const mx = (ax + bx) / 2;
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d', `M ${ax} ${ay} C ${mx} ${ay}, ${mx} ${by}, ${bx} ${by}`);
+        path.setAttribute('class', `relation ${type || ''}`);
+        svg.appendChild(path);
+        const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        dot.setAttribute('cx', bx); dot.setAttribute('cy', by); dot.setAttribute('r', 3.4);
+        dot.setAttribute('class', `arrow ${type || ''}`);
+        svg.appendChild(dot);
+      });
+    }
+
+    document.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('click', () => {
+      mode = btn.dataset.mode;
+      document.body.dataset.view = mode;
+      document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b === btn));
+      renderCards();
+    }));
+
+    document.querySelector('#toggle-lines').addEventListener('click', e => {
+      linesVisible = !linesVisible;
+      e.currentTarget.textContent = linesVisible ? '관계선 숨기기' : '관계선 보이기';
+      drawRelations();
+    });
+
+    document.querySelector('#reset-layout').addEventListener('click', () => {
+      localStorage.removeItem(storageKey());
+      document.querySelectorAll('.table-card').forEach(card => applyPosition(card, 0, 0));
+      drawRelations();
+    });
+
+    document.querySelector('#fullscreen').addEventListener('click', () => {
+      document.documentElement.requestFullscreen?.();
+    });
+
+    function toggleCaptureMode() {
+      document.body.classList.toggle('capture');
+      window.scrollTo(0, 0);
+      requestAnimationFrame(drawRelations);
+    }
+
+    document.querySelector('#capture-mode').addEventListener('click', toggleCaptureMode);
+    document.addEventListener('keydown', e => {
+      if (e.key.toLowerCase() === 'h') toggleCaptureMode();
+    });
+
+    window.addEventListener('resize', drawRelations);
+    renderCards();
+  </script>
+</body>
+</html>
